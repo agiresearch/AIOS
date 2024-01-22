@@ -1,1 +1,1 @@
-# LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem
+# Jarvos: Large Language Model as Operating System
