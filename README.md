@@ -1,1 +1,1 @@
-# Jarvos: Large Language Model as Operating System
+# AIOS: Large Language Model as Operating System
