@@ -1,1 +1,1 @@
-# AIOS: Large Language Model as Operating System
+# AIOS: LLM Agent Operating System
