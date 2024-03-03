@@ -1,0 +1,6 @@
+{
+    "model_type": "causal_lm",
+    "open_sourced": true,
+    "model_name": "facebook/opt-125m", 
+    "cache_dir": "/common/users/km1558/huggingface"
+}
