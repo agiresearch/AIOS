@@ -1,4 +1,4 @@
-from base import BaseMemory
+from src.memory.base import BaseMemory
 
 '''
 TO DO: implement the shared memory mechanism

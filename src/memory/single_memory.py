@@ -1,11 +1,11 @@
-from base import BaseMemory
+from src.memory.base import BaseMemory
 
 class SingleMemory(BaseMemory):
     def __init__(self):
-        pass
+        self.memory_pool = []
 
-    def save(self):
-        pass
+    def save_memory(self, content):
+        self.memory_pool.append(content)
 
     def load(self):
-        pass
+        return self.memory_pool

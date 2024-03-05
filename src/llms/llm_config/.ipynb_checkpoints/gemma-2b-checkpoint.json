@@ -1,7 +1,0 @@
-{
-    "model_type": "causal_lm",
-    "open_sourced": true,
-    "model_name": "google/gemma-2b", 
-    "cache_dir": "/common/users/km1558/huggingface",
-    "hf_token": "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"
-}
