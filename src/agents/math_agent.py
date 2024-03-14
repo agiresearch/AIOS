@@ -61,7 +61,7 @@ class MathAgent(BaseAgent):
             start_time = time.time()
             print("Math Agent")
 
-            print(f"Start time: {start_time}")
+            # print(f"Start time: {start_time}")
             args = [prompt, start_time]
             task = self.agent_process_queue.submit(lambda p:self.get_response(*p), args)
             response = ""
@@ -70,7 +70,7 @@ class MathAgent(BaseAgent):
                 response, waiting_time = r.result()
             waiting_times.append(waiting_time)
             finished_time = time.time()
-            print(f"Finished time: {finished_time}")
+            # print(f"Finished time: {finished_time}")
 
             turnaround_time = finished_time - start_time
             turnaround_times.append(turnaround_time)
@@ -84,11 +84,14 @@ class MathAgent(BaseAgent):
             prompt += "Generated content at step {} is: ".format(i) + response
 
         # res = self.parse_result(prompt)
+        res = prompt
         # time.sleep(10)
         self.set_status("Done")
         print("Math Agent")
-        print(f"Avg waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"Avg turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
+        print(f"Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+
+        return res
 
 
     def parse_result(self, prompt):
