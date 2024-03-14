@@ -6,21 +6,24 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-from src.utils.global_param import (
-    thread_pool,
-    agent_process_queue
-)
+# from src.utils.global_param import (
+#     agent_thread_pool,
+#     agent_process_queue,
+#     llm
+# )
+import numpy as np
 
 import argparse
 
-from concurrent.futures import wait
+from concurrent.futures import as_completed
 
 class NarrativeAgent(BaseAgent):
-    def __init__(self, agent_name, task_input):
-        BaseAgent.__init__(self, agent_name, task_input)
+    def __init__(self, agent_name, task_input, llm, agent_process_queue):
+        BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue)
 
     def run(self):
-        
+        waiting_times = []
+        turnaround_times = []
         prompt = ""
         prefix = self.prefix
         prompt += prefix
@@ -36,20 +39,44 @@ class NarrativeAgent(BaseAgent):
 
         for i, step in enumerate(steps):
             prompt += "In step {}: ".format(i) + step
-            agent_process = AgentProcess(self.get_aid(), self.get_agent_name(), prompt)
-            self.send_request(agent_process)
+            # agent_process = AgentProcess(self.get_aid(), self.get_agent_name(), prompt)
+            # self.send_request(agent_process)
 
-            agent_process.set_status("Waiting")
+            # agent_process.set_status("Waiting")
 
-            response = thread_pool.submit(self.get_response, agent_process)
+            # response = agent_process_queue.submit(self.get_response, agent_process)
+            print("Narrative Agent")
 
-            wait([response])
+            start_time = time.time()
+            print(f"Start time: {start_time}")
+            args = [prompt, start_time]
+            task = self.agent_process_queue.submit(lambda p:self.get_response(*p), args)
 
-            agent_process.set_status("Done")
-            prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
+            response = ""
+            waiting_time = -1
+            for r in as_completed([task]):
+                response, waiting_time = r.result()
+            waiting_times.append(waiting_time)
+            finished_time = time.time()
+            print(f"Finished time: {finished_time}")
+
+            turnaround_time = finished_time - start_time
+            turnaround_times.append(turnaround_time)
+
+            # print(f"Turnaround time: {turnaround_time}\n")
+
+            # print(response)
+            # print(agent_process.get_response())
+
+            # agent_process.set_status("Done")
+            # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
+            prompt += "Generated content at step {} is: ".format(i) + response
 
         res = self.parse_result(prompt)
         # return res
+        print("Narrative Agent")
+        print(f"Avg waiting time: {np.mean(np.array(waiting_times))}")
+        print(f"Avg turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         # time.sleep(10)
         self.set_status("Done")
@@ -67,3 +94,5 @@ if __name__ == "__main__":
     agent = NarrativeAgent(args.agent_name, args.task_input)
 
     agent.run()
+    # agent_thread_pool.submit(agent.run)
+    # agent.run()
