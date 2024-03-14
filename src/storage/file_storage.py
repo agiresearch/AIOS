@@ -1,4 +1,4 @@
-from base import BaseStorage
+from src.storage.base import BaseStorage
 
 import json
 
@@ -6,22 +6,17 @@ class JsonStorage(BaseStorage):
     def __init__(self):
         pass
 
-    def save(self, interaction_history, path):
-        with open(path, "w") as f:
-            json.dump(interaction_history, f, indent=2)
+    def sto_save(self, agent_id, content):
+        with open("src/storage/agent" + str(agent_id) + ".json", "w") as f:
+            json.dump(content, f, indent=2)
 
-    def load(self, path):
-        with open(path, "r") as f:
+    def sto_load(self, agent_id):
+        with open("src/storage/agent" + str(agent_id) + ".json", "r") as f:
             interaction_history = json.load(f)
             return interaction_history
 
+    def sto_alloc(self, agent_id):
+        return NotImplementedError
 
-class TxtStorage(BaseStorage):
-    def __init__(self):
-        pass
-
-    def save(self, interaction_history, path):
-        pass
-        
-    def load(self, path):
-        pass
+    def sto_clear(self, agent_id):
+        return NotImplementedError
