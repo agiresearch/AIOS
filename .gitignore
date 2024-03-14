@@ -2,3 +2,4 @@ src/agents/agent_config/*.json
 src/llms/llm_config/*.json
 .ipynb_checkpoints
 __pycache__
+src/storage/*.json
