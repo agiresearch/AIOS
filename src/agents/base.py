@@ -8,21 +8,25 @@ from src.agents.agent_process import (
 )
 
 from src.utils.global_param import (
-    thread_pool,
-    agent_process_queue,
+    # agent_thread_pool,
+    # agent_process_queue,
     MAX_AID,
     aid_pool,
-    agent_pool
+    agent_pool,
 )
+
+import time
 
 from datetime import datetime
 
 class BaseAgent:
-    def __init__(self, agent_name, task_input):
+    def __init__(self, agent_name, task_input, llm, agent_process_queue):
         self.agent_name = agent_name
         self.config = self.load_config()
         self.prefix = self.config["description"]
         self.task_input = task_input
+        self.llm = llm
+        self.agent_process_queue = agent_process_queue
 
         aid = -1
         for id, used in enumerate(aid_pool):
@@ -32,7 +36,11 @@ class BaseAgent:
                 break
                 
         self.set_aid(aid)
-        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.initialized_time = time.time()
+
+        print(agent_name + " has been initialized.")
+        # print(f"Initialized time: {self.initialized_time}")
     
         # self.memory_pool = SingleMemory()
         
@@ -51,11 +59,15 @@ class BaseAgent:
             return config
 
     def send_request(self, process):
-        agent_process_queue.add(process)
+        pass
+        # agent_process_queue.add(process)
 
-    def get_response(self, process):
-        while process.get_response() is None:
-            pass
+    def get_response(self, process, start_time):
+        result, waiting_time = self.llm.address_request(process, start_time)
+        # print(result)
+        return result, waiting_time
+        # while process.get_response() is None:
+        #     pass
 
     def set_aid(self, aid):
         self.aid = aid
