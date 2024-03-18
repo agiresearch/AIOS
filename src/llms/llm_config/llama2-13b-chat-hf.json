@@ -1,0 +1,5 @@
+{
+    "model_type": "causal_lm",
+    "open_sourced": true,
+    "model_name": "meta-llama/Llama-2-13b-chat-hf"
+}
