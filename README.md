@@ -22,12 +22,14 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-Set up huggingface token before loading LLM  
+Set up huggingface token and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
+export HF_HOME=<YOUR CACHE DIRECTORY>
 ```
 Run the main.py to start
 ```python
 # Use Gemma-2b-it for example
 python main.py --llm_name gemma-2b-it
 ```
+
