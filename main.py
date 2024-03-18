@@ -12,6 +12,8 @@ import sys
 
 from src.scheduler.fifo_scheduler import FIFOScheduler
 
+from src.utils.utils import parse_global_args
+
 import warnings
 
 # from src.agent_factory import (
@@ -37,12 +39,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def main():
     warnings.filterwarnings("ignore")
+    parser = parse_global_args()
+    args = parser.parse_args()
     # agent_process_queue.print()
     # llm_type = "llama2-13b-chat-hf"
-    llm_type = "gemma-2b-it"
+    llm_name = args.llm_name
     # llm_type = "gemma-7b-it"
 
-    llm = llms.LLMKernel(llm_type)
+    llm = llms.LLMKernel(llm_name)
 
     # parser = PunctuationParser(llm)
 
