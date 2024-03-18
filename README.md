@@ -11,4 +11,23 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 <img src="images/AIOS-Architecture.png">
 </p>
 
+## Getting Started
 
+### Installation
+
+**Make sure you have Python >= 3.9**  
+Install the required packages using pip  
+```bash
+pip install -r requirements.txt
+```
+
+### Usage
+Set up huggingface token before loading LLM  
+```bash
+export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
+```
+Run the main.py to start
+```python
+# Use Gemma-2b-it for example
+python main.py --llm_name gemma-2b-it
+```
