@@ -6,12 +6,17 @@
 AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
 
 
-## Architecture of AIOS
+## 🏠 Architecture of AIOS
 <p align="center">
 <img src="images/AIOS-Architecture.png">
 </p>
 
-## Getting Started
+
+## 📰 News
+
+- **[2024-1-14]** ✈️ AIOS is officially launched! 
+
+## ✈️ Getting Started
 
 ### Installation
 
@@ -33,3 +38,8 @@ Run the main.py to start
 python main.py --llm_name gemma-2b-it
 ```
 
+## 🌟 Join Us!
+AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem!
+
+## 📪 Contact
+If you have any suggestions, or wish to contact us for any reason, feel free to email us at marknju2018@gmail.com
