@@ -4,10 +4,10 @@ import queue
 
 import time
 
-from src.utils.global_param import (
-    thread_pool,
-    agent_process_queue
-)
+# from src.utils.global_param import (
+#     thread_pool,
+#     agent_process_queue
+# )
 
 class FIFOScheduler(BaseScheduler):
     def __init__(self, llm):
