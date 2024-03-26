@@ -1,6 +1,6 @@
 import os
 import sys
-
+import json
 # from src.command_parser import (
 #     PunctuationParser,
 #     ChatGPTParser
@@ -33,6 +33,8 @@ from src.agents.narrative_agent import NarrativeAgent
 
 from src.agents.rec_agent import RecAgent
 
+from src.agents.travel_agent.travel_agent import TravelAgent
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
@@ -44,9 +46,11 @@ def main():
     # agent_process_queue.print()
     # llm_type = "llama2-13b-chat-hf"
     llm_name = args.llm_name
+    max_gpu_memory = args.max_gpu_memory
+    max_new_tokens = args.max_new_tokens
     # llm_type = "gemma-7b-it"
 
-    llm = llms.LLMKernel(llm_name)
+    llm = llms.LLMKernel(llm_name, max_gpu_memory, max_new_tokens)
 
     # parser = PunctuationParser(llm)
 
@@ -78,8 +82,10 @@ def main():
         llm,
         agent_process_queue
     )
+
     agents = [math_agent, narrative_agent, rec_agent]
-    tasks = [agent_thread_pool.submit(a.run) for a in agents]
+
+    tasks = [agent_thread_pool.submit(agent.run) for agent in agents]
 
     for r in as_completed(tasks):
         res = r.result()

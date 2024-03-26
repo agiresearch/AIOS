@@ -4,10 +4,15 @@ import os
 
 from typing import Dict, List, Any, Optional
 
+import json
+
 def parse_global_args():
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it")
-    
+    parser.add_argument('--max_gpu_memory', type=json.loads)
+    parser.add_argument('--eval_device', type=str)
+    parser.add_argument('--max_new_tokens', type=int, default=256)
+
     return parser
 
 def get_from_dict_or_env(
