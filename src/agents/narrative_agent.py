@@ -45,18 +45,13 @@ class NarrativeAgent(BaseAgent):
             # agent_process.set_status("Waiting")
 
             # response = agent_process_queue.submit(self.get_response, agent_process)
-            print("Narrative Agent")
+            print(f"{self.agent_name}")
 
             start_time = time.time()
             # print(f"Start time: {start_time}")
-            args = [prompt, start_time]
-            task = self.agent_process_queue.submit(lambda p:self.get_response(*p), args)
+            response = self.get_response(prompt)
 
-            response = ""
-            waiting_time = -1
-            for r in as_completed([task]):
-                response, waiting_time = r.result()
-            waiting_times.append(waiting_time)
+            # waiting_times.append(waiting_time)
             finished_time = time.time()
             # print(f"Finished time: {finished_time}")
 
@@ -70,14 +65,13 @@ class NarrativeAgent(BaseAgent):
 
             # agent_process.set_status("Done")
             # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
-            prompt += "Generated content at step {} is: ".format(i) + response
+            prompt += response
 
         # res = self.parse_result(prompt)
         res = prompt
         # return res
-        print("Narrative Agent")
-        print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
+        print(f"{self.agent_name}: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         # time.sleep(10)
         self.set_status("Done")

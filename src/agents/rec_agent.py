@@ -38,20 +38,13 @@ class RecAgent(BaseAgent):
 
         for i, step in enumerate(steps):
             prompt += "In step {}: ".format(i) + step
-            print("Rec Agent")
+            print(f"{self.agent_name}")
 
             start_time = time.time()
 
             # print(f"Start time: {start_time}")
 
-            args = [prompt, start_time]
-            task = self.agent_process_queue.submit(lambda p:self.get_response(*p), args)
-
-            response = ""
-            waiting_time = -1
-            for r in as_completed([task]):
-                response, waiting_time = r.result()
-            waiting_times.append(waiting_time)
+            response = self.get_response(prompt)
             finished_time = time.time()
             # print(f"Finished time: {finished_time}")
 
@@ -64,16 +57,16 @@ class RecAgent(BaseAgent):
 
             # agent_process.set_status("Done")
             # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
-            prompt += "Generated content at step {} is: ".format(i) + response
+            prompt += response
 
         # res = self.parse_result(prompt)
         res = prompt
 
         # time.sleep(10)
         self.set_status("Done")
-        print("Rec Agent")
-        print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        print(f"{self.agent_name}")
+        # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
+        print(f"{self.agent_name}: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         return res
 

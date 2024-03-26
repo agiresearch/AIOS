@@ -62,12 +62,92 @@ class BaseAgent:
         pass
         # agent_process_queue.add(process)
 
-    def get_response(self, process, start_time):
-        result, waiting_time = self.llm.address_request(process, start_time)
+    def get_response(self, prompt):
+        args = [prompt]
+        task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+        result = task.result()
         # print(result)
-        return result, waiting_time
+        return result
         # while process.get_response() is None:
         #     pass
+
+    def check_tool_use(self, prompt, tool_info, temperature=0.):
+        prompt = f'You are allowed to use the following tools: \n\n```{tool_info}```\n\n' \
+                f'Do you think the response ```{prompt}``` calls any tool?\n' \
+                f'Only answer "Yes" or "No".'
+        while True:
+            args = [prompt, temperature]
+            task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+            response = task.result()
+            temperature += .5
+            print(f'Tool use check: {response}')
+            if 'yes' in response.lower():
+                return True
+            if 'no' in response.lower():
+                return False
+            print(f'Temperature: {temperature}')
+            if temperature > 2:
+                break
+        print('No valid format output when calling "Tool use check".')
+        # exit(1)
+
+    def get_prompt(self, tool_info, flow_ptr, task_description, cur_progress):
+        progress_str = '\n'.join(cur_progress)
+        prompt = f'{tool_info}\n\nCurrent Progress:\n{progress_str}\n\nTask description: {task_description}\n\n' \
+                f'Question: {flow_ptr.get_instruction()}\n\nOnly answer the current instruction and do not be verbose.'
+        return prompt
+
+    def get_tool_arg(self, prompt, tool_info, selected_tool):
+        prompt = f'{tool_info}\n\n' \
+                f'You attempt to use the tool ```{selected_tool}```. ' \
+                f'What is the input argument to call tool for this step: ```{prompt}```? ' \
+                f'Respond "None" if no arguments are needed for this tool. Separate by comma if there are multiple arguments. Do not be verbose!'
+        args = [prompt]
+        task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+        response = task.result()
+        print(f'Parameters: {response}')
+        return response
+
+    def check_tool_name(self, prompt, tool_list, temperature=0.):
+        prompt = f'Choose the used tool of ```{prompt}``` from the following options:\n'
+        for i, key in enumerate(tool_list):
+            prompt += f'{i + 1}: {key}.\n'
+        prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
+        while True:
+            args = [prompt, temperature]
+            task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+            response = task.result()
+            temperature += .5
+            if response.isdigit() and 1 <= int(response) <= len(tool_list):
+                response = int(response)
+                break
+            print(f'Temperature: {temperature}')
+            if temperature > 2:
+                # logging.info('No valid format output when calling "Tool name select".')
+                exit(1)
+        # logging.info(f'{response}, {tool_list[response - 1]}')
+        return tool_list[response - 1]
+    
+    def check_branch(self, prompt, flow_ptr, temperature=0.):
+        possible_keys = list(flow_ptr.branch.keys())
+        prompt = f'Choose the closest representation of ```{prompt}``` from the following options:\n'
+        for i, key in enumerate(possible_keys):
+            prompt += f'{i + 1}: {key}.\n'
+        prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
+        while True:
+            args = [prompt, temperature]
+            task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+            response = task.result()
+            temperature += .5
+            if response.isdigit() and 1 <= int(response) <= len(possible_keys):
+                response = int(response)
+                break
+            print(f'Temperature: {temperature}')
+            if temperature > 2:
+                print('No valid format output when calling "Check Branch".')
+                exit(1)
+        print(f'{response}, {possible_keys[response - 1]}')
+        return possible_keys[response - 1]
 
     def set_aid(self, aid):
         self.aid = aid
