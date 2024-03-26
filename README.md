@@ -13,7 +13,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 News
-
+- **[2024-3-25]** We're excited to share our paper [LLM Agent Operating System](https://arxiv.org/pdf/2403.16971.pdf)!
 - **[2024-1-14]** ✈️ AIOS is officially launched! 
 
 ## ✈️ Getting Started
@@ -40,6 +40,7 @@ python main.py --llm_name gemma-2b-it
 
 ## 🌟 Join Us!
 AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem!
+
 
 ## 📪 Contact
 If you have any suggestions, or wish to contact us for any reason, feel free to email us at marknju2018@gmail.com
