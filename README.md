@@ -34,8 +34,8 @@ export HF_HOME=<YOUR CACHE DIRECTORY>
 ```
 Run the main.py to start
 ```python
-# Use Gemma-2b-it for example
-python main.py --llm_name gemma-2b-it
+# Use Gemma-2b-it for example, re
+python main.py --llm_name gemma-2b-it --max_gpu_memory '{"YOUR MAX GPU MEMORY MAP: e.g., {0: "24GB"}"}' --eval_device "cuda:YOUR EVAL DEVICE NUMBER" --max_new_tokens 256
 ```
 
 ## 🌟 Join Us!
