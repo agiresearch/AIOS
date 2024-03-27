@@ -42,29 +42,3 @@ class AgentProcess:
 
     def set_response(self, response):
         self.response = response
-
-# class AgentProcessQueue:
-#     def __init__(self):
-#         self.MAX_PID = 1024
-
-#         self.pid_pool = [False for i in range(self.MAX_PID)]
-        
-#         self.agent_process_queue = [] # Currently use list to simulate queue
-
-#     def add(self, agent_process):
-#         pid = -1
-#         for i, used in enumerate(self.pid_pool):
-#             if not used:
-#                 idx = i
-#                 break
-#         if idx != -1:
-#             agent_process.set_pid(pid)
-#             agent_process.set_time(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-#             self.agent_process_queue.append(agent_process)
-#             agent_process.set_status("Waiting")
-
-#     def print(self):
-#         # print(self.agent_process_queue.size())
-#         # print(len(self.agent_process_queue))
-#         for agent_process in self.agent_process_queue:
-#             print(f"| Agent-process ID: {agent_process.get_pid()} | Status: {agent_process.get_status()} |")
