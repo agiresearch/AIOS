@@ -13,8 +13,8 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 News
-- **[2024-3-25]** Our paper [LLM Agent Operating System](https://arxiv.org/pdf/2403.16971.pdf) is released!
-- **[2024-1-14]** ✈️ AIOS is officially launched! 
+- **[2024-3-25]** Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/pdf/2403.16971.pdf) is released!
+- **[2023-12-20]** ✈️ AIOS is officially launched! 
 
 ## ✈️ Getting Started
 
