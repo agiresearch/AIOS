@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+
 # from src.command_parser import (
 #     PunctuationParser,
 #     ChatGPTParser
@@ -12,13 +13,12 @@ import json
 
 from src.scheduler.fifo_scheduler import FIFOScheduler
 
-from src.utils.utils import parse_global_args
+from src.utils.utils import (
+    parse_global_args,
+    logger
+)
 
 import warnings
-
-# from src.agent_factory import (
-#     AgentFactory
-# )
 
 from src.llms import llms
 
@@ -79,7 +79,7 @@ def main():
 
     for r in as_completed(tasks):
         res = r.result()
-        print(res)
+        logger.info(res)
 
     scheduler.stop()
 
