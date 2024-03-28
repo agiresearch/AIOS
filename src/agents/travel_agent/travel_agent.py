@@ -18,11 +18,11 @@ from concurrent.futures import as_completed
 
 import numpy as np
 
-from src.tools.bing_search import BingSearch
+from src.tools.online.bing_search import BingSearch
 
-from src.tools.google_search import GoogleSearch
+from src.tools.online.google_search import GoogleSearch
 
-from src.tools.arxiv import Arxiv
+from src.tools.online.arxiv import Arxiv
 
 from src.agents.flow import Flow
 

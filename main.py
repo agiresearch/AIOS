@@ -32,8 +32,6 @@ from src.agents.travel_agent.travel_agent import TravelAgent
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
-
 def main():
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
@@ -45,13 +43,14 @@ def main():
 
     llm = llms.LLMKernel(llm_name, max_gpu_memory, max_new_tokens)
 
+    # start the scheduler
     scheduler = FIFOScheduler(llm)
-
     scheduler.start()
 
     # agent_thread_pool to enable multiple agents running in parallel
     agent_thread_pool = ThreadPoolExecutor(max_workers=64)
 
+    # construct agents
     math_agent = MathAgent(
         "MathAgent", 
         "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
@@ -75,6 +74,7 @@ def main():
 
     agents = [math_agent, narrative_agent, rec_agent]
 
+    # run agents concurrently
     tasks = [agent_thread_pool.submit(agent.run) for agent in agents]
 
     for r in as_completed(tasks):
