@@ -40,7 +40,7 @@ python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_de
 ```
 
 ## 🌟 Join Us!
-AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem!
+AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem. Suggestions and pull requests are always welcome!
 
 ## 🖋️ Citation
 ```
