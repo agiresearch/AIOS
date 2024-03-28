@@ -44,9 +44,9 @@ AIOS is dedicated to facilitating LLM agents' development and deployment in a sy
 
 ## 🖋️ Citation
 ```
-@article{mei2024llm,
-  title={LLM Agent Operating System},
-  author={Mei, Kai and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng},
+@article{mei2024aios,
+  title={AIOS: LLM Agent Operating System},
+  author={Mei, Kai and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
   journal={arXiv preprint arXiv:2403.16971},
   year={2024}
 }
