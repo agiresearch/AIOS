@@ -22,17 +22,15 @@ import warnings
 
 from src.llms import llms
 
-from src.agents.math_agent import MathAgent
+from src.agents.math_agent.math_agent import MathAgent
 
-from src.agents.narrative_agent import NarrativeAgent
+from src.agents.narrative_agent.narrative_agent import NarrativeAgent
 
-from src.agents.rec_agent import RecAgent
+from src.agents.rec_agent.rec_agent import RecAgent
 
 from src.agents.travel_agent.travel_agent import TravelAgent
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "4,5,6,7"
 
 def main():
     warnings.filterwarnings("ignore")
@@ -49,28 +47,28 @@ def main():
 
     scheduler.start()
 
-    # agent_thread_pool to enable multiple agents running in parallel
+    # assign maximum number of agents that can run in parallel
     agent_thread_pool = ThreadPoolExecutor(max_workers=64)
 
     math_agent = MathAgent(
-        "MathAgent", 
-        "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
-        llm,
-        scheduler.agent_process_queue
+        agent_name = "MathAgent", 
+        task_input = "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
+        llm = llm,
+        agent_process_queue = scheduler.agent_process_queue
     )
 
     narrative_agent = NarrativeAgent(
-        "NarrativeAgent", 
-        "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.",
-        llm,
-        scheduler.agent_process_queue
+        agent_name = "NarrativeAgent", 
+        task_input = "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.",
+        llm = llm,
+        agent_process_queue = scheduler.agent_process_queue
     )
 
     rec_agent = RecAgent(
-        "RecAgent", 
-        "I want to take a tour to New York during the spring break, recommend some restaurants around for me.",
-        llm,
-        scheduler.agent_process_queue
+        agent_name = "RecAgent", 
+        task_input = "I want to take a tour to New York during the spring break, recommend some restaurants around for me.",
+        llm = llm,
+        agent_process_queue = scheduler.agent_process_queue
     )
 
     agents = [math_agent, narrative_agent, rec_agent]
