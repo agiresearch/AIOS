@@ -6,6 +6,8 @@ from typing import Dict, List, Any, Optional
 
 import json
 
+import re
+
 def parse_global_args():
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it")
@@ -14,6 +16,10 @@ def parse_global_args():
     parser.add_argument('--max_new_tokens', type=int, default=256)
 
     return parser
+
+def extract_before_parenthesis(s):
+    match = re.search(r'^(.*?)\([^)]*\)', s)
+    return match.group(1) if match else s
 
 def get_from_dict_or_env(
     data: Dict[str, Any], key: str, env_key: str, default: Optional[str] = None

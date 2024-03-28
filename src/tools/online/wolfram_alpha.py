@@ -25,7 +25,7 @@ class WolframAlpha(BaseTool):
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that the python package exists in environment."""
         try:
-            import arxiv
+            import tools.online.arxiv as arxiv
 
             values["arxiv_search"] = arxiv.Search
             values["arxiv_exceptions"] = (
