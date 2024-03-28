@@ -43,13 +43,14 @@ def main():
 
     llm = llms.LLMKernel(llm_name, max_gpu_memory, max_new_tokens)
 
+    # start the scheduler
     scheduler = FIFOScheduler(llm)
-
     scheduler.start()
 
     # assign maximum number of agents that can run in parallel
     agent_thread_pool = ThreadPoolExecutor(max_workers=64)
 
+    # construct agents
     math_agent = MathAgent(
         agent_name = "MathAgent", 
         task_input = "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
@@ -73,6 +74,7 @@ def main():
 
     agents = [math_agent, narrative_agent, rec_agent]
 
+    # run agents concurrently
     tasks = [agent_thread_pool.submit(agent.run) for agent in agents]
 
     for r in as_completed(tasks):
