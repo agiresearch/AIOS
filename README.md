@@ -41,6 +41,15 @@ python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_de
 ## 🌟 Join Us!
 AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem!
 
+## 🖋️ Citation
+```
+@article{mei2024llm,
+  title={LLM Agent Operating System},
+  author={Mei, Kai and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng},
+  journal={arXiv preprint arXiv:2403.16971},
+  year={2024}
+}
+```
 
 ## 📪 Contact
 If you have any suggestions, or wish to contact us for any reason, feel free to email us at marknju2018@gmail.com
