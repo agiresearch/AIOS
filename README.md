@@ -1,6 +1,7 @@
 # AIOS: LLM Agent Operating System
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a> 
+<a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a> 
 [![Code License](https://img.shields.io/badge/Code%20License-MIT-green.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 
 AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
@@ -13,8 +14,8 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 News
-- **[2024-3-25]** Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/pdf/2403.16971.pdf) is released!
-- **[2023-12-20]** ✈️ AIOS is officially launched! 
+- **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
+- **[2023-12-06]** ✈️ After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
 ## ✈️ Getting Started
 
