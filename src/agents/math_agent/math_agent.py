@@ -13,10 +13,7 @@ from src.agents.agent_process import (
 )
 
 from src.utils.global_param import (
-    # agent_thread_pool,
-    # agent_process_queue,
     agent_pool,
-    # llm
 )
 
 import argparse
