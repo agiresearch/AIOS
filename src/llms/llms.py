@@ -13,11 +13,7 @@ model_class = {
 
 from openai import OpenAI
 
-# sys.path.append("..")
-
 import os
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 import json
 
@@ -26,10 +22,9 @@ import re
 import time
 
 class LLMKernel:
-    def __init__(self, kernel_type, max_gpu_memory, eval_device, max_new_tokens=256):
-        print("Initialize AIOS powered by LLM: {}".format(kernel_type))
-        self.config = self.load_config(kernel_type)
-        # self.device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
+    def __init__(self, llm_name: str, max_gpu_memory: dict, eval_device: str, max_new_tokens: int = 256):
+        print("Initialize AIOS powered by LLM: {}".format(llm_name))
+        self.config = self.load_config(llm_name)
         self.max_gpu_memory = self.convert_map(max_gpu_memory)
         self.eval_device = eval_device
 
@@ -37,15 +32,15 @@ class LLMKernel:
         self.MAX_NEW_TOKENS = max_new_tokens
         print("AIOS LLM successfully loaded. ")
 
-    def convert_map(self, map):
+    def convert_map(self, map: dict) -> dict:
         new_map = {}
         for k,v in map.items():
             new_map[int(k)] = v
         return new_map
 
-    def load_config(self, kernel_type):
+    def load_config(self, llm_name):
         # print(os.getcwd())
-        config_file = os.path.join(os.getcwd(), "src", "llms", "llm_config/{}.json".format(kernel_type))
+        config_file = os.path.join(os.getcwd(), "src", "llms", "llm_config/{}.json".format(llm_name))
         with open(config_file, "r") as f:
             config = json.load(f)
             return config
@@ -79,10 +74,6 @@ class LLMKernel:
                 self.tokenizer = None
             else:
                 return NotImplementedError
-
-    def extract_before_parenthesis(s):
-        match = re.search(r'^(.*?)\([^)]*\)', s)
-        return match.group(1) if match else s
     
     def address_request(self, prompt, temperature=0.0):
         # The pattern looks for 'gpt', 'claude', or 'gemini', ignoring case (re.IGNORECASE)

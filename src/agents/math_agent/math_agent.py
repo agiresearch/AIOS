@@ -16,6 +16,10 @@ from src.utils.global_param import (
     agent_pool,
 )
 
+from src.utils.utils import (
+    logger
+)
+
 import argparse
 
 from concurrent.futures import as_completed
@@ -47,47 +51,22 @@ class MathAgent(BaseAgent):
             prompt += "In step {}: ".format(i) + step
             prompt += step
 
-            # FIFO request and response
-            # time.sleep(5)
-            
-            # response = agent_process_queue.submit(self.get_response, prompt)
-            # respondor = agent_process_queue.submit(self.get_response, prompt)
-
-            # response = ""
-            # for r in as_completed([respondor]):
-            #     response = r.result()
             start_time = time.time()
-            print(f"{self.agent_name}")
+            # logger.info(f"{self.agent_name}")
 
-            # print(f"Start time: {start_time}")
-            # args = [prompt]
-            # task = self.agent_process_queue.submit(lambda p:self.get_response(*p), args)
             response = self.get_response(prompt)
-            # response = task.result()
-            # waiting_time = -1
-            # for r in as_completed([task]):
-            #     response, waiting_time = r.result()
-            # waiting_times.append(waiting_time)
+            
             finished_time = time.time()
             # print(f"Finished time: {finished_time}")
 
             turnaround_time = finished_time - start_time
             turnaround_times.append(turnaround_time)
-            # print(f"Turnaround time: {turnaround_time}")
-
-            # print(response)
-            # print(agent_process.get_response())
-
-            # agent_process.set_status("Done")
-            # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
+            
             prompt += response
 
-        # res = self.parse_result(prompt)
         res = prompt
-        # time.sleep(10)
         self.set_status("Done")
-        # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"{self.agent_name}: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        logger.info(f"{self.agent_name} has finished: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         return res
 

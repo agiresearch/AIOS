@@ -11,6 +11,10 @@ from src.agents.agent_process import (
 #     agent_process_queue,
 #     llm
 # )
+from src.utils.utils import (
+    logger
+)
+
 import numpy as np
 
 import argparse
@@ -39,39 +43,22 @@ class NarrativeAgent(BaseAgent):
 
         for i, step in enumerate(steps):
             prompt += "In step {}: ".format(i) + step
-            # agent_process = AgentProcess(self.get_aid(), self.get_agent_name(), prompt)
-            # self.send_request(agent_process)
-
-            # agent_process.set_status("Waiting")
-
-            # response = agent_process_queue.submit(self.get_response, agent_process)
-            print(f"{self.agent_name}")
-
+            
             start_time = time.time()
-            # print(f"Start time: {start_time}")
             response = self.get_response(prompt)
 
-            # waiting_times.append(waiting_time)
             finished_time = time.time()
-            # print(f"Finished time: {finished_time}")
 
             turnaround_time = finished_time - start_time
             turnaround_times.append(turnaround_time)
 
-            # print(f"Turnaround time: {turnaround_time}\n")
-
-            # print(response)
-            # print(agent_process.get_response())
-
-            # agent_process.set_status("Done")
-            # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
             prompt += response
 
         # res = self.parse_result(prompt)
         res = prompt
         # return res
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"{self.agent_name}: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        logger.info(f"{self.agent_name} has finished: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         # time.sleep(10)
         self.set_status("Done")

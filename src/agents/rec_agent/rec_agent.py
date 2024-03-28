@@ -6,17 +6,15 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-# from src.utils.global_param import (
-#     agent_thread_pool,
-#     agent_process_queue,
-# )
+from src.utils.utils import (
+    logger
+)
 
 import argparse
 
 from concurrent.futures import as_completed
 
 import numpy as np
-
 class RecAgent(BaseAgent):
     def __init__(self, agent_name, task_input, llm, agent_process_queue):
         BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue)
@@ -38,15 +36,11 @@ class RecAgent(BaseAgent):
 
         for i, step in enumerate(steps):
             prompt += "In step {}: ".format(i) + step
-            print(f"{self.agent_name}")
 
             start_time = time.time()
 
-            # print(f"Start time: {start_time}")
-
             response = self.get_response(prompt)
             finished_time = time.time()
-            # print(f"Finished time: {finished_time}")
 
             turnaround_time = finished_time - start_time
             turnaround_times.append(turnaround_time)
@@ -64,9 +58,8 @@ class RecAgent(BaseAgent):
 
         # time.sleep(10)
         self.set_status("Done")
-        print(f"{self.agent_name}")
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        print(f"{self.agent_name}: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        logger.info(f"{self.agent_name} has finished: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
 
         return res
 

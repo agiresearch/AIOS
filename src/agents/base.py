@@ -13,6 +13,10 @@ from src.utils.global_param import (
     # agent_pool,
 )
 
+from src.utils.utils import (
+    logger
+)
+
 import time
 
 from threading import Thread
@@ -48,7 +52,7 @@ class BaseAgent:
         # time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.initialized_time = time.time()
 
-        print(agent_name + " has been initialized.")
+        logger.info(agent_name + " has been initialized.")
         # print(f"Initialized time: {self.initialized_time}")
     
         # self.memory_pool = SingleMemory()
@@ -67,14 +71,8 @@ class BaseAgent:
             config = json.load(f)
             return config
 
-    def send_request(self, process):
-        pass
-        # agent_process_queue.add(process)
-
-    def get_response(self, prompt):
-        agent_process = AgentProcess(self.agent_name, prompt)
-        # args = [prompt]
-        # task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
+    def get_response(self, prompt, temperature=0.0):
+        agent_process = AgentProcess(self.agent_name, prompt, temperature)
         self.agent_process_queue.put(agent_process)
         thread = CustomizedThread(target=self.listen, args=(agent_process,))
         thread.start()
@@ -82,6 +80,14 @@ class BaseAgent:
         return thread.join()
 
     def listen(self, agent_process):
+        """Response Listener for agent
+
+        Args:
+            agent_process (AgentProcess): Listened AgentProcess
+
+        Returns:
+            str: LLM response of Agent Process
+        """
         while agent_process.get_response() is None:
             time.sleep(0.2)
         
@@ -93,10 +99,7 @@ class BaseAgent:
                 f'Do you think the response ```{prompt}``` calls any tool?\n' \
                 f'Only answer "Yes" or "No".'
         while True:
-            # args = [prompt, temperature]
-            # task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
-            # response = task.result()
-            response = self.get_response()
+            response = self.get_response(prompt, temperature)
             temperature += .5
             print(f'Tool use check: {response}')
             if 'yes' in response.lower():
@@ -120,10 +123,7 @@ class BaseAgent:
                 f'You attempt to use the tool ```{selected_tool}```. ' \
                 f'What is the input argument to call tool for this step: ```{prompt}```? ' \
                 f'Respond "None" if no arguments are needed for this tool. Separate by comma if there are multiple arguments. Do not be verbose!'
-        # args = [prompt]
-        # task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
-        # response = task.result()
-        response = self.get_response()
+        response = self.get_response(prompt)
         print(f'Parameters: {response}')
         return response
 
@@ -133,19 +133,14 @@ class BaseAgent:
             prompt += f'{i + 1}: {key}.\n'
         prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
         while True:
-            # args = [prompt, temperature]
-            # task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
-            # response = task.result()
-            response = self.get_response()
+            response = self.get_response(prompt, temperature=temperature)
             temperature += .5
             if response.isdigit() and 1 <= int(response) <= len(tool_list):
                 response = int(response)
                 break
             print(f'Temperature: {temperature}')
             if temperature > 2:
-                # logging.info('No valid format output when calling "Tool name select".')
                 exit(1)
-        # logging.info(f'{response}, {tool_list[response - 1]}')
         return tool_list[response - 1]
     
     def check_branch(self, prompt, flow_ptr, temperature=0.):
@@ -155,10 +150,7 @@ class BaseAgent:
             prompt += f'{i + 1}: {key}.\n'
         prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
         while True:
-            # args = [prompt, temperature]
-            # task = self.agent_process_queue.submit(lambda p:self.llm.address_request(*p), args)
-            # response = task.result()
-            response = self.get_response()
+            response = self.get_response(prompt=prompt, temperature=temperature)
             temperature += .5
             if response.isdigit() and 1 <= int(response) <= len(possible_keys):
                 response = int(response)
