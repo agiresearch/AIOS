@@ -37,7 +37,7 @@ class MathAgent(BaseAgent):
         waiting_times = []
         turnaround_times = []
         task_input = "The task you need to solve is: " + task_input
-        logger.info(f"{self.agent_name}: {task_input}.\n")
+        logger.info(f"[{self.agent_name}] {task_input}\n")
         prompt += task_input
         
         steps = [
@@ -49,7 +49,7 @@ class MathAgent(BaseAgent):
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
-            logger.info(f"{self.agent_name}: Step {i+1}: {step}\n")
+            logger.info(f"[{self.agent_name}] Step {i+1}: {step}\n")
 
             response, waiting_time, turnaround_time = self.get_response(prompt)
             waiting_times.append(waiting_time)
@@ -57,7 +57,7 @@ class MathAgent(BaseAgent):
 
             prompt += f"The solution to step {i+1} is: {response}\n"
 
-            logger.info(f"{self.agent_name}: The solution to step {i+1}: {response}\n")
+            logger.info(f"[{self.agent_name}] The solution to step {i+1}: {response}\n")
 
         prompt += f"Given the interaction history: '{prompt}', integrate solutions in all steps to give a final answer, don't be verbose!"
 
@@ -68,7 +68,7 @@ class MathAgent(BaseAgent):
         self.set_status("Done")
         logger.info(f"{self.agent_name} has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
-        logger.info(f"{self.agent_name}: {task_input} Final result is: {final_result}")
+        logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
 
         return final_result
 

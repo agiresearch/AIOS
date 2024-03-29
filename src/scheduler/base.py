@@ -30,7 +30,7 @@ class BaseScheduler:
 
     def execute_request(self, agent_process: AgentProcess):
         agent_process.set_status("Executing")
-        logger.info(f"{agent_process.agent_name} is executing.")
+        logger.info(f"[{agent_process.agent_name}] is executing.")
         agent_process.set_start_time(time.time())
         response = self.llm.address_request(agent_process.prompt)
         agent_process.set_response(response)

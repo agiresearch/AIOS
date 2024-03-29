@@ -26,7 +26,7 @@ class RecAgent(BaseAgent):
         prompt += prefix
         task_input = self.task_input
         task_input = "The task you need to solve is: " + task_input
-        logger.info(f"{self.agent_name}: {task_input}.\n")
+        logger.info(f"[{self.agent_name}] {task_input}\n")
         prompt += task_input
         waiting_times = []
         turnaround_times = []
@@ -38,7 +38,7 @@ class RecAgent(BaseAgent):
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
-            logger.info(f"{self.agent_name}: Step {i+1}: {step}\n")
+            logger.info(f"[{self.agent_name}] Step {i+1}: {step}\n")
 
             response, waiting_time, turnaround_time = self.get_response(prompt)
             waiting_times.append(waiting_time)
@@ -46,7 +46,7 @@ class RecAgent(BaseAgent):
 
             prompt += f"The solution to step {i+1} is: {response}\n"
 
-            logger.info(f"{self.agent_name}: The solution to step {i+1}: {response}\n")
+            logger.info(f"[{self.agent_name}] The solution to step {i+1}: {response}\n")
 
         prompt += f"Given the interaction history: '{prompt}', give a final recommendation list and explanations, don't be verbose!"
 
@@ -56,7 +56,7 @@ class RecAgent(BaseAgent):
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
         logger.info(f"{self.agent_name} has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
-        logger.info(f"{self.agent_name}: {task_input} Final result is: {final_result}")
+        logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
 
         return final_result
 
