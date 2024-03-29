@@ -15,7 +15,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 ## 📰 News
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
-- **[2023-12-06]** ✈️ After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
+- **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
 ## ✈️ Getting Started
 
@@ -33,10 +33,16 @@ Set up huggingface token and cache directory
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
 export HF_HOME=<YOUR CACHE DIRECTORY>
 ```
-Run the main.py to start
+Run the main.py to start (replace the max_gpu_memory and eval_device with your own)
+
 ```python
-# Use Gemma-2b-it for example, replace the max_gpu_memory and eval_device with your own
+# Use Gemma-2b-it
 python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
+```
+
+```python
+# Use Mixtral-8x7b-it
+python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
 
 ## 🌟 Join Us!
