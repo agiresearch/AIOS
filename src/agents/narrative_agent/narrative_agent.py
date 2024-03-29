@@ -32,41 +32,45 @@ class NarrativeAgent(BaseAgent):
         prefix = self.prefix
         prompt += prefix
         task_input = self.task_input
-        task_input = "Given the task: " + task_input
+        task_input = "The task you need to solve is: " + task_input
+        logger.info(f"{self.agent_name}: {task_input}.\n")
         prompt += task_input
         
         steps = [
-            "Develop the story's setting and characters, establish a background and introduce the main characters.",
-            "Given the background and characters, create situations that lead to the rising action, develop the climax with a significant turning point, and then move towards the resolution.",
-            "Conclude the story and reflect on the narrative. This could involve tying up loose ends, resolving any conflicts, and providing a satisfactory conclusion for the characters."
+            "develop the story's setting and characters, establish a background and introduce the main characters.",
+            "given the background and characters, create situations that lead to the rising action, develop the climax with a significant turning point, and then move towards the resolution.",
+            "conclude the story and reflect on the narrative. This could involve tying up loose ends, resolving any conflicts, and providing a satisfactory conclusion for the characters."
         ]
 
         for i, step in enumerate(steps):
-            prompt += "In step {}: ".format(i) + step
-            
-            start_time = time.time()
-            response = self.get_response(prompt)
+            prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
-            finished_time = time.time()
+            logger.info(f"Step {i+1}: {step}\n")
 
-            turnaround_time = finished_time - start_time
+            response, waiting_time, turnaround_time = self.get_response(prompt)
+            waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
+
+            prompt += f"The solution to step {i+1} is: {response}\n"
+
+            logger.info(f"{self.agent_name}: The solution to step {i+1}: {response}\n")
 
             prompt += response
 
-        # res = self.parse_result(prompt)
-        res = prompt
+        prompt += f"Given the interaction history: '{prompt}', integrate content in each step to give a full story, don't be verbose!"
+
+        final_result, waiting_time, turnaround_time = self.get_response(prompt)
+        waiting_times.append(waiting_time)
+        turnaround_times.append(turnaround_time)
         # return res
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        logger.info(f"{self.agent_name} has finished: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
-
+        logger.info(f"{self.agent_name} has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
         # time.sleep(10)
         self.set_status("Done")
 
-        return res
+        logger.info(f"{self.agent_name}: {task_input} Final result is: {final_result}")
 
-    def parse_result(self, prompt):
-        return prompt
+        return final_result
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run NarrativeAgent')

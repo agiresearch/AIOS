@@ -13,17 +13,29 @@ class AgentProcess:
         self.prompt = prompt
         self.response = None
 
-    def set_time(self, time):
-        self.time = time
+    def set_created_time(self, time):
+        self.created_time = time
 
+    def get_created_time(self):
+        return self.created_time
+    
+    def set_start_time(self, time):
+        self.start_time = time
+
+    def get_start_time(self):
+        return self.start_time
+    
+    def set_end_time(self, time):
+        self.end_time = time
+
+    def get_end_time(self):
+        return self.end_time
+    
     def set_priority(self, priority):
         self.priority = priority
 
     def get_priority(self):
         return self.priority
-
-    def get_time(self):
-        return self.time
 
     def set_status(self, status):
         self.status = status

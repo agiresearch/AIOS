@@ -49,7 +49,6 @@ class BaseAgent:
                 break
                 
         self.set_aid(aid)
-        # time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.initialized_time = time.time()
 
         logger.info(agent_name + " has been initialized.")
@@ -73,11 +72,16 @@ class BaseAgent:
 
     def get_response(self, prompt, temperature=0.0):
         agent_process = AgentProcess(self.agent_name, prompt, temperature)
+        agent_process.set_created_time(time.time())
         self.agent_process_queue.put(agent_process)
         thread = CustomizedThread(target=self.listen, args=(agent_process,))
         thread.start()
         # print(result)
-        return thread.join()
+        result = thread.join()
+        waiting_time = agent_process.get_start_time() - agent_process.get_created_time()
+        turnaround_time = agent_process.get_end_time() - agent_process.get_created_time()
+        result = result.replace("\n", "")
+        return result, waiting_time, turnaround_time
 
     def listen(self, agent_process):
         """Response Listener for agent
@@ -161,6 +165,13 @@ class BaseAgent:
                 exit(1)
         print(f'{response}, {possible_keys[response - 1]}')
         return possible_keys[response - 1]
+    
+
+    def get_final_result(self, prompt):
+        prompt = f"Given the interaction history: {prompt}, give the answer to the task input and don't be verbose!"
+        final_result, waiting_time, turnaround_time = self.get_response(prompt)
+        final_result.replace("\n", "")
+        return final_result, waiting_time, turnaround_time
 
     def set_aid(self, aid):
         self.aid = aid

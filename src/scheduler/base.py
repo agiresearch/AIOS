@@ -7,6 +7,8 @@ from src.utils.utils import (
 
 from src.agents.agent_process import AgentProcess
 
+import time
+
 class BaseScheduler:
     def __init__(self, llm):
         self.active = False # start/stop the scheduler
@@ -29,6 +31,8 @@ class BaseScheduler:
     def execute_request(self, agent_process: AgentProcess):
         agent_process.set_status("Executing")
         logger.info(f"{agent_process.agent_name} is executing.")
+        agent_process.set_start_time(time.time())
         response = self.llm.address_request(agent_process.prompt)
         agent_process.set_response(response)
+        agent_process.set_end_time(time.time())
         agent_process.set_status("Done")

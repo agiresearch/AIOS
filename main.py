@@ -79,7 +79,7 @@ def main():
 
     for r in as_completed(tasks):
         res = r.result()
-        logger.info(res)
+        # logger.info(res)
 
     scheduler.stop()
 

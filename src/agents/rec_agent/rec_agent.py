@@ -25,43 +25,40 @@ class RecAgent(BaseAgent):
         prefix = self.prefix
         prompt += prefix
         task_input = self.task_input
-        task_input = "Given the task: " + task_input
+        task_input = "The task you need to solve is: " + task_input
+        logger.info(f"{self.agent_name}: {task_input}.\n")
         prompt += task_input
         waiting_times = []
         turnaround_times = []
         steps = [
-            "Give a general recommendation direction for users.",
-            "Based on the above recommendation direction, give a recommendation list."
+            "give a general recommendation direction for users.",
+            "based on the above recommendation direction, give a recommendation list."
         ]
 
         for i, step in enumerate(steps):
-            prompt += "In step {}: ".format(i) + step
+            prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
-            start_time = time.time()
+            logger.info(f"{self.agent_name}: Step {i+1}: {step}\n")
 
-            response = self.get_response(prompt)
-            finished_time = time.time()
-
-            turnaround_time = finished_time - start_time
+            response, waiting_time, turnaround_time = self.get_response(prompt)
+            waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
-            # print(f"Turnaround time: {turnaround_time}")
 
-            # print(response)
-            # print(agent_process.get_response())
+            prompt += f"The solution to step {i+1} is: {response}\n"
 
-            # agent_process.set_status("Done")
-            # prompt += "Generated content at step {} is: ".format(i) + agent_process.get_response()
-            prompt += response
+            logger.info(f"{self.agent_name}: The solution to step {i+1}: {response}\n")
 
-        # res = self.parse_result(prompt)
-        res = prompt
+        prompt += f"Given the interaction history: '{prompt}', give a final recommendation list and explanations, don't be verbose!"
 
+        final_result, waiting_time, turnaround_time = self.get_final_result(prompt)
         # time.sleep(10)
         self.set_status("Done")
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        logger.info(f"{self.agent_name} has finished: Average turnaround time: {np.mean(np.array(turnaround_times))}\n")
+        logger.info(f"{self.agent_name} has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
-        return res
+        logger.info(f"{self.agent_name}: {task_input} Final result is: {final_result}")
+
+        return final_result
 
     def parse_result(self, prompt):
         return prompt
@@ -73,5 +70,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     agent = RecAgent(args.agent_name, args.task_input)
-    # agent_thread_pool.submit(agent.run)
     agent.run()
