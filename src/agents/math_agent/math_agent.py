@@ -49,7 +49,6 @@ class MathAgent(BaseAgent):
 
         for i, step in enumerate(steps):
             prompt += "In step {}: ".format(i) + step
-            prompt += step
 
             start_time = time.time()
             # logger.info(f"{self.agent_name}")
