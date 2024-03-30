@@ -9,7 +9,7 @@ from src.tools.base import BaseTool
 from src.utils.utils import get_from_env
 
 class BingSearch(BaseTool):
-    """Bing Search Tool, refactored from Langchain.
+    """Bing Search Tool, refactored from langchain.
     In order to set this up, follow instructions at:
     https://levelup.gitconnected.com/api-tutorial-how-to-use-bing-web-search-api-in-python-4165d5592a7e
     """

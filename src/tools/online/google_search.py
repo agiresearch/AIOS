@@ -7,7 +7,7 @@ from pydantic import root_validator
 from src.utils.utils import get_from_env
 
 class GoogleSearch(BaseTool):
-    """Google Search Tool, refactored from Langchain.
+    """Google Search Tool, refactored from langchain.
 
     Adapted from: Instructions adapted from https://stackoverflow.com/questions/
     37083058/

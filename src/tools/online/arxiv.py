@@ -10,7 +10,7 @@ from pydantic import root_validator
 from langchain_core.documents import Document
 
 class Arxiv(BaseTool):
-    """Arxiv.
+    """Arxiv Tool, refactored from Langchain.
 
     To use, you should have the ``arxiv`` python package installed.
     https://lukasschwab.me/arxiv.py/index.html
@@ -34,19 +34,6 @@ class Arxiv(BaseTool):
             authors and summary.
         doc_content_chars_max: an optional cut limit for the length of a document's
             content
-
-    Example:
-        .. code-block:: python
-
-            from langchain_community.utilities.arxiv import ArxivAPIWrapper
-            arxiv = ArxivAPIWrapper(
-                top_k_results = 3,
-                ARXIV_MAX_QUERY_LENGTH = 300,
-                load_max_docs = 3,
-                load_all_available_meta = False,
-                doc_content_chars_max = 40000
-            )
-            arxiv.run("tree of thought llm)
     """
 
     arxiv_search: Any  #: :meta private:
@@ -125,126 +112,3 @@ class Arxiv(BaseTool):
             return "\n\n".join(docs)[: self.doc_content_chars_max]
         else:
             return "No good Arxiv Result was found"
-        
-    # def get_summaries_as_docs(self, query: str) -> List[Document]:
-    #     """
-    #     Performs an arxiv search and returns list of
-    #     documents, with summaries as the content.
-
-    #     If an error occurs or no documents found, error text
-    #     is returned instead. Wrapper for
-    #     https://lukasschwab.me/arxiv.py/index.html#Search
-
-    #     Args:
-    #         query: a plaintext search query
-    #     """  # noqa: E501
-    #     try:
-    #         if self.is_arxiv_identifier(query):
-    #             results = self.arxiv_search(
-    #                 id_list=query.split(),
-    #                 max_results=self.top_k_results,
-    #             ).results()
-    #         else:
-    #             results = self.arxiv_search(  # type: ignore
-    #                 query[: self.ARXIV_MAX_QUERY_LENGTH], max_results=self.top_k_results
-    #             ).results()
-    #     except self.arxiv_exceptions as ex:
-    #         return [Document(page_content=f"Arxiv exception: {ex}")]
-    #     docs = [
-    #         Document(
-    #             page_content=result.summary,
-    #             metadata={
-    #                 "Entry ID": result.entry_id,
-    #                 "Published": result.updated.date(),
-    #                 "Title": result.title,
-    #                 "Authors": ", ".join(a.name for a in result.authors),
-    #             },
-    #         )
-    #         for result in results
-    #     ]
-    #     return docs
-
-    # def load(self, query: str) -> List[Document]:
-    #     """
-    #     Run Arxiv search and get the article texts plus the article meta information.
-    #     See https://lukasschwab.me/arxiv.py/index.html#Search
-
-    #     Returns: a list of documents with the document.page_content in text format
-
-    #     Performs an arxiv search, downloads the top k results as PDFs, loads
-    #     them as Documents, and returns them in a List.
-
-    #     Args:
-    #         query: a plaintext search query
-    #     """
-    #     return list(self.lazy_load(query))
-
-    # def lazy_load(self, query: str) -> Iterator[Document]:
-    #     """
-    #     Run Arxiv search and get the article texts plus the article meta information.
-    #     See https://lukasschwab.me/arxiv.py/index.html#Search
-
-    #     Returns: documents with the document.page_content in text format
-
-    #     Performs an arxiv search, downloads the top k results as PDFs, loads
-    #     them as Documents, and returns them.
-
-    #     Args:
-    #         query: a plaintext search query
-    #     """
-    #     try:
-    #         import fitz
-    #     except ImportError:
-    #         raise ImportError(
-    #             "PyMuPDF package not found, please install it with "
-    #             "`pip install pymupdf`"
-    #         )
-
-    #     try:
-    #         # Remove the ":" and "-" from the query, as they can cause search problems
-    #         query = query.replace(":", "").replace("-", "")
-    #         if self.is_arxiv_identifier(query):
-    #             results = self.arxiv_search(
-    #                 id_list=query[: self.ARXIV_MAX_QUERY_LENGTH].split(),
-    #                 max_results=self.load_max_docs,
-    #             ).results()
-    #         else:
-    #             results = self.arxiv_search(  # type: ignore
-    #                 query[: self.ARXIV_MAX_QUERY_LENGTH], max_results=self.load_max_docs
-    #             ).results()
-    #     except self.arxiv_exceptions as ex:
-    #         logger.debug("Error on arxiv: %s", ex)
-    #         return
-
-    #     for result in results:
-    #         try:
-    #             doc_file_name: str = result.download_pdf()
-    #             with fitz.open(doc_file_name) as doc_file:
-    #                 text: str = "".join(page.get_text() for page in doc_file)
-    #         except (FileNotFoundError, fitz.fitz.FileDataError) as f_ex:
-    #             logger.debug(f_ex)
-    #             continue
-    #         if self.load_all_available_meta:
-    #             extra_metadata = {
-    #                 "entry_id": result.entry_id,
-    #                 "published_first_time": str(result.published.date()),
-    #                 "comment": result.comment,
-    #                 "journal_ref": result.journal_ref,
-    #                 "doi": result.doi,
-    #                 "primary_category": result.primary_category,
-    #                 "categories": result.categories,
-    #                 "links": [link.href for link in result.links],
-    #             }
-    #         else:
-    #             extra_metadata = {}
-    #         metadata = {
-    #             "Published": str(result.updated.date()),
-    #             "Title": result.title,
-    #             "Authors": ", ".join(a.name for a in result.authors),
-    #             "Summary": result.summary,
-    #             **extra_metadata,
-    #         }
-    #         yield Document(
-    #             page_content=text[: self.doc_content_chars_max], metadata=metadata
-    #         )
-    #         os.remove(doc_file_name)

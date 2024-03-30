@@ -8,7 +8,7 @@ from pydantic import root_validator
 
 from src.utils.utils import get_from_env
 class WolframAlpha(BaseTool):
-    """Wolfram Alpha Tool, refactored from Langchain.
+    """Wolfram Alpha Tool, refactored from langchain.
 
     Docs for using:
 
@@ -25,7 +25,16 @@ class WolframAlpha(BaseTool):
 
 
     def build_client(self):
-        pass
+        try:
+            import wolframalpha
+
+        except ImportError:
+            raise ImportError(
+                "wolframalpha is not installed. "
+                "Please install it with `pip install wolframalpha`"
+            )
+        client = wolframalpha.Client(self.wolfram_alpha_appid)
+        return client
 
     def run(self, query: str) -> str:
         """Run query through WolframAlpha and parse result."""
