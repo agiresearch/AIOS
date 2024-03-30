@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-Set up huggingface token and cache directory
+Set up Hugging Face token and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
 export HF_HOME=<YOUR CACHE DIRECTORY>
