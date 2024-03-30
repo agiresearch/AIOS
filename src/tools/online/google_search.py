@@ -4,10 +4,10 @@ from src.tools.base import BaseTool
 
 from pydantic import root_validator
 
-from src.utils.utils import get_from_dict_or_env
+from src.utils.utils import get_from_env
 
 class GoogleSearch(BaseTool):
-    """Google Search.
+    """Google Search Tool, refactored from Langchain.
 
     Adapted from: Instructions adapted from https://stackoverflow.com/questions/
     37083058/
@@ -43,29 +43,15 @@ class GoogleSearch(BaseTool):
       on the Overview page.
 
     """
-    search_engine: Any
-    google_api_key: Optional[str] = None
-    google_cse_id: Optional[str] = None
-    k: int = 10
-    siterestrict: bool = False
-    
-    # def __init__(self):
-    #     self.search_engine =  None
-    #     self.google_api_key = "YOUR GOOGLE API Key"
-    #     self.google_cse_id = "YOUR GOOGLE CSE ID"
-    #     self.k = 10
-    #     self.siterestrict = False
+    def __init__(self):
+        super().__init__()
+        self.google_api_key = get_from_env("GOOGLE_API_KEY")
+        self.google_cse_id = get_from_env("GOOGLE_CSE_ID")
+        self.k: int = 10 # topk searched results
+        self.search_engine = self.build_engine()
+        self.siterestrict: bool = False 
 
-    @root_validator(pre=True)
-    def validate_environment(cls, values):
-        google_api_key = get_from_dict_or_env(
-                    values, "google_api_key", "GOOGLE_API_KEY"
-                )
-        values["google_api_key"] = google_api_key
-
-        google_cse_id = get_from_dict_or_env(values, "google_cse_id", "GOOGLE_CSE_ID")
-        values["google_cse_id"] = google_cse_id
-
+    def build_engine(self):
         try:
             from googleapiclient.discovery import build
 
@@ -75,64 +61,29 @@ class GoogleSearch(BaseTool):
                 "Please install it with `pip install google-api-python-client"
                 ">=2.100.0`"
             )
-
-        service = build("customsearch", "v1", developerKey=google_api_key)
-        values["search_engine"] = service
-
-        return values
+        engine = build("customsearch", "v1", developerKey=self.google_api_key)
+        return engine
 
     def _google_search_results(self, search_term: str, **kwargs: Any) -> List[dict]:
         cse = self.search_engine.cse()
         if self.siterestrict:
-            cse = cse.siterestrict()
+            cse = cse.siterestrict() # TODO add siterestrict verification
         res = cse.list(q=search_term, cx=self.google_cse_id, **kwargs).execute()
         return res.get("items", [])
 
 
     def run(self, query: str) -> str:
         """Run query through GoogleSearch and parse result."""
+        response = self._google_search_results(query, num=self.k)
+        result = self.parse_result(response)
+        return result
+    
+    def parse_result(self, response):
         snippets = []
-        results = self._google_search_results(query, num=self.k)
-        if len(results) == 0:
+        if len(response) == 0:
             return "No good Google Search Result was found"
-        for result in results:
+        for result in response:
             if "snippet" in result:
                 snippets.append(result["snippet"])
 
         return " ".join(snippets)
-
-    # def results(
-    #     self,
-    #     query: str,
-    #     num_results: int,
-    #     search_params: Optional[Dict[str, str]] = None,
-    # ) -> List[Dict]:
-    #     """Run query through GoogleSearch and return metadata.
-
-    #     Args:
-    #         query: The query to search for.
-    #         num_results: The number of results to return.
-    #         search_params: Parameters to be passed on search
-
-    #     Returns:
-    #         A list of dictionaries with the following keys:
-    #             snippet - The description of the result.
-    #             title - The title of the result.
-    #             link - The link to the result.
-    #     """
-    #     metadata_results = []
-    #     results = self._google_search_results(
-    #         query, num=num_results, **(search_params or {})
-    #     )
-    #     if len(results) == 0:
-    #         return [{"Result": "No good Google Search Result was found"}]
-    #     for result in results:
-    #         metadata_result = {
-    #             "title": result["title"],
-    #             "link": result["link"],
-    #         }
-    #         if "snippet" in result:
-    #             metadata_result["snippet"] = result["snippet"]
-    #         metadata_results.append(metadata_result)
-
-    #     return metadata_results

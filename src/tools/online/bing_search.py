@@ -4,21 +4,21 @@ import requests
 
 from src.tools.base import BaseTool
 
-from pydantic import root_validator
+# from pydantic import root_validator
 
-from src.utils.utils import get_from_dict_or_env
+from src.utils.utils import get_from_env
 
 class BingSearch(BaseTool):
-    """Wrapper for Bing Search API.
-
+    """Bing Search Tool, refactored from Langchain.
     In order to set this up, follow instructions at:
     https://levelup.gitconnected.com/api-tutorial-how-to-use-bing-web-search-api-in-python-4165d5592a7e
     """
-
-    bing_subscription_key: str
-    bing_search_url: str
-    k: int = 10
-    search_kwargs: dict
+    def __init__(self):
+        super().__init__()
+        self.url = "https://api.bing.microsoft.com/v7.0/search" # temporarily
+        self.bing_subscription_key = get_from_env("BING_SUBSCRIPTION_KEY")
+        self.k: int = 10 # topk searched results
+        # search_kwargs: dict
 
     def _bing_search_results(self, search_term: str, count: int) -> List[dict]:
         headers = {"Ocp-Apim-Subscription-Key": self.bing_subscription_key}
@@ -27,7 +27,7 @@ class BingSearch(BaseTool):
             "count": count,
             "textDecorations": True,
             "textFormat": "HTML",
-            **self.search_kwargs,
+            # **self.search_kwargs,
         }
         response = requests.get(
             self.bing_search_url,
@@ -40,59 +40,19 @@ class BingSearch(BaseTool):
             return search_results["webPages"]["value"]
         return []
 
-    @root_validator(pre=True)
-    def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that api key and endpoint exists in environment."""
-        bing_subscription_key = get_from_dict_or_env(
-            values, "bing_subscription_key", "BING_SUBSCRIPTION_KEY"
-        )
-        values["bing_subscription_key"] = bing_subscription_key
-
-        bing_search_url = get_from_dict_or_env(
-            values,
-            "bing_search_url",
-            "BING_SEARCH_URL",
-            # default="https://api.bing.microsoft.com/v7.0/search",
-        )
-
-        values["bing_search_url"] = bing_search_url
-
-        return values
-
     def run(self, query: str) -> str:
         """Run query through BingSearch and parse result."""
+        response = self._bing_search_results(query, count=self.k)
+        result = self.parse_result(response)
+        return result
+    
+    def parse_result(self, response):
         snippets = []
-        results = self._bing_search_results(query, count=self.k)
-        if len(results) == 0:
+        if len(response) == 0:
             return "No good Bing Search Result was found"
-        for result in results:
+        for result in response:
             snippets.append(result["snippet"])
 
         return " ".join(snippets)
 
-    # def results(self, query: str, num_results: int) -> List[Dict]:
-    #     """Run query through BingSearch and return metadata.
-
-    #     Args:
-    #         query: The query to search for.
-    #         num_results: The number of results to return.
-
-    #     Returns:
-    #         A list of dictionaries with the following keys:
-    #             snippet - The description of the result.
-    #             title - The title of the result.
-    #             link - The link to the result.
-    #     """
-    #     metadata_results = []
-    #     results = self._bing_search_results(query, count=num_results)
-    #     if len(results) == 0:
-    #         return [{"Result": "No good Bing Search Result was found"}]
-    #     for result in results:
-    #         metadata_result = {
-    #             "snippet": result["snippet"],
-    #             "title": result["name"],
-    #             "link": result["url"],
-    #         }
-    #         metadata_results.append(metadata_result)
-
-    #     return metadata_results
+    

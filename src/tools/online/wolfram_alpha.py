@@ -6,8 +6,9 @@ from src.tools.base import BaseTool
 
 from pydantic import root_validator
 
+from src.utils.utils import get_from_env
 class WolframAlpha(BaseTool):
-    """Wrapper for Wolfram Alpha.
+    """Wolfram Alpha Tool, refactored from Langchain.
 
     Docs for using:
 
@@ -17,30 +18,14 @@ class WolframAlpha(BaseTool):
     4. pip install wolframalpha
 
     """
+    def __init__(self):
+        super().__init__()
+        self.wolfram_alpha_appid = get_from_env("WOLFRAM_ALPHA_APPID")
+        self.wolfram_client = self.build_client()
 
-    wolfram_client: Any  #: :meta private:
-    wolfram_alpha_appid: Optional[str] = None
 
-    @root_validator(pre=True)
-    def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that the python package exists in environment."""
-        try:
-            import tools.online.arxiv as arxiv
-
-            values["arxiv_search"] = arxiv.Search
-            values["arxiv_exceptions"] = (
-                arxiv.ArxivError,
-                arxiv.UnexpectedEmptyPageError,
-                arxiv.HTTPError,
-            )
-            values["arxiv_result"] = arxiv.Result
-        except ImportError:
-            raise ImportError(
-                "Could not import arxiv python package. "
-                "Please install it with `pip install arxiv`."
-            )
-        return values
-
+    def build_client(self):
+        pass
 
     def run(self, query: str) -> str:
         """Run query through WolframAlpha and parse result."""
