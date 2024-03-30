@@ -10,10 +10,6 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-from src.utils.global_param import (
-    agent_pool,
-)
-
 from concurrent.futures import as_completed
 
 import numpy as np

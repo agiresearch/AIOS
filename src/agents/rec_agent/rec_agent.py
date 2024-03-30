@@ -20,7 +20,6 @@ class RecAgent(BaseAgent):
         BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue)
 
     def run(self):
-        
         prompt = ""
         prefix = self.prefix
         prompt += prefix

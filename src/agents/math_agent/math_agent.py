@@ -10,10 +10,6 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-from src.utils.global_param import (
-    agent_pool,
-)
-
 from src.utils.utils import (
     logger
 )

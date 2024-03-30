@@ -7,12 +7,6 @@ from src.agents.agent_process import (
     # AgentProcessQueue
 )
 
-from src.utils.global_param import (
-    MAX_AID,
-    aid_pool,
-    # agent_pool,
-)
-
 from src.utils.utils import (
     logger
 )
@@ -40,16 +34,6 @@ class BaseAgent:
         self.task_input = task_input
         self.llm = llm
         self.agent_process_queue = agent_process_queue
-
-        aid = -1
-        for id, used in enumerate(aid_pool):
-            if used is False:
-                aid = id
-                aid_pool[id] = True
-                break
-                
-        self.set_aid(aid)
-        self.initialized_time = time.time()
 
         logger.info(agent_name + " has been initialized.")
         # print(f"Initialized time: {self.initialized_time}")

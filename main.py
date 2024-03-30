@@ -18,6 +18,8 @@ from src.utils.utils import (
     logger
 )
 
+from src.agent_factory import AgentFactory
+
 import warnings
 
 from src.llms import llms
@@ -47,31 +49,29 @@ def main():
     scheduler = FIFOScheduler(llm)
     scheduler.start()
 
+    agent_factory = AgentFactory(
+        llm = llm,
+        agent_process_queue = scheduler.agent_process_queue
+    )
+
     # assign maximum number of agents that can run in parallel
     agent_thread_pool = ThreadPoolExecutor(max_workers=64)
 
     # construct agents
-    math_agent = MathAgent(
+    math_agent = agent_factory.activate_agent(
         agent_name = "MathAgent", 
         task_input = "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue
     )
 
-    narrative_agent = NarrativeAgent(
+    narrative_agent = agent_factory.activate_agent(
         agent_name = "NarrativeAgent", 
         task_input = "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.",
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue
     )
-
-    rec_agent = RecAgent(
+    
+    rec_agent = agent_factory.activate_agent(
         agent_name = "RecAgent", 
         task_input = "I want to take a tour to New York during the spring break, recommend some restaurants around for me.",
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue
     )
-
     agents = [math_agent, narrative_agent, rec_agent]
 
     # run agents concurrently

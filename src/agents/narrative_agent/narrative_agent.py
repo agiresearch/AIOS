@@ -6,11 +6,6 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-# from src.utils.global_param import (
-#     agent_thread_pool,
-#     agent_process_queue,
-#     llm
-# )
 from src.utils.utils import (
     logger
 )
