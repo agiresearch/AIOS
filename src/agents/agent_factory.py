@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from src.memory.single_memory import SingleMemory
-
 import heapq
 
 from src.utils.global_param import (

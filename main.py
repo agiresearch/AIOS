@@ -18,7 +18,7 @@ from src.utils.utils import (
     logger
 )
 
-from src.agent_factory import AgentFactory
+from src.agents.agent_factory import AgentFactory
 
 import warnings
 
