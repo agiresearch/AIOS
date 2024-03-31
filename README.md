@@ -20,7 +20,9 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 ## ✈️ Getting Started
 
 ### Installation
-
+```bash
+git clone https://github.com/agiresearch/AIOS.git
+```
 **Make sure you have Python >= 3.9**  
 Install the required packages using pip  
 ```bash
@@ -28,12 +30,14 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-Set up Hugging Face token and cache directory
+
+### Run with locally-deployed LLM
+Set up [Hugging Face token](https://huggingface.co/settings/tokens) and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
 export HF_HOME=<YOUR CACHE DIRECTORY>
 ```
-Run the main.py to start (replace the max_gpu_memory and eval_device with your own)
+Replace the max_gpu_memory and eval_device with your own and run
 
 ```python
 # Use Gemma-2b-it
@@ -43,6 +47,15 @@ python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_de
 ```python
 # Use Mixtral-8x7b-it
 python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
+```
+### Run with LLM API
+Run with Gemini-pro, setup [Gemini API Key](https://aistudio.google.com/app/apikey)
+```bash
+export GEMINI_API_KEY=<YOUR GEMINI API KEY>
+```
+```python
+# Use Gemini-pro
+python main.py --llm_name gemini-pro
 ```
 
 ## 🌟 Join Us!
