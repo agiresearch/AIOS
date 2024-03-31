@@ -3,7 +3,7 @@ class Block(object):
     def __init__(self, des):
         '''
         des format: <name>:::<type>:::<instruction>:::<branch>
-        <type>: precess or decision or terminal
+        <type>: process or decision or terminal
         <branch>: <key1>::<value1>::<key2>::<value2>::...
         Example: Step 1:::decision:::Check whether every models in the generated to-do list is in the provided models:::Yes::step 5::No::step 3
         '''
