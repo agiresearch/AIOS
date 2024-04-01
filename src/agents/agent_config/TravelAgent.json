@@ -36,7 +36,6 @@
         "Step 24:::Process:::Select an unvisited city as the new destination city from the destination state.:::next::step 4"
     ],
     "tool_info": [
-        "Avaiable tools: ",
         "google_search"
     ]
 }

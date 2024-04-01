@@ -30,7 +30,7 @@ class BaseAgent:
     def __init__(self, agent_name, task_input, llm, agent_process_queue):
         self.agent_name = agent_name
         self.config = self.load_config()
-        self.prefix = self.config["description"]
+        self.prefix = " ".join(self.config["description"])
         self.task_input = task_input
         self.llm = llm
         self.agent_process_queue = agent_process_queue
@@ -86,18 +86,16 @@ class BaseAgent:
         prompt = f'You are allowed to use the following tools: \n\n```{tool_info}```\n\n' \
                 f'Do you think the response ```{prompt}``` calls any tool?\n' \
                 f'Only answer "Yes" or "No".'
-        while True:
-            response = self.get_response(prompt, temperature)
-            temperature += .5
-            print(f'Tool use check: {response}')
-            if 'yes' in response.lower():
-                return True
-            if 'no' in response.lower():
-                return False
-            print(f'Temperature: {temperature}')
-            if temperature > 2:
-                break
-        print('No valid format output when calling "Tool use check".')
+        response, waiting_time, turnaround_time = self.get_response(prompt, temperature)
+        # print(f'Tool use check: {response}')
+        if 'yes' in response.lower():
+            return True
+        if 'no' in response.lower():
+            return False
+        # print(f'Temperature: {temperature}')
+        
+        logger.error('No valid format output when calling "Tool use check".')
+        return None, waiting_time, turnaround_time
         # exit(1)
 
     def get_prompt(self, tool_info, flow_ptr, task_description, cur_progress):
@@ -111,25 +109,21 @@ class BaseAgent:
                 f'You attempt to use the tool ```{selected_tool}```. ' \
                 f'What is the input argument to call tool for this step: ```{prompt}```? ' \
                 f'Respond "None" if no arguments are needed for this tool. Separate by comma if there are multiple arguments. Do not be verbose!'
-        response = self.get_response(prompt)
-        print(f'Parameters: {response}')
-        return response
+        response, waiting_time, turnaround_time = self.get_response(prompt)
+        # print(f'Parameters: {response}')
+        return response, waiting_time, turnaround_time
 
     def check_tool_name(self, prompt, tool_list, temperature=0.):
         prompt = f'Choose the used tool of ```{prompt}``` from the following options:\n'
         for i, key in enumerate(tool_list):
             prompt += f'{i + 1}: {key}.\n'
         prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
-        while True:
-            response = self.get_response(prompt, temperature=temperature)
-            temperature += .5
-            if response.isdigit() and 1 <= int(response) <= len(tool_list):
-                response = int(response)
-                break
-            print(f'Temperature: {temperature}')
-            if temperature > 2:
-                exit(1)
-        return tool_list[response - 1]
+        response, waiting_time, turnaround_time = self.get_response(prompt, temperature=temperature)
+        if response.isdigit() and 1 <= int(response) <= len(tool_list):
+            response = int(response)
+            return tool_list[response - 1], waiting_time, turnaround_time
+        else:
+            return None, waiting_time, turnaround_time
     
     def check_branch(self, prompt, flow_ptr, temperature=0.):
         possible_keys = list(flow_ptr.branch.keys())
@@ -137,18 +131,12 @@ class BaseAgent:
         for i, key in enumerate(possible_keys):
             prompt += f'{i + 1}: {key}.\n'
         prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
-        while True:
-            response = self.get_response(prompt=prompt, temperature=temperature)
-            temperature += .5
-            if response.isdigit() and 1 <= int(response) <= len(possible_keys):
-                response = int(response)
-                break
-            print(f'Temperature: {temperature}')
-            if temperature > 2:
-                print('No valid format output when calling "Check Branch".')
-                exit(1)
-        print(f'{response}, {possible_keys[response - 1]}')
-        return possible_keys[response - 1]
+        response, waiting_time, turnaround_time = self.get_response(prompt=prompt, temperature=temperature)
+        if response.isdigit() and 1 <= int(response) <= len(possible_keys):
+            response = int(response)
+            return possible_keys[response - 1], waiting_time, turnaround_time
+        else:
+            return None, waiting_time, turnaround_time
     
 
     def get_final_result(self, prompt):
