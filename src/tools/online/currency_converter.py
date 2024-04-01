@@ -34,5 +34,5 @@ class CurrencyConverterAPI(BaseRapidAPITool):
     def parse_result(self, response) -> str:
         results = []
         for k,v in response["rates"]:
-            results.append(f"Currency from {response["base"]} to {k} is {v}.")
+            results.append(f'Currency from {response["base"]} to {k} is {v}.')
         return " ".join(results)
