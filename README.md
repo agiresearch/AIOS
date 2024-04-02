@@ -79,3 +79,8 @@ AIOS is dedicated to facilitating LLM agents' development and deployment in a sy
 
 ## 📪 Contact
 If you have any suggestions, or wish to contact us for any reason, feel free to email us at marknju2018@gmail.com
+
+## 🌍 AIOS Contributors
+<a href="https://github.com/agiresearch/AIOS/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=agiresearch/AIOS" />
+</a>
