@@ -1,6 +1,6 @@
 # How to contribute to AIOS
-Thank you for your interest in our project! 
-Here's a guide to get you started.
+Thank you for your interest in AIOS! 
+Here's a guide to help you contribute to this project.
 
 ## 1. Get Started
 ### Fork the repository
@@ -15,12 +15,12 @@ pip install -r requirements.txt
 ```
 
 ### Installing pre-commit
-We strongly recommend installing pre-commit to ensure proper formatting during development
+We strongly recommend installing [pre-commit](https://pre-commit.com/) to ensure proper formatting during development
 
 ## 2. Developing and Testing
 ### Create a branch
 
-Create a new branch for your awesome changes. 
+Create a new branch for developing your creative features
 
 ```shell
 git checkout -b your-feature
@@ -28,11 +28,11 @@ git checkout -b your-feature
 
 ### Make changes and testing
 
-You can develop new features and then you need to make sure everything works as expected. Run our provided tests and make sure the existing ones go well and customize new tests are highly encouraged!
+You can develop new features and then you need to make sure everything works as expected. Run our provided tests and make sure the existing ones go well. You new tests are encouraged.
 
 ### Run tests
 
-Running tests via pytest, you are encourged to add your test code into the `tests/` directory and test.
+Add your test code into the `tests/` directory if any, then run test via [pytest](https://docs.pytest.org/en/8.0.x/)
 ```
 pytest -s tests
 ```
@@ -67,4 +67,4 @@ git commit -m <type>: <subject>
 3. Write a title and describe your changes in the description. 
 
 ## 4. Review and Approval
-Our maintainers, will take a look and might suggest some cool upgrades or ask for more details. After they approve, your commitment can be incorporated into AIOS!
+Our maintainers, will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!
