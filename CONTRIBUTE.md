@@ -62,7 +62,7 @@ git commit -m <type>: <subject>
 
 ### Create a Pull Request
 
-1. Visit [AIOS](https://github.com/agiresearch/AIOS) and click "New Pull Request" button.
+1. Visit your forked AIOS repository on GitHub and click the "Compare & pull request" button to initiate the process of submitting your changes to the original repository for review and potential merging. 
 2. Choose the base branch (`main`) and the compare branch (your feature branch).
 3. Write a title and describe your changes in the description. 
 
