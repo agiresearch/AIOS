@@ -59,7 +59,8 @@ python main.py --llm_name gemini-pro
 ```
 
 ## 🌟 Join Us!
-AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem. Suggestions and pull requests are always welcome!
+AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem. Suggestions and pull requests are always welcome! 
+For detailed information on how to contribute, see [here](https://agiresearch/AIOS/CONTRIBUTE.md).
 
 ## 🖋️ Citation
 ```
@@ -78,7 +79,7 @@ AIOS is dedicated to facilitating LLM agents' development and deployment in a sy
 ```
 
 ## 📪 Contact
-If you have any suggestions, or wish to contact us for any reason, feel free to email us at aios.github@gmail.com
+If you have any suggestions, or wish to contact us for any reason, feel free to email us at marknju2018@gmail.com
 
 ## 🌍 AIOS Contributors
 <a href="https://github.com/agiresearch/AIOS/graphs/contributors">
