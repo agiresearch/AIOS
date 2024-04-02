@@ -23,7 +23,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
 ```
-**Make sure you have Python >= 3.9**  
+**Make sure you have Python >= 3.9 and <= 3.11**  
 Install the required packages using pip  
 ```bash
 pip install -r requirements.txt
