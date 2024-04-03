@@ -82,10 +82,6 @@ For detailed information on how to contribute, see [CONTRIBUTE](https://github.c
 ## 🌟 Discord Channel
 If you would like to join the community, ask questions, chat with fellows, learn about or propose new features, and participate in future developments, join our [Discord Community](https://discord.gg/aUg3b2Kd)! 
 
-
-## 📪 Contact
-If you have any suggestions, or wish to contact us for any reason, feel free to email us at aios.github@gmail.com
-
 ## 🌍 AIOS Contributors
 <a href="https://github.com/agiresearch/AIOS/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=agiresearch/AIOS" />
