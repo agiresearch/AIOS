@@ -51,7 +51,7 @@ class LLMKernel:
         open_sourced = self.config["open_sourced"]
         self.model_type = self.config["model_type"]
         self.model_name = self.config["model_name"]
-        
+
         if open_sourced:
             self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
             hf_token = self.config["hf_token"] if "hf_token" in self.config.keys() else None
@@ -89,11 +89,11 @@ class LLMKernel:
                     )
             else:
                 return NotImplementedError
-    
+
     def address_request(self, prompt, temperature=0.0):
         # The pattern looks for 'gpt', 'claude', or 'gemini', ignoring case (re.IGNORECASE)
         closed_model_pattern = r'gpt|claude|gemini'
-        
+
         if re.search(closed_model_pattern, self.model_name, re.IGNORECASE):
             return self.closed_llm_process(prompt, temperature=temperature)
         else:
@@ -111,16 +111,14 @@ class LLMKernel:
             prompt
         )
         return outputs.candidates[0].content.parts[0].text
-    
+
     def open_llm_process(self, prompt, temperature=0.0):
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
         input_ids = input_ids.to(self.eval_device)
-        # print("Input ID: ", input_ids)
-        # Example 1: Print the scores for each token generated with Greedy Search
         output_ids = self.model.generate(
-            input_ids, 
-            max_new_tokens = self.MAX_NEW_TOKENS, 
+            input_ids,
+            max_new_tokens = self.MAX_NEW_TOKENS,
             num_return_sequences=1,
             temperature = temperature
         )
