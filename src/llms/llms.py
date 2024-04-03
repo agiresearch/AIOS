@@ -24,7 +24,7 @@ import re
 import time
 
 class LLMKernel:
-    def __init__(self, llm_name: str, max_gpu_memory: dict, eval_device: str, max_new_tokens: int = 256):
+    def __init__(self, llm_name: str, max_gpu_memory: dict = None, eval_device: str = None, max_new_tokens: int = 256):
         print("Initialize AIOS powered by LLM: {}".format(llm_name))
         self.config = self.load_config(llm_name)
         self.max_gpu_memory = max_gpu_memory
