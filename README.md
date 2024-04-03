@@ -58,11 +58,7 @@ export GEMINI_API_KEY=<YOUR GEMINI API KEY>
 python main.py --llm_name gemini-pro
 ```
 
-## 🌟 Join Us!
-AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem. Suggestions and pull requests are always welcome! 
-For detailed information on how to contribute, see [here](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md).
-
-## 🖋️ Citation
+## 🖋️ References
 ```
 @article{mei2024aios,
   title={AIOS: LLM Agent Operating System},
@@ -77,6 +73,16 @@ For detailed information on how to contribute, see [here](https://github.com/agi
   year={2023}
 }
 ```
+
+## 🌟 Join Us!
+AIOS is dedicated to facilitating LLM agents' development and deployment in a systematic way, we are always looking for passionate collaborators to join us to foster a more cohesive, effective and efficient AIOS-Agent ecosystem. Suggestions and pull requests are always welcome! 
+
+### How to Contribute
+For detailed information on how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) and [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
+
+### Discord Channel
+If you would like to join the community, ask questions, chat with fellows, learn about or propose new features, and participate in future developments, join our [Discord Community](https://discord.gg/aUg3b2Kd)! 
+
 
 ## 📪 Contact
 If you have any suggestions, or wish to contact us for any reason, feel free to email us at aios.github@gmail.com
