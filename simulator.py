@@ -69,7 +69,7 @@ def main():
 
     scheduler.start()
 
-    # agent_factory.start() # TODO add gabage recycle of agent ID
+    # agent_factory.start() # TODO add garbage recycle of agent ID
 
     while True:
         try:
