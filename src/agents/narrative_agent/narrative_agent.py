@@ -21,7 +21,7 @@ class NarrativeAgent(BaseAgent):
                  log_mode: str
         ):
         BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue, log_mode)
-        print(self.log_mode)
+        # print(self.log_mode)
 
     def run(self):
         waiting_times = []
@@ -64,7 +64,7 @@ class NarrativeAgent(BaseAgent):
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
         self.logger.info(f"[{self.agent_name}] has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
         # time.sleep(10)
-        self.set_status("Done")
+        self.set_status("done")
 
         self.logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
 

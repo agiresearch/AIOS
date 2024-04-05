@@ -36,6 +36,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from src.utils.utils import logger
 
+import threading
+
+terminate_signal = threading.Event()
+
 def main():
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
@@ -69,7 +73,7 @@ def main():
 
     scheduler.start()
 
-    # agent_factory.start() # TODO add garbage recycle of agent ID
+    agent_factory.start() # TODO add garbage recycle of agent ID
 
     while True:
         try:
@@ -77,6 +81,7 @@ def main():
             command_line = input(f"[{llm_name}]>")
             if command_line.strip().lower() == "exit":
                 print("Exiting...")
+                # agent_factory.terminate_signal.set()
                 break
 
             # Parse command
@@ -89,6 +94,10 @@ def main():
             print("\nUse 'exit' to quit the shell.")
         except EOFError:
             pass
+
+    agent_factory.terminate_signal.set()
+
+    agent_factory.stop()
     scheduler.stop()
 
 if __name__ == "__main__":

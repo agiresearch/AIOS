@@ -25,15 +25,14 @@ class Executor:
         command_type = command["command_type"]
         command_name = command["command_name"]
         command_body = command["command_body"]
-
-        if command_type in self.command_table.keys():
+        try:
             self.command_table[command_type](
                 command_name,
                 command_body
             )
 
-        else:
-            return NotImplementedError
+        except KeyError:
+            print(command + "has not been implemented yet.")
 
     def print_agent_memory():
         pass
