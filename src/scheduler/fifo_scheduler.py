@@ -1,20 +1,13 @@
 from src.scheduler.base import BaseScheduler
 
-import queue
-
-import time
-
 from queue import Queue, Empty
 from threading import Thread
 
 class FIFOScheduler(BaseScheduler):
-    def __init__(self, llm):
+    def __init__(self, llm, log_mode):
+        super().__init__(llm, log_mode)
         self.agent_process_queue = Queue()
-        # start/stop the scheduler
-        self.active = False
-        # thread
-        self.thread = Thread(target=self.run)
-        self.llm = llm
+
 
     def run(self):
         while self.active:

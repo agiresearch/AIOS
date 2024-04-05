@@ -7,9 +7,7 @@ from src.agents.agent_process import (
     # AgentProcessQueue
 )
 
-from src.utils.utils import (
-    logger
-)
+import logging
 
 import time
 
@@ -27,7 +25,13 @@ class CustomizedThread(Thread):
         return self._return
 
 class BaseAgent:
-    def __init__(self, agent_name, task_input, llm, agent_process_queue):
+    def __init__(self,
+                 agent_name,
+                 task_input,
+                 llm,
+                 agent_process_queue,
+                 log_mode: str
+        ):
         self.agent_name = agent_name
         self.config = self.load_config()
         self.prefix = " ".join(self.config["description"])
@@ -35,18 +39,40 @@ class BaseAgent:
         self.llm = llm
         self.agent_process_queue = agent_process_queue
 
-        logger.info(agent_name + " has been initialized.")
-        # print(f"Initialized time: {self.initialized_time}")
-    
-        # self.memory_pool = SingleMemory()
-        
+        self.log_mode = log_mode
+        self.logger = self.setup_logger()
+        self.logger.info(f"[{agent_name}]" + " has been initialized.")
+
         self.set_status("Active")
         self.set_created_time(time)
-        
-        
+
     def run(self):
         '''Execute each step to finish the task.'''
         pass
+
+    def setup_logger(self):
+        logger = logging.getLogger(f"{self.agent_name} Logger")
+        # logger.setLevel(logging.INFO)  # Set the minimum logging level
+        logger.disabled = True
+        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Provide two log modes: console and file
+
+        if self.log_mode == "console":
+            logger.disabled = False
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.INFO)  # Set logging level for console output
+        else:
+            assert self.log_mode == "file"
+            log_dir = os.path.join(os.getcwd(), "logs", "agents",
+                                    f"{self.agent_name}")
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            log_file = os.path.join(log_dir, f"{date_time}.txt")
+            handler = logging.FileHandler(log_file)
+            handler.setLevel(logging.INFO)  # Set logging
+
+        logger.addHandler(handler) # enabled when run in a simulated shell
+        return logger
 
     def load_config(self):
         config_file = os.path.join(os.getcwd(), "src", "agents", "agent_config/{}.json".format(self.agent_name))
@@ -78,9 +104,9 @@ class BaseAgent:
         """
         while agent_process.get_response() is None:
             time.sleep(0.2)
-        
+
         return agent_process.get_response()
-    
+
 
     def check_tool_use(self, prompt, tool_info, temperature=0.):
         prompt = f'You are allowed to use the following tools: \n\n```{tool_info}```\n\n' \
@@ -89,12 +115,12 @@ class BaseAgent:
         response, waiting_time, turnaround_time = self.get_response(prompt, temperature)
         # print(f'Tool use check: {response}')
         if 'yes' in response.lower():
-            return True
+            return True, waiting_time, turnaround_time
         if 'no' in response.lower():
-            return False
+            return False, waiting_time, turnaround_time
         # print(f'Temperature: {temperature}')
-        
-        logger.error('No valid format output when calling "Tool use check".')
+
+        self.logger.error('No valid format output when calling "Tool use check".')
         return None, waiting_time, turnaround_time
         # exit(1)
 
@@ -124,7 +150,7 @@ class BaseAgent:
             return tool_list[response - 1], waiting_time, turnaround_time
         else:
             return None, waiting_time, turnaround_time
-    
+
     def check_branch(self, prompt, flow_ptr, temperature=0.):
         possible_keys = list(flow_ptr.branch.keys())
         prompt = f'Choose the closest representation of ```{prompt}``` from the following options:\n'
@@ -137,7 +163,7 @@ class BaseAgent:
             return possible_keys[response - 1], waiting_time, turnaround_time
         else:
             return None, waiting_time, turnaround_time
-    
+
 
     def get_final_result(self, prompt):
         prompt = f"Given the interaction history: {prompt}, give the answer to the task input and don't be verbose!"
@@ -172,4 +198,3 @@ class BaseAgent:
 
     def parse_result(self, prompt):
         pass
-        
