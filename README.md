@@ -94,7 +94,7 @@ For detailed information on how to contribute, see [CONTRIBUTE](https://github.c
 ## 🌟 Discord Channel
 If you would like to join the community, ask questions, chat with fellows, learn about or propose new features, and participate in future developments, join our [Discord Community](https://discord.gg/aUg3b2Kd)!
 
-## Contact
+## 📪 Contact
 
 For issues related to AIOS development, we encourage submtting [issues](https://github.com/agiresearch/AIOS/issues), [pull requests](https://github.com/agiresearch/AIOS/pulls), or initiating discussions in the AIOS [Discord Channel](https://discord.gg/aUg3b2Kd). For other issues please feel free to contact Kai Mei (marknju2018@gmail.com) or Yongfeng Zhang (yongfeng@email.com).
 
