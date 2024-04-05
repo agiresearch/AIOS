@@ -2,14 +2,14 @@ import os
 import sys
 import json
 
-# from src.command_parser import (
-#     PunctuationParser,
-#     ChatGPTParser
-# )
+from src.command_parser import (
+    PunctuationParser,
+    ChatGPTParser
+)
 
-# from src.command_executor import (
-#     Executor
-# )
+from src.command_executor import (
+    Executor
+)
 
 from src.scheduler.fifo_scheduler import FIFOScheduler
 
@@ -34,6 +34,8 @@ from src.agents.travel_agent.travel_agent import TravelAgent
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from src.utils.utils import logger
+
 def main():
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
@@ -52,7 +54,6 @@ def main():
         llm = llm,
         log_mode = scheduler_log_mode
     )
-    scheduler.start()
 
     agent_factory = AgentFactory(
         llm = llm,
@@ -60,30 +61,34 @@ def main():
         agent_log_mode = agent_log_mode
     )
 
-    # construct agents
-    math_agent = agent_factory.activate_agent(
-        agent_name = "MathAgent",
-        task_input = "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?",
+    parser = PunctuationParser(
+        llm = llm
     )
 
-    narrative_agent = agent_factory.activate_agent(
-        agent_name = "NarrativeAgent",
-        task_input = "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.",
-    )
+    executor = Executor(agent_factory=agent_factory)
 
-    rec_agent = agent_factory.activate_agent(
-        agent_name = "RecAgent",
-        task_input = "I want to take a tour to New York during the spring break, recommend some restaurants around for me.",
-    )
-    agents = [math_agent, narrative_agent, rec_agent]
+    scheduler.start()
 
-    # run agents concurrently
-    tasks = [agent_factory.agent_thread_pool.submit(agent.run) for agent in agents]
+    # agent_factory.start() # TODO add gabage recycle of agent ID
 
-    for r in as_completed(tasks):
-        res = r.result()
-        # logger.info(res)
+    while True:
+        try:
+            # Read a command line input
+            command_line = input(f"[{llm_name}]>")
+            if command_line.strip().lower() == "exit":
+                print("Exiting...")
+                break
 
+            # Parse command
+            tokens = parser.parse(command_line)
+            # Execute the command
+            executor.execute(tokens)
+
+        except KeyboardInterrupt:
+            # Handle Ctrl+C gracefully
+            print("\nUse 'exit' to quit the shell.")
+        except EOFError:
+            pass
     scheduler.stop()
 
 if __name__ == "__main__":

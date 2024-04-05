@@ -10,10 +10,6 @@ from src.agents.agent_process import (
     AgentProcess
 )
 
-from src.utils.utils import (
-    logger
-)
-
 import argparse
 
 from concurrent.futures import as_completed
@@ -22,24 +18,30 @@ import numpy as np
 
 from src.agents.flow import Flow
 
-# from src.tools.online.currency_converter import CurrencyConverterAPI
+from src.tools.online.currency_converter import CurrencyConverterAPI
 
 from src.tools.online.wolfram_alpha import WolframAlpha
-
 class MathAgent(BaseAgent):
-    def __init__(self, agent_name, task_input, llm, agent_process_queue):
-        BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue)
+    def __init__(self,
+                 agent_name,
+                 task_input,
+                 llm, agent_process_queue,
+                 log_mode: str
+        ):
+        BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue, log_mode)
         self.tool_list = {
             # "currency_converter": CurrencyConverterAPI,
-            "wolfram_alpha": WolframAlpha
+            "wolfram_alpha": WolframAlpha,
+            "currency_converter": CurrencyConverterAPI
         }
         self.tool_check_max_fail_times = 10
         self.tool_calling_max_fail_times = 10
         self.tool_info = "".join(self.config["tool_info"])
-    
+        self.load_flow()
+
     def load_flow(self):
         self.flow_ptr = Flow(self.config["flow"])
-    
+
     def run(self):
         prompt = ""
         prefix = self.prefix
@@ -48,9 +50,9 @@ class MathAgent(BaseAgent):
         waiting_times = []
         turnaround_times = []
         task_input = "The task you need to solve is: " + task_input
-        logger.info(f"[{self.agent_name}] {task_input}\n")
+        self.logger.info(f"[{self.agent_name}] {task_input}\n")
         prompt += task_input
-        
+
         # predefined steps
         steps = [
             "identify and outline the sub-problems that need to be solved as stepping stones toward the solution. ",
@@ -59,13 +61,13 @@ class MathAgent(BaseAgent):
         ]
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
-            logger.info(f"[{self.agent_name}] Step {i+1}: {step}\n")
+            self.logger.info(f"[{self.agent_name}] Step {i+1}: {step}\n")
             response, waiting_time, turnaround_time = self.get_response(prompt)
             waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
             prompt += f"The solution to step {i+1} is: {response}\n"
-            logger.info(f"[{self.agent_name}] The solution to step {i+1}: {response}\n")
-        
+            self.logger.info(f"[{self.agent_name}] The solution to step {i+1}: {response}\n")
+
         # TODO test workflow of MathAgent
         # round_id = 1
         # flow_ptr = self.flow_ptr.header
@@ -73,13 +75,18 @@ class MathAgent(BaseAgent):
         # current_progress = []
         # questions, answers, output_record = [], [], []  # record each round: question, LLM output, tool output (if exists else LLM output)
         # while True:
-        #     prompt = self.get_prompt(self.tool_info, flow_ptr, task_input, current_progress)
-        #     res, waiting_time,turnaround_time = self.get_response(prompt)
+        #     query = self.get_prompt(self.tool_info, flow_ptr, task_input, current_progress)
+        #     prompt += query
+        #     res, waiting_time,turnaround_time = self.get_response(query)
+
+        #     prompt += res
         #     waiting_times.append(waiting_time)
         #     turnaround_times.append(turnaround_time)
 
         #     questions.append(str(flow_ptr))
-        #     answers.append(str(res))
+        #     answers.append(res)
+
+        #     prompt += res
         #     current_progress.append(f'Question {round_id}: ```{flow_ptr.get_instruction()}```')
         #     current_progress.append(f'Answer {round_id}: ```{res}```')
 
@@ -136,9 +143,9 @@ class MathAgent(BaseAgent):
         turnaround_times.append(turnaround_time)
 
         self.set_status("Done")
-        logger.info(f"{self.agent_name} has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
+        self.logger.info(f"[{self.agent_name}] has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
-        logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
+        self.logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
 
         return final_result
 
