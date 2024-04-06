@@ -53,16 +53,24 @@ class BaseAgent:
     def setup_logger(self):
         logger = logging.getLogger(f"{self.agent_name} Logger")
         # logger.setLevel(logging.INFO)  # Set the minimum logging level
-        logger.disabled = True
+        # logger.disabled = True
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Provide two log modes: console and file
 
+        # Ensure the logger doesn't propagate to the root logger
+        logger.propagate = False
+
+        # Remove all handlers associated with this logger
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+
         if self.log_mode == "console":
-            logger.disabled = False
+            # logger.disabled = False
             handler = logging.StreamHandler()
             handler.setLevel(logging.INFO)  # Set logging level for console output
         else:
             assert self.log_mode == "file"
+            # logger.disabled = False
             log_dir = os.path.join(os.getcwd(), "logs", "agents",
                                     f"{self.agent_name}")
             if not os.path.exists(log_dir):
