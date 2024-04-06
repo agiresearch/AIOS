@@ -9,7 +9,7 @@ from src.utils.global_param import (
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from threading import Thread
+from threading import Thread, Lock, Event
 class AgentFactory:
     def __init__(self, llm, agent_process_queue, agent_log_mode):
         self.MAX_AID = MAX_AID
@@ -21,9 +21,13 @@ class AgentFactory:
         self.agent_table = agent_table
         self.current_agents = {}
 
+        self.current_agents_lock = Lock()
+
         self.agent_thread_pool = ThreadPoolExecutor(max_workers=64)
 
         self.thread = Thread(target=self.deactivate_agent)
+
+        self.terminate_signal = Event()
 
         self.agent_log_mode = agent_log_mode
 
@@ -42,8 +46,9 @@ class AgentFactory:
 
         agent.set_status("active")
         agent.set_created_time(time)
-
-        self.current_agents[aid] = agent
+        if not self.terminate_signal.is_set():
+            with self.current_agents_lock:
+                self.current_agents[aid] = agent
         return agent
 
     def print_agent(self):
@@ -61,7 +66,7 @@ class AgentFactory:
         column_widths = [
             max(len(str(row[i])) for row in [headers] + data) for i in range(len(headers))
         ]
-        print("-" * (sum(column_widths) + len(headers) * 3 - 1))
+        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3 ) + "+")
         print(self.format_row(headers, column_widths))
         print("-" * (sum(column_widths) + len(headers) * 3 - 1))
         for row in data:
@@ -75,17 +80,18 @@ class AgentFactory:
 
     def deactivate_agent(self):
         import time
-        while True:
-            invalid_aids = []
-            items = self.current_agents.items()
-            for aid, agent in items:
-                if agent.get_status() == "Done":
-                    agent.set_status("Inactive")
-                    time.sleep(5)
-                    invalid_aids.append(aid)
-            for aid in invalid_aids:
-                self.current_agents.pop(aid)
-                heapq.heappush(self.aid_pool, aid)
+        while not self.terminate_signal.is_set():
+            with self.current_agents_lock:
+                invalid_aids = []
+                items = self.current_agents.items()
+                for aid, agent in items:
+                    if agent.get_status() == "done":
+                        agent.set_status("inactive")
+                        time.sleep(5)
+                        invalid_aids.append(aid)
+                for aid in invalid_aids:
+                    self.current_agents.pop(aid)
+                    heapq.heappush(self.aid_pool, aid)
 
     def start(self):
         """start the factory to check inactive agent"""

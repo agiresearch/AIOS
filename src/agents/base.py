@@ -43,7 +43,7 @@ class BaseAgent:
         self.logger = self.setup_logger()
         self.logger.info(f"[{agent_name}]" + " has been initialized.")
 
-        self.set_status("Active")
+        self.set_status("active")
         self.set_created_time(time)
 
     def run(self):
