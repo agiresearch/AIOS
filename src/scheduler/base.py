@@ -29,9 +29,14 @@ class BaseScheduler:
     def setup_logger(self):
         logger = logging.getLogger(f"FIFO Scheduler Logger")
         # logger.setLevel(logging.INFO)  # Set the minimum logging level
-        logger.disabled = True
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Provide two log modes: console and file
+        # Ensure the logger doesn't propagate to the root logger
+        logger.propagate = False
+
+        # Remove all handlers associated with this logger
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
 
         if self.log_mode == "console":
             handler = logging.StreamHandler()

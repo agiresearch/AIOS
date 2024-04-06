@@ -10,6 +10,9 @@ from src.utils.global_param import (
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from threading import Thread, Lock, Event
+
+from pympler import asizeof
+
 class AgentFactory:
     def __init__(self, llm, agent_process_queue, agent_log_mode):
         self.MAX_AID = MAX_AID
@@ -52,11 +55,15 @@ class AgentFactory:
         return agent
 
     def print_agent(self):
-        headers = ["Agent ID", "Agent Name", "Created Time", "Status"]
+        headers = ["Agent ID", "Agent Name", "Created Time", "Status", "Memory Usage"]
         data = []
         for id, agent in self.current_agents.items():
+            agent_name = agent.agent_name
+            created_time = agent.created_time
+            status = agent.status
+            memory_usage = f"{asizeof.asizeof(agent)} bytes"
             data.append(
-                [id, agent.agent_name, agent.created_time, agent.status]
+                [id, agent_name, created_time, status, memory_usage]
             )
         self.print(headers=headers, data=data)
 
