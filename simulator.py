@@ -15,7 +15,7 @@ from src.scheduler.fifo_scheduler import FIFOScheduler
 
 from src.utils.utils import (
     parse_global_args,
-    logger
+    # logger
 )
 
 from src.agents.agent_factory import AgentFactory
@@ -33,8 +33,6 @@ from src.agents.rec_agent.rec_agent import RecAgent
 from src.agents.travel_agent.travel_agent import TravelAgent
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from src.utils.utils import logger
 
 import threading
 
