@@ -49,8 +49,8 @@ In the interactive mode, you can interact with AIOS to see the output of each st
 ```python
 # Use Gemma-2b-it, replace the max_gpu_memory and eval_device with your own and run
 python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
-# Use Mixtral-8x7b-it, replace the max_gpu_memory and eval_device with your own and run
 
+# Use Mixtral-8x7b-it, replace the max_gpu_memory and eval_device with your own and run
 python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
 
 # Run with gpt-3.5-turbo
