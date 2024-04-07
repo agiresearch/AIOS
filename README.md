@@ -37,8 +37,9 @@ If you use open-sourced models from huggingface, you need to setup your [Hugging
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
 export HF_HOME=<YOUR CACHE DIRECTORY>
 ```
-If you use LLM APIs like Gemini-pro, you need to setup your [Gemini API Key](https://aistudio.google.com/app/apikey)
+If you use LLM APIs, you need to setup your API key such as [OpenAI API Key](https://platform.openai.com/api-keys), [Gemini API Key](https://aistudio.google.com/app/apikey)
 ```bash
+export OPENAI_API_KEY=<YOUR OPENAI API KEY>
 export GEMINI_API_KEY=<YOUR GEMINI API KEY>
 ```
 
@@ -48,13 +49,17 @@ In the interactive mode, you can interact with AIOS to see the output of each st
 ```python
 # Use Gemma-2b-it, replace the max_gpu_memory and eval_device with your own and run
 python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
-```
-```python
 # Use Mixtral-8x7b-it, replace the max_gpu_memory and eval_device with your own and run
+
 python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
-```
-```python
-# Use Gemini-pro, run with Gemini-pro
+
+# Run with gpt-3.5-turbo
+python main.py --llm_name gpt-3.5-turbo
+
+# Run with gpt-4
+python main.py --llm_name gpt-4
+
+# Run with Gemini-pro
 python main.py --llm_name gemini-pro
 ```
 #### Deployment Mode
@@ -62,12 +67,16 @@ In the deployment mode, the outputs of running agents are stored in files. And i
 ```python
 # Use Gemma-2b-it, replace the max_gpu_memory and eval_device with your own and run
 python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
-```
-```python
+
 # Use Mixtral-8x7b-it
 python simulator.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
-```
-```python
+
+# Run with gpt-3.5-turbo
+python simulator.py --llm_name gpt-3.5-turbo --scheduler_log_mode file --agent_log_mode file
+
+# Run with gpt-4
+python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file
+
 # Use Gemini-pro
 python simulator.py --llm_name gemini-pro --scheduler_log_mode file --agent_log_mode file
 ```
