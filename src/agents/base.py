@@ -52,7 +52,7 @@ class BaseAgent:
 
     def setup_logger(self):
         logger = logging.getLogger(f"{self.agent_name} Logger")
-        # logger.setLevel(logging.INFO)  # Set the minimum logging level
+        logger.setLevel(logging.INFO)  # Set the minimum logging level
         # logger.disabled = True
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Provide two log modes: console and file
@@ -114,63 +114,6 @@ class BaseAgent:
             time.sleep(0.2)
 
         return agent_process.get_response()
-
-
-    def check_tool_use(self, prompt, tool_info, temperature=0.):
-        prompt = f'You are allowed to use the following tools: \n\n```{tool_info}```\n\n' \
-                f'Do you think the response ```{prompt}``` calls any tool?\n' \
-                f'Only answer "Yes" or "No".'
-        response, waiting_time, turnaround_time = self.get_response(prompt, temperature)
-        # print(f'Tool use check: {response}')
-        if 'yes' in response.lower():
-            return True, waiting_time, turnaround_time
-        if 'no' in response.lower():
-            return False, waiting_time, turnaround_time
-        # print(f'Temperature: {temperature}')
-
-        self.logger.error('No valid format output when calling "Tool use check".')
-        return None, waiting_time, turnaround_time
-        # exit(1)
-
-    def get_prompt(self, tool_info, flow_ptr, task_description, cur_progress):
-        progress_str = '\n'.join(cur_progress)
-        prompt = f'{tool_info}\n\nCurrent Progress:\n{progress_str}\n\nTask description: {task_description}\n\n' \
-                f'Question: {flow_ptr.get_instruction()}\n\nOnly answer the current instruction and do not be verbose.'
-        return prompt
-
-    def get_tool_arg(self, prompt, tool_info, selected_tool):
-        prompt = f'{tool_info}\n\n' \
-                f'You attempt to use the tool ```{selected_tool}```. ' \
-                f'What is the input argument to call tool for this step: ```{prompt}```? ' \
-                f'Respond "None" if no arguments are needed for this tool. Separate by comma if there are multiple arguments. Do not be verbose!'
-        response, waiting_time, turnaround_time = self.get_response(prompt)
-        # print(f'Parameters: {response}')
-        return response, waiting_time, turnaround_time
-
-    def check_tool_name(self, prompt, tool_list, temperature=0.):
-        prompt = f'Choose the used tool of ```{prompt}``` from the following options:\n'
-        for i, key in enumerate(tool_list):
-            prompt += f'{i + 1}: {key}.\n'
-        prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
-        response, waiting_time, turnaround_time = self.get_response(prompt, temperature=temperature)
-        if response.isdigit() and 1 <= int(response) <= len(tool_list):
-            response = int(response)
-            return tool_list[response - 1], waiting_time, turnaround_time
-        else:
-            return None, waiting_time, turnaround_time
-
-    def check_branch(self, prompt, flow_ptr, temperature=0.):
-        possible_keys = list(flow_ptr.branch.keys())
-        prompt = f'Choose the closest representation of ```{prompt}``` from the following options:\n'
-        for i, key in enumerate(possible_keys):
-            prompt += f'{i + 1}: {key}.\n'
-        prompt += "Your answer should be only an number, referring to the desired choice. Don't be verbose!"
-        response, waiting_time, turnaround_time = self.get_response(prompt=prompt, temperature=temperature)
-        if response.isdigit() and 1 <= int(response) <= len(possible_keys):
-            response = int(response)
-            return possible_keys[response - 1], waiting_time, turnaround_time
-        else:
-            return None, waiting_time, turnaround_time
 
 
     def get_final_result(self, prompt):
