@@ -15,7 +15,7 @@ from src.scheduler.fifo_scheduler import FIFOScheduler
 
 from src.utils.utils import (
     parse_global_args,
-    logger
+    # logger
 )
 
 from src.agents.agent_factory import AgentFactory

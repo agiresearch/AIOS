@@ -1,0 +1,5 @@
+{
+    "model_type": "causal_lm",
+    "open_sourced": false,
+    "model_name": "gpt-4"
+}

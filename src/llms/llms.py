@@ -71,8 +71,13 @@ class LLMKernel:
                 use_auth_token = hf_token,
                 cache_dir = cache_dir
             )
+            print(f"EOS token id: {self.model.config.eos_token_id}")
+            self.tokenizer.pad_token_id = self.model.config.eos_token_id
+
+            print(self.tokenizer.pad_token_id)
+
         else:
-            if self.model_name == "gpt3.5-turbo":
+            if re.search(r'gpt', self.model_name, re.IGNORECASE):
                 self.model = OpenAI()
                 self.tokenizer = None
             if self.model_name == "gemini-pro":
@@ -100,9 +105,11 @@ class LLMKernel:
             return self.open_llm_process(prompt, temperature=temperature)
 
     def closed_llm_process(self, prompt, temperature=0.0):
-        if self.model_name in ["gemini-pro"]:
+        if re.search(r'gemini', self.model_name, re.IGNORECASE):
             outputs = self.gemini_process(prompt, temperature=temperature)
             return outputs
+        if re.search(r'gpt', self.model_name, re.IGNORECASE):
+            return self.gpt_process(prompt, temperature=temperature)
         else:
             return NotImplementedError
 
@@ -110,14 +117,29 @@ class LLMKernel:
         outputs = self.model.generate_content(
             prompt
         )
-        return outputs.candidates[0].content.parts[0].text
+        # print(outputs)
+        try:
+            return outputs.candidates[0].content.parts[0].text
+        except IndexError:
+            return f"{self.model_name} can not generate a valid result, please try again"
+
+    def gpt_process(self, prompt, temperature=0.0):
+        response = self.model.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        time.sleep(1)
+        return response.choices[0].message.content
 
     def open_llm_process(self, prompt, temperature=0.0):
-        self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+        attention_mask = input_ids != self.tokenizer.pad_token_id
         input_ids = input_ids.to(self.eval_device)
         output_ids = self.model.generate(
-            input_ids,
+            input_ids = input_ids,
+            attention_mask = attention_mask,
             max_new_tokens = self.MAX_NEW_TOKENS,
             num_return_sequences=1,
             temperature = temperature
