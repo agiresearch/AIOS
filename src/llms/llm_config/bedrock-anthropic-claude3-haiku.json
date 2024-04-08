@@ -1,0 +1,5 @@
+{
+    "model_type": "causal_lm",
+    "open_sourced": false,
+    "model_name": "bedrock/anthropic.claude-3-haiku-20240307-v1:0"
+}
