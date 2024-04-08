@@ -6,18 +6,18 @@
         "Solve a part of the problem step by step with explanations and finally build up to the final solution."
     ],
     "flow": [
-        "Step 1:::Process:::Identify the type of mathematical problem (arithmetic, algebra, calculus, geometry, etc.) based on the input query.:::next::Step 2",
-        "Step 2:::Decision:::Is the problem arithmetic?:::yes::Step 3:::no::Step 4",
+        "Step 1:::Process:::Identify the type of the sub problem based on the input query.:::next::Step 2",
+        "Step 2:::Process:::Identify the type of the sub problem (arithmetic, algebra, calculus, geometry) based on the input query.:::next::Step 3",
         "Step 3:::Process:::Solve the arithmetic problem using basic operations like addition, subtraction, multiplication, and division. If necessary, simplify the answer (fraction to mixed number, etc.).:::next::Step 10",
-        "Step 4:::Decision:::Is the problem algebraic?:::yes::Step 5:::no::Step 6",
+        "Step 4:::Decision:::Does current result can finally solve the whole problem algebraic?:::yes::Step 5::no::Step 6",
         "Step 5:::Process:::Solve the algebraic problem by finding the unknowns. This may involve solving equations, factoring, or using algebraic functions.:::next::Step 10",
-        "Step 6:::Decision:::Is the problem related to calculus?:::yes::Step 7:::no::Step 8",
+        "Step 6:::Decision:::Is the problem related to calculus?:::yes::Step 7::no::Step 8",
         "Step 7:::Process:::Solve the calculus problem, which may involve derivatives, integrals, or limits. Apply appropriate calculus rules and simplify the result.:::next::Step 10",
-        "Step 8:::Decision:::Is the problem related to geometry?:::yes::Step 9:::no::Step 10",
+        "Step 8:::Decision:::Is the problem related to geometry?:::yes::Step 9::no::Step 10",
         "Step 9:::Process:::Solve the geometry problem, which could involve calculating areas, volumes, perimeters, or angles using appropriate formulas.:::next::Step 10",
         "Step 10:::Terminal:::Output the solution with a clear explanation of the steps taken to arrive at the answer.:::"
     ],
     "tool_info": [
-        "wolfram_alpha"
+        "wolfram alpha ['question']. Parameter: 'question': simplified question that precisely describes the problem. Parameter type: str "
     ]
 }
