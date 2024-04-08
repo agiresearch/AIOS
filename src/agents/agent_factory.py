@@ -75,10 +75,12 @@ class AgentFactory:
         ]
         print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3 ) + "+")
         print(self.format_row(headers, column_widths))
-        print("-" * (sum(column_widths) + len(headers) * 3 - 1))
-        for row in data:
+        print("=" * (sum(column_widths) + len(headers) * 3 - 1))
+        for i, row in enumerate(data):
             print(self.format_row(row, column_widths))
-            print("-" * (sum(column_widths) + len(headers) * 3 - 1))
+            if i < len(data):
+                print("-" * (sum(column_widths) + len(headers) * 3 - 1))
+        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3 ) + "+")
 
 
     def format_row(self, row, widths, align="<"):
