@@ -71,10 +71,10 @@ class LLMKernel:
                 use_auth_token = hf_token,
                 cache_dir = cache_dir
             )
-            print(f"EOS token id: {self.model.config.eos_token_id}")
+            # print(f"EOS token id: {self.model.config.eos_token_id}")
             self.tokenizer.pad_token_id = self.model.config.eos_token_id
 
-            print(self.tokenizer.pad_token_id)
+            # print(self.tokenizer.pad_token_id)
 
         else:
             if re.search(r'gpt', self.model_name, re.IGNORECASE):
@@ -130,7 +130,7 @@ class LLMKernel:
                 {"role": "user", "content": prompt}
             ]
         )
-        time.sleep(1)
+        time.sleep(2) # set according to your request per minite
         return response.choices[0].message.content
 
     def open_llm_process(self, prompt, temperature=0.0):
