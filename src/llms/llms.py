@@ -92,6 +92,23 @@ class LLMKernel:
                         "Could not import google.generativeai python package. "
                         "Please install it with `pip install google-generativeai`."
                     )
+            elif self.model_name.startswith("bedrock"):
+                try:
+                    from langchain_community.chat_models import BedrockChat
+                    model_id = self.model_name.split("/")[-1]
+                    self.model = BedrockChat(
+                        model_id=model_id,
+                        model_kwargs={
+                            'temperature': 0.0
+                        }
+                    )
+                except ModuleNotFoundError as err:
+                    raise err
+                except ImportError:
+                    raise ImportError(
+                        "Could not import langchain_community python package. "
+                        "Please install it with `pip install langchain_community`."
+                    )
             else:
                 return NotImplementedError
 
@@ -108,8 +125,11 @@ class LLMKernel:
         if re.search(r'gemini', self.model_name, re.IGNORECASE):
             outputs = self.gemini_process(prompt, temperature=temperature)
             return outputs
-        if re.search(r'gpt', self.model_name, re.IGNORECASE):
+        elif re.search(r'gpt', self.model_name, re.IGNORECASE):
             return self.gpt_process(prompt, temperature=temperature)
+        elif self.model_name.startswith("bedrock") and \
+             re.search(r'claude', self.model_name, re.IGNORECASE):
+            return self.bedrock_process(prompt, temperature=temperature)
         else:
             return NotImplementedError
 
@@ -132,6 +152,16 @@ class LLMKernel:
         )
         time.sleep(2) # set according to your request per minite
         return response.choices[0].message.content
+
+    def bedrock_process(self, prompt, temperature=0.0):
+        from langchain_core.prompts import ChatPromptTemplate
+        chat_template = ChatPromptTemplate.from_messages([
+            ("user", "{prompt}")
+        ])
+        messages = chat_template.format_messages(prompt=prompt)
+        self.model.model_kwargs['temperature'] = temperature
+        response = self.model(messages)
+        return response.content
 
     def open_llm_process(self, prompt, temperature=0.0):
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
