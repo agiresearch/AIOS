@@ -53,13 +53,13 @@ python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_de
 # Use Mixtral-8x7b-it, replace the max_gpu_memory and eval_device with your own and run
 python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
 
-# Run with gpt-3.5-turbo
+# Use gpt-3.5-turbo
 python main.py --llm_name gpt-3.5-turbo
 
-# Run with gpt-4
+# Use gpt-4
 python main.py --llm_name gpt-4
 
-# Run with Gemini-pro
+# Use Gemini-pro
 python main.py --llm_name gemini-pro
 ```
 #### Deployment Mode
@@ -71,10 +71,10 @@ python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --ev
 # Use Mixtral-8x7b-it
 python simulator.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
 
-# Run with gpt-3.5-turbo
+# Use gpt-3.5-turbo
 python simulator.py --llm_name gpt-3.5-turbo --scheduler_log_mode file --agent_log_mode file
 
-# Run with gpt-4
+# Use gpt-4
 python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file
 
 # Use Gemini-pro
@@ -109,7 +109,3 @@ If you would like to join the community, ask questions, chat with fellows, learn
 
 For issues related to AIOS development, we encourage submtting [issues](https://github.com/agiresearch/AIOS/issues), [pull requests](https://github.com/agiresearch/AIOS/pulls), or initiating discussions in the AIOS [Discord Channel](https://discord.gg/aUg3b2Kd). For other issues please feel free to contact Kai Mei (marknju2018@gmail.com) and Yongfeng Zhang (yongfeng@email.com).
 
-## 🌍 AIOS Contributors
-<a href="https://github.com/agiresearch/AIOS/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=agiresearch/AIOS" />
-</a>
