@@ -33,6 +33,7 @@ class MathAgent(BaseAgent):
         BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue, log_mode)
         self.tool_list = {
             "wolfram_alpha": WolframAlpha(),
+            # "currenct_converter": CurrencyConverterAPI()
         }
         self.tool_check_max_fail_times = 10
         self.tool_select_max_fail_times = 10
@@ -108,98 +109,20 @@ class MathAgent(BaseAgent):
         task_input = "The task you need to solve is: " + task_input
         self.logger.info(f"[{self.agent_name}] {task_input}\n")
 
-        # TODO test workflow of MathAgent
-        round_id = 1
-        flow_ptr = self.flow_ptr.header
-        current_progress = []
-        questions, answers, output_record = [], [], []  # record each round: question, LLM output, tool output (if exists else LLM output)
-        while True:
-            query = self.get_prompt(self.tool_info, flow_ptr, task_input, current_progress)
-            res, waiting_time,turnaround_time = self.get_response(query)
-
+        # predefined steps
+        steps = [
+            "identify and outline the sub-problems that need to be solved as stepping stones toward the solution. ",
+            "apply mathematical theorems, formulas to solve each sub-problem. ",
+            "integrate the solutions to these sub-problems in the previous step to get the final solution. "
+        ]
+        for i, step in enumerate(steps):
+            prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
+            self.logger.info(f"[{self.agent_name}] Step {i+1}: {step}\n")
+            response, waiting_time, turnaround_time = self.get_response(prompt)
             waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
-
-            questions.append(str(flow_ptr))
-            answers.append(res)
-
-            current_progress.append(f'Question {round_id}: {flow_ptr.get_instruction()}')
-            current_progress.append(f'Answer {round_id}: {res}')
-
-            self.logger.info(
-                f"[{self.agent_name}] In round {round_id}, the {self.agent_name} proposes the question '{current_progress[-2]}'" \
-                f"and get the answer '{current_progress[-1]}'. "
-            )
-
-            # check tool use
-            for k in range(self.tool_check_max_fail_times):
-                tool_use, waiting_time, turnaround_time = self.check_tool_use(
-                    " ".join(current_progress[-2:]),
-                    self.tool_info,
-                    temperature = 0.1 * (k+1)
-                )
-                # self.logger.info(f"Tool use: {tool_use}")
-                waiting_times.append(waiting_time)
-                turnaround_times.append(turnaround_time)
-                if tool_use is not None:
-                    break
-
-            if tool_use:
-                for k in range(self.tool_select_max_fail_times):
-                    tool_name, waiting_time, turnaround_time = self.check_tool_name(
-                        " ".join(current_progress[-2:]),
-                        list(self.tool_list.keys()),
-                        temperature = 0.1 * (k+1)
-                    )
-                    if tool_name is not None:
-                        break
-
-                self.logger.info(f"[{self.agent_name}] has decided to call tool: {tool_name}. ")
-                waiting_times.append(waiting_time)
-                turnaround_times.append(turnaround_time)
-
-                tool = self.tool_list[tool_name]
-
-                for k in range(self.tool_calling_max_fail_times):
-                    param, waiting_time, turnaround_time = self.get_tool_arg(
-                        " ".join(current_progress[-2:]),
-                        self.tool_info,
-                        tool,
-                        temperature = 0.1 * (k+1)
-                    )
-
-                    if param is None:
-                        if k + 1 == self.tool_calling_max_fail_times:  # Max Fail attempts
-                            self.logger.info(f'[{self.agent_name}] It has reached maximum fail attempts on get tool parameters. ')
-                            break
-                        else:
-                            continue
-                    else:
-                        self.logger.info(f"[{self.agent_name}] It has chose the param {param} to use the tool: {tool_name}. ")
-                        # param = [p.strip() for p in param.strip().split(',')]
-                        tool_result = tool.run(param)
-
-                        self.logger.info(f"[{self.agent_name}] The result of executing tool {tool_name} is: {tool_result}. ")
-
-                        output_record.append(tool_result)
-                        current_progress.append(f'Observation {round_id}: {tool_result}')
-                        break
-            else:
-                output_record.append(None)
-
-            # terminate condition
-            if len(flow_ptr.branch) == 0 and flow_ptr.type.lower() == 'terminal':
-                break
-
-            # check branch
-            if len(flow_ptr.branch) == 1:  # no branches
-                flow_ptr = list(flow_ptr.branch.values())[0]
-            else:
-                branch, waiting_time, turnaround_time = self.check_branch(current_progress[:-2], flow_ptr)
-                flow_ptr = flow_ptr.branch[branch]
-            round_id += 1
-
-        prompt = self.get_prompt(self.tool_info, flow_ptr, task_input, current_progress)
+            prompt += f"The solution to step {i+1} is: {response}\n"
+            self.logger.info(f"[{self.agent_name}] The solution to step {i+1}: {response}\n")
 
         prompt += f"Given the interaction history: '{prompt}', integrate solutions in all steps to give a final answer, don't be verbose!"
 
@@ -208,6 +131,7 @@ class MathAgent(BaseAgent):
         turnaround_times.append(turnaround_time)
 
         self.set_status("done")
+
         self.logger.info(f"[{self.agent_name}] has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
         self.logger.info(f"[{self.agent_name}] {task_input} Final result is: {final_result}")
