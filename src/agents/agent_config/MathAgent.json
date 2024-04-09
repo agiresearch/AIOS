@@ -8,11 +8,7 @@
         "Give the final solution of the problem with explanations."
     ],
     "flow": [
-        "Step 1:::Process:::Identify the type of the problem (arithmetic, algebra, calculus, geometry) based on the input query.:::next::Step 2",
-        "Step 2:::Decision:::Can you solve this problem by yourself (without help from other tools)?:::yes::Step 3::no::Step 4",
-        "Step 3:::Process:::Solve the problem without using any other tools.:::next::Step 5",
-        "Step 4:::Process:::Solve the problem by selecting and calling the appropriate tool from the available tool list.:::next::Step 5",
-        "Step 5:::Terminal:::Output the solution with a clear explanation of the steps taken to arrive at the answer.:::"
+
     ],
     "tool_info": [
         "wolfram alpha ['question']. Parameter: 'question': the specific instance of mathematical expression. Parameter type: str. Question instances can be: factor x^3+2x^2+x+2"
