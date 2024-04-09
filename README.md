@@ -108,5 +108,7 @@ If you would like to join the community, ask questions, chat with fellows, learn
 
 ## 📪 Contact
 
-For issues related to AIOS development, we encourage submtting [issues](https://github.com/agiresearch/AIOS/issues), [pull requests](https://github.com/agiresearch/AIOS/pulls), or initiating discussions in the AIOS [Discord Channel](https://discord.gg/aUg3b2Kd). For other issues please feel free to contact Kai Mei (marknju2018@gmail.com) and Yongfeng Zhang (yongfeng@email.com).
+For issues related to AIOS development, we encourage submitting [issues](https://github.com/agiresearch/AIOS/issues), [pull requests](https://github.com/agiresearch/AIOS/pulls), or initiating discussions in the AIOS [Discord Channel](https://discord.gg/aUg3b2Kd). For other issues please feel free to contact Kai Mei (marknju2018@gmail.com) and Yongfeng Zhang (yongfeng@email.com).
 
+## 🌍 AIOS Contributors
+[![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=100)](https://github.com/agiresearch/AIOS/graphs/contributors)
