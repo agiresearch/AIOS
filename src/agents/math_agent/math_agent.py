@@ -16,8 +16,6 @@ from concurrent.futures import as_completed
 
 import numpy as np
 
-from src.agents.flow import Flow
-
 from src.tools.online.currency_converter import CurrencyConverterAPI
 
 from src.tools.online.wolfram_alpha import WolframAlpha
