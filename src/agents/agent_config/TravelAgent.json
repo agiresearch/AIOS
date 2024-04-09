@@ -1,39 +1,10 @@
 {
     "name": "TravelAgent",
     "description": [
-        "You are a proficient planner. ",
-        "Based on the provided information and query, please give me a detailed plan, including specifics such as flight numbers (e.g., F0123456 ), restaurant names, and accommodation names. ",
-        "Note that all the information in your plan should be derived from the provided data. ", 
-        "You must adhere to the format given in the example. Additionally, all details should align with commonsense. ", 
-        "The symbol '-' indicates that information is unnecessary. ", 
-        "For example, in the provided sample, you do not need to plan after returning to the departure city. ", 
-        "When you travel to two cities in one day , you should note it in the 'Current City ' section as in the example ( i . e . , from A to B ) ."
+
     ],
     "flow": [
-        "Step 1:::Process:::Based on the input query, determine the duration, departure city, and destination.:::next::step 2",
-        "Step 2:::Decision:::Is the destination a state or a city?:::city::step 4:::state::step 3",
-        "Step 3:::Process:::Select a city as the new destination city from the destination state:::next::step 4",
-        "Step 4:::Process:::Estimate the cost of taking a taxi from departure city to the destination city.:::next::Step 5",
-        "Step 5:::Process:::Estimate the cost of self-driving from departure city to the destination city.:::next::Step 6",
-        "Step 6:::Process:::Estimate the cost of taking a flight on the start date from departure city to the destination city.:::next::Step 7",
-        "Step 7:::Decision:::Is there a reasonable transportation based on the results of taxi, self-driving and flight cost?:::yes::Step 8:::no::Step 3",
-        "Step 8:::Process:::Record the most reasonable transportation method from departure city to the first destination city. Move to the first destination city.:::next::Step 9",
-        "Step 9:::Process:::Record an unvisited restaurant for today's breakfast at current city:::next::Step 10",
-        "Step 10:::Process:::Record an unvisited restaurant for today's lunch at current city:::next::Step 11",
-        "Step 11:::Process:::Record an unvisited restaurant for today's dinner at current city:::next::Step 12",
-        "Step 12:::Process:::Record an unvisited attraction for today's plan at current city:::next::Step 13",
-        "Step 13:::Decision:::Is today the last day of the trip?:::yes::Step 14:::no::Step 19",
-        "Step 14:::Process:::Estimate the cost of taking a taxi from current city to the departure city.:::next::Step 15",
-        "Step 15:::Process:::Estimate the cost of self-driving from current city to the departure city.:::next::Step 16",
-        "Step 16:::Process:::Estimate the cost of taking a flight on the last date from current city to the departure city.:::next::Step 17",
-        "Step 17:::Process:::Record the most reasonable transportation method from current city to the departure city.:::next::Step 18",
-        "Step 18:::Terminal:::Output all the plans in json.:::",
-        "Step 19:::Process:::Find a reasonable accommodation at current city.:::next::Step 20",
-        "Step 20:::Decision:::Is there a reasonable accommodation at current city?:::yes::Step 21:::no::Step 3",
-        "Step 21:::Process:::Record the accommodation at current city. Start planning the next day. Now, what is the date today?:::next::Step 22",
-        "Step 22:::Decision:::Is today the third day of the trip?:::no::Step 23:::yes::Step 24",
-        "Step 23:::Decision:::Is today the fifth day of the trip?:::no::Step 9:::yes::Step 24",
-        "Step 24:::Process:::Select an unvisited city as the new destination city from the destination state.:::next::step 4"
+
     ],
     "tool_info": [
         "google_search"

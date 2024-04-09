@@ -32,6 +32,8 @@ class NarrativeAgent(BaseAgent):
         task_input = self.task_input
         task_input = "The task you need to solve is: " + task_input
         self.logger.info(f"[{self.agent_name}] {task_input}\n")
+        # print(f"[{self.agent_name}] {task_input}\n")
+
         prompt += task_input
 
         steps = [

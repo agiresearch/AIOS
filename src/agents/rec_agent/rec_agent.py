@@ -53,7 +53,7 @@ class RecAgent(BaseAgent):
 
         final_result, waiting_time, turnaround_time = self.get_response(prompt)
         # time.sleep(10)
-        self.set_status("Done")
+        self.set_status("done")
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
         self.logger.info(f"[{self.agent_name}] has finished: average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
 
