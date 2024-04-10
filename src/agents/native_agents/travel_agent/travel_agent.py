@@ -25,7 +25,7 @@ from src.agents.flow import Flow
 class TravelAgent(BaseAgent):
     def __init__(self, agent_name, task_input, llm, agent_process_queue):
         BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue)
-        
+
         self.tool_list = {
             "google_search": GoogleSearch(),
             # "bing_search": BingSearch(),
@@ -57,7 +57,7 @@ class TravelAgent(BaseAgent):
         while True:
             prompt = self.get_prompt(self.tool_info, flow_ptr, query, current_progress)
             res = self.get_response(prompt)
-            
+
             questions.append(str(flow_ptr))
             answers.append(str(res))
             current_progress.append(f'Question {plan_round}: ```{flow_ptr.get_instruction()}```')
