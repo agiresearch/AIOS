@@ -1,8 +1,10 @@
+from src.agents.agent_process import AgentProcess
 from src.scheduler.base import BaseScheduler
 
 from queue import Queue, Empty
 from threading import Thread
 
+import time
 class FIFOScheduler(BaseScheduler):
     def __init__(self, llm, log_mode):
         super().__init__(llm, log_mode)
@@ -16,3 +18,8 @@ class FIFOScheduler(BaseScheduler):
                 self.execute_request(agent_request)
             except Empty:
                 pass
+
+    def execute_request(self, agent_process: AgentProcess):
+        self.llm.address_request(
+            agent_process=agent_process
+        )
