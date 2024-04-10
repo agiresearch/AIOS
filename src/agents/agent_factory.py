@@ -95,7 +95,7 @@ class AgentFactory:
                 items = self.current_agents.items()
                 for aid, agent in items:
                     if agent.get_status() == "done":
-                        agent.set_status("inactive")
+                        # agent.set_status("inactive")
                         time.sleep(5)
                         invalid_aids.append(aid)
                 for aid in invalid_aids:
