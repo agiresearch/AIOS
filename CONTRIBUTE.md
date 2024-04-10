@@ -1,11 +1,11 @@
 # How to contribute to AIOS
-Thank you for your interest in AIOS! 
+Thank you for your interest in AIOS!
 Here's a guide to help you contribute to this project.
 
 ## 1. Get Started
 ### Fork the repository
 
-At first, you need to fork this copy and create your own version of repo. 
+At first, you need to fork this copy and create your own version of repo.
 
 ### Clone the repository and install the dependencies.
 
@@ -62,9 +62,9 @@ git commit -m <type>: <subject>
 
 ### Create a Pull Request
 
-1. Visit your forked AIOS repository on GitHub and click the "Compare & pull request" button to initiate the process of submitting your changes to the original repository for review and potential merging. 
-2. Choose the base branch (`main`) and the compare branch (your feature branch).
-3. Write a title and describe your changes in the description. 
+1. Visit your forked AIOS repository on GitHub and click the "Compare & pull request" button to initiate the process of submitting your changes to the original repository for review and potential merging.
+2. Choose the base branch and the compare branch (your feature branch).💡 Note that when you add new features, it is recommended to choose the (`dev`) branch and if you change does not affect original functions, you may consider choosing the (`main`) branch.
+3. Write a title and describe your changes in the description.
 
 ## 4. Review and Approval
 Our maintainers, will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!
