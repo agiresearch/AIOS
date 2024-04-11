@@ -18,9 +18,10 @@ class NarrativeAgent(BaseAgent):
                  task_input,
                  llm,
                  agent_process_queue,
+                 agent_process_factory,
                  log_mode: str
         ):
-        BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue, log_mode)
+        BaseAgent.__init__(self, agent_name, task_input, llm, agent_process_queue, agent_process_factory, log_mode)
         # print(self.log_mode)
 
     def run(self):
