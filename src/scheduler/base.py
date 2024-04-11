@@ -3,8 +3,6 @@ from threading import Thread
 
 import logging
 
-from src.agents.agent_process import AgentProcess
-
 from src.llms.llms import LLMKernel
 
 import time
@@ -60,5 +58,5 @@ class BaseScheduler:
         self.active = False
         self.thread.join()
 
-    def execute_request(self, agent_process: AgentProcess):
+    def execute_request(self, agent_process):
         pass
