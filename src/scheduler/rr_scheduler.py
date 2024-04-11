@@ -22,7 +22,9 @@ class RRScheduler(BaseScheduler):
                 agent_request = self.agent_process_queue.get(block=True, timeout=1)
                 agent_request.set_time_limit(self.time_limit)
                 self.execute_request(agent_request)
-                if agent_request.get_status() is not "done":
+                if agent_request.get_status() != "done":
+                    time.sleep(2)
+                    agent_request.set_created_time(time.time())
                     self.agent_process_queue.put(agent_request)
 
             except Empty:

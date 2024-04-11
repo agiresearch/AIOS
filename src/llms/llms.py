@@ -104,7 +104,7 @@ class LLMKernel:
                 self.model_name,
                 use_auth_token = hf_token,
                 cache_dir = cache_dir,
-                torch_dtype=torch.float16,
+                # torch_dtype=torch.float16,
                 # load_in_8bit = True,
                 device_map="auto",
                 max_memory = self.max_gpu_memory
@@ -116,7 +116,7 @@ class LLMKernel:
                 cache_dir = cache_dir
             )
             # print(f"EOS token id: {self.model.config.eos_token_id}")
-            self.tokenizer.pad_token_id = self.model.config.eos_token_id
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
             # print(self.tokenizer.pad_token_id)
         else:
             if re.search(r'gpt', self.model_name, re.IGNORECASE):
@@ -213,6 +213,7 @@ class LLMKernel:
             temperature=0.0
         ):
         prompt = agent_process.prompt,
+        print(f"Prompt: {prompt}")
         response = self.model.chat.completions.create(
             model=self.model_name,
             messages=[
@@ -287,10 +288,11 @@ class LLMKernel:
         idx = start_idx
 
         for step in range(start_idx, max_new_tokens):
-            # print(step)
             candidate_beams = []
             candidate_scores = []
             candidate_attention_masks = []
+
+            # print(step)
 
             for beam, score, beam_attention_mask in zip(beams, beam_scores, beam_attention_masks):
                 with torch.no_grad():
@@ -325,6 +327,9 @@ class LLMKernel:
                     break
 
             # Break if all beams end with the end-of-sequence token
+            # print(self.tokenizer.eos_token_id)
+            # print(f"Step: {step}, End: {all(beam[-1, -1].item() == self.tokenizer.eos_token_id for beam in beams)}")
+
             if all(beam[-1, -1].item() == self.tokenizer.eos_token_id for beam in beams):
                 idx = max_new_tokens
                 finished_flag = True
@@ -346,7 +351,7 @@ class LLMKernel:
             "beams": beams,
             "beam_scores": beam_scores,
             "beam_attention_masks": beam_attention_masks,
-            "result": best_beam
+            "result": best_beam if finished_flag else None
         }
 
         return outputs
@@ -396,14 +401,15 @@ class LLMKernel:
                 timestamp = agent_process.get_time_limit()
             )
 
-        output_ids = outputs["result"]
-
-        print(f"Output ID: {output_ids}")
-        prompt = agent_process.prompt
-        result = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        result = result[len(prompt)+1: ]
-
         if outputs["finished_flag"]: # finished flag is set as True
+            output_ids = outputs["result"]
+
+            # print(f"Output ID: {output_ids}")
+            prompt = agent_process.prompt
+            result = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+            # print(result)
+            result = result[len(prompt)+1: ]
+
             if self.context_manager.check_restoration(
                 agent_process.get_pid()):
                 self.context_manager.clear_restoration(
@@ -415,6 +421,7 @@ class LLMKernel:
 
         else:
             # print(f"{agent_process.agent_name} suspended: {result}")
+            self.logger.info(f"[{agent_process.agent_name}] is suspended due to the time limit.")
             self.context_manager.gen_snapshot(
                 pid = agent_process.get_pid(),
                 context = {
@@ -424,7 +431,6 @@ class LLMKernel:
                     "beam_attention_masks": outputs["beam_attention_masks"]
                 }
             )
-            agent_process.set_status("suspending")
-            agent_process.set_response(result)
+            agent_process.set_status("suspended")
 
         agent_process.set_end_time(time.time())
