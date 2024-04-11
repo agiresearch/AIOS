@@ -55,7 +55,7 @@ class MathAgent(BaseAgent):
         # predefined steps
         steps = [
             "identify and outline the sub-problems that need to be solved as stepping stones toward the solution. ",
-            "apply mathematical theorems, formulas to solve each sub-problem. ",
+            "solve each sub-problem. ",
             "integrate the solutions to these sub-problems in the previous step to get the final solution. "
         ]
         for i, step in enumerate(steps):
