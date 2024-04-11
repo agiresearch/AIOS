@@ -30,6 +30,7 @@ class BaseAgent:
                  task_input,
                  llm,
                  agent_process_queue,
+                 agent_process_factory,
                  log_mode: str
         ):
         self.agent_name = agent_name
@@ -38,6 +39,7 @@ class BaseAgent:
         self.task_input = task_input
         self.llm = llm
         self.agent_process_queue = agent_process_queue
+        self.agent_process_factory = agent_process_factory
 
         self.log_mode = log_mode
         self.logger = self.setup_logger()
@@ -89,8 +91,12 @@ class BaseAgent:
             return config
 
     def get_response(self, prompt, temperature=0.0):
-        agent_process = AgentProcess(self.agent_name, prompt, temperature)
+        agent_process = self.agent_process_factory.activate_agent_process(
+            agent_name = self.agent_name,
+            prompt = prompt
+        )
         agent_process.set_created_time(time.time())
+        # print("Already put into the queue")
         self.agent_process_queue.put(agent_process)
         thread = CustomizedThread(target=self.listen, args=(agent_process,))
         thread.start()

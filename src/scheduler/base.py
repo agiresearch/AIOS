@@ -3,7 +3,7 @@ from threading import Thread
 
 import logging
 
-from src.agents.agent_process import AgentProcess
+from src.llms.llms import LLMKernel
 
 import time
 
@@ -11,7 +11,7 @@ from datetime import datetime
 
 import os
 class BaseScheduler:
-    def __init__(self, llm, log_mode):
+    def __init__(self, llm: LLMKernel, log_mode):
         self.active = False # start/stop the scheduler
         self.log_mode = log_mode
         self.logger = self.setup_logger()
@@ -58,11 +58,5 @@ class BaseScheduler:
         self.active = False
         self.thread.join()
 
-    def execute_request(self, agent_process: AgentProcess):
-        agent_process.set_status("Executing")
-        self.logger.info(f"[{agent_process.agent_name}] is executing.")
-        agent_process.set_start_time(time.time())
-        response = self.llm.address_request(agent_process.prompt)
-        agent_process.set_response(response)
-        agent_process.set_end_time(time.time())
-        agent_process.set_status("Done")
+    def execute_request(self, agent_process):
+        pass
