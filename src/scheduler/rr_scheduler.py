@@ -5,7 +5,6 @@ from src.scheduler.base import BaseScheduler
 from queue import Queue, Empty
 from threading import Thread
 
-from src.agents.agent_process import AgentProcess
 import time
 
 from src.context.simple_context import SimpleContextManager
@@ -23,8 +22,11 @@ class RRScheduler(BaseScheduler):
                 agent_request = self.agent_process_queue.get(block=True, timeout=1)
                 agent_request.set_time_limit(self.time_limit)
                 self.execute_request(agent_request)
+                if agent_request.get_status() is not "done":
+                    self.agent_process_queue.put(agent_request)
+
             except Empty:
                 pass
 
-    def execute_request(self, agent_request: AgentProcess):
+    def execute_request(self, agent_request):
         self.llm.address_request(agent_request)

@@ -23,20 +23,29 @@ import re
 
 import time
 
-from src.agents.agent_process import AgentProcess
+from datetime import datetime
 
 from src.context.simple_context import SimpleContextManager
 
+import logging
 class LLMKernel:
-    def __init__(self, llm_name: str, max_gpu_memory: dict = None, eval_device: str = None, max_new_tokens: int = 256):
+    def __init__(self,
+                 llm_name: str,
+                 max_gpu_memory: dict = None,
+                 eval_device: str = None,
+                 max_new_tokens: int = 256,
+                 log_mode: str = "console"
+        ):
         print("Initialize AIOS powered by LLM: {}".format(llm_name))
         self.config = self.load_config(llm_name)
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
 
+        self.log_mode = log_mode
+
         self.load_llm_and_tokenizer()
         self.MAX_NEW_TOKENS = max_new_tokens
-
+        self.logger = self.setup_logger()
         self.context_manager = SimpleContextManager()
 
         print("AIOS LLM successfully loaded. ")
@@ -54,6 +63,33 @@ class LLMKernel:
             config = json.load(f)
             return config
 
+    def setup_logger(self):
+        logger = logging.getLogger(f"FIFO Scheduler Logger")
+        # logger.setLevel(logging.INFO)  # Set the minimum logging level
+        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Provide two log modes: console and file
+        # Ensure the logger doesn't propagate to the root logger
+        logger.propagate = False
+
+        # Remove all handlers associated with this logger
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+
+        if self.log_mode == "console":
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.INFO)  # Set logging level for console output
+        else:
+            assert self.log_mode == "file"
+            log_dir = os.path.join(os.getcwd(), "logs", "scheduler")
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            log_file = os.path.join(log_dir, f"{date_time}.txt")
+            handler = logging.FileHandler(log_file)
+            handler.setLevel(logging.INFO)  # Set logging
+
+        logger.addHandler(handler) # enabled when run in a simulated shell
+        return logger
+
     def load_llm_and_tokenizer(self): # load model from config
         open_sourced = self.config["open_sourced"]
         self.model_type = self.config["model_type"]
@@ -68,7 +104,7 @@ class LLMKernel:
                 self.model_name,
                 use_auth_token = hf_token,
                 cache_dir = cache_dir,
-                # torch_dtype=torch.float16,
+                torch_dtype=torch.float16,
                 # load_in_8bit = True,
                 device_map="auto",
                 max_memory = self.max_gpu_memory
@@ -119,17 +155,17 @@ class LLMKernel:
                 return NotImplementedError
 
     def address_request(self,
-            agent_process: AgentProcess
+            agent_process
         ):
         # The pattern looks for 'gpt', 'claude', or 'gemini', ignoring case (re.IGNORECASE)
         closed_model_pattern = r'gpt|claude|gemini'
 
         if re.search(closed_model_pattern, self.model_name, re.IGNORECASE):
-            return self.closed_llm_process(
+            self.closed_llm_process(
                 agent_process
             )
         else:
-            return self.open_llm_process(
+            self.open_llm_process(
                 agent_process
             )
 
@@ -137,33 +173,43 @@ class LLMKernel:
             agent_process,
             temperature=0.0
         ):
-        if re.search(r'gemini', self.model_name, re.IGNORECASE):
-            outputs = self.gemini_process(agent_process, temperature=temperature)
-            return outputs
-        elif re.search(r'gpt', self.model_name, re.IGNORECASE):
-            return self.gpt_process(agent_process, temperature=temperature)
-        elif self.model_name.startswith("bedrock") and \
-             re.search(r'claude', self.model_name, re.IGNORECASE):
-            return self.bedrock_process(agent_process, temperature=temperature)
-        else:
-            return NotImplementedError
+        agent_process.set_status("executing")
+        agent_process.set_start_time(time.time())
+        try:
+            if re.search(r'gemini', self.model_name, re.IGNORECASE):
+                self.gemini_process(agent_process, temperature=temperature)
+
+            elif re.search(r'gpt', self.model_name, re.IGNORECASE):
+                self.gpt_process(agent_process, temperature=temperature)
+
+            elif self.model_name.startswith("bedrock") and \
+                re.search(r'claude', self.model_name, re.IGNORECASE):
+                self.bedrock_process(agent_process, temperature=temperature)
+
+            agent_process.set_status("done")
+            agent_process.set_end_time(time.time())
+
+        except NotImplementedError:
+            raise NotImplementedError("This model is currently unavailable")
+
+
 
     def gemini_process(self,
-            agent_process: AgentProcess,
+            agent_process,
             temperature=0.0
         ):
         prompt = agent_process.prompt
         outputs = self.model.generate_content(
             prompt
         )
-        # print(outputs)
         try:
-            return outputs.candidates[0].content.parts[0].text
+            result = outputs.candidates[0].content.parts[0].text
+            agent_process.set_response(result)
         except IndexError:
             return f"{self.model_name} can not generate a valid result, please try again"
 
     def gpt_process(self,
-            agent_process:AgentProcess,
+            agent_process,
             temperature=0.0
         ):
         prompt = agent_process.prompt,
@@ -190,8 +236,11 @@ class LLMKernel:
         return response.content
 
     def generate(self,
-            input_ids: torch.Tensor,
+            input_ids: torch.Tensor = None,
             attention_masks: torch.Tensor = None,
+            beams: torch.Tensor = None,
+            beam_scores: torch.Tensor = None,
+            beam_attention_masks: torch.Tensor = None,
             beam_size: int = None,
             max_new_tokens: int = None,
             search_mode: str = None,
@@ -201,8 +250,11 @@ class LLMKernel:
         if search_mode == "beam_search":
             output_ids = self.beam_search(
                 input_ids = input_ids,
-                attention_mask = attention_masks,
+                attention_masks = attention_masks,
                 beam_size = beam_size,
+                beams = beams,
+                beam_scores = beam_scores,
+                beam_attention_masks = beam_attention_masks,
                 max_new_tokens = max_new_tokens,
                 start_idx = start_idx,
                 timestamp = timestamp
@@ -215,6 +267,7 @@ class LLMKernel:
             input_ids: torch.Tensor = None,
             attention_masks: torch.Tensor = None,
             beams = None,
+            beam_scores = None,
             beam_attention_masks = None,
             beam_size: int = None,
             max_new_tokens: int = None,
@@ -222,12 +275,7 @@ class LLMKernel:
             timestamp: int = None
         ):
         # num_sequences = input_ids.shape[0]
-        if beams is not None and beam_attention_masks is not None:
-            beams = beams
-            beam_scores = beam_scores
-            beam_attention_masks = beam_attention_masks
-
-        else:
+        if beams is None or beam_scores is None and beam_attention_mask is None:
             beams = [input_ids.clone() for _ in range(beam_size)]
             beam_scores = torch.zeros(beam_size, device=self.eval_device)
             beam_attention_masks = [attention_masks.clone() for _ in range(beam_size)]
@@ -239,6 +287,7 @@ class LLMKernel:
         idx = start_idx
 
         for step in range(start_idx, max_new_tokens):
+            # print(step)
             candidate_beams = []
             candidate_scores = []
             candidate_attention_masks = []
@@ -269,10 +318,11 @@ class LLMKernel:
             beam_scores = candidate_scores[top_beam_indices]
             beam_attention_masks = [candidate_attention_masks[i] for i in top_beam_indices]
 
-            cur_time = time.time()
-            if timestamp is not None and cur_time - start_time >= timestamp:
-                idx = step
-                break
+            if timestamp is not None:
+                cur_time = time.time()
+                if cur_time - start_time >= timestamp:
+                    idx = step
+                    break
 
             # Break if all beams end with the end-of-sequence token
             if all(beam[-1, -1].item() == self.tokenizer.eos_token_id for beam in beams):
@@ -280,36 +330,31 @@ class LLMKernel:
                 finished_flag = True
                 break
 
-        if finished_flag:
-            best_beam_idx = beam_scores.argmax().item()
+            if step + 1 == max_new_tokens:
+                idx = max_new_tokens
+                finished_flag = True
+                break
 
-            best_beam = beams[best_beam_idx]
+        # if finished_flag:
+        best_beam_idx = beam_scores.argmax().item()
 
-            outputs = {
-                "finished_flag": finished_flag,
-                "start_idx": idx,
-                "beams": beams,
-                "beam_scores": beam_scores,
-                "beam_attention_masks": beam_attention_masks,
-                "final_result": best_beam
-            }
-        else:
-            outputs = {
-                "finished_flag": finished_flag,
-                "start_idx": idx,
-                "beams": beams,
-                "beam_scores": beam_scores,
-                "beam_attention_masks": beam_attention_masks,
-                "final_result": None
-            }
+        best_beam = beams[best_beam_idx]
+
+        outputs = {
+            "finished_flag": finished_flag,
+            "start_idx": idx,
+            "beams": beams,
+            "beam_scores": beam_scores,
+            "beam_attention_masks": beam_attention_masks,
+            "result": best_beam
+        }
 
         return outputs
 
     def open_llm_process(self,
-            agent_process: AgentProcess,
+            agent_process,
             temperature=0.0
         ):
-        status = agent_process.get_status()
 
         agent_process.set_status("executing")
         self.logger.info(f"[{agent_process.agent_name}] is executing.")
@@ -325,18 +370,15 @@ class LLMKernel:
             beam_attention_masks = restored_context["beam_attention_masks"]
 
             outputs = self.generate(
-                input_ids = input_ids,
-                attention_masks = attention_masks,
                 search_mode = "beam_search",
                 beam_size = 1,
                 beams = beams,
                 beam_scores = beam_scores,
-                beam_attention_mask = beam_attention_masks,
+                beam_attention_masks = beam_attention_masks,
                 max_new_tokens = self.MAX_NEW_TOKENS,
                 start_idx = start_idx,
                 timestamp = agent_process.get_time_limit()
             )
-
         else:
             prompt = agent_process.prompt
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
@@ -350,20 +392,29 @@ class LLMKernel:
                 search_mode = "beam_search",
                 beam_size = 1,
                 max_new_tokens=self.MAX_NEW_TOKENS,
-                start_idx = start_idx,
+                start_idx = 0,
                 timestamp = agent_process.get_time_limit()
             )
 
-        if outputs["finished_flag"] and outputs["final_result"] is not None: # finished flag is set as True
-            output_ids = outputs["final_result"]
-            result = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-            result = result[len(prompt)+1: ]
+        output_ids = outputs["result"]
 
+        print(f"Output ID: {output_ids}")
+        prompt = agent_process.prompt
+        result = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        result = result[len(prompt)+1: ]
+
+        if outputs["finished_flag"]: # finished flag is set as True
+            if self.context_manager.check_restoration(
+                agent_process.get_pid()):
+                self.context_manager.clear_restoration(
+                    agent_process.get_pid()
+                )
+            # print(f"{agent_process.agent_name} done: {result}")
             agent_process.set_response(result)
             agent_process.set_status("done")
 
         else:
-            agent_process.set_status("suspending")
+            # print(f"{agent_process.agent_name} suspended: {result}")
             self.context_manager.gen_snapshot(
                 pid = agent_process.get_pid(),
                 context = {
@@ -373,4 +424,7 @@ class LLMKernel:
                     "beam_attention_masks": outputs["beam_attention_masks"]
                 }
             )
+            agent_process.set_status("suspending")
+            agent_process.set_response(result)
+
         agent_process.set_end_time(time.time())
