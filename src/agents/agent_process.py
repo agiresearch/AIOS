@@ -18,19 +18,19 @@ class AgentProcess:
 
     def get_created_time(self):
         return self.created_time
-    
+
     def set_start_time(self, time):
         self.start_time = time
 
     def get_start_time(self):
         return self.start_time
-    
+
     def set_end_time(self, time):
         self.end_time = time
 
     def get_end_time(self):
         return self.end_time
-    
+
     def set_priority(self, priority):
         self.priority = priority
 
@@ -39,13 +39,13 @@ class AgentProcess:
 
     def set_status(self, status):
         self.status = status
-    
+
     def get_status(self):
         return self.status
 
     def set_pid(self, pid):
         self.pid = pid
-    
+
     def get_pid(self):
         return self.get_pid()
 

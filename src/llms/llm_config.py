@@ -1,39 +1,39 @@
-import pickle 
+import pickle
 import os
 import json
 from pathlib import Path
 
-class LLMMeta: 
-    config_location: str = os.path.dirname(os.path.abspath(__file__))+'/models_config.pkl' 
+class LLMMeta:
+    config_location: str = os.path.dirname(os.path.abspath(__file__))+'/models_config.pkl'
 
-    def __init__(self, name: str, provider: str, type: str ='casual_lm'): 
-        self.name = name 
-        self.provider = provider 
-        self.type = type 
-        
-    def __repr__(self): 
-        return f""" 
-        Model Name: {self.name} 
-        Model Provider: {self.provider} 
-        Model Type: {self.type} """ 
-    
-    def _add_to_datasource(self): 
-        with open(self.config_location, "rb") as file: 
-            models: dict = pickle.load(file) 
-            
-        models[self.name] = self 
-        
-        with open(self.config_location, "wb") as file: 
-            pickle.dump(models, file) 
-    
+    def __init__(self, name: str, provider: str, type: str ='casual_lm'):
+        self.name = name
+        self.provider = provider
+        self.type = type
+
+    def __repr__(self):
+        return f"""
+        Model Name: {self.name}
+        Model Provider: {self.provider}
+        Model Type: {self.type} """
+
+    def _add_to_datasource(self):
+        with open(self.config_location, "rb") as file:
+            models: dict = pickle.load(file)
+
+        models[self.name] = self
+
+        with open(self.config_location, "wb") as file:
+            pickle.dump(models, file)
+
     @classmethod
-    def remove_model_from_datasource(cls, model_name: str): 
-        with open(cls.config_location, "rb") as file: 
-            models: dict = pickle.load(file) 
-        
-        del models[model_name] 
-    
-        with open(cls.config_location, "wb") as file: 
+    def remove_model_from_datasource(cls, model_name: str):
+        with open(cls.config_location, "rb") as file:
+            models: dict = pickle.load(file)
+
+        del models[model_name]
+
+        with open(cls.config_location, "wb") as file:
             pickle.dump(models, file)
 
 def process_json_files(directory_path):

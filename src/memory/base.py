@@ -10,8 +10,8 @@ class MemoryRequest:
 class Memory:
     def __init__(self, size=1024):
         self.size = size
-        self.memory = (ctypes.c_ubyte * size)()  
-        self.free_blocks = [(0, size - 1)] 
+        self.memory = (ctypes.c_ubyte * size)()
+        self.free_blocks = [(0, size - 1)]
 
     def mem_alloc(self, size):
         for i, (start, end) in enumerate(self.free_blocks):
@@ -44,10 +44,10 @@ class Memory:
 class BaseMemoryManager:
     def __init__(self, max_memory_block_size, memory_block_num):
         pass
-    
+
     def run(self):
         pass
-    
+
     def start(self):
         """start the scheduler"""
         self.active = True
