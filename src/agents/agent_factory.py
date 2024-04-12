@@ -36,8 +36,6 @@ class AgentFactory:
 
         self.current_agents_lock = Lock()
 
-        self.agent_thread_pool = ThreadPoolExecutor(max_workers=64)
-
         # self.thread = Thread(target=self.deactivate_agent)
 
         self.terminate_signal = Event()
@@ -63,7 +61,16 @@ class AgentFactory:
         if not self.terminate_signal.is_set():
             with self.current_agents_lock:
                 self.current_agents[aid] = agent
+
         return agent
+
+    def run_agent(self, agent_name, task_input):
+        agent = self.activate_agent(
+            agent_name=agent_name,
+            task_input=task_input
+        )
+        agent.run()
+        self.deactivate_agent(agent.get_aid())
 
     def print_agent(self):
         headers = ["Agent ID", "Agent Name", "Created Time", "Status", "Memory Usage"]
@@ -101,19 +108,6 @@ class AgentFactory:
     def deactivate_agent(self, aid):
         self.current_agents.pop(aid)
         heapq.heappush(self.aid_pool, aid)
-        # import time
-        # while not self.terminate_signal.is_set():
-        #     with self.current_agents_lock:
-        #         invalid_aids = []
-        #         items = self.current_agents.items()
-        #         for aid, agent in items:
-        #             if agent.get_status() == "done":
-        #                 # agent.set_status("inactive")
-        #                 time.sleep(5)
-        #                 invalid_aids.append(aid)
-        #         for aid in invalid_aids:
-        #             self.current_agents.pop(aid)
-        #             heapq.heappush(self.aid_pool, aid)
 
     def start(self):
         """start the factory to check inactive agent"""

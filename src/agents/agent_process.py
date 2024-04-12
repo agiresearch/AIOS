@@ -106,6 +106,7 @@ class AgentProcessFactory:
                 )
                 pid = heapq.heappop(self.pid_pool)
                 agent_process.set_pid(pid)
+                agent_process.set_status("active")
                 self.current_agent_processes[pid] = agent_process
                 return agent_process
 
