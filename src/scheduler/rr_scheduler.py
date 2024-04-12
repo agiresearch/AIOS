@@ -13,19 +13,22 @@ class RRScheduler(BaseScheduler):
     def __init__(self, llm, log_mode):
         super().__init__(llm, log_mode)
         self.agent_process_queue = Queue()
-        self.time_limit = 5
+        self.time_limit = 10
         self.simple_context_manager = SimpleContextManager()
 
     def run(self):
         while self.active:
             try:
-                agent_request = self.agent_process_queue.get(block=True, timeout=1)
-                agent_request.set_time_limit(self.time_limit)
-                self.execute_request(agent_request)
-                if agent_request.get_status() != "done":
-                    time.sleep(2)
-                    agent_request.set_created_time(time.time())
-                    self.agent_process_queue.put(agent_request)
+                agent_process = self.agent_process_queue.get(block=True, timeout=1)
+                agent_process.set_time_limit(self.time_limit)
+                agent_process.set_status("executing")
+                self.logger.info(f"{agent_process.agent_name} is executing.\n")
+                agent_process.set_start_time(time.time())
+                self.execute_request(agent_process)
+                if agent_process.get_status() != "done":
+                    self.logger.info(
+                        f"{agent_process.agent_name} is suspended due to the time limit ({self.time_limit}s). Current result is: {agent_process.get_response()}\n"
+                    )
 
             except Empty:
                 pass

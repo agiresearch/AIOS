@@ -25,6 +25,7 @@ class SimpleContextManager(BaseContextManager):
         return os.path.exists(os.path.join(self.context_dir, f"process-{pid}.pt"))
 
     def clear_restoration(self, pid):
+        # print(f"Process {pid} has been deleted.")
         os.remove(os.path.join(self.context_dir, f"process-{pid}.pt"))
 
     def stop(self):
