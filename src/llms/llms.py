@@ -152,7 +152,7 @@ class LLMKernel:
                         "Please install it with `pip install langchain_community`."
                     )
             else:
-                return NotImplementedError
+                raise NotImplementedError
 
     def address_request(self,
             agent_process
