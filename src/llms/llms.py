@@ -7,9 +7,10 @@ from transformers import (
     AutoModelForCausalLM,
 )
 
-model_class = {
-    "causal_lm": AutoModelForCausalLM,
-}
+# all llms are causal so no need to segregate?
+# model_class = {
+#     "causal_lm": AutoModelForCausalLM,
+# }
 
 from openai import OpenAI
 
