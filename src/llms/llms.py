@@ -104,7 +104,7 @@ class LLMKernel:
                 self.model_name,
                 use_auth_token = hf_token,
                 cache_dir = cache_dir,
-                # torch_dtype=torch.float16,
+                torch_dtype=torch.float16,
                 # load_in_8bit = True,
                 device_map="auto",
                 max_memory = self.max_gpu_memory
@@ -276,10 +276,13 @@ class LLMKernel:
             timestamp: int = None
         ):
         # num_sequences = input_ids.shape[0]
-        if beams is None or beam_scores is None and beam_attention_mask is None:
-            beams = [input_ids.clone() for _ in range(beam_size)]
+        if beams is None or beam_scores is None and beam_attention_masks is None:
+            # beams = [input_ids.clone() for _ in range(beam_size)]
+            # beam_scores = torch.zeros(beam_size, device=self.eval_device)
+            # beam_attention_masks = [attention_masks.clone() for _ in range(beam_size)]
+            beams = input_ids.repeat(beam_size, 1)
+            beam_attention_masks = attention_masks.repeat(beam_size, 1)
             beam_scores = torch.zeros(beam_size, device=self.eval_device)
-            beam_attention_masks = [attention_masks.clone() for _ in range(beam_size)]
 
         start_time = time.time()
 
@@ -287,61 +290,54 @@ class LLMKernel:
 
         idx = start_idx
 
+        # print(start_idx)
+
         for step in range(start_idx, max_new_tokens):
-            candidate_beams = []
-            candidate_scores = []
-            candidate_attention_masks = []
+            with torch.no_grad():
+                # Obtain logits for the last tokens across all beams
+                outputs = self.model(beams, attention_mask=beam_attention_masks)
+                next_token_logits = outputs.logits[:, -1, :]
 
-            # print(step)
+                # Apply softmax to convert logits to probabilities
+                next_token_probs = torch.softmax(next_token_logits, dim=-1)
 
-            for beam, score, beam_attention_mask in zip(beams, beam_scores, beam_attention_masks):
-                with torch.no_grad():
-                    outputs = self.model(
-                        beam,
-                        attention_mask=beam_attention_mask
-                    )
-                    next_token_logits = outputs.logits[:, -1, :]
-                    next_token_probs = torch.softmax(next_token_logits, dim=-1)
+            # Calculate scores for all possible next tokens for each beam
+            next_token_scores = beam_scores.unsqueeze(-1) + torch.log(next_token_probs)
 
-                top_probs, top_ids = torch.topk(next_token_probs, beam_size)
+            # Flatten to treat the beam and token dimensions as one
+            next_token_scores_flat = next_token_scores.view(-1)
 
-                for prob, token_id in zip(top_probs[0], top_ids[0]):
-                    new_beam = torch.cat((beam, token_id.unsqueeze(0).unsqueeze(0)), dim=1)
-                    new_score = score + torch.log(prob)
-                    new_attention_mask = torch.cat((beam_attention_mask, torch.ones((1, 1), device=self.eval_device)), dim=1)
+            # Select top overall scores to find the next beams
+            top_scores, top_indices = torch.topk(next_token_scores_flat, beam_size, sorted=True)
 
-                    candidate_beams.append(new_beam)
-                    candidate_scores.append(new_score)
-                    candidate_attention_masks.append(new_attention_mask)
+            # Determine the next beams and their corresponding tokens
+            beam_indices = top_indices // next_token_probs.size(1)  # Find which beam the top tokens came from
+            token_indices = top_indices % next_token_probs.size(1)  # Find which token within the beam was selected
 
-            candidate_scores = torch.stack(candidate_scores)
-            top_beam_indices = torch.topk(candidate_scores, beam_size).indices
-            beams = [candidate_beams[i] for i in top_beam_indices]
-            beam_scores = candidate_scores[top_beam_indices]
-            beam_attention_masks = [candidate_attention_masks[i] for i in top_beam_indices]
+            # Update beams, scores, and attention masks
+            beams = torch.cat([beams[beam_indices], token_indices.unsqueeze(-1)], dim=-1)
+            beam_attention_masks = torch.cat([beam_attention_masks[beam_indices], torch.ones_like(token_indices).unsqueeze(-1)], dim=-1)
+            beam_scores = top_scores
 
-            if timestamp is not None:
-                cur_time = time.time()
-                if cur_time - start_time >= timestamp:
-                    idx = step
-                    break
+            # Check for stopping criteria
+            if timestamp is not None and time.time() - start_time >= timestamp:
+                idx = step
+                break
 
-            # Break if all beams end with the end-of-sequence token
-            # print(self.tokenizer.eos_token_id)
-            # print(f"Step: {step}, End: {all(beam[-1, -1].item() == self.tokenizer.eos_token_id for beam in beams)}")
-
-            if all(beam[-1, -1].item() == self.tokenizer.eos_token_id for beam in beams):
-                idx = max_new_tokens
+            # Check for completion
+            if torch.all(beams[:, -1] == self.tokenizer.eos_token_id):
+                idx = step
                 finished_flag = True
                 break
 
             if step + 1 == max_new_tokens:
-                idx = max_new_tokens
+                idx = step
                 finished_flag = True
                 break
 
+        # print(idx)
         # if finished_flag:
-        best_beam_idx = beam_scores.argmax().item()
+        best_beam_idx = beam_scores.argmax()
 
         best_beam = beams[best_beam_idx]
 
@@ -351,7 +347,7 @@ class LLMKernel:
             "beams": beams,
             "beam_scores": beam_scores,
             "beam_attention_masks": beam_attention_masks,
-            "result": best_beam if finished_flag else None
+            "result": best_beam
         }
 
         return outputs
@@ -360,10 +356,6 @@ class LLMKernel:
             agent_process,
             temperature=0.0
         ):
-
-        agent_process.set_status("executing")
-        self.logger.info(f"[{agent_process.agent_name}] is executing.")
-        agent_process.set_start_time(time.time())
 
         if self.context_manager.check_restoration(agent_process.get_pid()):
             restored_context = self.context_manager.gen_recover(
@@ -401,15 +393,17 @@ class LLMKernel:
                 timestamp = agent_process.get_time_limit()
             )
 
+        output_ids = outputs["result"]
+
+        # print(f"Output ID: {output_ids}")
+        prompt = agent_process.prompt
+        result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        # print(result)
+        result = result[len(prompt)+1: ]
+
         if outputs["finished_flag"]: # finished flag is set as True
-            output_ids = outputs["result"]
 
-            # print(f"Output ID: {output_ids}")
-            prompt = agent_process.prompt
-            result = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-            # print(result)
-            result = result[len(prompt)+1: ]
-
+            # print("Finished")
             if self.context_manager.check_restoration(
                 agent_process.get_pid()):
                 self.context_manager.clear_restoration(
@@ -421,9 +415,10 @@ class LLMKernel:
 
         else:
             # print(f"{agent_process.agent_name} suspended: {result}")
-            self.logger.info(f"[{agent_process.agent_name}] is suspended due to the time limit.")
+            # self.logger.info(f"[{agent_process.agent_name}] is suspended due to the time limit.")
+            # print(f'{agent_process.get_pid()}: {outputs["start_idx"]}')
             self.context_manager.gen_snapshot(
-                pid = agent_process.get_pid(),
+                agent_process.get_pid(),
                 context = {
                     "start_idx": outputs["start_idx"],
                     "beams": outputs["beams"],
@@ -431,6 +426,7 @@ class LLMKernel:
                     "beam_attention_masks": outputs["beam_attention_masks"]
                 }
             )
+            agent_process.set_response(result)
             agent_process.set_status("suspended")
 
         agent_process.set_end_time(time.time())
