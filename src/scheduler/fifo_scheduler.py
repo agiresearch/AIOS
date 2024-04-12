@@ -13,9 +13,12 @@ class FIFOScheduler(BaseScheduler):
     def run(self):
         while self.active:
             try:
-                agent_request = self.agent_process_queue.get(block=True, timeout=1)
+                agent_process = self.agent_process_queue.get(block=True, timeout=1)
                 # print("Get the request")
-                self.execute_request(agent_request)
+                agent_process.set_status("executing")
+                self.logger.info(f"{agent_process.agent_name} is executing. \n")
+                agent_process.set_start_time(time.time())
+                self.execute_request(agent_process)
             except Empty:
                 pass
 
