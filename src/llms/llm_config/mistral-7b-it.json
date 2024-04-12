@@ -1,5 +1,5 @@
 {
     "model_type": "causal_lm",
     "open_sourced": true,
-    "model_name": "google/gemma-1.1-7b-it"
+    "model_name": "mistralai/Mistral-7B-Instruct-v0.2"
 }
