@@ -3,7 +3,7 @@ from threading import Thread
 
 import logging
 
-from src.llms.llms import LLMKernel
+from src.llm_kernel.llms import LLMKernel
 
 import time
 

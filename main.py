@@ -16,7 +16,7 @@ from src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
-from src.llms import llms
+from src.llm_kernel import llms
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 

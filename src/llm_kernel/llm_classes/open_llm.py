@@ -146,12 +146,8 @@ class OpenLLM(BaseLLMKernel):
                     start_idx: int = 0,
                     timestamp: int = None
                     ):
-        # num_sequences = input_ids.shape[0]
-        # num_sequences = input_ids.shape[0]
-        if beams is None or beam_scores is None and beam_attention_masks is None:
-            # beams = [input_ids.clone() for _ in range(beam_size)]
-            # beam_scores = torch.zeros(beam_size, device=self.eval_device)
-            # beam_attention_masks = [attention_masks.clone() for _ in range(beam_size)]
+
+        if beams is None or beam_scores is None or beam_attention_masks is None:
             beams = input_ids.repeat(beam_size, 1)
             beam_attention_masks = attention_masks.repeat(beam_size, 1)
             beam_scores = torch.zeros(beam_size, device=self.eval_device)
@@ -161,8 +157,6 @@ class OpenLLM(BaseLLMKernel):
         finished_flag = False
 
         idx = start_idx
-
-        # print(start_idx)
 
         for step in range(start_idx, max_new_tokens):
             with torch.no_grad():
@@ -207,8 +201,6 @@ class OpenLLM(BaseLLMKernel):
                 finished_flag = True
                 break
 
-        # print(idx)
-        # if finished_flag:
         best_beam_idx = beam_scores.argmax()
 
         best_beam = beams[best_beam_idx]
@@ -223,4 +215,3 @@ class OpenLLM(BaseLLMKernel):
         }
 
         return outputs
-
