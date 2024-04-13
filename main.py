@@ -65,27 +65,20 @@ def main():
 
     # construct agents
     math_agent = agent_thread_pool.submit(
-        lambda p: agent_factory.run_agent(*p),
-        [
-            "MathAgent",
-            f"Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
-        ]
+        agent_factory.run_agent,
+        "MathAgent",
+        "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
     )
 
     narrative_agent = agent_thread_pool.submit(
-        lambda p: agent_factory.run_agent(*p),
-        [
-            "NarrativeAgent",
-            f"Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
-        ]
+        agent_factory.run_agent,
+        "NarrativeAgent",
+        "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
     )
 
     rec_agent = agent_thread_pool.submit(
-        lambda p: agent_factory.run_agent(*p),
-        [
-            "RecAgent",
-            f"I want to take a tour to New York during the spring break, recommend some restaurants around for me."
-        ]
+        agent_factory.run_agent,
+        "RecAgent", "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
     )
 
     agent_tasks = [math_agent, narrative_agent, rec_agent]

@@ -1,5 +1,6 @@
 from src.utils.utils import get_from_env
 import json
+
 class BaseTool:
     """Base class for calling tool
     """
@@ -9,16 +10,16 @@ class BaseTool:
     def run(self):
         pass
 class BaseRapidAPITool(BaseTool):
-    """Base class for calling tool from Rapid api hub
+    """Base class for calling tool from RapidAPI hub: https://rapidapi.com/hub
 
     Args:
         BaseTool (_type_): _description_
     """
     def __init__(self):
         super().__init__()
-        self.search_url: str = None
+        self.url: str = None
         self.host_name: str = None
-        self.urban_dict_api_key = None
+        self.api_key: str = none
 
 
     def run(self, prompt):

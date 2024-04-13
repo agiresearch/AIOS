@@ -16,15 +16,19 @@ from threading import Thread
 from datetime import datetime
 
 import numpy as np
-
 class CustomizedThread(Thread):
+    def __init__(self, target, args=()):
+        super().__init__()
+        self.target = target
+        self.args = args
+        self.result = None
+
     def run(self):
-        if self._target is not None:
-            self._return = self._target(*self._args, **self._kwargs)
+        self.result = self.target(*self.args)
 
     def join(self):
         super().join()
-        return self._return
+        return self.result
 
 class BaseAgent:
     def __init__(self,
@@ -86,6 +90,7 @@ class BaseAgent:
 
         logger.addHandler(handler) # enabled when run in a simulated shell
         return logger
+
     class CustomFormatter(logging.Formatter):
         """Logging Formatter to add colors and count warning / errors"""
 
@@ -118,19 +123,21 @@ class BaseAgent:
             return config
 
     def get_response(self, prompt, temperature=0.0):
-        thread = CustomizedThread(target=self.query_loop, args=(prompt,))
+        thread = CustomizedThread(target=self.query_loop, args=(prompt, ))
         thread.start()
         return thread.join()
         # return self.query_loop(prompt)
 
     def query_loop(self, prompt):
         agent_process = self.create_agent_request(prompt)
+
+        # print(f"Loop Prompt: {prompt}")
         completed_response, waiting_times, turnaround_times = "", [], []
 
         # print("Already put into the queue")
         while agent_process.get_status() != "done":
             # print(agent_process.get_status())
-            thread = Thread(target=self.listen, args=(agent_process,))
+            thread = Thread(target=self.listen, args=(agent_process, ))
             current_time = time.time()
 
             # reinitialize agent status
@@ -149,6 +156,7 @@ class BaseAgent:
             turnaround_times.append(turnaround_time)
             # Re-start the thread if not done
 
+        self.agent_process_factory.deactivate_agent_process(agent_process.get_pid())
 
         completed_response = completed_response.replace("\n", "")
         return completed_response, np.mean(np.array(waiting_times)), np.mean(np.array(turnaround_times))

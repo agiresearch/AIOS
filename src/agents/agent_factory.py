@@ -8,8 +8,6 @@ from src.agents.native_agents.narrative_agent.narrative_agent import NarrativeAg
 
 from src.agents.native_agents.rec_agent.rec_agent import RecAgent
 
-from src.agents.native_agents.travel_agent.travel_agent import TravelAgent
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from threading import Thread, Lock, Event
@@ -29,7 +27,7 @@ class AgentFactory:
             "MathAgent": MathAgent,
             "NarrativeAgent": NarrativeAgent,
             "RecAgent": RecAgent,
-            "TravelAgent": TravelAgent
+            # "TravelAgent": TravelAgent
         }
 
         self.current_agents = {}
@@ -43,6 +41,7 @@ class AgentFactory:
         self.agent_log_mode = agent_log_mode
 
     def activate_agent(self, agent_name, task_input):
+        # print(task_input)
         agent = self.agent_table[agent_name](
             agent_name = agent_name,
             task_input = task_input,
@@ -69,6 +68,7 @@ class AgentFactory:
             agent_name=agent_name,
             task_input=task_input
         )
+        # print(task_input)
         agent.run()
         self.deactivate_agent(agent.get_aid())
 
