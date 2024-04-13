@@ -27,6 +27,13 @@ class LLMMeta:
             pickle.dump(models, file)
 
     @classmethod
+    def get_model_from_datasource(cls, model_name: str):
+        with open(cls.config_location, "rb") as file:
+            models: dict = pickle.load(file)
+        
+        return models.get(model_name)
+
+    @classmethod
     def remove_model_from_datasource(cls, model_name: str):
         with open(cls.config_location, "rb") as file:
             models: dict = pickle.load(file)
