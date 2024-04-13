@@ -119,10 +119,11 @@ class LLMKernel:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
             # print(self.tokenizer.pad_token_id)
         else:
-            if re.search(r'gpt', self.model_name, re.IGNORECASE):
+            if self.model_name.startswith("gpt"):
                 self.model = OpenAI()
                 self.tokenizer = None
-            if self.model_name == "gemini-pro":
+
+            elif self.model_name == "gemini-pro":
                 try:
                     import google.generativeai as genai
                     gemini_api_key = get_from_env("GEMINI_API_KEY")
@@ -134,6 +135,7 @@ class LLMKernel:
                         "Could not import google.generativeai python package. "
                         "Please install it with `pip install google-generativeai`."
                     )
+
             elif self.model_name.startswith("bedrock"):
                 try:
                     from langchain_community.chat_models import BedrockChat
@@ -199,6 +201,8 @@ class LLMKernel:
             temperature=0.0
         ):
         prompt = agent_process.prompt
+
+        # print(f"Prompt: {prompt}")
         outputs = self.model.generate_content(
             prompt
         )
@@ -206,35 +210,42 @@ class LLMKernel:
             result = outputs.candidates[0].content.parts[0].text
             agent_process.set_response(result)
         except IndexError:
-            return f"{self.model_name} can not generate a valid result, please try again"
+            raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
 
     def gpt_process(self,
             agent_process,
             temperature=0.0
         ):
-        prompt = agent_process.prompt,
-        print(f"Prompt: {prompt}")
-        response = self.model.chat.completions.create(
-            model=self.model_name,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-        time.sleep(2) # set according to your request per minite
-        return response.choices[0].message.content
+        prompt = agent_process.prompt
+        try:
+            response = self.model.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            # time.sleep(2) # set according to your request per minite
+            result = response.choices[0].message.content
+            agent_process.set_response(result)
+        except IndexError:
+            raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
 
     def bedrock_process(self,
-            prompt,
+            agent_process,
             temperature=0.0
         ):
+        prompt = agent_process.prompt
         from langchain_core.prompts import ChatPromptTemplate
         chat_template = ChatPromptTemplate.from_messages([
             ("user", f"{prompt}")
         ])
         messages = chat_template.format_messages(prompt=prompt)
         self.model.model_kwargs['temperature'] = temperature
-        response = self.model(messages)
-        return response.content
+        try:
+            response = self.model(messages)
+            agent_process.set_response(response.content)
+        except IndexError:
+            raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
 
     def generate(self,
             input_ids: torch.Tensor = None,
