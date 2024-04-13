@@ -3,6 +3,7 @@ import sys
 import os
 
 from src.llms.llms import LLMKernel
+from src.llms.llm_config import LLMMeta
 
 def test_closed_llm():
     llm_type = "gemini-pro"

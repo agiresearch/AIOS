@@ -17,6 +17,20 @@ class LLMMeta:
         Model Provider: {self.provider}
         Model Type: {self.type} """
 
+    def __getstate__(self):
+        # Return the object's state as a picklable object
+        return {
+            'name': self.name,
+            'provider': self.provider,
+            'type': self.type
+        }
+
+    def __setstate__(self, state):
+        # Restore the object's state from the pickled data
+        self.name = state['name']
+        self.provider = state['provider']
+        self.type = state['type']
+
     def _add_to_datasource(self):
         with open(self.config_location, "rb") as file:
             models: dict = pickle.load(file)
@@ -30,7 +44,8 @@ class LLMMeta:
     def get_model_from_datasource(cls, model_name: str):
         with open(cls.config_location, "rb") as file:
             models: dict = pickle.load(file)
-        
+
+        print(models.get(model_name))
         return models.get(model_name)
 
     @classmethod

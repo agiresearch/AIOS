@@ -11,19 +11,21 @@ from langchain_community.chat_models import BedrockChat
 import os
 import json
 
-from src.utils.utils import get_from_env
-from llm_config import LLMMeta
+from src.llms.llm_config import LLMMeta
 
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
 )
 
+
+from src.utils.utils import get_from_env
+
 class SubKernel(ABC):
     @abstractmethod
     def load_llm_and_tokenizer(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     def call_process(self, prompt: str):
         raise NotImplementedError
@@ -44,7 +46,7 @@ class HuggingFaceSubKernel(SubKernel):
             new_map[int(k)] = v
         return new_map
 
-    def load_llm_and_tokenizer(self): 
+    def load_llm_and_tokenizer(self):
         self.max_gpu_memory = self._convert_map(self.max_gpu_memory)
         hf_token, cache_dir = None, None
 
@@ -84,10 +86,10 @@ class HuggingFaceSubKernel(SubKernel):
 
 class OpenAISubKernel(SubKernel):
     def __init__(self, config: LLMMeta):
-        self.config = config 
+        self.config = config
 
         self.load_llm_and_tokenizer()
-    
+
 
     def load_llm_and_tokenizer(self):
         self.model = OpenAI()
@@ -105,10 +107,10 @@ class OpenAISubKernel(SubKernel):
 
 class GeminiSubKernel(SubKernel):
     def __init__(self, config: LLMMeta):
-        self.config = config 
+        self.config = config
 
         self.load_llm_and_tokenizer()
-    
+
 
     def load_llm_and_tokenizer(self):
         genai.configure(api_key=get_from_env("GEMINI_API_KEY"))
@@ -124,10 +126,10 @@ class GeminiSubKernel(SubKernel):
 
 class BedrockSubKernel(SubKernel):
     def __init__(self, config: LLMMeta):
-        self.config = config 
+        self.config = config
 
         self.load_llm_and_tokenizer()
-    
+
 
     def load_llm_and_tokenizer(self):
         model_id = self.model_name.split("/")[-1]
@@ -175,4 +177,4 @@ if __name__ == "__main__":
     llm_type = "gemini-pro"
     llm = LLMKernel(llm_type)
     prompt = "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
-    llm.address_request(prompt)
+    print(llm.address_request(prompt))
