@@ -2,17 +2,15 @@ import os
 
 import sys
 
-from src.utils.global_param import (
-    agent_table
-)
-
 from src.agents.agent_factory import AgentFactory
 
 import subprocess
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 class Executor:
-    def __init__(self, agent_factory: AgentFactory):
-        # self.thread_pool = ThreadPoolExecutor(max_workers=MAX_WORKER_NUM)
+    def __init__(self, agent_factory):
+        self.agent_thread_pool = ThreadPoolExecutor(max_workers=64)
         self.command_table = {
             "run": self.run_agent,
             "print": self.print
@@ -32,7 +30,7 @@ class Executor:
             )
 
         except KeyError:
-            print(command + "has not been implemented yet.")
+            raise KeyError(command + "has not been implemented yet.")
 
     def print_agent_memory():
         pass
@@ -44,7 +42,13 @@ class Executor:
         elif command_name == "agent-process":
             return NotImplementedError
 
-    def run_agent(self, agent_name = None, task_input = None):
-        agent = self.agent_factory.activate_agent(agent_name, task_input)
+    def run_agent(self, agent_name, task_input):
+        # self.agent_factory.activate_agent(agent_name, task_input)
+        # print(agent_name, task_input)
 
-        self.agent_factory.agent_thread_pool.submit(agent.run)
+        self.agent_thread_pool.submit(
+            self.agent_factory.run_agent,
+            agent_name,
+            task_input
+        )
+        # result = task.result()
