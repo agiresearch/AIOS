@@ -2,7 +2,7 @@ import sys
 
 import os
 
-from src.llms.llms import LLMKernel
+from src.llm_kernel.llms import LLMKernel
 
 from src.agents.agent_process import AgentProcess
 

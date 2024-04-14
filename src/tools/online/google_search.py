@@ -49,7 +49,7 @@ class GoogleSearch(BaseTool):
         self.google_cse_id = get_from_env("GOOGLE_CSE_ID")
         self.k: int = 10 # topk searched results
         self.search_engine = self.build_engine()
-        self.siterestrict: bool = False 
+        self.siterestrict: bool = False
 
     def build_engine(self):
         try:
@@ -77,7 +77,7 @@ class GoogleSearch(BaseTool):
         response = self._google_search_results(query, num=self.k)
         result = self.parse_result(response)
         return result
-    
+
     def parse_result(self, response):
         snippets = []
         if len(response) == 0:
