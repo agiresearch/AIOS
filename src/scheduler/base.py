@@ -3,7 +3,7 @@ from threading import Thread
 
 import logging
 
-from src.agents.agent_process import AgentProcess
+from src.llm_kernel.llms import LLMKernel
 
 import time
 
@@ -11,7 +11,7 @@ from datetime import datetime
 
 import os
 class BaseScheduler:
-    def __init__(self, llm, log_mode):
+    def __init__(self, llm: LLMKernel, log_mode):
         self.active = False # start/stop the scheduler
         self.log_mode = log_mode
         self.logger = self.setup_logger()
@@ -27,8 +27,8 @@ class BaseScheduler:
         self.thread.start()
 
     def setup_logger(self):
-        logger = logging.getLogger(f"FIFO Scheduler Logger")
-        # logger.setLevel(logging.INFO)  # Set the minimum logging level
+        logger = logging.getLogger(f"Scheduler")
+        logger.setLevel(logging.INFO)  # Set the minimum logging level
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Provide two log modes: console and file
         # Ensure the logger doesn't propagate to the root logger
@@ -41,6 +41,7 @@ class BaseScheduler:
         if self.log_mode == "console":
             handler = logging.StreamHandler()
             handler.setLevel(logging.INFO)  # Set logging level for console output
+            handler.setFormatter(self.CustomFormatter())
         else:
             assert self.log_mode == "file"
             log_dir = os.path.join(os.getcwd(), "logs", "scheduler")
@@ -53,16 +54,35 @@ class BaseScheduler:
         logger.addHandler(handler) # enabled when run in a simulated shell
         return logger
 
+    class CustomFormatter(logging.Formatter):
+        """Logging Formatter to add colors and count warning / errors"""
+
+        grey = "\x1b[38;21m"
+        green = "\x1b[32;1m"
+        yellow = "\x1b[33;1m"
+        red = "\x1b[31;1m"
+        bold_red = "\x1b[31;1m"
+        bold_blue = "\033[1;34m"
+        reset = "\x1b[0m"
+        format = "[%(name)s]: %(message)s"
+
+        FORMATS = {
+            # logging.DEBUG: grey + format + reset,
+            logging.INFO: green + format + reset,
+            # logging.WARNING: yellow + format + reset,
+            # logging.ERROR: red + format + reset,
+            # logging.CRITICAL: bold_red + format + reset
+        }
+
+        def format(self, record):
+            log_fmt = self.FORMATS.get(record.levelno)
+            formatter = logging.Formatter(log_fmt)
+            return formatter.format(record)
+
     def stop(self):
         """stop the scheduler"""
         self.active = False
         self.thread.join()
 
-    def execute_request(self, agent_process: AgentProcess):
-        agent_process.set_status("Executing")
-        self.logger.info(f"[{agent_process.agent_name}] is executing.")
-        agent_process.set_start_time(time.time())
-        response = self.llm.address_request(agent_process.prompt)
-        agent_process.set_response(response)
-        agent_process.set_end_time(time.time())
-        agent_process.set_status("Done")
+    def execute_request(self, agent_process):
+        pass
