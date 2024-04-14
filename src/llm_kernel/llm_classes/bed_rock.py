@@ -3,10 +3,10 @@ from .base_llm import BaseLLMKernel
 import time
 
 
-class RedBlockLLM(BaseLLMKernel):
+class BedrockLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
-        assert self.model_name.startswith("bedrock")
+        assert self.llm_name.startswith("bedrock")
         try:
             from langchain_community.chat_models import BedrockChat
             model_id = self.model_name.split("/")[-1]

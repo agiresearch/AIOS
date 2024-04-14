@@ -18,22 +18,22 @@ class BaseLLMKernel(ABC):
                  log_mode: str = "console"
         ):
         print("Initialize AIOS powered by LLM: {}".format(llm_name))
-        self.config = self.load_config(llm_name)
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
+        self.MAX_NEW_TOKENS = max_new_tokens
 
         self.log_mode = log_mode
 
-        self.load_llm_and_tokenizer()
-        self.MAX_NEW_TOKENS = max_new_tokens
+        self.config = self.load_config(llm_name)
         self.logger = self.setup_logger()
         self.context_manager = SimpleContextManager()
         self.open_sourced = self.config["open_sourced"]
         self.model_type = self.config["model_type"]
         self.model_name = self.config["model_name"]
+
+        self.load_llm_and_tokenizer()
+
         print("AIOS LLM successfully loaded. ")
-        self.model = None
-        self.tokenizer = None
 
     def convert_map(self, map: dict) -> dict:
         new_map = {}
@@ -43,13 +43,13 @@ class BaseLLMKernel(ABC):
 
     def load_config(self, llm_name):
         # print(os.getcwd())
-        config_file = os.path.join(os.getcwd(), "src", "llms", "../llm_config/{}.json".format(llm_name))
+        config_file = os.path.join(os.getcwd(), "src", "llm_kernel", "llm_config/{}.json".format(llm_name))
         with open(config_file, "r") as f:
             config = json.load(f)
             return config
 
     def setup_logger(self):
-        logger = logging.getLogger(f"FIFO Scheduler Logger")
+        logger = logging.getLogger(f"Scheduler")
         # logger.setLevel(logging.INFO)  # Set the minimum logging level
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Provide two log modes: console and file
@@ -77,7 +77,8 @@ class BaseLLMKernel(ABC):
 
     @abstractmethod
     def load_llm_and_tokenizer(self) -> None: # load model from config
-        raise NotImplementedError
+        # raise NotImplementedError
+        return
 
     def address_request(self,
             agent_process,
@@ -91,4 +92,3 @@ class BaseLLMKernel(ABC):
                 agent_process,
                 temperature=0.0) -> None:
         raise NotImplementedError
-

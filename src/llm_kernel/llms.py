@@ -1,5 +1,5 @@
-from llms_v2.model_registry import MODEL_REGISTRY
-from llms_v2.open_llm import OpenLLM
+from src.llm_kernel.llm_classes.model_registry import MODEL_REGISTRY
+from src.llm_kernel.llm_classes.open_llm import OpenLLM
 
 class LLMKernel:
     def __init__(self,
@@ -10,6 +10,7 @@ class LLMKernel:
                  log_mode: str = "console"
         ):
         if llm_name in MODEL_REGISTRY.keys():
+            print(llm_name)
             self.model = MODEL_REGISTRY[llm_name](llm_name)
         else:
             self.model = OpenLLM(llm_name=llm_name,
@@ -22,4 +23,3 @@ class LLMKernel:
                         agent_process,
                         temperature=0.0):
         self.model.address_request(agent_process,temperature)
-

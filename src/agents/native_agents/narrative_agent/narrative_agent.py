@@ -32,7 +32,7 @@ class NarrativeAgent(BaseAgent):
         prompt += prefix
         task_input = self.task_input
         task_input = "The task you need to solve is: " + task_input
-        self.logger.info(f"{task_input}\n")
+        self.logger.log(f"{task_input}\n", level="info")
         # print(f"[{self.agent_name}] {task_input}\n")
 
         prompt += task_input
@@ -46,7 +46,7 @@ class NarrativeAgent(BaseAgent):
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
-            self.logger.info(f"Step {i+1}: {step}\n")
+            self.logger.log(f"Step {i+1}: {step}\n", level="info")
 
             response, waiting_time, turnaround_time = self.get_response(prompt)
             waiting_times.append(waiting_time)
@@ -54,7 +54,7 @@ class NarrativeAgent(BaseAgent):
 
             prompt += f"The solution to step {i+1} is: {response}\n"
 
-            self.logger.info(f"The solution to step {i+1}: {response}\n")
+            self.logger.log(f"The solution to step {i+1}: {response}\n", level="info")
 
             prompt += response
 
@@ -65,11 +65,14 @@ class NarrativeAgent(BaseAgent):
         turnaround_times.append(turnaround_time)
         # return res
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        self.logger.info(f"Task is completed, average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n")
+        self.logger.log(
+            f"Task is completed, average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
+            level="info"
+        )
         # time.sleep(10)
         self.set_status("done")
 
-        self.logger.info(f"{task_input} Final result is: {final_result}\n")
+        self.logger.log(f"{task_input} Final result is: {final_result}\n", level="info")
 
         return final_result
 
