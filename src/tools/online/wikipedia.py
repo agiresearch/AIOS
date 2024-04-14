@@ -27,7 +27,7 @@ class Wikipedia(BaseTool):
             import wikipedia
 
             wikipedia.set_lang(self.lang)
-            
+
         except ImportError:
             raise ImportError(
                 "Could not import wikipedia python package. "
