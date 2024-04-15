@@ -10,7 +10,7 @@ class LLMKernel:
                  log_mode: str = "console"
         ):
         if llm_name in MODEL_REGISTRY.keys():
-            print(llm_name)
+            # print(llm_name)
             self.model = MODEL_REGISTRY[llm_name](llm_name)
         else:
             self.model = OpenLLM(llm_name=llm_name,

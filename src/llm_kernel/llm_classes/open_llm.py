@@ -4,6 +4,8 @@ from .base_llm import BaseLLMKernel
 import time
 from transformers import AutoTokenizer
 
+from click import progressbar
+
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
@@ -33,6 +35,12 @@ class OpenLLM(BaseLLMKernel):
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
+        agent_process.set_status("executing")
+        self.logger.log(
+            f"{agent_process.agent_name} is switched to executing.\n",
+            level = "executing"
+        )
+
         if self.context_manager.check_restoration(agent_process.get_pid()):
             restored_context = self.context_manager.gen_recover(
                 agent_process.get_pid()
@@ -91,7 +99,10 @@ class OpenLLM(BaseLLMKernel):
 
         else:
             # print(f"{agent_process.agent_name} suspended: {result}")
-            # self.logger.info(f"[{agent_process.agent_name}] is suspended due to the time limit.")
+            self.logger.log(
+                f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
+                level = "suspending"
+            )
             # print(f'{agent_process.get_pid()}: {outputs["start_idx"]}')
             self.context_manager.gen_snapshot(
                 agent_process.get_pid(),
@@ -103,7 +114,7 @@ class OpenLLM(BaseLLMKernel):
                 }
             )
             agent_process.set_response(result)
-            agent_process.set_status("suspended")
+            agent_process.set_status("suspending")
 
         agent_process.set_end_time(time.time())
 
