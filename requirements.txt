@@ -17,3 +17,4 @@ torch==2.0.1
 transformers==4.38.1
 wolframalpha==5.0.0
 pre-commit==3.7.0
+click==8.1.7
