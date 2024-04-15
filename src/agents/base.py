@@ -97,8 +97,11 @@ class BaseAgent:
             thread.join()
 
             completed_response = agent_process.get_response()
-
-            self.logger.log(f"Current result is: {completed_response}", level="info")
+            if agent_process.get_status() != "done":
+                self.logger.log(
+                    f"Suspended due to the reach of time limit ({agent_process.get_time_limit()}s). Current result is: {completed_response}\n",
+                    level="suspending"
+                )
 
             waiting_time = agent_process.get_start_time() - current_time
             turnaround_time = agent_process.get_end_time() - current_time

@@ -66,8 +66,8 @@ class NarrativeAgent(BaseAgent):
         # return res
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
         self.logger.log(
-            f"Task is completed, average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
-            level="info"
+            f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
+            level="done"
         )
         # time.sleep(10)
         self.set_status("done")
