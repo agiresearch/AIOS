@@ -81,9 +81,15 @@ class MathAgent(BaseAgent):
 
         self.set_status("done")
 
-        self.logger.info(f"Task is completed, average waiting time: {np.mean(np.array(waiting_times))} seconds, turnaround time: {np.mean(np.array(turnaround_times))} seconds. \n")
+        self.logger.log(
+            f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds. \n",
+            level = "done"
+        )
 
-        self.logger.log(f"{task_input} Final result is: {final_result}\n", level="info")
+        self.logger.log(
+            f"{task_input} Final result is: {final_result}\n",
+            level="info"
+        )
 
         return final_result
 

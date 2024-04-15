@@ -54,12 +54,38 @@ class AgentLogger(BaseLogger):
     def __init__(self, logger_name, log_mode="console") -> None:
         super().__init__(logger_name, log_mode)
         self.level_color = {
-            "info": "white",
+            "info": (248, 246, 227), # white
+            "executing": (217, 237, 191), # green
+            "suspending": (255, 235, 178), # yellow
+            "done": (122, 162, 227) # blue
         }
 
     def load_log_file(self):
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_dir = os.path.join(os.getcwd(), "agents", self.logger_name)
+        log_dir = os.path.join(os.getcwd(), "logs", "agents", self.logger_name)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        log_file = os.path.join(log_dir, f"{date_time}.txt")
+        return log_file
+
+
+class LLMKernelLogger(BaseLogger):
+    def __init__(self, logger_name, log_mode="console") -> None:
+        super().__init__(logger_name, log_mode)
+        self.level_color = {
+            "info": (246, 245, 242),
+            "executing": (65, 176, 110), # green
+            "suspending": (255, 201, 74), # yellow
+            "done": (122, 162, 227) # blue
+        }
+
+    def log_to_console(self, content, level):
+        # print(content)
+        click.secho(f"[\U0001F916 {self.logger_name}] " + content, fg=self.level_color[level], bold=True)
+
+    def load_log_file(self):
+        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_dir = os.path.join(os.getcwd(), "logs", "llm_kernel", self.logger_name)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         log_file = os.path.join(log_dir, f"{date_time}.txt")

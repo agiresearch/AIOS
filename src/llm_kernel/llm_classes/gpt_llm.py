@@ -29,6 +29,10 @@ class GPTLLM(BaseLLMKernel):
         agent_process.set_start_time(time.time())
         prompt = agent_process.prompt
         # print(f"Prompt: {prompt}")
+        self.logger.log(
+            f"{agent_process.agent_name} is switched to executing.\n",
+            level = "executing"
+        )
         response = self.model.chat.completions.create(
             model=self.model_name,
             messages=[
