@@ -15,6 +15,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 News
+- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms) and customized console loggers. Feel free to try!
 - **[2024-04-05]** 🛠️ AIOS codebase has been updated to add shell simulator, rapid API calls, and pre-commit test cases. Please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md) for how to test your contributions and create pull requests.
 - **[2024-04-02]** 🌟 AIOS [Discord Community](https://discord.gg/m9Nw9fPR) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats!
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
