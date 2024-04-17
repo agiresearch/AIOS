@@ -64,7 +64,7 @@ git commit -m <type>: <subject>
 
 1. Visit your forked AIOS repository on GitHub and click the "Compare & pull request" button to initiate the process of submitting your changes to the original repository for review and potential merging.
 2. Choose the base branch and the compare branch (your feature branch).💡 Note that when you add new features, it is recommended to choose the (`dev`) branch and if you change does not affect original functions, you may consider choosing the (`main`) branch.
-3. Write a title and describe your changes in the description.
+3. Write a title and describe your changes in the description. And it is recommended to select the label of the change to make it more clear.
 
 ## 4. Review and Approval
 Our maintainers, will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!

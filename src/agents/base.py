@@ -7,6 +7,8 @@ from src.agents.agent_process import (
     # AgentProcessQueue
 )
 
+# from multiprocessing import Process
+
 import logging
 
 import time
@@ -31,6 +33,20 @@ class CustomizedThread(Thread):
     def join(self):
         super().join()
         return self.result
+
+# class CustomizedProcess(Process):
+#     def __init__(self, target, args=()):
+#         super().__init__()
+#         self.target = target
+#         self.args = args
+#         self.result = None
+
+#     def run(self):
+#         self.result = self.target(*self.args)
+
+#     def join(self):
+#         super().join()
+#         return self.result
 
 class BaseAgent:
     def __init__(self,
@@ -74,6 +90,9 @@ class BaseAgent:
         thread = CustomizedThread(target=self.query_loop, args=(prompt, ))
         thread.start()
         return thread.join()
+        # process = CustomizedProcess(target=self.query_loop, args=(prompt, ))
+        # process.start()
+        # return process.join()
         # return self.query_loop(prompt)
 
     def query_loop(self, prompt):
@@ -86,6 +105,7 @@ class BaseAgent:
         while agent_process.get_status() != "done":
             # print(agent_process.get_status())
             thread = Thread(target=self.listen, args=(agent_process, ))
+            # process = Process(target=self.listen, args=(agent_process, ))
             current_time = time.time()
 
             # reinitialize agent status
@@ -95,6 +115,8 @@ class BaseAgent:
 
             thread.start()
             thread.join()
+            # process.start()
+            # process.join()
 
             completed_response = agent_process.get_response()
             if agent_process.get_status() != "done":

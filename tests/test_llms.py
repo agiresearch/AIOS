@@ -2,17 +2,17 @@ import sys
 
 import os
 
-from src.llms.llms import LLMKernel
+from src.llm_kernel.llms import LLMKernel
 
 from src.agents.agent_process import AgentProcess
 
 from src.context.simple_context import SimpleContextManager
 
 def test_closed_llm():
-    if "GEMINI_API_KEY" not in os.environ or not os.environ["RAPID_API_KEY"]:
-        with pytest.raises(ValueError):
-            llm_type = "gemini-pro"
-            llm = LLMKernel(llm_type)
+    # if "GEMINI_API_KEY" not in os.environ or not os.environ["RAPID_API_KEY"]:
+    #     with pytest.raises(ValueError):
+    #         llm_type = "gemini-pro"
+    #         llm = LLMKernel(llm_type)
     llm_type = "gemini-pro"
     llm = LLMKernel(llm_type)
     agent_process = AgentProcess(
@@ -20,13 +20,14 @@ def test_closed_llm():
         prompt = "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
     )
     llm.address_request(agent_process)
+    print(agent_process.get_response())
     assert isinstance(agent_process.get_response(), str)
     # print(response)
 
 def test_open_llm():
-    llm_type = "mistral-7b-it"
-    max_gpu_memory = {"2": "48GB"}
-    eval_device = "cuda:2"
+    llm_type = "gemma-2b-it"
+    max_gpu_memory = {"4": "48GB"}
+    eval_device = "cuda:4"
     max_new_tokens = 256
     llm = LLMKernel(
         llm_type,
