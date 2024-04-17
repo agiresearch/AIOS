@@ -14,6 +14,11 @@ At first, you need to fork this copy and create your own version of repo.
 pip install -r requirements.txt
 ```
 
+### Installing pytest injection
+```bash
+python3 scripts/pytest_patch.py
+```
+
 ### Installing pre-commit
 We strongly recommend installing [pre-commit](https://pre-commit.com/) to ensure proper formatting during development
 
