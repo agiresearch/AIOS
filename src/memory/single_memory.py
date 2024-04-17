@@ -35,7 +35,7 @@ class UniformedMemoryManager(BaseMemoryManager):
         self.compressor = ZLIBCompressor() # used for compressing data
         heapq.heapify(self.free_memory_blocks)
         self.memory_operation_queue = Queue() # TODO add lock to ensure parallel
-    
+
     def run(self):
         while self.active:
             try:
@@ -43,7 +43,7 @@ class UniformedMemoryManager(BaseMemoryManager):
                 self.execute_operation(memory_request)
             except Empty:
                 pass
-    
+
     def start(self):
         """start the scheduler"""
         self.active = True
@@ -71,7 +71,7 @@ class UniformedMemoryManager(BaseMemoryManager):
         address = self.memory_blocks[
             self.aid_to_memory[agent_id][round_id]["memory_block_id"]
         ].mem_alloc(size)
-        
+
         self.memory_blocks[
             self.aid_to_memory[agent_id][round_id]["memory_block_id"]
         ].mem_write(address, compressed_content)
@@ -93,4 +93,3 @@ class UniformedMemoryManager(BaseMemoryManager):
     def mem_clear(self, agent_id):
         self.aid_to_mid.pop(agent_id)
         heapq.heappush(agent_id)
-    
