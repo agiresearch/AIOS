@@ -28,7 +28,7 @@ git checkout -b your-feature
 
 ### Make changes and testing
 
-You can develop new features and then you need to make sure everything works as expected. Run our provided tests and make sure the existing ones go well. You new tests are encouraged.
+You can develop new features and then you need to make sure everything works as expected. Run our provided tests and make sure the existing ones go well. Your new tests are encouraged.
 
 ### Run tests
 
@@ -63,8 +63,8 @@ git commit -m <type>: <subject>
 ### Create a Pull Request
 
 1. Visit your forked AIOS repository on GitHub and click the "Compare & pull request" button to initiate the process of submitting your changes to the original repository for review and potential merging.
-2. Choose the base branch and the compare branch (your feature branch).💡 Note that when you add new features, it is recommended to choose the (`dev`) branch and if you change does not affect original functions, you may consider choosing the (`main`) branch.
+2. Choose the base branch and the compare branch (your feature branch).💡 Note that when you add new features, it is recommended to choose the (`dev`) branch and if your change does not affect original functions, you may consider choosing the (`main`) branch.
 3. Write a title and describe your changes in the description. And it is recommended to select the label of the change to make it more clear.
 
 ## 4. Review and Approval
-Our maintainers, will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!
+Our maintainers will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!
