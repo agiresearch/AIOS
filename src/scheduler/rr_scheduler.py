@@ -13,13 +13,13 @@ class RRScheduler(BaseScheduler):
     def __init__(self, llm, log_mode):
         super().__init__(llm, log_mode)
         self.agent_process_queue = Queue()
-        self.time_limit = 15
+        self.time_limit = 5
         self.simple_context_manager = SimpleContextManager()
 
     def run(self):
         while self.active:
             try:
-                agent_process = self.agent_process_queue.get(block=True, timeout=1)
+                agent_process = self.agent_process_queue.get(block=True, timeout=0.2)
                 agent_process.set_time_limit(self.time_limit)
 
                 agent_process.set_status("executing")

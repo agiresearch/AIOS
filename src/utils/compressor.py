@@ -9,7 +9,7 @@ class Compressor:
 
     def decompress(self, compressed_data):
         pass
-    
+
 class ZLIBCompressor(Compressor):
     def __init__(self) -> None:
         pass
