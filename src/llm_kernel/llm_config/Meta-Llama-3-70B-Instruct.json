@@ -1,0 +1,5 @@
+{
+    "model_type": "causal_lm",
+    "open_sourced": true,
+    "model_name": "meta-llama/Meta-Llama-3-70B-Instruct"
+}
