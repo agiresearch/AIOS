@@ -49,40 +49,49 @@ export GEMINI_API_KEY=<YOUR GEMINI API KEY>
 Here we provide two modes to run the AIOS: interactive mode and deployment mode
 #### Interactive Mode
 In the interactive mode, you can interact with AIOS to see the output of each step in running multiple agents
+For open-sourced LLMs, you need to setup the name of the LLM you would like to use the max gpu memory, the evaluation device and the maximum length of generated new tokens.
 ```python
-# Use Gemma-2b-it, replace the max_gpu_memory and eval_device with your own and run
+# For open-sourced LLMs
+python main.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens>
+## Use Gemma-2b-it for example
 python main.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
-
-# Use Mixtral-8x7b-it, replace the max_gpu_memory and eval_device with your own and run
-python main.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
-
-# Use gpt-3.5-turbo
-python main.py --llm_name gpt-3.5-turbo
-
-# Use gpt-4
-python main.py --llm_name gpt-4
-
-# Use Gemini-pro
-python main.py --llm_name gemini-pro
 ```
-#### Deployment Mode
-In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent)
+For close-sourced LLMs, you just need to setup the name of the LLM.
 ```python
-# Use Gemma-2b-it, replace the max_gpu_memory and eval_device with your own and run
-python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
-
-# Use Mixtral-8x7b-it
-python simulator.py --llm_name mixtral-8x7b-it --max_gpu_memory '{"0": "48GB", "1": "48GB", "2": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
-
-# Use gpt-3.5-turbo
-python simulator.py --llm_name gpt-3.5-turbo --scheduler_log_mode file --agent_log_mode file
-
-# Use gpt-4
-python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file
-
-# Use Gemini-pro
-python simulator.py --llm_name gemini-pro --scheduler_log_mode file --agent_log_mode file
+# For close-sourced LLMs
+python main.py --llm_name <llm_name>
+## Use gpt-4 for example
+python main.py --llm_name gpt-4
 ```
+
+#### Deployment Mode
+In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent).
+Different from the interactive mode, you need to set all the default loggers as file loggers.
+```python
+# For open-sourced LLMs
+python simulator.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens> --scheduler_log_mode file --agent_log_mode file
+## Use Gemma-2b-it for example
+python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
+```
+```python
+# For close-sourced LLMs
+python simulator.py --llm_name <llm_name> --scheduler_log_mode file --agent_log_mode file
+## Use gpt-4 for example
+python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file
+```
+#### Supported LLM backbones
+| LLM Name | Open-sourced                                     | Corporation |
+|-------------|--------------------------------------------------|----------|
+| gemma-2b-it      | Yes                                 | Google |
+| gemma-1.1-7b-it       | Yes                                         | Google |
+| Mistral-7B-Instruct-v0.2     | Yes | Mistral AI
+| Mixtral-8x7B-Instruct-v0.1     | Yes | Mistral AI |
+| Mixtral-8x22B-Instruct-v0.1      | Yes                              | Mistral AI |
+| Meta-Llama-3-8B-Instruct  | Yes | Meta |
+| Meta-Llama-3-70B-Instruct      | Yes                              | Meta |
+| gemini-pro      | No | Google |
+| gpt-3.5-turbo     | No   | OpenAI |
+| gpt-4    | No                   | OpenAI |
 
 ## 🖋️ References
 ```
