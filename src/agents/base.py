@@ -16,6 +16,8 @@ from threading import Thread
 from datetime import datetime
 
 import numpy as np
+
+from src.utils.logger import AgentLogger
 class CustomizedThread(Thread):
     def __init__(self, target, args=()):
         super().__init__()
@@ -49,7 +51,7 @@ class BaseAgent:
 
         self.log_mode = log_mode
         self.logger = self.setup_logger()
-        self.logger.info(f"Initialized. \n")
+        self.logger.log(f"Initialized. \n", level="info")
 
         self.set_status("active")
         self.set_created_time(time)
@@ -59,62 +61,8 @@ class BaseAgent:
         pass
 
     def setup_logger(self):
-        logger = logging.getLogger(f"{self.agent_name}")
-        logger.setLevel(logging.INFO)  # Set the minimum logging level
-        # logger.disabled = True
-        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # Provide two log modes: console and file
-
-        # Ensure the logger doesn't propagate to the root logger
-        logger.propagate = False
-
-        # Remove all handlers associated with this logger
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
-        if self.log_mode == "console":
-            # logger.disabled = False
-            handler = logging.StreamHandler()
-            handler.setLevel(logging.INFO)  # Set logging level for console output
-            handler.setFormatter(self.CustomFormatter())
-        else:
-            assert self.log_mode == "file"
-            # logger.disabled = False
-            log_dir = os.path.join(os.getcwd(), "logs", "agents",
-                                    f"{self.agent_name}")
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
-            log_file = os.path.join(log_dir, f"{date_time}.txt")
-            handler = logging.FileHandler(log_file)
-            handler.setLevel(logging.INFO)  # Set logging
-
-        logger.addHandler(handler) # enabled when run in a simulated shell
+        logger = AgentLogger(self.agent_name, self.log_mode)
         return logger
-
-    class CustomFormatter(logging.Formatter):
-        """Logging Formatter to add colors and count warning / errors"""
-
-        grey = "\x1b[38;21m"
-        green = "\x1b[32;1m"
-        yellow = "\x1b[33;1m"
-        red = "\x1b[31;1m"
-        bold_red = "\x1b[31;1m"
-        bold_blue = "\033[1;34m"
-        reset = "\x1b[0m"
-        format = "[%(name)s]: %(message)s"
-
-        FORMATS = {
-            # logging.DEBUG: grey + format + reset,
-            logging.INFO: grey + format + reset,
-            # logging.WARNING: yellow + format + reset,
-            # logging.ERROR: red + format + reset,
-            # logging.CRITICAL: bold_red + format + reset
-        }
-
-        def format(self, record):
-            log_fmt = self.FORMATS.get(record.levelno)
-            formatter = logging.Formatter(log_fmt)
-            return formatter.format(record)
 
     def load_config(self):
         config_file = os.path.join(os.getcwd(), "src", "agents", "agent_config/{}.json".format(self.agent_name))
@@ -149,6 +97,12 @@ class BaseAgent:
             thread.join()
 
             completed_response = agent_process.get_response()
+            if agent_process.get_status() != "done":
+                self.logger.log(
+                    f"Suspended due to the reach of time limit ({agent_process.get_time_limit()}s). Current result is: {completed_response}\n",
+                    level="suspending"
+                )
+
             waiting_time = agent_process.get_start_time() - current_time
             turnaround_time = agent_process.get_end_time() - current_time
 

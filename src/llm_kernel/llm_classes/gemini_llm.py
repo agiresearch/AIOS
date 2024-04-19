@@ -41,6 +41,10 @@ class GeminiLLM(BaseLLMKernel):
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.prompt
+        self.logger.log(
+            f"{agent_process.agent_name} is switched to executing.\n",
+            level = "executing"
+        )
         # print(f"Prompt: {prompt}")
         outputs = self.model.generate_content(
             prompt

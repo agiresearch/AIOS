@@ -8,6 +8,8 @@ from src.context.simple_context import SimpleContextManager
 import logging
 from abc import ABC, abstractmethod
 
+from src.utils.logger import LLMKernelLogger
+
 
 class BaseLLMKernel(ABC):
     def __init__(self,
@@ -17,7 +19,6 @@ class BaseLLMKernel(ABC):
                  max_new_tokens: int = 256,
                  log_mode: str = "console"
         ):
-        print("Initialize AIOS powered by LLM: {}".format(llm_name))
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
         self.MAX_NEW_TOKENS = max_new_tokens
@@ -25,15 +26,18 @@ class BaseLLMKernel(ABC):
         self.log_mode = log_mode
 
         self.config = self.load_config(llm_name)
-        self.logger = self.setup_logger()
         self.context_manager = SimpleContextManager()
         self.open_sourced = self.config["open_sourced"]
         self.model_type = self.config["model_type"]
         self.model_name = self.config["model_name"]
 
         self.load_llm_and_tokenizer()
+        self.logger = self.setup_logger()
 
-        print("AIOS LLM successfully loaded. ")
+        self.logger.log(
+            "AIOS LLM successfully loaded.\n",
+            level = "info"
+        )
 
     def convert_map(self, map: dict) -> dict:
         new_map = {}
@@ -49,30 +53,7 @@ class BaseLLMKernel(ABC):
             return config
 
     def setup_logger(self):
-        logger = logging.getLogger(f"Scheduler")
-        # logger.setLevel(logging.INFO)  # Set the minimum logging level
-        date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # Provide two log modes: console and file
-        # Ensure the logger doesn't propagate to the root logger
-        logger.propagate = False
-
-        # Remove all handlers associated with this logger
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
-        if self.log_mode == "console":
-            handler = logging.StreamHandler()
-            handler.setLevel(logging.INFO)  # Set logging level for console output
-        else:
-            assert self.log_mode == "file"
-            log_dir = os.path.join(os.getcwd(), "logs", "scheduler")
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
-            log_file = os.path.join(log_dir, f"{date_time}.txt")
-            handler = logging.FileHandler(log_file)
-            handler.setLevel(logging.INFO)  # Set logging
-
-        logger.addHandler(handler) # enabled when run in a simulated shell
+        logger = LLMKernelLogger(self.model_name)
         return logger
 
     @abstractmethod
