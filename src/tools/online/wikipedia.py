@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Iterator, List, Optional
 
-from src.tools.base import BaseTool
+from ..base import BaseTool
 from langchain_core.documents import Document
 
 class Wikipedia(BaseTool):

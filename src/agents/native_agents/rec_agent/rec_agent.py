@@ -1,8 +1,8 @@
-from src.agents.base import BaseAgent
+from ...base import BaseAgent
 
 import time
 
-from src.agents.agent_process import (
+from ...agent_process import (
     AgentProcess
 )
 

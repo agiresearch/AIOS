@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from src.tools.base import BaseTool
+from ..base import BaseTool
 
 from pydantic import root_validator
 

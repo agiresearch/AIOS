@@ -1,4 +1,4 @@
-from src.scheduler.base import BaseScheduler
+from .base import BaseScheduler
 
 from queue import Queue, Empty
 from threading import Thread

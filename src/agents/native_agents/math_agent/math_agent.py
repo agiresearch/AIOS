@@ -1,12 +1,10 @@
-# from src.agents.base import BaseAgent
-
-from src.agents.base import BaseAgent
+from ...base import BaseAgent
 
 import os
 
 import sys
 
-from src.agents.agent_process import (
+from ...agent_process import (
     AgentProcess
 )
 

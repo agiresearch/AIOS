@@ -2,7 +2,7 @@ import os
 
 import sys
 
-from src.agents.agent_factory import AgentFactory
+from .agents.agent_factory import AgentFactory
 
 import subprocess
 
