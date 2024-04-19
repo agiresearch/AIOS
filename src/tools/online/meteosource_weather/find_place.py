@@ -11,8 +11,8 @@ import requests
 class SongAutocompleteAPI(BaseRapidAPITool):
     def __init__(self):
         super().__init__()
-        self.url = "https://shazam.p.rapidapi.com/auto-complete"
-        self.host_name = "shazam.p.rapidapi.com"
+        self.url = "https://ai-weather-by-meteosource.p.rapidapi.com/find_places"
+        self.host_name = "ai-weather-by-meteosource.p.rapidapi.com"
 
         self.api_key = get_from_env("RAPID_API_KEY")
 
@@ -23,13 +23,13 @@ class SongAutocompleteAPI(BaseRapidAPITool):
         }
         try:
             self.query_string = {
-                "term": params["term"],
-                "locale": params["locale"]
+                "text": params["text"],
+                "language": params["language"]
             }
         except ValueError:
             raise KeyError(
-                "The keys in params do not match the excepted keys in params for currency converter api. "
-                "Please make sure it contains two keys: 'term' and 'locale'"
+                "The keys in params do not match the excepted keys in params for weather find place api. "
+                "Please make sure it contains two keys: 'text' and 'language'"
             )
         response = requests.get(self.url, headers=headers, params=self.query_string).json()
 
@@ -38,4 +38,11 @@ class SongAutocompleteAPI(BaseRapidAPITool):
 
 
     def parse_result(self, response) -> str:
-        return "Completion hints are: " + ",".join(response["hints"].values())
+        location = [
+            response["radm_area1"],
+            response["adm_area2"],
+            response["country"],
+            response["lat"],
+            response["lon"]
+        ]
+        return f"Found place of {response["name"]}: " + ",".join(location)

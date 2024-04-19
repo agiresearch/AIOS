@@ -1,4 +1,4 @@
-from src.tools.base import BaseRapidAPITool
+from ..base import BaseRapidAPITool
 
 from typing import Any, Dict, List, Optional
 

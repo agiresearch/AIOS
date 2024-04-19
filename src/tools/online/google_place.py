@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from src.tools.base import BaseTool
+from ..base import BaseTool
 
 from src.utils.utils import get_from_env
 

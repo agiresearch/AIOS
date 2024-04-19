@@ -1,5 +1,5 @@
-from src.llm_kernel.llm_classes.model_registry import MODEL_REGISTRY
-from src.llm_kernel.llm_classes.open_llm import OpenLLM
+from .llm_classes.model_registry import MODEL_REGISTRY
+from .llm_classes.open_llm import OpenLLM
 
 class LLMKernel:
     def __init__(self,

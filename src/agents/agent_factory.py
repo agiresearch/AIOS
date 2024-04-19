@@ -2,15 +2,17 @@ from datetime import datetime
 
 import heapq
 
-from src.agents.native_agents.math_agent.math_agent import MathAgent
+from .native_agents.math_agent.math_agent import MathAgent
 
-from src.agents.native_agents.narrative_agent.narrative_agent import NarrativeAgent
+from .native_agents.narrative_agent.narrative_agent import NarrativeAgent
 
-from src.agents.native_agents.rec_agent.rec_agent import RecAgent
+from .native_agents.rec_agent.rec_agent import RecAgent
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from threading import Thread, Lock, Event
+
+# from multiprocessing import Process, Lock, Event
 
 from pympler import asizeof
 
