@@ -20,10 +20,10 @@ class PunctuationParser(BaseParser):
         3) command_type command_name command_body
         """
         if ": " in instruction:
-            splited_command = instruction.split(": ")
+            splitted_command = instruction.split(": ")
 
-            command_head = splited_command[0].split(" ")
-            command_body = splited_command[-1]
+            command_head = splitted_command[0].split(" ")
+            command_body = splitted_command[-1]
 
             command_type = command_head[0]
             command_name = command_head[1]
