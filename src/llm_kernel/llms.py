@@ -9,9 +9,13 @@ class LLMKernel:
                  max_new_tokens: int = 256,
                  log_mode: str = "console"
         ):
+        # print(log_mode)
         if llm_name in MODEL_REGISTRY.keys():
-            # print(llm_name)
-            self.model = MODEL_REGISTRY[llm_name](llm_name)
+            # print(log_mode)
+            self.model = MODEL_REGISTRY[llm_name](
+                llm_name = llm_name,
+                log_mode = log_mode
+            )
         else:
             self.model = OpenLLM(llm_name=llm_name,
                                  max_gpu_memory=max_gpu_memory,
