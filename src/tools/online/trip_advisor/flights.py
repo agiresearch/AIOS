@@ -35,16 +35,18 @@ class AirportSearch(BaseRapidAPITool):
         # print(self.query_string)
 
         response = requests.get(self.url, headers=headers, params=self.query_string).json()
+        return json.dumps(response)
 
-        result = self.parse_result(response)
-        return result
+        # result = self.parse_result(response)
+        # return result
 
-    def parse_result(self, response) -> str:
-        airports = []
-        for d in response["data"]:
-            airports.append(f"{d["name"]}, airport code is {d["airportCode"]}")
+    # def parse_result(self, response) -> str:
+    #     airports = []
+    #     for d in response["data"]:
+    #         print(d)
+    #         airports.append(f"{d["name"]}, airport code is {d["airportCode"]}")
 
-        return "Available airports are " + ";".join(airports)
+    #     return "Available airports are " + ";".join(airports)
 
 class FlightSearch(BaseRapidAPITool):
     def __init__(self):
@@ -66,7 +68,7 @@ class FlightSearch(BaseRapidAPITool):
                 "destinationAirportCode": params["destinationAirportCode"],
                 "itineraryType": params["itineraryType"],
                 "sortOrder": params["sortOrder"],
-                "classOfServices": params["classOfServices"]
+                "classOfService": params["classOfService"]
             }
         except ValueError:
             raise KeyError(
