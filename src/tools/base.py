@@ -19,7 +19,7 @@ class BaseRapidAPITool(BaseTool):
         super().__init__()
         self.url: str = None
         self.host_name: str = None
-        self.api_key: str = none
+        self.api_key: str = None
 
 
     def run(self, prompt):

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from src.tools.base import BaseTool
+from ..base import BaseTool
 
 # import wolfram_alpha
 

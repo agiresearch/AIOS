@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 
 from src.utils.logger import LLMKernelLogger
 
-
 class BaseLLMKernel(ABC):
     def __init__(self,
                  llm_name: str,
@@ -24,7 +23,7 @@ class BaseLLMKernel(ABC):
         self.MAX_NEW_TOKENS = max_new_tokens
 
         self.log_mode = log_mode
-
+        # print(self.log_mode)
         self.config = self.load_config(llm_name)
         self.context_manager = SimpleContextManager()
         self.open_sourced = self.config["open_sourced"]
@@ -38,6 +37,7 @@ class BaseLLMKernel(ABC):
             "AIOS LLM successfully loaded.\n",
             level = "info"
         )
+        # print("AIOS LLM successfully loaded. \n", flush=True)
 
     def convert_map(self, map: dict) -> dict:
         new_map = {}
@@ -53,7 +53,8 @@ class BaseLLMKernel(ABC):
             return config
 
     def setup_logger(self):
-        logger = LLMKernelLogger(self.model_name)
+        # print(self.log_mode)
+        logger = LLMKernelLogger(self.model_name, self.log_mode)
         return logger
 
     @abstractmethod
@@ -66,6 +67,15 @@ class BaseLLMKernel(ABC):
             temperature=0.0
         ):
         self.process(agent_process)
+        return
+
+    def address_request_list(self,
+            agent_process,
+            temperature=0.0
+        ):
+        steps = agent_process.prompt.split(";")
+        for step in steps:
+            self.process
         return
 
     @abstractmethod

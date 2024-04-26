@@ -1,14 +1,13 @@
 import argparse
 
 import os
+import shutil
 
 from typing import Dict, List, Any, Optional
 
 import json
 
 import re
-
-import logging
 
 # logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # logger = logging.getLogger(__name__)
@@ -21,6 +20,7 @@ def parse_global_args():
     parser.add_argument('--max_new_tokens', type=int, default=256, help="The maximum number of new tokens for generation")
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"])
+    parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
 
     return parser
 
@@ -61,3 +61,14 @@ class Logger:
             assert self.log_mode == "file"
             with open(path, "w") as w:
                 w.write(info + "\n")
+
+def delete_directories(root_dir, target_dirs):
+    """
+    Recursively deletes directories with names in target_dirs starting from root_dir.
+    """
+    for dirpath, dirnames, filenames in os.walk(root_dir, topdown=False):
+        for dirname in dirnames:
+            if dirname in target_dirs:
+                full_path = os.path.join(dirpath, dirname)
+                # print(f"Deleting {full_path}...")
+                shutil.rmtree(full_path, ignore_errors=True)

@@ -1,13 +1,13 @@
-from src.scheduler.base import BaseScheduler
+from .base import BaseScheduler
 
-from src.scheduler.base import BaseScheduler
+from .base import BaseScheduler
 
 from queue import Queue, Empty
 from threading import Thread
 
 import time
 
-from src.context.simple_context import SimpleContextManager
+from ..context.simple_context import SimpleContextManager
 
 class RRScheduler(BaseScheduler):
     def __init__(self, llm, log_mode):

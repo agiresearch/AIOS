@@ -29,7 +29,11 @@ from src.llm_kernel import llms
 
 import threading
 
-terminate_signal = threading.Event()
+from src.utils.utils import delete_directories
+
+def clean_cache(root_directory):
+    targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
+    delete_directories(root_directory, targets)
 
 def main():
     warnings.filterwarnings("ignore")
@@ -42,12 +46,14 @@ def main():
     max_new_tokens = args.max_new_tokens
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
+    llm_kernel_log_mode = args.llm_kernel_log_mode
 
     llm = llms.LLMKernel(
-        llm_name,
-        max_gpu_memory,
-        eval_device,
-        max_new_tokens
+        llm_name = llm_name,
+        max_gpu_memory = max_gpu_memory,
+        eval_device = eval_device,
+        max_new_tokens = max_new_tokens,
+        log_mode = llm_kernel_log_mode
     )
 
     # start the scheduler
@@ -99,6 +105,8 @@ def main():
             pass
 
     scheduler.stop()
+
+    clean_cache("./")
 
 if __name__ == "__main__":
     main()

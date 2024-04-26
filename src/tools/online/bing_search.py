@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import requests
 
-from src.tools.base import BaseTool
+from ..base import BaseTool
 
 # from pydantic import root_validator
 

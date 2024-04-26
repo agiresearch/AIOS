@@ -1,5 +1,5 @@
-from src.llm_kernel.llm_classes.model_registry import MODEL_REGISTRY
-from src.llm_kernel.llm_classes.open_llm import OpenLLM
+from .llm_classes.model_registry import MODEL_REGISTRY
+from .llm_classes.open_llm import OpenLLM
 
 class LLMKernel:
     def __init__(self,
@@ -9,9 +9,13 @@ class LLMKernel:
                  max_new_tokens: int = 256,
                  log_mode: str = "console"
         ):
+        # print(log_mode)
         if llm_name in MODEL_REGISTRY.keys():
-            # print(llm_name)
-            self.model = MODEL_REGISTRY[llm_name](llm_name)
+            # print(log_mode)
+            self.model = MODEL_REGISTRY[llm_name](
+                llm_name = llm_name,
+                log_mode = log_mode
+            )
         else:
             self.model = OpenLLM(llm_name=llm_name,
                                  max_gpu_memory=max_gpu_memory,
@@ -23,3 +27,8 @@ class LLMKernel:
                         agent_process,
                         temperature=0.0):
         self.model.address_request(agent_process,temperature)
+
+    def address_request_list(self,
+                        agent_process,
+                        temperature=0.0):
+        self.model.address_request_list(agent_process,temperature)
