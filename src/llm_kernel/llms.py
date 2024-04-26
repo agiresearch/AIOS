@@ -27,3 +27,8 @@ class LLMKernel:
                         agent_process,
                         temperature=0.0):
         self.model.address_request(agent_process,temperature)
+
+    def address_request_list(self,
+                        agent_process,
+                        temperature=0.0):
+        self.model.address_request_list(agent_process,temperature)
