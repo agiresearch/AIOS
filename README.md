@@ -69,15 +69,15 @@ In the deployment mode, the outputs of running agents are stored in files. And i
 Different from the interactive mode, you need to set all the default loggers as file loggers.
 ```python
 # For open-sourced LLMs
-python simulator.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens> --scheduler_log_mode file --agent_log_mode file
+python simulator.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens> --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ## Use Gemma-2b-it for example
-python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file
+python simulator.py --llm_name gemma-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ```
 ```python
 # For close-sourced LLMs
-python simulator.py --llm_name <llm_name> --scheduler_log_mode file --agent_log_mode file
+python simulator.py --llm_name <llm_name> --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ## Use gpt-4 for example
-python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file
+python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ```
 #### Supported LLM backbones
 | LLM Name | Open-sourced                                     | Corporation |

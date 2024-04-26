@@ -17,7 +17,7 @@ class LRU_K_Replacer:
         self.hit_list = OrderedDict()
         self.cache_list = OrderedDict()
 
-    def evict(self) ->Optional[int]:
+    def evict(self) -> Optional[int]:
         if self.curr_size == 0:
             return None
 
@@ -89,6 +89,3 @@ class LRU_K_Replacer:
 
     def size(self) -> int:
         return self.curr_size
-
-
-

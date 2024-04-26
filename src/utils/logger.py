@@ -82,7 +82,7 @@ class LLMKernelLogger(BaseLogger):
 
     def log_to_console(self, content, level):
         # print(content)
-        click.secho(f"[\U0001F916 {self.logger_name}] " + content, fg=self.level_color[level], bold=True)
+        click.secho(f"[\U0001F916{self.logger_name}] " + content, fg=self.level_color[level], bold=True)
 
     def load_log_file(self):
         date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
