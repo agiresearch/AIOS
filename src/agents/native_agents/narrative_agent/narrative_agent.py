@@ -66,6 +66,9 @@ class NarrativeAgent(BaseAgent):
         prompt += f"Given the interaction history: '{prompt}', integrate content in each step to give a full story, don't be verbose!"
 
         final_result, waiting_time, turnaround_time = self.get_response(prompt)
+
+        rounds += 1
+
         waiting_times.append(waiting_time)
         turnaround_times.append(turnaround_time)
         # return res

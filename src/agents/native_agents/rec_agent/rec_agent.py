@@ -58,6 +58,8 @@ class RecAgent(BaseAgent):
         prompt += f"Given the interaction history: '{prompt}', give a final recommendation list and explanations, don't be verbose!"
 
         final_result, waiting_time, turnaround_time = self.get_response(prompt)
+
+        rounds += 1
         # time.sleep(10)
         self.set_status("done")
 

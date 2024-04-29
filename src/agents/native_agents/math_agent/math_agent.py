@@ -78,6 +78,9 @@ class MathAgent(BaseAgent):
         prompt += f"Given the interaction history: '{prompt}', integrate solutions in all steps to give a final answer, don't be verbose!"
 
         final_result, waiting_time, turnaround_time = self.get_response(prompt)
+
+        rounds += 1
+
         waiting_times.append(waiting_time)
         turnaround_times.append(turnaround_time)
 
