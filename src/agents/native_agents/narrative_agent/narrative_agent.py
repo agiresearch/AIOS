@@ -43,12 +43,17 @@ class NarrativeAgent(BaseAgent):
             "conclude the story and reflect on the narrative. This could involve tying up loose ends, resolving any conflicts, and providing a satisfactory conclusion for the characters."
         ]
 
+        rounds = 0
+
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
             self.logger.log(f"Step {i+1}: {step}\n", level="info")
 
             response, waiting_time, turnaround_time = self.get_response(prompt)
+
+            rounds += 1
+
             waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
 
@@ -65,16 +70,26 @@ class NarrativeAgent(BaseAgent):
         turnaround_times.append(turnaround_time)
         # return res
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        self.logger.log(
-            f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
-            level="done"
-        )
+        avg_waiting_time = np.mean(np.array(waiting_times))
+        avg_turnaround_time = np.mean(np.array(turnaround_times))
+        # self.logger.log(
+        #     f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
+        #     level="done"
+        # )
         # time.sleep(10)
         self.set_status("done")
+        self.set_end_time(time=time.time())
 
         self.logger.log(f"{task_input} Final result is: {final_result}\n", level="info")
 
-        return final_result
+        return {
+            "agent_name": self.agent_name,
+            "result": final_result,
+            "rounds": rounds,
+            "execution_time": self.end_time - self.created_time,
+            "avg_waiting_time": avg_waiting_time,
+            "avg_turnaround_time": avg_turnaround_time,
+        }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run NarrativeAgent')

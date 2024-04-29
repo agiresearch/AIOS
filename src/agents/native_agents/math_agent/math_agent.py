@@ -18,6 +18,8 @@ from src.tools.online.currency_converter import CurrencyConverterAPI
 
 from src.tools.online.wolfram_alpha import WolframAlpha
 
+import time
+
 import re
 class MathAgent(BaseAgent):
     def __init__(self,
@@ -52,6 +54,7 @@ class MathAgent(BaseAgent):
 
         self.logger.log(f"{task_input}\n", level="info")
 
+        rounds = 0
         # predefined steps
         steps = [
             "identify and outline the sub-problems that need to be solved as stepping stones toward the solution. ",
@@ -64,6 +67,7 @@ class MathAgent(BaseAgent):
 
             self.logger.log(f"Step {i+1}: {step}\n", level="info")
             response, waiting_time, turnaround_time = self.get_response(prompt)
+            rounds += 1
 
             # print(f"Current step: {i+1}")
             waiting_times.append(waiting_time)
@@ -78,18 +82,32 @@ class MathAgent(BaseAgent):
         turnaround_times.append(turnaround_time)
 
         self.set_status("done")
+        self.set_end_time(time=time.time())
 
-        self.logger.log(
-            f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds. \n",
-            level = "done"
-        )
+        # self.logger.log(
+        #     f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds. \n",
+        #     level = "done"
+        # )
+        avg_waiting_time = np.mean(np.array(waiting_times))
+        avg_turnaround_time = np.mean(np.array(turnaround_times))
 
         self.logger.log(
             f"{task_input} Final result is: {final_result}\n",
             level="info"
         )
 
-        return final_result
+        # print(self.get_end_time())
+
+        # print(self.get_created_time())
+
+        return {
+            "agent_name": self.agent_name,
+            "result": final_result,
+            "rounds": rounds,
+            "execution_time": self.end_time - self.created_time,
+            "avg_waiting_time": avg_waiting_time,
+            "avg_turnaround_time": avg_turnaround_time,
+        }
 
 
 if __name__ == "__main__":
