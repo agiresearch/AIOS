@@ -12,6 +12,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from threading import Thread, Lock, Event
 
+from multiprocessing import Process
+
 from pympler import asizeof
 
 class AgentProcess:
@@ -87,7 +89,8 @@ class AgentProcessFactory:
         self.pid_pool = [i for i in range(self.max_pid)]
         heapq.heapify(self.pid_pool)
 
-        self.thread = Thread(target=self.deactivate_agent_process)
+        # self.thread = Thread(target=self.deactivate_agent_process)
+        self.thread = Process(target=self.deactivate_agent_process)
 
         self.current_agent_processes = dict()
 

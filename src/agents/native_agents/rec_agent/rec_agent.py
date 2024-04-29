@@ -37,12 +37,17 @@ class RecAgent(BaseAgent):
             "based on the above recommendation direction, give a recommendation list."
         ]
 
+        rounds = 0
+
         for i, step in enumerate(steps):
             prompt += f"\nIn step {i+1}, you need to {step}. Output should focus on current step and don't be verbose!"
 
             self.logger.log(f"Step {i+1}: {step}\n", level="info")
 
             response, waiting_time, turnaround_time = self.get_response(prompt)
+
+            rounds += 1
+
             waiting_times.append(waiting_time)
             turnaround_times.append(turnaround_time)
 
@@ -55,18 +60,30 @@ class RecAgent(BaseAgent):
         final_result, waiting_time, turnaround_time = self.get_response(prompt)
         # time.sleep(10)
         self.set_status("done")
+
+        self.set_end_time(time=time.time())
+
         # print(f"Average waiting time: {np.mean(np.array(waiting_times))}")
-        self.logger.log(
-            f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
-            level="done"
-        )
+        # self.logger.log(
+        #     f"Done. Average waiting time: {np.mean(np.array(waiting_times))} seconds. Average turnaround time: {np.mean(np.array(turnaround_times))} seconds\n",
+        #     level="done"
+        # )
+        avg_waiting_time = np.mean(np.array(waiting_times))
+        avg_turnaround_time = np.mean(np.array(turnaround_times))
 
         self.logger.log(
             f"{task_input} Final result is: {final_result}\n",
             level="info"
         )
 
-        return final_result
+        return {
+            "agent_name": self.agent_name,
+            "result": final_result,
+            "rounds": rounds,
+            "execution_time": self.end_time - self.created_time,
+            "avg_waiting_time": avg_waiting_time,
+            "avg_turnaround_time": avg_turnaround_time,
+        }
 
     def parse_result(self, prompt):
         return prompt

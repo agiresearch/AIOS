@@ -70,7 +70,7 @@ class BaseAgent:
         self.logger.log(f"Initialized. \n", level="info")
 
         self.set_status("active")
-        self.set_created_time(time)
+        self.set_created_time(time.time())
 
     def run(self):
         '''Execute each step to finish the task.'''
@@ -115,8 +115,6 @@ class BaseAgent:
 
             thread.start()
             thread.join()
-            # process.start()
-            # process.join()
 
             completed_response = agent_process.get_response()
             if agent_process.get_status() != "done":
@@ -184,6 +182,12 @@ class BaseAgent:
 
     def get_created_time(self):
         return self.created_time
+
+    def set_end_time(self, time):
+        self.end_time = time
+
+    def get_end_time(self):
+        return self.end_time
 
     def parse_result(self, prompt):
         pass

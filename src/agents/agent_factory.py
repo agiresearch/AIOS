@@ -55,10 +55,10 @@ class AgentFactory:
         aid = heapq.heappop(self.aid_pool)
 
         agent.set_aid(aid)
-        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        agent.set_status("active")
-        agent.set_created_time(time)
+        # agent.set_status("active")
+        # agent.set_created_time(time)
         if not self.terminate_signal.is_set():
             with self.current_agents_lock:
                 self.current_agents[aid] = agent
@@ -71,8 +71,9 @@ class AgentFactory:
             task_input=task_input
         )
         # print(task_input)
-        agent.run()
+        output = agent.run()
         self.deactivate_agent(agent.get_aid())
+        return output
 
     def print_agent(self):
         headers = ["Agent ID", "Agent Name", "Created Time", "Status", "Memory Usage"]
