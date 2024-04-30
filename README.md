@@ -25,13 +25,24 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 ## ✈️ Getting Started
 
 ### Installation
+To run AIOS, you will need to install our agent creation package, OpenAGI.
+**Git clone AIOS and OpenAGI**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
+git clone git@github.com:agiresearch/OpenAGI.git
 ```
-**Make sure you have Python >= 3.9 and <= 3.11**
+**Make sure you have Python = 3.11**
 Install the required packages using pip
 ```bash
+conda create -n AIOS python=3.11
+source activate AIOS
+cd AIOS
 pip install -r requirements.txt
+```
+**Allow your code to be able to see 'openagi'**
+```
+cd ../OpenAGI
+pip install -e .
 ```
 
 ### Usage
@@ -123,3 +134,8 @@ For issues related to AIOS development, we encourage submitting [issues](https:/
 
 ## 🌍 AIOS Contributors
 [![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=300)](https://github.com/agiresearch/AIOS/graphs/contributors)
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=agiresearch/AIOS&type=Date)](https://star-history.com/#agiresearch/AIOS&Date)

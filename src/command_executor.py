@@ -2,7 +2,7 @@ import os
 
 import sys
 
-from .agents.agent_factory import AgentFactory
+from openagi.src.agents.agent_factory import AgentFactory
 
 import subprocess
 

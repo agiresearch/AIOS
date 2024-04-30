@@ -19,9 +19,9 @@ from src.utils.utils import (
     parse_global_args,
 )
 
-from src.agents.agent_factory import AgentFactory
+from openagi.src.agents.agent_factory import AgentFactory
 
-from src.agents.agent_process import AgentProcessFactory
+from openagi.src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
