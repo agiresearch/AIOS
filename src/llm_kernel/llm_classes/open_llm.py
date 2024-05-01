@@ -4,38 +4,26 @@ from .base_llm import BaseLLMKernel
 import time
 from transformers import AutoTokenizer
 
-from click import progressbar
-
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
-        self.model_type = self.config["model_type"]
-        self.model_name = self.config["model_name"]
         self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
-        hf_token = self.config["hf_token"] if "hf_token" in self.config.keys() else None
-        cache_dir = self.config["cache_dir"] if "cache_dir" in self.config.keys() else None
+
         self.model = MODEL_CLASS[self.model_type].from_pretrained(
             self.model_name,
-            use_auth_token=hf_token,
-            cache_dir=cache_dir,
-            # torch_dtype=torch.float16,
-            # load_in_8bit = True,
             device_map="auto",
             max_memory=self.max_gpu_memory
         )
-        # self.model = self.model.to(self.eval_device)
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            use_auth_token=hf_token,
-            cache_dir=cache_dir
         )
-        # print(f"EOS token id: {self.model.config.eos_token_id}")
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
         agent_process.set_status("executing")
+        agent_process.set_start_time(time.time())
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -79,31 +67,25 @@ class OpenLLM(BaseLLMKernel):
 
         output_ids = outputs["result"]
 
-        # print(f"Output ID: {output_ids}")
         prompt = agent_process.prompt
         result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
-        # print(result)
         result = result[len(prompt)+1: ]
 
         if outputs["finished_flag"]: # finished flag is set as True
 
-            # print("Finished")
             if self.context_manager.check_restoration(
                 agent_process.get_pid()):
                 self.context_manager.clear_restoration(
                     agent_process.get_pid()
                 )
-            # print(f"{agent_process.agent_name} done: {result}")
             agent_process.set_response(result)
             agent_process.set_status("done")
 
         else:
-            # print(f"{agent_process.agent_name} suspended: {result}")
             self.logger.log(
                 f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
                 level = "suspending"
             )
-            # print(f'{agent_process.get_pid()}: {outputs["start_idx"]}')
             self.context_manager.gen_snapshot(
                 agent_process.get_pid(),
                 context = {
@@ -117,6 +99,34 @@ class OpenLLM(BaseLLMKernel):
             agent_process.set_status("suspending")
 
         agent_process.set_end_time(time.time())
+
+    def generate(self,
+                 input_ids: torch.Tensor = None,
+                 attention_masks: torch.Tensor = None,
+                 beams: torch.Tensor = None,
+                 beam_scores: torch.Tensor = None,
+                 beam_attention_masks: torch.Tensor = None,
+                 beam_size: int = None,
+                 max_new_tokens: int = None,
+                 search_mode: str = None,
+                 start_idx: int = 0,
+                 timestamp: int = None
+                 ):
+        if search_mode == "beam_search":
+            output_ids = self.beam_search(
+                input_ids = input_ids,
+                attention_masks = attention_masks,
+                beam_size = beam_size,
+                beams = beams,
+                beam_scores = beam_scores,
+                beam_attention_masks = beam_attention_masks,
+                max_new_tokens = max_new_tokens,
+                start_idx = start_idx,
+                timestamp = timestamp
+            )
+            return output_ids
+        else:
+            return NotImplementedError
 
     def generate(self,
                  input_ids: torch.Tensor = None,

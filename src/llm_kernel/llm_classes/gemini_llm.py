@@ -1,13 +1,8 @@
 import re
 
-import torch
-from .constant import MODEL_CLASS
 from .base_llm import BaseLLMKernel
 import time
-from transformers import AutoTokenizer
 from ...utils.utils import get_from_env
-
-
 class GeminiLLM(BaseLLMKernel):
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
@@ -45,7 +40,6 @@ class GeminiLLM(BaseLLMKernel):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
-        # print(f"Prompt: {prompt}")
         outputs = self.model.generate_content(
             prompt
         )
