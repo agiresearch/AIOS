@@ -15,7 +15,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 2. News
-- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms) and customized console loggers. Feel free to try!
+- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms from huggingface) and customized console loggers. Feel free to try!
 - **[2024-04-05]** 🛠️ AIOS codebase has been updated to add shell simulator, rapid API calls, and pre-commit test cases. Please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md) for how to test your contributions and create pull requests.
 - **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats!
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
@@ -64,8 +64,8 @@ For open-sourced LLMs, you need to setup the name of the LLM you would like to u
 ```python
 # For open-sourced LLMs
 python main.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens>
-## Use Gemma-2b-it for example
-python main.py --llm_name gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
+## Use google/gemma-1.1-2b-it for example
+python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
 For close-sourced LLMs, you just need to setup the name of the LLM.
 ```python
@@ -84,8 +84,8 @@ Different from the interactive mode, you need to set all the default loggers as 
 ```python
 # For open-sourced LLMs
 python simulator.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens> --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
-## Use Gemma-2b-it for example
-python simulator.py --llm_name gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
+## Use google/gemma-1.1-2b-it for example
+python simulator.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ```
 ```python
 # For close-sourced LLMs
@@ -114,18 +114,9 @@ bash scripts/eval/gpt4.sh
 ````
 
 ### 3.3 Supported LLM backbones
-| LLM Name | Open-sourced                                     | Corporation |
-|:-------------|:--------------------------------------------------|:----------|
-| gemma-1.1-2b-it      | Yes                                 | Google |
-| gemma-1.1-7b-it       | Yes                                         | Google |
-| Mistral-7B-Instruct-v0.2     | Yes | Mistral AI
-| Mixtral-8x7B-Instruct-v0.1     | Yes | Mistral AI |
-| Mixtral-8x22B-Instruct-v0.1      | Yes                              | Mistral AI |
-| Meta-Llama-3-8B-Instruct  | Yes | Meta |
-| Meta-Llama-3-70B-Instruct      | Yes                              | Meta |
-| gemini-pro      | No | Google |
-| gpt-3.5-turbo     | No   | OpenAI |
-| gpt-4    | No                   | OpenAI |
+- gpt-3.5-turbo, gpt-4
+- gemini-pro
+- Open-sourced LLM from Huggingface
 
 ## 🖋️ 4. References
 ```
