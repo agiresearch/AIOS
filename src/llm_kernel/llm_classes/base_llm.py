@@ -1,4 +1,3 @@
-from openai import OpenAI
 import os
 import json
 import re
@@ -23,12 +22,11 @@ class BaseLLMKernel(ABC):
         self.MAX_NEW_TOKENS = max_new_tokens
 
         self.log_mode = log_mode
-        # print(self.log_mode)
-        self.config = self.load_config(llm_name)
+
+        self.model_name = llm_name
         self.context_manager = SimpleContextManager()
-        self.open_sourced = self.config["open_sourced"]
-        self.model_type = self.config["model_type"]
-        self.model_name = self.config["model_name"]
+        self.open_sourced = self.check_opensourced(self.model_name)
+        self.model_type = self.check_model_type(self.model_name)
 
         self.load_llm_and_tokenizer()
         self.logger = self.setup_logger()
@@ -37,7 +35,6 @@ class BaseLLMKernel(ABC):
             "AIOS LLM successfully loaded.\n",
             level = "info"
         )
-        # print("AIOS LLM successfully loaded. \n", flush=True)
 
     def convert_map(self, map: dict) -> dict:
         new_map = {}
@@ -46,14 +43,20 @@ class BaseLLMKernel(ABC):
         return new_map
 
     def load_config(self, llm_name):
-        # print(os.getcwd())
         config_file = os.path.join(os.getcwd(), "src", "llm_kernel", "llm_config/{}.json".format(llm_name))
         with open(config_file, "r") as f:
             config = json.load(f)
             return config
 
+    def check_opensourced(self, model_name):
+        pattern = r'(?i)\bgpt\b|\bclaude\b|\bgemini\b'
+        return re.search(pattern, model_name) is not None
+
+    def check_model_type(self, model_name):
+        # TODO add more model types
+        return "causal_lm"
+
     def setup_logger(self):
-        # print(self.log_mode)
         logger = LLMKernelLogger(self.model_name, self.log_mode)
         return logger
 
