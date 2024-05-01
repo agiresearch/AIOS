@@ -19,18 +19,12 @@ class RRScheduler(BaseScheduler):
     def run(self):
         while self.active:
             try:
-                agent_process = self.agent_process_queue.get(block=True, timeout=0.2)
+                agent_process = self.agent_process_queue.get(block=True, timeout=0.05)
                 agent_process.set_time_limit(self.time_limit)
 
                 agent_process.set_status("executing")
                 # self.logger.log(f"{agent_process.agent_name} is switched to executing.\n", level="execute")
-                agent_process.set_start_time(time.time())
                 self.execute_request(agent_process)
-                # if agent_process.get_status() != "done":
-                #     self.logger.log(
-                #         f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({self.time_limit}s). \n",
-                #         level="suspend"
-                #     )
 
             except Empty:
                 pass
