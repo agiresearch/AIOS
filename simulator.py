@@ -30,6 +30,7 @@ from src.llm_kernel import llms
 import threading
 
 from src.utils.utils import delete_directories
+from dotenv import find_dotenv, load_dotenv
 
 def clean_cache(root_directory):
     targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
@@ -47,6 +48,7 @@ def main():
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
+    load_dotenv()
 
     llm = llms.LLMKernel(
         llm_name = llm_name,
@@ -55,12 +57,6 @@ def main():
         max_new_tokens = max_new_tokens,
         log_mode = llm_kernel_log_mode
     )
-
-    # start the scheduler
-    # scheduler = FIFOScheduler(
-    #     llm = llm,
-    #     log_mode = scheduler_log_mode
-    # )
 
     scheduler = RRScheduler(
         llm = llm,

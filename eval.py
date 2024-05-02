@@ -19,36 +19,37 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Process
 
 from src.utils.utils import delete_directories
+from src.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
 import argparse
 
 import random
 
 import numpy as np
+from dotenv import find_dotenv, load_dotenv
+
 
 def parse_global_args():
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
     parser.add_argument('--eval_device', type=str, help="Evaluation device")
-    parser.add_argument('--max_new_tokens', type=int, default=256, help="The maximum number of new tokens for generation")
+    parser.add_argument('--max_new_tokens', type=int, default=256,
+                        help="The maximum number of new tokens for generation")
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"])
+    parser.add_argument("--mode", type=str, default="compare", choices=["compare", "concurrent-only", "sequential-only"])
     parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agents", type=str, required=True,
                         help="following the format of <agent1>:<agent1_num>,<agent2>:<agent2_num>")
 
     return parser
 
+
 def clean_cache(root_directory):
     targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
     delete_directories(root_directory, targets)
 
-def load_agent_tasks(agent_name):
-    file_path = os.path.join(os.getcwd(), "scripts", f"{agent_name}_task.txt")
-    with open(file_path) as f:
-        task_inputs = f.readlines()
-        return task_inputs
 
 def main():
     warnings.filterwarnings("ignore")
@@ -62,27 +63,28 @@ def main():
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
+    load_dotenv()
 
     llm = llms.LLMKernel(
-        llm_name = llm_name,
-        max_gpu_memory = max_gpu_memory,
-        eval_device = eval_device,
-        max_new_tokens = max_new_tokens,
-        log_mode = llm_kernel_log_mode
+        llm_name=llm_name,
+        max_gpu_memory=max_gpu_memory,
+        eval_device=eval_device,
+        max_new_tokens=max_new_tokens,
+        log_mode=llm_kernel_log_mode
     )
 
     scheduler = RRScheduler(
-        llm = llm,
-        log_mode = scheduler_log_mode
+        llm=llm,
+        log_mode=scheduler_log_mode
     )
 
     agent_process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue,
-        agent_process_factory = agent_process_factory,
-        agent_log_mode = agent_log_mode
+        llm=llm,
+        agent_process_queue=scheduler.agent_process_queue,
+        agent_process_factory=agent_process_factory,
+        agent_log_mode=agent_log_mode
     )
 
     agent_thread_pool = ThreadPoolExecutor(max_workers=2000)
@@ -90,89 +92,38 @@ def main():
     scheduler.start()
 
     agents = args.agents
-
-    agent_tasks = []
-
     agent_list = []
-
     for agent in agents.split(","):
         agent = agent.split(":")
         agent_name = agent[0]
         agent_num = int(agent[1])
         agent_list.append((agent_name, agent_num))
 
-    for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]
-        for i in range(agent_num):
-            agent_task = agent_thread_pool.submit(
-                agent_factory.run_agent,
-                agent_name,
-                task_input
-            )
-            agent_tasks.append(agent_task)
+    def execute_mode(mode, agent_list, agent_factory, agent_thread_pool=None):
+        print(f"**** {mode} Execution Statistics Starts ****\n")
+        if mode == "concurrent":
+            metrics = get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool)
+        else:
+            metrics = get_numbers_sequential(agent_list, agent_factory)
+        print(f"{mode.capitalize()} Metrics:", metrics)
+        print(f"**** {mode} Execution Statistics Ends ****\n")
+        return metrics
 
-    concurrent_execution_stats = []
-
-    for r in as_completed(agent_tasks):
-        output = r.result()
-        agent_name = output["agent_name"]
-        execution_time = output["execution_time"]
-        avg_waiting_time = output["avg_waiting_time"]
-        avg_turnaround_time = output["avg_turnaround_time"]
-
-        concurrent_execution_stats.append([avg_waiting_time, avg_turnaround_time])
-
-    print("**** Concurrent Execution Statistics Starts ****")
-
-    avg_concurrent_execution_stats = np.mean(np.array(concurrent_execution_stats), axis=0)
-
-    print(f"Average waiting time: {avg_concurrent_execution_stats[0]}, Average turnaround time: {avg_concurrent_execution_stats[1]}")
-
-    print("**** Concurrent Execution Statistics Ends ****\n")
-
-    sequential_execution_stats = []
-
-    accumulated_time = 0
-    for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]
-        for i in range(agent_num):
-            agent_tasks.append(agent_task)
-            output = agent_factory.run_agent(
-                agent_name=agent_name,
-                task_input=task_input
-            )
-            agent_name = output["agent_name"]
-            execution_time = output["execution_time"]
-            avg_waiting_time = output["avg_waiting_time"]
-            avg_turnaround_time = output["avg_turnaround_time"]
-            rounds = output["rounds"]
-
-            avg_waiting_time += accumulated_time / rounds
-            avg_turnaround_time += accumulated_time / rounds
-
-            accumulated_time += execution_time
-
-            sequential_execution_stats.append([avg_waiting_time, avg_turnaround_time])
-
-    print("**** Sequential Execution Statistics Starts ****")
-
-    avg_sequential_execution_stats = np.mean(np.array(sequential_execution_stats), axis=0)
-
-    print(f"Average waiting time: {avg_sequential_execution_stats[0]}, Average turnaround time: {avg_sequential_execution_stats[1]}")
-
-    print("**** Sequential Execution Statistics Ends ****\n")
-
-    print("**** Improvement Analysis Starts ****")
-
-    waiting_time_improv = (avg_sequential_execution_stats[0] - avg_concurrent_execution_stats[0]) / avg_sequential_execution_stats[0]
-    turnaround_time_improv = (avg_sequential_execution_stats[1] - avg_concurrent_execution_stats[1]) / avg_sequential_execution_stats[1]
-    print(f"Improvement of waiting time: {waiting_time_improv * 100:.2f}%")
-    print(f"Improvement of turnaround time: {turnaround_time_improv * 100:.2f}%")
-    print("**** Improvement Analysis Ends ****")
+    if args.mode == "compare":
+        concurrent_metrics = execute_mode("concurrent", agent_list, agent_factory, agent_thread_pool)
+        sequential_metrics = execute_mode("sequential", agent_list, agent_factory)
+        comparison(concurrent_metrics, sequential_metrics)
+    elif args.mode == "concurrent-only":
+        execute_mode("concurrent", agent_list, agent_factory, agent_thread_pool)
+    elif args.mode == "sequential-only":
+        execute_mode("sequential", agent_list, agent_factory)
+    else:
+        print("Error: Invalid mode")
 
     clean_cache(root_directory="./")
 
     scheduler.stop()
+
 
 if __name__ == "__main__":
     main()
