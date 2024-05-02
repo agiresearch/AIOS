@@ -15,7 +15,8 @@ class BaseLLMKernel(ABC):
                  max_gpu_memory: dict = None,
                  eval_device: str = None,
                  max_new_tokens: int = 256,
-                 log_mode: str = "console"
+                 log_mode: str = "console",
+                 use_vllm: bool = False
         ):
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
@@ -24,6 +25,9 @@ class BaseLLMKernel(ABC):
         self.log_mode = log_mode
 
         self.model_name = llm_name
+
+        self.use_vllm = use_vllm
+
         self.context_manager = SimpleContextManager()
         self.open_sourced = self.check_opensourced(self.model_name)
         self.model_type = self.check_model_type(self.model_name)
