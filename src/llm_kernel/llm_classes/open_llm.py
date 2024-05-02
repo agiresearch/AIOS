@@ -4,34 +4,20 @@ from .base_llm import BaseLLMKernel
 import time
 from transformers import AutoTokenizer
 
-from vllm import LLM
-
-import os
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
-        if self.use_vllm:
-            cuda_devices = self.max_gpu_memory.keys()
-            # cuda_devices = ",".join(self.max_gpu_memory.keys())
-            os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(cuda_devices)
-            self.model = LLM(
-                model=self.model_name,
-                tensor_parallel_size=len(cuda_devices)
-            )
-            self.tokenizer = None
+        self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
 
-        else:
-            self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
-
-            self.model = MODEL_CLASS[self.model_type].from_pretrained(
-                self.model_name,
-                device_map="auto",
-                max_memory=self.max_gpu_memory
-            )
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name,
-            )
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        self.model = MODEL_CLASS[self.model_type].from_pretrained(
+            self.model_name,
+            device_map="auto",
+            max_memory=self.max_gpu_memory
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+        )
+        self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
     def process(self,
                 agent_process,
@@ -43,82 +29,74 @@ class OpenLLM(BaseLLMKernel):
             level = "executing"
         )
 
-        if self.use_vllm:
+        if self.context_manager.check_restoration(agent_process.get_pid()):
+            restored_context = self.context_manager.gen_recover(
+                agent_process.get_pid()
+            )
+            start_idx = restored_context["start_idx"]
+            beams = restored_context["beams"]
+            beam_scores = restored_context["beam_scores"]
+            beam_attention_masks = restored_context["beam_attention_masks"]
+
+            outputs = self.generate(
+                search_mode = "beam_search",
+                beam_size = 1,
+                beams = beams,
+                beam_scores = beam_scores,
+                beam_attention_masks = beam_attention_masks,
+                max_new_tokens = self.MAX_NEW_TOKENS,
+                start_idx = start_idx,
+                timestamp = agent_process.get_time_limit()
+            )
+        else:
             prompt = agent_process.prompt
-            outputs = self.model.generate(prompt)
-            result = outputs[0].outputs[0].text
+            input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+            attention_masks = input_ids != self.tokenizer.pad_token_id
+            input_ids = input_ids.to(self.eval_device)
+            attention_masks = attention_masks.to(self.eval_device)
+
+            outputs = self.generate(
+                input_ids = input_ids,
+                attention_masks = attention_masks,
+                search_mode = "beam_search",
+                beam_size = 1,
+                max_new_tokens=self.MAX_NEW_TOKENS,
+                start_idx = 0,
+                timestamp = agent_process.get_time_limit()
+            )
+
+        output_ids = outputs["result"]
+
+        prompt = agent_process.prompt
+        result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        result = result[len(prompt)+1: ]
+
+        if outputs["finished_flag"]: # finished flag is set as True
+
+            if self.context_manager.check_restoration(
+                agent_process.get_pid()):
+                self.context_manager.clear_restoration(
+                    agent_process.get_pid()
+                )
             agent_process.set_response(result)
             agent_process.set_status("done")
 
         else:
-            if self.context_manager.check_restoration(agent_process.get_pid()):
-                restored_context = self.context_manager.gen_recover(
-                    agent_process.get_pid()
-                )
-                start_idx = restored_context["start_idx"]
-                beams = restored_context["beams"]
-                beam_scores = restored_context["beam_scores"]
-                beam_attention_masks = restored_context["beam_attention_masks"]
-
-                outputs = self.generate(
-                    search_mode = "beam_search",
-                    beam_size = 1,
-                    beams = beams,
-                    beam_scores = beam_scores,
-                    beam_attention_masks = beam_attention_masks,
-                    max_new_tokens = self.MAX_NEW_TOKENS,
-                    start_idx = start_idx,
-                    timestamp = agent_process.get_time_limit()
-                )
-            else:
-                prompt = agent_process.prompt
-                input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-                attention_masks = input_ids != self.tokenizer.pad_token_id
-                input_ids = input_ids.to(self.eval_device)
-                attention_masks = attention_masks.to(self.eval_device)
-
-                outputs = self.generate(
-                    input_ids = input_ids,
-                    attention_masks = attention_masks,
-                    search_mode = "beam_search",
-                    beam_size = 1,
-                    max_new_tokens=self.MAX_NEW_TOKENS,
-                    start_idx = 0,
-                    timestamp = agent_process.get_time_limit()
-                )
-
-            output_ids = outputs["result"]
-
-            prompt = agent_process.prompt
-            result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
-            result = result[len(prompt)+1: ]
-
-            if outputs["finished_flag"]: # finished flag is set as True
-
-                if self.context_manager.check_restoration(
-                    agent_process.get_pid()):
-                    self.context_manager.clear_restoration(
-                        agent_process.get_pid()
-                    )
-                agent_process.set_response(result)
-                agent_process.set_status("done")
-
-            else:
-                self.logger.log(
-                    f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
-                    level = "suspending"
-                )
-                self.context_manager.gen_snapshot(
-                    agent_process.get_pid(),
-                    context = {
-                        "start_idx": outputs["start_idx"],
-                        "beams": outputs["beams"],
-                        "beam_scores": outputs["beam_scores"],
-                        "beam_attention_masks": outputs["beam_attention_masks"]
-                    }
-                )
-                agent_process.set_response(result)
-                agent_process.set_status("suspending")
+            self.logger.log(
+                f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
+                level = "suspending"
+            )
+            self.context_manager.gen_snapshot(
+                agent_process.get_pid(),
+                context = {
+                    "start_idx": outputs["start_idx"],
+                    "beams": outputs["beams"],
+                    "beam_scores": outputs["beam_scores"],
+                    "beam_attention_masks": outputs["beam_attention_masks"]
+                }
+            )
+            agent_process.set_response(result)
+            agent_process.set_status("suspending")
 
         agent_process.set_end_time(time.time())
 
