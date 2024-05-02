@@ -7,8 +7,7 @@ class LLMKernel:
                  max_gpu_memory: dict = None,
                  eval_device: str = None,
                  max_new_tokens: int = 256,
-                 log_mode: str = "console",
-                 use_vllm: bool = False
+                 log_mode: str = "console"
         ):
         # print(log_mode)
         if llm_name in MODEL_REGISTRY.keys():
@@ -22,8 +21,7 @@ class LLMKernel:
                                  max_gpu_memory=max_gpu_memory,
                                  eval_device=eval_device,
                                  max_new_tokens=max_new_tokens,
-                                 log_mode=log_mode,
-                                 use_vllm = use_vllm)
+                                 log_mode=log_mode)
 
     def address_request(self,
                         agent_process,
