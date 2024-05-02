@@ -31,7 +31,7 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
     # Collect data
     for result in as_completed(agent_tasks):
         output = result.result()
-        stats['turnaround_times'].append(output["agent_execution_time"])
+        stats['turnaround_times'].append(output["agent_turnaround_time"])
         stats['waiting_times'].append(output["agent_waiting_time"])
         stats['request_waiting_times'].extend(output["request_waiting_times"])
         stats['request_turnaround_times'].extend(output["request_turnaround_times"])
@@ -68,14 +68,15 @@ def get_numbers_sequential(agent_list, agent_factory):
         for _ in range(agent_num):
             output = agent_factory.run_agent(agent_name=agent_name, task_input=task_input)
 
-            agent_turnaround_time = output["agent_execution_time"] + accumulated_time
+            agent_turnaround_time = output["agent_turnaround_time"] + accumulated_time
             agent_waiting_time = output["agent_waiting_time"] + accumulated_time
             rounds = output["rounds"]
-            fixed_offset = accumulated_time / rounds
 
             # Adjust times by the accumulated time
-            request_waiting_times = [time + fixed_offset for time in output["request_waiting_times"]]
-            request_turnaround_times = [time + fixed_offset for time in output["request_turnaround_times"]]
+            request_waiting_times = output["request_waiting_times"]
+            request_turnaround_times = output["request_turnaround_times"]
+            request_waiting_times[0] += accumulated_time
+            request_turnaround_times[0] += accumulated_time
 
             # Append to lists
             stats['turnaround_times'].append(agent_turnaround_time)
@@ -83,7 +84,7 @@ def get_numbers_sequential(agent_list, agent_factory):
             stats['request_waiting_times'].extend(request_waiting_times)
             stats['request_turnaround_times'].extend(request_turnaround_times)
 
-            accumulated_time += agent_turnaround_time
+            accumulated_time += (agent_turnaround_time - agent_waiting_time)
 
     # Compute metrics for each category
     def compute_metrics(data):
