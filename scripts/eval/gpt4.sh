@@ -1,1 +1,1 @@
-python eval.py --llm_name gpt-4 --agents MathAgent:10,NarrativeAgent:5,RecAgent:3
+python eval.py --llm_name gpt-4 --agents MathAgent:1,NarrativeAgent:1,RecAgent:1
