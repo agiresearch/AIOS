@@ -15,7 +15,9 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 
 ## 📰 2. News
-- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms from huggingface) and customized console loggers. Feel free to try!
+- **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
+- **[2024-04-29]** 📊 The evaluation mode of AIOS is added, which supports customizable agent types and agent instance numbers in each agent type.
+- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms from huggingface) and customized console loggers.
 - **[2024-04-05]** 🛠️ AIOS codebase has been updated to add shell simulator, rapid API calls, and pre-commit test cases. Please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md) for how to test your contributions and create pull requests.
 - **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats!
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
@@ -29,7 +31,7 @@ To run AIOS, you will need to install our agent creation package, OpenAGI.
 **Git clone AIOS and OpenAGI**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-git clone git@github.com:agiresearch/OpenAGI.git
+git clone https://github.com/agiresearch/OpenAGI.git
 ```
 **Make sure you have Python = 3.11**
 Install the required packages using pip
@@ -57,13 +59,12 @@ export OPENAI_API_KEY=<YOUR OPENAI API KEY>
 export GEMINI_API_KEY=<YOUR GEMINI API KEY>
 ```
 
-You can also create .env file from the .env.example file, and then use dotenv to load the environment variables using .env file into your application's environment at runtime. 
+You can also create .env file from the .env.example file, and then use dotenv to load the environment variables using .env file into your application's environment at runtime.
 
 ```bash
 cp .env.example .env
 ```
 
-Here we provide two modes to run the AIOS: interactive mode
 #### (1) Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents
 For open-sourced LLMs, you need to setup the name of the LLM you would like to use the max gpu memory, the evaluation device and the maximum length of generated new tokens.
@@ -103,18 +104,16 @@ You can use bash script to start the interactive simulation session like this
 ```bash
 bash scripts/interactive/gpt4.sh
 ````
-sample command
+Instance of available commands
 ```bash
 run NarrativeAgent: Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.
-print agent
-run agent
 print agent
 ```
 
 #### (3) Evaluation Mode
 In the evaluation mode, we allow you to configure different types of predefined agents (MathAgent, NarrativeAgent, RecAgent) with a configurable number of agents for each type. Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
 ```bash
-python eval.py --llm_name gpt-4 --agents MathAgent:1,NarrativeAgent:1,RecAgent:1
+python eval.py --llm_name gpt-3.5-turbo --agents MathAgent:1,NarrativeAgent:1,RecAgent:1
 ```
 You can use bash script to start the agent execution like this
 ```bash
@@ -129,7 +128,7 @@ python eval.py --llm_name gpt-4 --agents MathAgent:1,NarrativeAgent:1,RecAgent:1
 ### 3.3 Supported LLM backbones
 - gpt-3.5-turbo, gpt-4
 - gemini-pro
-- Open-sourced LLM from Huggingface
+- open-sourced LLM from Huggingface
 
 ## 🖋️ 4. References
 ```
