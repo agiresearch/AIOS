@@ -10,9 +10,9 @@ from src.utils.utils import (
     parse_global_args,
 )
 
-from src.agents.agent_factory import AgentFactory
+from openagi.src.agents.agent_factory import AgentFactory
 
-from src.agents.agent_process import AgentProcessFactory
+from openagi.src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Process
 
 from src.utils.utils import delete_directories
+from dotenv import find_dotenv, load_dotenv
 
 def clean_cache(root_directory):
     targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
@@ -40,6 +41,7 @@ def main():
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
+    load_dotenv()
 
     llm = llms.LLMKernel(
         llm_name = llm_name,
@@ -48,12 +50,6 @@ def main():
         max_new_tokens = max_new_tokens,
         log_mode = llm_kernel_log_mode
     )
-
-    # start the scheduler
-    # scheduler = FIFOScheduler(
-    #     llm = llm,
-    #     log_mode = scheduler_log_mode
-    # )
 
     scheduler = RRScheduler(
         llm = llm,
@@ -92,19 +88,9 @@ def main():
     )
 
     agent_tasks = [math_agent, narrative_agent, rec_agent]
-    # agent_tasks = [math_agent]
 
     for r in as_completed(agent_tasks):
         res = r.result()
-    # math_agent = Process(
-    #     target=agent_factory.run_agent,
-    #     args=("MathAgent",
-    #           "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?")
-    # )
-
-    # math_agent.start()
-
-    # math_agent.join()
 
     scheduler.stop()
 

@@ -28,7 +28,6 @@ class GPTLLM(BaseLLMKernel):
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.prompt
-        # print(f"Prompt: {prompt}")
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -39,7 +38,6 @@ class GPTLLM(BaseLLMKernel):
                 {"role": "user", "content": prompt}
             ]
         )
-        # time.sleep(2) # set according to your request per minite
         agent_process.set_response(response.choices[0].message.content)
         agent_process.set_status("done")
         agent_process.set_end_time(time.time())

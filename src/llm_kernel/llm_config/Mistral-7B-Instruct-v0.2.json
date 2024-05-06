@@ -1,5 +1,0 @@
-{
-    "model_type": "causal_lm",
-    "open_sourced": true,
-    "model_name": "mistralai/Mistral-7B-Instruct-v0.2"
-}

@@ -1,5 +1,0 @@
-{
-    "model_type": "causal_lm",
-    "open_sourced": false,
-    "model_name": "bedrock/anthropic.claude-3-sonnet-20240229-v1:0"
-}

@@ -1,5 +1,0 @@
-{
-    "model_type": "causal_lm",
-    "open_sourced": true,
-    "model_name": "google/gemma-1.1-7b-it"
-}

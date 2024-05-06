@@ -4,7 +4,7 @@ import os
 
 from src.llm_kernel.llms import LLMKernel
 
-from src.agents.agent_process import AgentProcess
+from openagi.src.agents.agent_process import AgentProcess
 
 from src.context.simple_context import SimpleContextManager
 
