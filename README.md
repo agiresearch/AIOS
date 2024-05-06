@@ -8,6 +8,13 @@
 AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
 
 
+> [!NOTE]
+> 
+> First, we use docker-compose to start grafana, prometheus, opentelmentry-collector, tempo, dcgm modules.
+> Second, we start a streamlit webui service.
+> Third, we launch the llm server with default vllm backend.
+
+
 ## 🏠 1. Architecture of AIOS
 <p align="center">
 <img src="images/AIOS-Architecture.png">
