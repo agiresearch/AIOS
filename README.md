@@ -85,6 +85,14 @@ You can use bash script to start the agent execution like this
 ```bash
 bash scripts/run/gpt4.sh
 ````
+You can use an open-source model on an Apple MacBook with Ollama. First, you will need to pull the model. Let's use llama3 as an example:
+```bash
+ollama pull llama3
+```
+Then, you can run the bash script to start using AIOS with llama3 and Ollama on your MacBook:
+```bash
+bash scripts/run/ollama_llama3.sh
+```
 #### (2) Interactive Mode
 In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent).
 Different from the interactive mode, you need to set all the default loggers as file loggers.
