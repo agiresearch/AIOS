@@ -5,10 +5,8 @@ from threading import Thread
 
 import time
 class FIFOScheduler(BaseScheduler):
-    def __init__(self, llm, log_mode):
-        super().__init__(llm, log_mode)
-        self.agent_process_queue = Queue()
-
+    def __init__(self, llm, agent_process_queue, log_mode):
+        super().__init__(llm, agent_process_queue, log_mode)
 
     def run(self):
         while self.active:

@@ -14,19 +14,19 @@ class SimpleContextManager(BaseContextManager):
         pass
 
     def gen_snapshot(self, pid, context):
-        file_path = os.path.join(self.context_dir, f"process-{pid}.pt")
+        file_path = os.path.join(self.context_dir, f"{pid}.pt")
         torch.save(context, file_path)
 
     def gen_recover(self, pid):
-        file_path = os.path.join(self.context_dir, f"process-{pid}.pt")
+        file_path = os.path.join(self.context_dir, f"{pid}.pt")
         return torch.load(file_path)
 
     def check_restoration(self, pid):
-        return os.path.exists(os.path.join(self.context_dir, f"process-{pid}.pt"))
+        return os.path.exists(os.path.join(self.context_dir, f"{pid}.pt"))
 
     def clear_restoration(self, pid):
         # print(f"Process {pid} has been deleted.")
-        os.remove(os.path.join(self.context_dir, f"process-{pid}.pt"))
+        os.remove(os.path.join(self.context_dir, f"{pid}.pt"))
 
     def stop(self):
         pass
