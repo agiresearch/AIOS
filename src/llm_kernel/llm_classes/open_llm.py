@@ -20,18 +20,15 @@ class OpenLLM(BaseLLMKernel):
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
     def process(self,
-                agent_process,
+                llm_request,
                 temperature=0.0) -> None:
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
-            level = "executing"
-        )
+        prompt = llm_request.prompt
 
-        if self.context_manager.check_restoration(agent_process.get_pid()):
+        pid = "-".join([llm_request.agent_name, str(llm_request.agent_id), str(llm_request.step)])
+
+        if self.context_manager.check_restoration(pid):
             restored_context = self.context_manager.gen_recover(
-                agent_process.get_pid()
+                pid
             )
             start_idx = restored_context["start_idx"]
             beams = restored_context["beams"]
@@ -46,10 +43,10 @@ class OpenLLM(BaseLLMKernel):
                 beam_attention_masks = beam_attention_masks,
                 max_new_tokens = self.MAX_NEW_TOKENS,
                 start_idx = start_idx,
-                timestamp = agent_process.get_time_limit()
+                timestamp = llm_request.get_time_limit()
             )
         else:
-            prompt = agent_process.prompt
+            prompt = llm_request.prompt
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
             attention_masks = input_ids != self.tokenizer.pad_token_id
             input_ids = input_ids.to(self.eval_device)
@@ -62,32 +59,30 @@ class OpenLLM(BaseLLMKernel):
                 beam_size = 1,
                 max_new_tokens=self.MAX_NEW_TOKENS,
                 start_idx = 0,
-                timestamp = agent_process.get_time_limit()
+                timestamp = llm_request.get_time_limit()
             )
 
         output_ids = outputs["result"]
 
-        prompt = agent_process.prompt
+        prompt = llm_request.prompt
         result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
         result = result[len(prompt)+1: ]
 
         if outputs["finished_flag"]: # finished flag is set as True
 
             if self.context_manager.check_restoration(
-                agent_process.get_pid()):
+                pid):
                 self.context_manager.clear_restoration(
-                    agent_process.get_pid()
+                    pid
                 )
-            agent_process.set_response(result)
-            agent_process.set_status("done")
+            # agent_process.set_response(result)
+            llm_request.set_status("done")
+            return result
 
         else:
-            self.logger.log(
-                f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
-                level = "suspending"
-            )
+
             self.context_manager.gen_snapshot(
-                agent_process.get_pid(),
+                pid,
                 context = {
                     "start_idx": outputs["start_idx"],
                     "beams": outputs["beams"],
@@ -95,10 +90,9 @@ class OpenLLM(BaseLLMKernel):
                     "beam_attention_masks": outputs["beam_attention_masks"]
                 }
             )
-            agent_process.set_response(result)
-            agent_process.set_status("suspending")
+            llm_request.set_status("suspend")
 
-        agent_process.set_end_time(time.time())
+        return result
 
     def generate(self,
                  input_ids: torch.Tensor = None,

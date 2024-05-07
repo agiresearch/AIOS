@@ -29,11 +29,12 @@ class LLMKernel:
                                  log_mode=log_mode)
 
     def address_request(self,
-                        agent_process,
+                        llm_request,
                         temperature=0.0):
-        self.model.address_request(agent_process,temperature)
+        result = self.model.address_request(llm_request, temperature)
+        return result
 
     def address_request_list(self,
-                        agent_process,
+                        llm_request,
                         temperature=0.0):
-        self.model.address_request_list(agent_process,temperature)
+        self.model.address_request_list(llm_request,temperature)
