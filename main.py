@@ -12,15 +12,22 @@ from src.utils.utils import (
 
 from openagi.src.agents.agent_factory import AgentFactory
 
-from openagi.src.agents.agent_process import AgentProcessFactory
+# from openagi.src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
 from src.llm_kernel import llms
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+# from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from multiprocessing import Process
+import multiprocessing
+
+import psutil
+
+import threading
+
+import queue
 
 from src.utils.utils import delete_directories
 from dotenv import find_dotenv, load_dotenv
@@ -43,6 +50,12 @@ def main():
     llm_kernel_log_mode = args.llm_kernel_log_mode
     load_dotenv()
 
+    agent_process_queue = multiprocessing.Queue()
+    # agent_process_queue = queue.Queue()
+
+    llm_request_responses = multiprocessing.Manager().dict()
+    # llm_request_responses = dict()
+
     llm = llms.LLMKernel(
         llm_name = llm_name,
         max_gpu_memory = max_gpu_memory,
@@ -51,48 +64,88 @@ def main():
         log_mode = llm_kernel_log_mode
     )
 
-    scheduler = RRScheduler(
+    scheduler = FIFOScheduler(
         llm = llm,
+        agent_process_queue = agent_process_queue,
+        llm_request_responses = llm_request_responses,
         log_mode = scheduler_log_mode
     )
 
-    agent_process_factory = AgentProcessFactory()
+    # scheduler_process = psutil.Process(scheduler.pid)
+    # print(f"Scheduler running on CPU:", scheduler_process.cpu_num())
+    # print(multiprocessing.cpu_count())
 
     agent_factory = AgentFactory(
         llm = llm,
-        agent_process_queue = scheduler.agent_process_queue,
-        agent_process_factory = agent_process_factory,
+        agent_process_queue = agent_process_queue,
+        llm_request_responses = llm_request_responses,
         agent_log_mode = agent_log_mode
     )
 
-    agent_thread_pool = ThreadPoolExecutor(max_workers=64)
-
+    # print(scheduler.cpu_affinity())
     scheduler.start()
 
-    # construct agents
-    math_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "MathAgent",
-        "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
+    agent_a = agent_factory.activate_agent(
+        agent_name = "MathAgent",
+        task_input = "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
     )
 
-    narrative_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "NarrativeAgent",
-        "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+    agent_a.start()
+
+    agent_b = agent_factory.activate_agent(
+        agent_name = "MathAgent",
+        task_input = "Mark has 4 bags of marbles, each with 25 marbles. He gives 3 marbles to each of his 5 friends. How many marbles does he have left?"
     )
 
-    rec_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "RecAgent", "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
-    )
+    agent_b.start()
 
-    agent_tasks = [math_agent, narrative_agent, rec_agent]
+    agent_a.join()
 
-    for r in as_completed(agent_tasks):
-        res = r.result()
+    agent_b.join()
 
-    scheduler.stop()
+    # rec_agent = agent_factory.run_agent(
+    #     agent_name = "RecAgent",
+    #     task_input = "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
+    # )
+
+    # agent_tasks = [math_agent, rec_agent]
+
+    # for agent_task in agent_tasks:
+    #     agent_task.start()
+    # math_agent.start()
+
+
+    # math_agent.join()
+    # agent_thread_pool = ThreadPoolExecutor(max_workers=64)
+    # agent_thread_pool = ProcessPoolExecutor(max_workers=64)
+
+
+    # # construct agents
+    # math_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "MathAgent",
+    #     "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
+    # )
+
+    # narrative_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "NarrativeAgent",
+    #     "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+    # )
+
+    # rec_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "RecAgent", "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
+    # )
+
+    # agent_tasks = [math_agent, narrative_agent, rec_agent]
+
+    # for r in as_completed(agent_tasks):
+    #     res = r.result()
+
+    # scheduler.join()
+    # scheduler.stop()
+    scheduler.terminate()
 
     clean_cache(root_directory="./")
 

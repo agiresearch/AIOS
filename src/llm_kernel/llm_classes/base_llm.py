@@ -66,11 +66,11 @@ class BaseLLMKernel(ABC):
         return
 
     def address_request(self,
-            agent_process,
+            llm_request,
             temperature=0.0
         ):
-        self.process(agent_process)
-        return
+        result = self.process(llm_request)
+        return result
 
     def address_request_list(self,
             agent_process,
@@ -83,6 +83,6 @@ class BaseLLMKernel(ABC):
 
     @abstractmethod
     def process(self,
-                agent_process,
+                llm_request,
                 temperature=0.0) -> None:
         raise NotImplementedError

@@ -30,24 +30,18 @@ class GeminiLLM(BaseLLMKernel):
             )
 
     def process(self,
-                agent_process,
+                llm_request,
                 temperature=0.0) -> None:
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        prompt = agent_process.prompt
-        self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
-            level = "executing"
-        )
+        prompt = llm_request.prompt
+
         outputs = self.model.generate_content(
             prompt
         )
         try:
             result = outputs.candidates[0].content.parts[0].text
-            agent_process.set_response(result)
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
-        return
+
+        llm_request.set_status("done")
+        return result
