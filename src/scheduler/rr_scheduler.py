@@ -24,6 +24,7 @@ class RRScheduler(BaseScheduler):
     def run(self):
         # all_cpus = list(range(os.cpu_count()))
         # os.sched_setaffinity(0, all_cpus)  # 0 means current process
+
         while True:
             if not self.agent_process_queue.empty():
                 # print("active")

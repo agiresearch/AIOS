@@ -1,5 +1,6 @@
 from .llm_classes.model_registry import MODEL_REGISTRY
 from .llm_classes.open_llm import OpenLLM
+from .llm_classes.ollama_llm import OllamaLLM
 
 class LLMKernel:
     def __init__(self,
@@ -9,9 +10,13 @@ class LLMKernel:
                  max_new_tokens: int = 256,
                  log_mode: str = "console"
         ):
-        # print(log_mode)
-        if llm_name in MODEL_REGISTRY.keys():
-            # print(log_mode)
+
+        if llm_name.startswith('ollama'):
+            self.model = OllamaLLM(
+                llm_name = llm_name,
+                log_mode = log_mode
+            )
+        elif llm_name in MODEL_REGISTRY.keys():
             self.model = MODEL_REGISTRY[llm_name](
                 llm_name = llm_name,
                 log_mode = log_mode

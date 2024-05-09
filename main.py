@@ -56,6 +56,8 @@ def main():
     llm_request_responses = multiprocessing.Manager().dict()
     # llm_request_responses = dict()
 
+    llm_request_responses = multiprocessing.Manager().dict()
+
     llm = llms.LLMKernel(
         llm_name = llm_name,
         max_gpu_memory = max_gpu_memory,
@@ -83,6 +85,7 @@ def main():
     )
 
     # print(scheduler.cpu_affinity())
+
     scheduler.start()
 
     agent_a = agent_factory.activate_agent(
@@ -144,6 +147,7 @@ def main():
     #     res = r.result()
 
     # scheduler.join()
+
     # scheduler.stop()
     scheduler.terminate()
 
