@@ -13,6 +13,7 @@ import time
 
 from ..context.simple_context import SimpleContextManager
 
+import os
 class RRScheduler(BaseScheduler):
     def __init__(self, llm, agent_process_queue, llm_request_responses, log_mode):
         BaseScheduler.__init__(self, llm, agent_process_queue, llm_request_responses, log_mode)
@@ -21,6 +22,9 @@ class RRScheduler(BaseScheduler):
         self.simple_context_manager = SimpleContextManager()
 
     def run(self):
+        # all_cpus = list(range(os.cpu_count()))
+        # os.sched_setaffinity(0, all_cpus)  # 0 means current process
+
         while True:
             if not self.agent_process_queue.empty():
                 # print("active")

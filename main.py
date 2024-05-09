@@ -23,6 +23,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import multiprocessing
 
+import psutil
+
+import threading
+
+import queue
+
 from src.utils.utils import delete_directories
 from dotenv import find_dotenv, load_dotenv
 
@@ -45,6 +51,10 @@ def main():
     load_dotenv()
 
     agent_process_queue = multiprocessing.Queue()
+    # agent_process_queue = queue.Queue()
+
+    llm_request_responses = multiprocessing.Manager().dict()
+    # llm_request_responses = dict()
 
     llm_request_responses = multiprocessing.Manager().dict()
 
@@ -56,13 +66,16 @@ def main():
         log_mode = llm_kernel_log_mode
     )
 
-    scheduler = RRScheduler(
+    scheduler = FIFOScheduler(
         llm = llm,
         agent_process_queue = agent_process_queue,
         llm_request_responses = llm_request_responses,
         log_mode = scheduler_log_mode
     )
 
+    # scheduler_process = psutil.Process(scheduler.pid)
+    # print(f"Scheduler running on CPU:", scheduler_process.cpu_num())
+    # print(multiprocessing.cpu_count())
 
     agent_factory = AgentFactory(
         llm = llm,
@@ -70,6 +83,8 @@ def main():
         llm_request_responses = llm_request_responses,
         agent_log_mode = agent_log_mode
     )
+
+    # print(scheduler.cpu_affinity())
 
     scheduler.start()
 
@@ -130,6 +145,8 @@ def main():
 
     # for r in as_completed(agent_tasks):
     #     res = r.result()
+
+    # scheduler.join()
 
     # scheduler.stop()
     scheduler.terminate()
