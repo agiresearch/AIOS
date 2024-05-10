@@ -27,8 +27,9 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 ## ✈️ 3. Getting Started
 
 ### 3.1 Installation
-To run AIOS, you will need to install our agent creation package, OpenAGI.
-**Git clone AIOS and OpenAGI**
+To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
+
+**Git clone AIOS and [OpenAGI]((https://github.com/agiresearch/OpenAGI))**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
 git clone https://github.com/agiresearch/OpenAGI.git
@@ -89,9 +90,9 @@ You can use an open-source model on an Apple MacBook with Ollama. First, you wil
 ```bash
 ollama pull llama3
 ```
-Then, you can run the bash script to start using AIOS with llama3 and Ollama on your MacBook:
+Then, you can run the Python script with the input parameter to start using AIOS with Llama3 and Ollama on your MacBook:
 ```bash
-bash scripts/run/ollama_llama3.sh
+python main.py --llm_name ollama/llama3
 ```
 #### (2) Interactive Mode
 In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent).
