@@ -8,3 +8,4 @@ src/storage/*.json
 .idea
 context_restoration/
 .pytest_cache
+.env
