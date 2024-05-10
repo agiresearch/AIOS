@@ -34,7 +34,24 @@ You can develop new features and then you need to make sure everything works as 
 
 Add your test code into the `tests/` directory if any, then run test via [pytest](https://docs.pytest.org/en/8.0.x/)
 ```
-pytest -s tests
+pytest -v tests/
+```
+sample output
+```
+============================================================================================================================= test session starts ==============================================================================================================================
+platform darwin -- Python 3.11.9, pytest-8.1.1, pluggy-1.5.0 -- ""
+cachedir: .pytest_cache
+rootdir: ""
+plugins: anyio-4.3.0
+collected 7 items                                                                                                                                                                                                                                                              
+
+tests/test_llms.py::test_closed_llm PASSED                                                                                                                                                                                                                               [ 14%]
+tests/test_llms.py::test_open_llm PASSED                                                                                                                                                                                                                                 [ 28%]
+tests/test_lru_k_replacer.py::test_update_access_history PASSED                                                                                                                                                                                                          [ 42%]
+tests/test_lru_k_replacer.py::test_evict PASSED                                                                                                                                                                                                                          [ 57%]
+tests/test_lru_k_replacer.py::test_set_evictable PASSED                                                                                                                                                                                                                  [ 71%]
+tests/test_lru_k_replacer.py::test_invalid_block_id PASSED                                                                                                                                                                                                               [ 85%]
+tests/test_memory.py::test_mem_alloc PASSED  
 ```
 
 ## 3. Submitting Changes

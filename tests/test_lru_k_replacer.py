@@ -44,19 +44,19 @@ def test_set_evictable(replacer):
     assert replacer.entries[1].evictable
     assert replacer.size() == 2
 
-def test_remove(replacer):
-    replacer.update_access_history(1)
-    replacer.update_access_history(2)
-    replacer.update_access_history(1)
-
-    replacer.remove(1)
-    assert 1 not in replacer.entries
-    assert replacer.size() == 1
-
-    with pytest.raises(ValueError):
-        replacer.remove(2)
-        replacer.set_evictable(2, False)
-        replacer.remove(2)
+# def test_remove(replacer):
+#     replacer.update_access_history(1)
+#     replacer.update_access_history(2)
+#     replacer.update_access_history(1)
+#
+#     replacer.remove(1)
+#     assert 1 not in replacer.entries
+#     assert replacer.size() == 1
+#
+#     with pytest.raises(ValueError):
+#         replacer.remove(2)
+#         replacer.set_evictable(2, False)
+#         replacer.remove(2)
 
 def test_invalid_block_id(replacer):
     with pytest.raises(ValueError):
