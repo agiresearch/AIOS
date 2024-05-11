@@ -6,6 +6,8 @@ from src.llm_kernel.llms import LLMKernel
 from openagi.src.agents.agent_process import AgentProcess
 from src.context.simple_context import SimpleContextManager
 
+from src.utils.message import Message
+
 # Load environment variables once for all tests
 load_dotenv(find_dotenv())
 
@@ -28,21 +30,25 @@ def test_closed_llm():
     llm = LLMKernel(llm_type, max_new_tokens = 10)
     agent_process = AgentProcess(
         agent_name="Narrative Agent",
-        prompt="Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+        message = Message(
+            prompt="Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+        )
     )
     llm.address_request(agent_process)
     response = agent_process.get_response()
-    assert isinstance(response, str), "The response should be a string"
+    assert isinstance(response.response_message, str), "The response should be a string"
 
 def test_open_llm(llm_setup):
     llm = llm_setup
     agent_process = AgentProcess(
         agent_name="Narrative Agent",
-        prompt="Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+        message = Message(
+            prompt="Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
+        )
     )
     llm.address_request(agent_process)
     response = agent_process.get_response()
-    assert isinstance(response, str), "The response should be a string"
+    assert isinstance(response.response_message, str), "The response should be a string"
     if torch.cuda.device_count() > 0:
         context_manager = SimpleContextManager()
         agent_process.set_pid(0)

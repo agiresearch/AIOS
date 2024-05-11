@@ -3,6 +3,8 @@ import re
 from .base_llm import BaseLLMKernel
 import time
 from ...utils.utils import get_from_env
+
+from ...utils.message import Response
 class GeminiLLM(BaseLLMKernel):
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
@@ -35,7 +37,8 @@ class GeminiLLM(BaseLLMKernel):
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.prompt
+        prompt = agent_process.message.prompt
+        # TODO: add tool calling
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -45,7 +48,11 @@ class GeminiLLM(BaseLLMKernel):
         )
         try:
             result = outputs.candidates[0].content.parts[0].text
-            agent_process.set_response(result)
+            agent_process.set_response(
+                Response(
+                    response_message = result
+                )
+            )
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
         agent_process.set_status("done")
