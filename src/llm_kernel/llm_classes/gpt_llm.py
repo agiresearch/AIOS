@@ -3,6 +3,8 @@ from .base_llm import BaseLLMKernel
 import time
 from openai import OpenAI
 
+from ...utils.message import Response
+
 class GPTLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -27,7 +29,7 @@ class GPTLLM(BaseLLMKernel):
         assert re.search(r'gpt', self.model_name, re.IGNORECASE)
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.prompt
+        prompt = agent_process.message.prompt
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -36,9 +38,18 @@ class GPTLLM(BaseLLMKernel):
             model=self.model_name,
             messages=[
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            tools = agent_process.message.tools,
+            tool_choice = "required" if agent_process.message.tools else None
         )
-        agent_process.set_response(response.choices[0].message.content)
+
+        # print(response.choices[0].message)
+        agent_process.set_response(
+            Response(
+                response_message = response.choices[0].message.content,
+                tool_calls = response.choices[0].message.tool_calls
+            )
+        )
         agent_process.set_status("done")
         agent_process.set_end_time(time.time())
         return

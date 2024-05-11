@@ -4,6 +4,8 @@ from .base_llm import BaseLLMKernel
 import time
 from transformers import AutoTokenizer
 
+from ...utils.message import Response
+
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
@@ -49,7 +51,8 @@ class OpenLLM(BaseLLMKernel):
                 timestamp = agent_process.get_time_limit()
             )
         else:
-            prompt = agent_process.prompt
+            # prompt = agent_process.prompt
+            prompt = agent_process.message.prompt
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
             attention_masks = input_ids != self.tokenizer.pad_token_id
             input_ids = input_ids.to(self.eval_device)
@@ -67,7 +70,7 @@ class OpenLLM(BaseLLMKernel):
 
         output_ids = outputs["result"]
 
-        prompt = agent_process.prompt
+        prompt = agent_process.message.prompt
         result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
         result = result[len(prompt)+1: ]
 
@@ -78,7 +81,11 @@ class OpenLLM(BaseLLMKernel):
                 self.context_manager.clear_restoration(
                     agent_process.get_pid()
                 )
-            agent_process.set_response(result)
+            agent_process.set_response(
+                Response(
+                    response_message=result
+                )
+            )
             agent_process.set_status("done")
 
         else:
@@ -95,7 +102,11 @@ class OpenLLM(BaseLLMKernel):
                     "beam_attention_masks": outputs["beam_attention_masks"]
                 }
             )
-            agent_process.set_response(result)
+            agent_process.set_response(
+                Response(
+                    response_message = result
+                )
+            )
             agent_process.set_status("suspending")
 
         agent_process.set_end_time(time.time())

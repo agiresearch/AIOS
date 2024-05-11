@@ -3,6 +3,7 @@ from .base_llm import BaseLLMKernel
 import time
 import ollama
 
+from ...utils.message import Response
 class OllamaLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -30,17 +31,23 @@ class OllamaLLM(BaseLLMKernel):
         assert re.search(r'ollama', self.mode, re.IGNORECASE)
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.prompt
+        prompt = agent_process.message.prompt
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
-        response = ollama.chat(model=self.model_name, messages=[
+        response = ollama.chat(
+            model=self.model_name,
+            messages=[
             {
                 "role": "user", "content": prompt
-            }
-        ])
-        agent_process.set_response(response['message']['content'])
+            }],
+        )
+        agent_process.set_response(
+            Response(
+                response_message = response['message']['content']
+            )
+        )
         agent_process.set_status("done")
         agent_process.set_end_time(time.time())
         return

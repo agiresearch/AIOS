@@ -76,10 +76,7 @@ class BaseLLMKernel(ABC):
             agent_process,
             temperature=0.0
         ):
-        steps = agent_process.prompt.split(";")
-        for step in steps:
-            self.process
-        return
+        raise NotImplementedError
 
     @abstractmethod
     def process(self,

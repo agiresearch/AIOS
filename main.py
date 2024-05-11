@@ -73,7 +73,7 @@ def main():
     math_agent = agent_thread_pool.submit(
         agent_factory.run_agent,
         "MathAgent",
-        "Solve the problem that Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?"
+        "A freelance graphic designer in Canada earns CAD 500 per project and is planning to work on projects from clients in both the UK and Canada this month. With an expected 3 projects from Canadian clients and 2 from UK clients (paying GBP 400 each), how much will the designer earn in total in CAD by the end of the month"
     )
 
     narrative_agent = agent_thread_pool.submit(

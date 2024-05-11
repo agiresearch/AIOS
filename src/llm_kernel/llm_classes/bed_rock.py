@@ -2,6 +2,7 @@ import re
 from .base_llm import BaseLLMKernel
 import time
 
+from ...utils.message import Response
 
 class BedrockLLM(BaseLLMKernel):
 
@@ -32,7 +33,7 @@ class BedrockLLM(BaseLLMKernel):
             re.search(r'claude', self.model_name, re.IGNORECASE)
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.prompt
+        prompt = agent_process.message.prompt
         from langchain_core.prompts import ChatPromptTemplate
         chat_template = ChatPromptTemplate.from_messages([
             ("user", f"{prompt}")
@@ -41,7 +42,11 @@ class BedrockLLM(BaseLLMKernel):
         self.model.model_kwargs['temperature'] = temperature
         try:
             response = self.model(messages)
-            agent_process.set_response(response.content)
+            agent_process.set_response(
+                Response(
+                    response_message=response.content
+                )
+            )
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
         agent_process.set_status("done")
