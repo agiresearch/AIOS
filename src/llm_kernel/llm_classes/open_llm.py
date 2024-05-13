@@ -139,34 +139,6 @@ class OpenLLM(BaseLLMKernel):
         else:
             return NotImplementedError
 
-    def generate(self,
-                 input_ids: torch.Tensor = None,
-                 attention_masks: torch.Tensor = None,
-                 beams: torch.Tensor = None,
-                 beam_scores: torch.Tensor = None,
-                 beam_attention_masks: torch.Tensor = None,
-                 beam_size: int = None,
-                 max_new_tokens: int = None,
-                 search_mode: str = None,
-                 start_idx: int = 0,
-                 timestamp: int = None
-                 ):
-        if search_mode == "beam_search":
-            output_ids = self.beam_search(
-                input_ids = input_ids,
-                attention_masks = attention_masks,
-                beam_size = beam_size,
-                beams = beams,
-                beam_scores = beam_scores,
-                beam_attention_masks = beam_attention_masks,
-                max_new_tokens = max_new_tokens,
-                start_idx = start_idx,
-                timestamp = timestamp
-            )
-            return output_ids
-        else:
-            return NotImplementedError
-
     def beam_search(self,
                     input_ids: torch.Tensor = None,
                     attention_masks: torch.Tensor = None,
