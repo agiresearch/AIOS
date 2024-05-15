@@ -87,7 +87,12 @@ def main():
         "RecAgent", "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
     )
 
-    agent_tasks = [math_agent, narrative_agent, rec_agent]
+    travel_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "TravelAgent", "I want to take a trip to Paris, France from July 4th to July 10th 2024 and I am traveling from New York City. Help me plan this trip."
+    )
+
+    agent_tasks = [math_agent, narrative_agent, rec_agent, travel_agent]
 
     for r in as_completed(agent_tasks):
         res = r.result()
