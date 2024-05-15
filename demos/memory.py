@@ -2,7 +2,7 @@
 # replace path with your path to AIOS
 
 # import sys, os
-# sys.path.append('C:\\Users\\rkfam\\AIOS')
+# sys.path.append('/Users/rama2r/AIOS')
 
 from src.llm_kernel.llms import LLMKernel
 from openagi.src.agents.agent_process import AgentProcess
