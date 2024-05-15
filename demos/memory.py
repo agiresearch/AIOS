@@ -1,9 +1,3 @@
-# bottom two lines fix src import error 
-# replace path with your path to AIOS
-
-# import sys, os
-# sys.path.append('/Users/rama2r/AIOS')
-
 from src.llm_kernel.llms import LLMKernel
 from openagi.src.agents.agent_process import AgentProcess
 from src.utils.message import Message as AGIMessage
