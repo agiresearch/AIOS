@@ -1,8 +1,8 @@
 # bottom two lines fix src import error 
 # replace path with your path to AIOS
 
-import sys, os
-sys.path.append('/Users/rama2r/AIOS')
+# import sys, os
+# sys.path.append('/Users/rama2r/AIOS')
 
 from src.custom_kernels.kernels import GPTKernel
 
