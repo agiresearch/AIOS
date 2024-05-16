@@ -14,7 +14,7 @@ class GPTKernel(BaseKernel):
         self.__flag: list[str, str] = ['PLAY', 'PLAY']
         self.__execute_thread = None  
 
-    def execute(self, phrase: str):
+    def execute(self, phrase: str, done_event: threading.Event):
         
 
         def execute_helper():
@@ -40,15 +40,14 @@ class GPTKernel(BaseKernel):
                     self.cache.toggle()
                     self.cache.stream('$^@', show_breaks=True)
                     self.__flag[0] = 'PLAY'
-                    print('called how many times', self.__flag)
                 
                 if chunk.choices[0].delta.content == None:
                     self.cache.stream('$^@', show_breaks=True)
                 else:
                     self.cache.stream(chunk.choices[0].delta.content, show_breaks=True)
 
-            print(self.cache.history)
             print(self.cache.history[1].content)
+            done_event.set()  
 
         self.__execute_thread = threading.Thread(target=execute_helper)
         self.__execute_thread.start()

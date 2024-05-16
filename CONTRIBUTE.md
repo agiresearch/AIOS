@@ -43,15 +43,17 @@ platform darwin -- Python 3.11.9, pytest-8.1.1, pluggy-1.5.0 -- ""
 cachedir: .pytest_cache
 rootdir: ""
 plugins: anyio-4.3.0
-collected 7 items                                                                                                                                                                                                                                                              
+collected 9 items                                                                                                                                                                                                                                                              
 
-tests/test_llms.py::test_closed_llm PASSED                                                                                                                                                                                                                               [ 14%]
-tests/test_llms.py::test_open_llm PASSED                                                                                                                                                                                                                                 [ 28%]
-tests/test_lru_k_replacer.py::test_update_access_history PASSED                                                                                                                                                                                                          [ 42%]
-tests/test_lru_k_replacer.py::test_evict PASSED                                                                                                                                                                                                                          [ 57%]
-tests/test_lru_k_replacer.py::test_set_evictable PASSED                                                                                                                                                                                                                  [ 71%]
-tests/test_lru_k_replacer.py::test_invalid_block_id PASSED                                                                                                                                                                                                               [ 85%]
-tests/test_memory.py::test_mem_alloc PASSED  
+tests/test_infinite_memory.py::test_infinite_memory PASSED                                                                                                [ 11%]
+tests/test_jit_streaming.py::test_jit_streaming PASSED                                                                                                    [ 22%]
+tests/test_llms.py::test_closed_llm PASSED                                                                                                                [ 33%]
+tests/test_llms.py::test_open_llm PASSED                                                                                                                  [ 44%]
+tests/test_lru_k_replacer.py::test_update_access_history PASSED                                                                                           [ 55%]
+tests/test_lru_k_replacer.py::test_evict PASSED                                                                                                           [ 66%]
+tests/test_lru_k_replacer.py::test_set_evictable PASSED                                                                                                   [ 77%]
+tests/test_lru_k_replacer.py::test_invalid_block_id PASSED                                                                                                [ 88%]
+tests/test_memory.py::test_mem_alloc PASSED                                                                                                               [100%]
 ```
 
 ## 3. Submitting Changes
