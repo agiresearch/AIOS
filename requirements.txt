@@ -17,3 +17,5 @@ pre-commit==3.7.0
 click==8.1.7
 python-dotenv==1.0.0
 ollama==0.1.7
+sentence_transformers==2.7.0
+groq==0.6.0
