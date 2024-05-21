@@ -34,6 +34,7 @@ class GPTLLM(BaseLLMKernel):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
+        time.sleep(2)
         response = self.model.chat.completions.create(
             model=self.model_name,
             messages=[

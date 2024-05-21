@@ -13,8 +13,8 @@ def load_agent_tasks(agent_name):
 def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
     agent_tasks = []
     for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]
-        for i in range(agent_num):
+        task_inputs = load_agent_tasks(agent_name=agent_name)[0:agent_num]
+        for i, task_input in enumerate(task_inputs):
             agent_task = agent_thread_pool.submit(
                 agent_factory.run_agent,
                 agent_name,
@@ -64,8 +64,8 @@ def get_numbers_sequential(agent_list, agent_factory):
 
     accumulated_time = 0
     for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]  # Assuming first task relevant
-        for _ in range(agent_num):
+        task_inputs = load_agent_tasks(agent_name=agent_name)[0: agent_num]  # Assuming first task relevant
+        for i, task_input in enumerate(task_inputs):
             output = agent_factory.run_agent(agent_name=agent_name, task_input=task_input)
 
             agent_turnaround_time = output["agent_turnaround_time"] + accumulated_time
