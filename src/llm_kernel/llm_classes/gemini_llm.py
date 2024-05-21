@@ -43,6 +43,7 @@ class GeminiLLM(BaseLLMKernel):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
+        time.sleep(2)
         outputs = self.model.generate_content(
             prompt
         )

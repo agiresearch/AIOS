@@ -51,7 +51,7 @@ def main():
         log_mode = llm_kernel_log_mode
     )
 
-    scheduler = RRScheduler(
+    scheduler = FIFOScheduler(
         llm = llm,
         log_mode = scheduler_log_mode
     )
@@ -65,34 +65,40 @@ def main():
         agent_log_mode = agent_log_mode
     )
 
-    agent_thread_pool = ThreadPoolExecutor(max_workers=64)
+    agent_thread_pool = ThreadPoolExecutor(max_workers=500)
 
     scheduler.start()
 
     # construct agents
-    math_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "MathAgent",
-        "A freelance graphic designer in Canada earns CAD 500 per project and is planning to work on projects from clients in both the UK and Canada this month. With an expected 3 projects from Canadian clients and 2 from UK clients (paying GBP 400 each), how much will the designer earn in total in CAD by the end of the month"
-    )
-
-    narrative_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "NarrativeAgent",
-        "Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island."
-    )
-
-    rec_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "RecAgent", "I want to take a tour to New York during the spring break, recommend some restaurants around for me."
-    )
 
     travel_agent = agent_thread_pool.submit(
         agent_factory.run_agent,
         "TravelAgent", "I want to take a trip to Paris, France from July 4th to July 10th 2024 and I am traveling from New York City. Help me plan this trip."
     )
 
-    agent_tasks = [math_agent, narrative_agent, rec_agent, travel_agent]
+    math_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "MathAgent",
+        "Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD."
+    )
+
+    academic_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "AcademicAgent",
+        "Summarize recent advancements in quantum computing from the past five years."
+    )
+
+    rec_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "RecAgent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
+    )
+
+    creation_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "CreationAgent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    )
+
+    agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
 
     for r in as_completed(agent_tasks):
         res = r.result()

@@ -1,30 +1,30 @@
-Mark has 4 bags of marbles, each with 25 marbles. He gives 3 marbles to each of his 5 friends. How many marbles does he have left?
-Sara bakes 60 cookies and divides them evenly among her 4 friends. How many cookies does each friend receive?
-A farmer has 5 fields with 120 apple trees each. If each tree produces 30 apples, how many apples does the farmer have in total?
-Jenny reads 150 pages of a book each day. If she continues at this rate, how many pages will she read in 10 days?
-Alex buys 3 packs of pens, with each pack containing 12 pens, and gives 5 pens away. How many pens does Alex have now?
-A school orders 200 notebooks, each containing 50 pages. If students take 3 pages each day from their notebooks, how many days will the pages last?
-A baker makes 10 cakes, each cut into 8 slices. If he sells 45 slices, how many full cakes does he have left?
-There are 6 boxes with 18 chocolates each. If 4 chocolates are eaten from each box, how many chocolates are left in total?
-A library has 8 shelves, each with 35 books. If 15 books are checked out from each shelf, how many books remain in the library?
-Paul has 150 stamps and decides to distribute them equally among his 7 friends. How many stamps does each friend receive, and how many are left over?
-A train travels 450 miles in 5 hours. If it maintains the same speed, how far will it travel in 8 hours?
-A class of 30 students needs 5 pencils each for an exam. If each box contains 50 pencils, how many boxes are needed?
-A gardener plants 200 seeds. If 85% of the seeds germinate, how many plants does he expect to grow?
-An office has 9 computers, each running 4 applications simultaneously. How many applications are running in total?
-Emma saves $75 each month. After how many months will she have saved enough to buy a bike for $450?
-A marathon runner completes 3/5 of a race in 2 hours. At the same pace, how long will it take to finish the race?
-A box contains 250 screws. If one piece of furniture requires 15 screws, how many pieces of furniture can be assembled with the screws in the box?
-A movie theater has 15 rows with 20 seats each. If 70% of the seats are occupied, how many people are in the theater?
-If a car travels at 60 miles per hour and increases its speed by 5 miles per hour each hour, what is its speed after 4 hours?
-A wall needs 120 bricks to be built completely. If a worker can install 15 bricks per hour, how many hours will it take to build the wall?
-A recipe calls for 250 grams of flour, which is 25% of the total ingredients' weight. What is the total weight of all ingredients?
-During a sale, a shirt’s price is reduced by 15%, making the new price $85. What was the original price?
-A parking lot has 100 spaces and is 75% full. How many spaces are currently occupied, and how many are available?
-A water tank holds 500 liters and is currently 80% full. How many more liters can it hold?
-A runner increases his distance by 10% each day, starting with 5 km on day one. How far will he run on the fifth day?
-A cube's volume is 125 cubic inches. What is the length of each side of the cube?
-A factory produces 400 units of a product each day. If each unit sells for $25, what is the total daily revenue?
-A bus travels 300 km with 10 stops along the way. If each stop lasts 5 minutes, how long is the total stop time?
-A book has 20 chapters, each with 15 pages. How many pages does the book have?
-A store has 300 apples and sells 85% of them. How many apples are sold, and how many are left?
+Convert 1500 USD to Euros and calculate the total amount if the exchange rate changes by 5% in favor of Euros.
+Calculate the integral of the function "x**3 - 4*x + 2" from x=0 to x=5.
+Convert 2500 GBP to Japanese Yen and determine the equivalent amount in USD if the exchange rate for JPY to USD is 0.0091.
+Solve the differential equation "dy/dx = 3x**2 - 2x + 1" with the initial condition y(0) = 4.
+Calculate the derivative of the function "exp(2*x) * sin(x)" at x=pi/4.
+Convert 10000 CAD to Indian Rupees and find out how much it would be in Euros if 1 CAD equals 0.68 Euros.
+Find the volume of a sphere with a radius of 7 units using the formula "(4/3) * pi * r**3".
+Calculate the value of the definite integral "3x**2 + 2x + 1" from x=0 to x=2.
+Convert 3000 AUD to Swiss Francs and determine the equivalent amount in USD if 1 CHF equals 1.08 USD.
+Solve for x in the equation "3x**3 - 5x**2 + 6*x - 8 = 0".
+Calculate the area under the curve of "log(x)" from x=1 to x=5.
+Convert 7500 EUR to Brazilian Real and find out how much it would be in USD if 1 BRL equals 0.19 USD.
+Determine the roots of the quadratic equation "4x**2 - 7x + 3 = 0".
+Find the circumference and area of a circle with a diameter of 10 units using the formulas "pi * d" and "pi * (d/2)**2".
+Convert 5000 CNY to South Korean Won and determine the equivalent amount in USD if 1 KRW equals 0.0009 USD.
+Calculate the length of the hypotenuse of a right triangle with legs of 6 units and 8 units using the formula "sqrt(a2 + b2)".
+Convert 12000 INR to Singapore Dollars and find out how much it would be in Euros if 1 SGD equals 0.62 Euros.
+Calculate the eigenvalues of the matrix "[[4, 1], [2, 3]]".
+Convert 6000 RUB to USD and determine the total amount if the exchange rate changes by 3% in favor of USD.
+Solve the system of linear equations "2x + 3y = 5" and "4*x - y = 11".
+Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
+Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD.
+Find the inverse of the matrix "[[2, 5], [3, 7]]".
+Calculate the sum of an arithmetic series with the first term "a = 3", the common difference "d = 5", and "n = 20" terms using the formula "n/2 * (2*a + (n - 1)*d)".
+Convert 8000 SEK to Norwegian Krone and determine the equivalent amount in USD if 1 NOK equals 0.11 USD.
+Solve the equation "5cos(x) = 3" for x in the interval [0, 2pi].
+Calculate the determinant of the matrix "[[6, 1, 1], [4, -2, 5], [2, 8, 7]]".
+Convert 9500 ZAR to Euros and find out how much it would be in USD if 1 EUR equals 1.1 USD.
+Calculate the compound interest for a principal amount of 5000 USD at an annual interest rate of 5% compounded quarterly for 10 years using the formula "P*(1 + r/n)**(n*t)".
+Find the coordinates of the intersection points of the equations "y = 2*x + 3" and "y = -x + 1".

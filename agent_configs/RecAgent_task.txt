@@ -1,1 +1,30 @@
-I want to take a tour to New York during the spring break, recommend some restaurants around for me.
+Recommend three action movies from the past five years ranked between 1 and 20 with ratings above 8.0.
+Suggest three family-friendly TV series released in the last decade ranked between 1 and 50 with ratings above 7.5.
+Find two romantic comedies from 2010-2020 ranked between 10 and 50 with ratings above 7.5.
+Recommend three TV series with strong female leads, released in the last five years, ranked between 1 and 20 with ratings above 8.0.
+Suggest three critically acclaimed horror movies from the last ten years ranked between 10 and 50 with ratings above 7.5.
+Recommend four movies suitable for a weekend marathon ranked between 1 and 30 with ratings above 7.5.
+Find three TV series with intriguing crime and mystery plots released in the last five years ranked between 1 and 20 with ratings above 8.0.
+Suggest two top-rated sci-fi movies from the last five years ranked between 1 and 10 with ratings above 8.5.
+Recommend three comedy TV series for light-hearted entertainment ranked between 10 and 50 with ratings above 7.5.
+Find three movies that have won multiple awards ranked between 1 and 20 with ratings above 8.0.
+Suggest three TV series with a historical setting released in the last decade ranked between 10 and 50 with ratings above 7.5.
+Recommend three animated movies for children ranked between 10 and 50 with ratings above 7.0.
+Find three top fantasy TV series with epic storylines released in the last decade ranked between 1 and 20 with ratings above 8.0.
+Suggest two documentaries on current events ranked between 1 and 20 with ratings above 7.5.
+Recommend three movies that are adaptations of famous books ranked between 1 and 20 with ratings above 8.0.
+Find three TV series based on true stories ranked between 1 and 20 with ratings above 8.0.
+Suggest two top-rated thrillers with unexpected twists released in the last decade ranked between 1 and 20 with ratings above 8.5.
+Recommend three TV series suitable for binge-watching over a weekend ranked between 1 and 20 with ratings above 8.0.
+Find three movies featuring strong ensemble casts ranked between 10 and 50 with ratings above 7.5.
+Suggest three feel-good TV series for relaxing evenings ranked between 10 and 50 with ratings above 7.5.
+Recommend two top-rated war movies released in the last twenty years ranked between 1 and 20 with ratings above 8.0.
+Find three TV series that explore futuristic themes ranked between 1 and 20 with ratings above 8.0.
+Suggest two classic movies from the 20th century ranked between 1 and 20 with ratings above 8.0.
+Recommend three TV series with complex character development released in the last decade ranked between 1 and 20 with ratings above 8.0.
+Find three movies directed by renowned filmmakers ranked between 1 and 20 with ratings above 8.0.
+Suggest three sitcoms for light-hearted fun ranked between 10 and 50 with ratings above 7.5.
+Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0.
+Find three TV series highly rated by critics ranked between 1 and 10 with ratings above 8.5.
+Suggest three top-rated indie movies released in the last decade ranked between 1 and 20 with ratings above 8.0.
+Recommend three TV series with a strong fan following and cult status ranked between 1 and 20 with ratings above 8.0.
