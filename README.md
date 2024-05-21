@@ -59,11 +59,8 @@ If you use LLM APIs, you need to setup your API key such as [OpenAI API Key](htt
 export OPENAI_API_KEY=<YOUR OPENAI API KEY>
 export GEMINI_API_KEY=<YOUR GEMINI API KEY>
 ```
-If you use external tool APIs in your agents, you need to set up your API keys as follows:
-```bash
-export RAPID_API_KEY=""
-export WOLFRAM_ALPHA_APPID=""
-```
+If you use external API tools in your agents, please refer to the [How to setup external tools](https://github.com/agiresearch/OpenAGI/blob/main/tools.md).
+
 You can also create .env file from the .env.example file, and then use dotenv to load the environment variables using .env file into your application's environment at runtime.
 
 ```bash
@@ -119,14 +116,14 @@ bash scripts/interactive/gpt4.sh
 ````
 Instance of available commands
 ```bash
-run NarrativeAgent: Craft a tale about a valiant warrior on a quest to uncover priceless treasures hidden within a mystical island.
+run MathAgent: Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
 print agent
 ```
 
 #### (3) Evaluation Mode
 In the evaluation mode, we allow you to configure different types of predefined agents (MathAgent, NarrativeAgent, RecAgent) with a configurable number of agents for each type. Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
 ```bash
-python eval.py --llm_name gpt-3.5-turbo --agents MathAgent:1,NarrativeAgent:1,RecAgent:1
+python eval.py --llm_name gpt-3.5-turbo --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1
 ```
 You can use bash script to start the agent execution like this
 ```bash
@@ -134,8 +131,8 @@ bash scripts/eval/gpt4.sh
 ````
 If you want to obtain metrics for either concurrent execution (with AIOS) or sequential execution (without AIOS), you can specify the mode parameter when running the eval.py file."
 ```bash
-python eval.py --llm_name gpt-4 --agents MathAgent:1,NarrativeAgent:1,RecAgent:1 --mode concurrent-only
-python eval.py --llm_name gpt-4 --agents MathAgent:1,NarrativeAgent:1,RecAgent:1 --mode sequential-only
+python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode concurrent-only
+python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode sequential-only
 ```
 
 ### 3.3 Supported LLM backbones
