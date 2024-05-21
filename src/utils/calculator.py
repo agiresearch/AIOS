@@ -31,10 +31,11 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
     # Collect data
     for result in as_completed(agent_tasks):
         output = result.result()
-        stats['turnaround_times'].append(output["agent_turnaround_time"])
         stats['waiting_times'].append(output["agent_waiting_time"])
+        stats['turnaround_times'].append(output["agent_turnaround_time"])
         stats['request_waiting_times'].extend(output["request_waiting_times"])
         stats['request_turnaround_times'].extend(output["request_turnaround_times"])
+
 
     # Compute averages and percentiles
     def compute_metrics(data):
@@ -45,8 +46,8 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
         }
 
     metrics = {
-        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'agent_waiting_time': compute_metrics(stats['waiting_times']),
+        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'request_waiting_time': compute_metrics(stats['request_waiting_times']),
         'request_turnaround_time': compute_metrics(stats['request_turnaround_times'])
     }
@@ -95,8 +96,8 @@ def get_numbers_sequential(agent_list, agent_factory):
         }
 
     metrics = {
-        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'agent_waiting_time': compute_metrics(stats['waiting_times']),
+        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'request_waiting_time': compute_metrics(stats['request_waiting_times']),
         'request_turnaround_time': compute_metrics(stats['request_turnaround_times'])
     }
