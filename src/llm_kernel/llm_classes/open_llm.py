@@ -6,18 +6,24 @@ from transformers import AutoTokenizer
 
 from ...utils.message import Response
 
+from ...utils.utils import get_from_env
+
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
         self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
 
+        self.auth_token = get_from_env("HF_AUTH_TOKENS")
+
         self.model = MODEL_CLASS[self.model_type].from_pretrained(
             self.model_name,
             device_map="auto",
-            max_memory=self.max_gpu_memory
+            max_memory=self.max_gpu_memory,
+            use_auth_token = self.auth_token
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
+            use_auth_token = self.auth_token
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 

@@ -13,8 +13,8 @@ def load_agent_tasks(agent_name):
 def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
     agent_tasks = []
     for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]
-        for i in range(agent_num):
+        task_inputs = load_agent_tasks(agent_name=agent_name)[0:agent_num]
+        for i, task_input in enumerate(task_inputs):
             agent_task = agent_thread_pool.submit(
                 agent_factory.run_agent,
                 agent_name,
@@ -31,10 +31,11 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
     # Collect data
     for result in as_completed(agent_tasks):
         output = result.result()
-        stats['turnaround_times'].append(output["agent_turnaround_time"])
         stats['waiting_times'].append(output["agent_waiting_time"])
+        stats['turnaround_times'].append(output["agent_turnaround_time"])
         stats['request_waiting_times'].extend(output["request_waiting_times"])
         stats['request_turnaround_times'].extend(output["request_turnaround_times"])
+
 
     # Compute averages and percentiles
     def compute_metrics(data):
@@ -45,8 +46,8 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
         }
 
     metrics = {
-        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'agent_waiting_time': compute_metrics(stats['waiting_times']),
+        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'request_waiting_time': compute_metrics(stats['request_waiting_times']),
         'request_turnaround_time': compute_metrics(stats['request_turnaround_times'])
     }
@@ -64,8 +65,8 @@ def get_numbers_sequential(agent_list, agent_factory):
 
     accumulated_time = 0
     for agent_name, agent_num in agent_list:
-        task_input = load_agent_tasks(agent_name=agent_name)[0]  # Assuming first task relevant
-        for _ in range(agent_num):
+        task_inputs = load_agent_tasks(agent_name=agent_name)[0: agent_num]  # Assuming first task relevant
+        for i, task_input in enumerate(task_inputs):
             output = agent_factory.run_agent(agent_name=agent_name, task_input=task_input)
 
             agent_turnaround_time = output["agent_turnaround_time"] + accumulated_time
@@ -95,8 +96,8 @@ def get_numbers_sequential(agent_list, agent_factory):
         }
 
     metrics = {
-        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'agent_waiting_time': compute_metrics(stats['waiting_times']),
+        'agent_turnaround_time': compute_metrics(stats['turnaround_times']),
         'request_waiting_time': compute_metrics(stats['request_waiting_times']),
         'request_turnaround_time': compute_metrics(stats['request_turnaround_times'])
     }
