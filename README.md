@@ -18,6 +18,8 @@ The objective of AIOS is to provide the LLM kernel which will be an abstraction 
 At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
 ## 📰 2. News
+- **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
+- **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
 - **[2024-04-29]** 📊 The evaluation mode of AIOS is added, which supports customizable agent types and agent instance numbers in each agent type.
 - **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms from huggingface) and customized console loggers.
