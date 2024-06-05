@@ -13,6 +13,7 @@ import re
 # logger = logging.getLogger(__name__)
 
 def parse_global_args():
+    """ Duplicate of parser in eval.py """
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")

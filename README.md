@@ -13,6 +13,9 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 <img src="images/AIOS-Architecture.png">
 </p>
 
+The objective of AIOS is to provide the LLM kernel which will be an abstraction on top of the OS kernel. The kernel intends to facilitate the installation of agents, which are utilities the kernel can interact with in order to perform tasks the user queries. For example, the MathAgent facilitates mathematical computations, such as currency conversion, integral calculus, or even basic algebraic manipulation. The method of installation is intended to be in a manner similar to [apt](https://en.wikipedia.org/wiki/APT_(software)) or [brew](https://brew.sh). 
+
+At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
 ## 📰 2. News
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
@@ -35,6 +38,7 @@ git clone https://github.com/agiresearch/AIOS.git
 git clone https://github.com/agiresearch/OpenAGI.git
 ```
 **Make sure you have Python = 3.11**
+Download [Anaconda](https://www.anaconda.com/download/success)
 Install the required packages using pip
 ```bash
 conda create -n AIOS python=3.11
@@ -42,10 +46,24 @@ source activate AIOS
 cd AIOS
 pip install -r requirements.txt
 ```
-**Allow your code to be able to see 'openagi'**
+
+If you don't have an Nvidia GPU, you could also use a venv
+```bash
+cd AIOS
+python -m venv venv
+chmod +x venv/bin/activate
+. venv/bin/activate
+pip install -r requirements.txt
 ```
+**Allow your code to be able to see 'openagi'**
+```bash
 cd ../OpenAGI
 pip install -e .
+```
+
+OpenAGI is **now on PyPi**, and can be installed easily with the following:
+```bash
+pip install pyopenagi
 ```
 
 ### 3.2 Usage
@@ -66,6 +84,11 @@ You can also create .env file from the .env.example file, and then use dotenv to
 ```bash
 cp .env.example .env
 ```
+
+### 3.3 Documentation
+There is a README.md in each directory which provides a brief explanation on what the contents of the directory include.
+
+Additionally, `man/` contains man pages providing information on how to use the functions provided by AIOS.
 
 #### (1) Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents

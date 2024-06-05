@@ -1,3 +1,5 @@
+# Storing to json files to offload conversation history
+
 from src.storage.base import BaseStorage
 
 import json

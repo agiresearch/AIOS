@@ -34,7 +34,9 @@ class GeminiLLM(BaseLLMKernel):
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
+        # ensures the model is the current one 
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
+
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt
@@ -43,7 +45,10 @@ class GeminiLLM(BaseLLMKernel):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
+
+        # blocks this thread to allow execution of other threads
         time.sleep(2)
+
         outputs = self.model.generate_content(
             prompt
         )

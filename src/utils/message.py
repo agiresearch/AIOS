@@ -1,3 +1,6 @@
+# Helper classes that make it easier to return messages and responses from 
+# functions in the LLMKernel
+
 class Message:
     def __init__(self,
             prompt,
