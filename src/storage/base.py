@@ -1,3 +1,5 @@
+# Stub implementation of storing interactions to the disk
+
 class BaseStorage:
     def __init__(self):
         self.storage_pool = {}

@@ -1,3 +1,5 @@
+# registering all proprietary llm models in a constant
+
 from .gpt_llm import GPTLLM
 from .open_llm import OpenLLM
 from .gemini_llm import GeminiLLM

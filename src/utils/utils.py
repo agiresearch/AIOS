@@ -1,3 +1,7 @@
+# This file contains helpful utilities for the rest of the code, encompassing
+# parsing, environment variables, logging, etc.
+
+
 import argparse
 
 import os
@@ -13,16 +17,19 @@ import re
 # logger = logging.getLogger(__name__)
 
 def parse_global_args():
+    """ Construct help message and parse argumets using argparse """
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
-    parser.add_argument('--eval_device', type=str, help="Evaluation device")
-    parser.add_argument('--max_new_tokens', type=int, default=256, help="The maximum number of new tokens for generation")
+    parser.add_argument('--eval_device', type=str, help="Evaluation device (example: \"conda:0\" for 2 GPUs)")
+    parser.add_argument('--max_new_tokens', type=int, default=256,
+                        help="The maximum number of new tokens for generation")
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
 
     return parser
+
 
 def extract_before_parenthesis(s: str) -> str:
     match = re.search(r'^(.*?)\([^)]*\)', s)
@@ -51,6 +58,8 @@ def get_from_env(env_key: str, default: Optional[str] = None) -> str:
         )
 
 class Logger:
+    """ Helper logger file """
+
     def __init__(self, log_mode) -> None:
         self.log_mode = log_mode
 

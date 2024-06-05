@@ -37,7 +37,7 @@ Add your test code into the `tests/` directory if any, then run test via [pytest
 pytest -v tests/
 ```
 sample output
-```
+
 ============================================================================================================================= test session starts ==============================================================================================================================
 platform darwin -- Python 3.11.9, pytest-8.1.1, pluggy-1.5.0 -- ""
 cachedir: .pytest_cache
@@ -83,5 +83,82 @@ git commit -m <type>: <subject>
 2. Choose the base branch and the compare branch (your feature branch).💡 Note that when you add new features, it is recommended to choose the (`dev`) branch and if your change does not affect original functions, you may consider choosing the (`main`) branch.
 3. Write a title and describe your changes in the description. And it is recommended to select the label of the change to make it more clear.
 
-## 4. Review and Approval
+
+## 4. Style Guide
+
+This is the style guide determining how code should be formatted. As more code is added, this documentation will be updated.
+
+### Line Length
+
+Each line should not exceed 80 characters.
+
+### Spaces
+Each function or class is to have a space between the line and any preceding code if it is not directly associated with the function or class. For example:
+```py
+# this is a useful comment for the bar function
+
+def foo():
+    pass
+```
+
+
+### Commenting 
+Each directory is required to describe the purpose of the directory and each file in the directory in README.md. Each file is required to have a header describing the purpose at the top. For example:
+
+```py
+# This file has helpful math functions that we will use in the foo module in 
+# AIOS
+
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+```
+
+Any comments for imports should be preceded by a `#` as well. Spaces should be applied as necessary.
+
+Each function is required to have a comment right under the header which describes what it does, unless the function encompasses few lines. For example:
+
+```py
+def foo():
+    """This function does something"""
+    pass
+```
+
+The same applies to classes:
+
+```py
+class Bar:
+    """This class does something"""
+
+    def baz(self):
+        """This function does something"""
+        pass
+    pass
+```
+
+Lines that are to be commented out can be marked with `#`. For example: 
+
+```py
+# def foo():
+#     """This function does something"""
+#     pass
+```
+
+It is not recommended to comment out lines, but if you must make sure that the purpose is understood by the reader.
+
+Any comments for a specific line are additionally to be marked with `#`:
+
+```py
+a = 1
+b = 3
+c = a + b # This adds a and b and stores the result in c
+```
+
+A comment describing multiple lines in a particular function can be represented by `#` as well.
+
+## 5. Review and Approval
 Our maintainers will have a review of that and might give some suggestions or ask for more details. After they approve, your commitment can be incorporated into AIOS!
+
+If you need some ideas on what to get started with, take a look at our goals for the rest of this year in [issues](https://github.com/agiresearch/AIOS/issues).
