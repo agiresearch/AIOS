@@ -1,3 +1,5 @@
+# wrapper around gemini from google for LLMs
+
 import re
 
 from .base_llm import BaseLLMKernel
@@ -18,6 +20,7 @@ class GeminiLLM(BaseLLMKernel):
                          log_mode)
 
     def load_llm_and_tokenizer(self) -> None:
+        """ dynamic loading because the module is only needed for this case """
         assert self.model_name == "gemini-pro"
         try:
             import google.generativeai as genai
@@ -34,7 +37,11 @@ class GeminiLLM(BaseLLMKernel):
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
+        # ensures the model is the current one 
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
+
+        """ wrapper around functions"""
+
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt
@@ -43,7 +50,10 @@ class GeminiLLM(BaseLLMKernel):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
+
+        # blocks this thread to allow execution of other threads
         time.sleep(2)
+
         outputs = self.model.generate_content(
             prompt
         )

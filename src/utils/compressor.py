@@ -1,3 +1,6 @@
+# wrapper for zlib compressor to be used by the UniformMemoryManager class in
+# src/memory/single_memory.py
+
 import zlib
 
 class Compressor:

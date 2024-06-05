@@ -1,3 +1,6 @@
+# This file contains helpful parsing utilities
+# TODO: where is this used?
+
 import os
 
 class BaseParser:

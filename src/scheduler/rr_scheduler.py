@@ -1,7 +1,12 @@
-from .base import BaseScheduler
+# Implementing a round robin scheduler using threads
+# Allows multiple agents to run at the same time, with each getting a fixed
+# chunk of processor time
 
 from .base import BaseScheduler
 
+from .base import BaseScheduler
+
+# allows for memory to be shared safely between threads
 from queue import Queue, Empty
 from threading import Thread
 
@@ -19,6 +24,10 @@ class RRScheduler(BaseScheduler):
     def run(self):
         while self.active:
             try:
+                """ 
+                wait 0.05 seconds between each iteration at the minimum 
+                if there is nothing received in a second, it will raise Empty
+                """
                 agent_process = self.agent_process_queue.get(block=True, timeout=0.05)
                 agent_process.set_time_limit(self.time_limit)
 
@@ -28,6 +37,7 @@ class RRScheduler(BaseScheduler):
 
             except Empty:
                 pass
-
+    
     def execute_request(self, agent_request):
+        """ called in multiple threads """
         self.llm.address_request(agent_request)

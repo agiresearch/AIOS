@@ -1,6 +1,8 @@
 import re
 from .base_llm import BaseLLMKernel
 import time
+
+# could be dynamically imported similar to other models
 from openai import OpenAI
 
 from ...utils.message import Response
@@ -26,7 +28,10 @@ class GPTLLM(BaseLLMKernel):
             agent_process,
             temperature=0.0
         ):
+        # ensures the model is the current one
         assert re.search(r'gpt', self.model_name, re.IGNORECASE)
+
+        """ wrapper around openai api """
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt

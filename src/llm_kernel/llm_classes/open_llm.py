@@ -11,10 +11,12 @@ from ...utils.utils import get_from_env
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
+        """ fetch the model from huggingface and run it """
         self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
 
         self.auth_token = get_from_env("HF_AUTH_TOKENS")
 
+        """ only casual lms for now """
         self.model = MODEL_CLASS[self.model_type].from_pretrained(
             self.model_name,
             device_map="auto",
@@ -37,6 +39,7 @@ class OpenLLM(BaseLLMKernel):
             level = "executing"
         )
 
+        """ context_manager works only with open llms """
         if self.context_manager.check_restoration(agent_process.get_pid()):
             restored_context = self.context_manager.gen_recover(
                 agent_process.get_pid()
@@ -57,6 +60,7 @@ class OpenLLM(BaseLLMKernel):
                 timestamp = agent_process.get_time_limit()
             )
         else:
+            """ use the system prompt otherwise """
             # prompt = agent_process.prompt
             prompt = agent_process.message.prompt
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
@@ -76,6 +80,7 @@ class OpenLLM(BaseLLMKernel):
 
         output_ids = outputs["result"]
 
+        """ devectorize the output """
         prompt = agent_process.message.prompt
         result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
         result = result[len(prompt)+1: ]
@@ -95,6 +100,7 @@ class OpenLLM(BaseLLMKernel):
             agent_process.set_status("done")
 
         else:
+            """ the module will automatically suspend if reach the time limit """
             self.logger.log(
                 f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
                 level = "suspending"
@@ -129,6 +135,7 @@ class OpenLLM(BaseLLMKernel):
                  start_idx: int = 0,
                  timestamp: int = None
                  ):
+        """ only supports beam search generation """
         if search_mode == "beam_search":
             output_ids = self.beam_search(
                 input_ids = input_ids,
@@ -143,6 +150,7 @@ class OpenLLM(BaseLLMKernel):
             )
             return output_ids
         else:
+            # TODO: greedy support
             return NotImplementedError
 
     def beam_search(self,
@@ -156,6 +164,12 @@ class OpenLLM(BaseLLMKernel):
                     start_idx: int = 0,
                     timestamp: int = None
                     ):
+
+        """ 
+        beam search gets multiple token sequences concurrently and calculates
+        which token sequence is the most likely opposed to calculating the 
+        best token greedily
+        """
 
         if beams is None or beam_scores is None or beam_attention_masks is None:
             beams = input_ids.repeat(beam_size, 1)
