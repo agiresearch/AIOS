@@ -1,5 +1,6 @@
 # Helper classes that make it easier to return messages and responses from 
-# functions in the LLMKernel
+# from the LLMs
+# This is used by all the LLMs in the src/llm_kernel/llm_classes/ directory
 
 class Message:
     def __init__(self,

@@ -121,7 +121,7 @@ Then, you can run the Python script with the input parameter to start using AIOS
 python main.py --llm_name ollama/llama3
 ```
 #### (2) Interactive Mode
-In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent).
+In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., `run \<xxxAgent\>: \<YOUR TASK\>`, `print agent`).
 Different from the interactive mode, you need to set all the default loggers as file loggers.
 ```bash
 # For open-sourced LLMs
@@ -139,14 +139,20 @@ You can use bash script to start the interactive simulation session like this
 ```bash
 bash scripts/interactive/gpt4.sh
 ````
-Instance of available commands
+
+Example run of simulator.py:
 ```bash
 run MathAgent: Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
 print agent
 ```
 
+A `run` command will **not output** to the standard output. Instead, it will create a log file.
+
 #### (3) Evaluation Mode
-In the evaluation mode, we allow you to configure different types of predefined agents (MathAgent, NarrativeAgent, RecAgent) with a configurable number of agents for each type. Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
+In the evaluation mode, we draw prompts for each agent from `agent_configs/` and evaluate the performance of the agents by allowing the user to specify which agents should be run. 
+
+Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
+
 ```bash
 python eval.py --llm_name gpt-3.5-turbo --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1
 ```
@@ -158,6 +164,11 @@ If you want to obtain metrics for either concurrent execution (with AIOS) or seq
 ```bash
 python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode concurrent-only
 python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode sequential-only
+```
+
+You could also run the models locally:
+```bash
+python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
 ```
 
 ### 3.3 Supported LLM backbones

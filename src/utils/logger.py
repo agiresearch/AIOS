@@ -1,3 +1,9 @@
+# This file contains utilities for logging which are used in the simulator.py
+# file and related sections for logging the scheduler and agents's outputs
+# Each subclass overrides the load_log_file method depending on its use case
+# TODO: support stdout and stderr logging
+
+# alternative to argparse used due to its inconsistencies
 import click
 
 import os
@@ -5,6 +11,8 @@ import os
 from datetime import datetime
 
 class BaseLogger:
+    """ stub implementation of logging utilities """
+
     def __init__(self,
             logger_name,
             log_mode = "console",
@@ -22,6 +30,7 @@ class BaseLogger:
             assert self.log_mode == "file" and self.log_file is not None
             self.log_to_file(content, self.log_file)
 
+    # each subclass should override this
     def load_log_file(self):
         pass
 

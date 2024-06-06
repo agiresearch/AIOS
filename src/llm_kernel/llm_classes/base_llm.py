@@ -42,6 +42,7 @@ class BaseLLMKernel(ABC):
         )
 
     def convert_map(self, map: dict) -> dict:
+        """ helper utility to convert the keys of a map to int """
         new_map = {}
         for k,v in map.items():
             new_map[int(k)] = v
@@ -53,9 +54,8 @@ class BaseLLMKernel(ABC):
             config = json.load(f)
             return config
 
-    # currently only checks against the model names
-    # TODO add more checks, maybe a standardized config
     def check_opensourced(self, model_name):
+        """ check against the names as a temporary solution """
         pattern = r'(?i)\bgpt\b|\bclaude\b|\bgemini\b'
         return re.search(pattern, model_name) is not None
 

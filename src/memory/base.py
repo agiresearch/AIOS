@@ -1,6 +1,7 @@
 # This file provides a wrapper on memory access, similarly to working with 
 # pointers in low level languages
 # The memory is organized in blocks of a single byte
+# TODO: Is this used for Queues?
 
 from threading import Thread
 
@@ -17,7 +18,7 @@ class MemoryRequest:
 class Memory:
     def __init__(self, size=1024):
         self.size = size
-        # makes an array of bytes, typically how memory is organized
+        """ makes an array of bytes, typically how memory is organized """
         self.memory = (ctypes.c_ubyte * size)()
         self.free_blocks = [(0, size - 1)]
 
@@ -53,7 +54,7 @@ class Memory:
         data = self.memory[address:address + size]
         return data
 
-# abstract implementation of memory utilities 
+# abstract implementation of memory utilities for thread safe access
 class BaseMemoryManager:
     def __init__(self, max_memory_block_size, memory_block_num):
         pass
