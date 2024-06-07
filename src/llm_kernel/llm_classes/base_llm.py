@@ -54,6 +54,8 @@ class BaseLLMKernel(ABC):
             config = json.load(f)
             return config
 
+    # currently only checks against the model names
+    # TODO add more checks, maybe a standardized config
     def check_opensourced(self, model_name):
         """ check against the names as a temporary solution """
         pattern = r'(?i)\bgpt\b|\bclaude\b|\bgemini\b'

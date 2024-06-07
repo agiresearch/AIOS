@@ -1,7 +1,6 @@
 # This file provides a wrapper on memory access, similarly to working with 
 # pointers in low level languages
 # The memory is organized in blocks of a single byte
-# TODO: Is this used for Queues?
 
 from threading import Thread
 

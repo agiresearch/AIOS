@@ -47,6 +47,8 @@ To run AIOS, you will need to install our agent creation package, [OpenAGI](http
 git clone https://github.com/agiresearch/AIOS.git
 git clone https://github.com/agiresearch/OpenAGI.git
 ```
+**Make sure you have Python = 3.11**
+Download [Anaconda](https://www.anaconda.com/download/success)
 Install the required packages using pip
 ```bash
 conda create -n AIOS python=3.11
@@ -95,7 +97,6 @@ cp .env.example .env
 
 ### 3.4 Documentation
 There is a README.md in each directory which provides a brief explanation on what the contents of the directory include.
-
 
 #### (1) Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents

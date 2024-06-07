@@ -39,9 +39,7 @@ class GeminiLLM(BaseLLMKernel):
                 temperature=0.0) -> None:
         # ensures the model is the current one 
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
-
         """ wrapper around functions"""
-
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt
