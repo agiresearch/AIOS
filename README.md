@@ -31,7 +31,15 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 
 ## ✈️ 3. Getting Started
 
-### 3.1 Installation
+### 3.1 Prerequisites
+- Python 3.11
+- [Anaconda](https://www.anaconda.com/download/success)
+- [git](https://git-scm.com/downloads)
+- [pip](https://pypi.org/project/pip/)
+
+At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free). 
+
+### 3.2 Installation
 To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
 
 **Git clone AIOS and [OpenAGI]((https://github.com/agiresearch/OpenAGI))**
@@ -39,8 +47,6 @@ To run AIOS, you will need to install our agent creation package, [OpenAGI](http
 git clone https://github.com/agiresearch/AIOS.git
 git clone https://github.com/agiresearch/OpenAGI.git
 ```
-**Make sure you have Python = 3.11**
-Download [Anaconda](https://www.anaconda.com/download/success)
 Install the required packages using pip
 ```bash
 conda create -n AIOS python=3.11
@@ -68,7 +74,7 @@ OpenAGI is **now on PyPi**, and can be installed easily with the following:
 pip install pyopenagi
 ```
 
-### 3.2 Usage
+### 3.3 Usage
 If you use open-sourced models from huggingface, you need to setup your [Hugging Face token](https://huggingface.co/settings/tokens) and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
@@ -87,10 +93,9 @@ You can also create .env file from the .env.example file, and then use dotenv to
 cp .env.example .env
 ```
 
-### 3.3 Documentation
+### 3.4 Documentation
 There is a README.md in each directory which provides a brief explanation on what the contents of the directory include.
 
-Additionally, `man/` contains man pages providing information on how to use the functions provided by AIOS.
 
 #### (1) Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents
@@ -171,9 +176,11 @@ You could also run the models locally:
 python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
 ```
 
-### 3.3 Supported LLM backbones
-- gpt-3.5-turbo, gpt-4
+### 3.5 Supported LLM backbones
+- gpt-3.5-turbo, gpt-4 gpt-4o
 - gemini-pro
+- ollama models (macbook)
+- claude3
 - open-sourced LLM from Huggingface
 
 ## 🖋️ 4. References
