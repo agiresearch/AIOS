@@ -1,3 +1,5 @@
+# This file is used to evaluate the configuration passed through arguments to the simulation of the kernel 
+
 import os
 import sys
 import json
@@ -20,6 +22,7 @@ from multiprocessing import Process
 
 from src.utils.utils import delete_directories
 from src.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
+from src.utils
 
 import argparse
 
@@ -28,12 +31,13 @@ import random
 import numpy as np
 from dotenv import find_dotenv, load_dotenv
 
-
+# Construct help message and parse argumets using argparse
 def parse_global_args():
+    """ parser in src/utils/utils.py with --agents and --agent-log-mode argument """
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
-    parser.add_argument('--eval_device', type=str, help="Evaluation device")
+    parser.add_argument('--eval_device', type=str, help="Evaluation device (example: \"conda:0,1\" for 2 GPUs)")
     parser.add_argument('--max_new_tokens', type=int, default=256,
                         help="The maximum number of new tokens for generation")
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])

@@ -1,3 +1,5 @@
+# wrapper around bedrock/anthropic.claude-3
+
 import re
 from .base_llm import BaseLLMKernel
 import time
@@ -7,6 +9,11 @@ from ...utils.message import Response
 class BedrockLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
+        """ 
+        langchain_community is only needed for this use case
+        it doesn't need to be required for the entire project, only when
+        running this llm
+        """
         assert self.llm_name.startswith("bedrock")
         try:
             from langchain_community.chat_models import BedrockChat
@@ -29,8 +36,12 @@ class BedrockLLM(BaseLLMKernel):
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
+        # ensure its the right model
         assert self.model_name.startswith("bedrock") and \
             re.search(r'claude', self.model_name, re.IGNORECASE)
+
+
+        """ simple wrapper around langchain functions """
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt

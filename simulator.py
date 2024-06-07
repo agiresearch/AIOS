@@ -1,3 +1,6 @@
+# This simulates AIOS as an LLM kernel, although it is only acting as a userspace
+# wrapper in this script. 
+
 import os
 import sys
 import json
@@ -37,6 +40,7 @@ def clean_cache(root_directory):
     delete_directories(root_directory, targets)
 
 def main():
+    # parse arguments into configuration for this runtime
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
     args = parser.parse_args()
@@ -58,6 +62,7 @@ def main():
         log_mode = llm_kernel_log_mode
     )
 
+    # allow agents to execute concurrently using a simple scheduler
     scheduler = FIFOScheduler(
         llm = llm,
         log_mode = scheduler_log_mode
@@ -80,6 +85,7 @@ def main():
 
     scheduler.start()
 
+    # run commands indefinitely, parsing from command_executor.py
     while True:
         try:
             # Read a command line input

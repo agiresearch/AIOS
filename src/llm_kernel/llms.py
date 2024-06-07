@@ -1,5 +1,11 @@
+# This file just wraps around the LLM classes in src/llm_kernel/llm_classes 
+# and provides an easy interface for the rest of the code to access
+# All abstractions will be implemented here
+
 from .llm_classes.model_registry import MODEL_REGISTRY
 from .llm_classes.open_llm import OpenLLM
+
+# standard implementation of LLM methods
 from .llm_classes.ollama_llm import OllamaLLM
 
 class LLMKernel:
@@ -11,6 +17,7 @@ class LLMKernel:
                  log_mode: str = "console"
         ):
 
+        """ special handling for ollama """
         if llm_name.startswith('ollama'):
             self.model = OllamaLLM(
                 llm_name = llm_name,

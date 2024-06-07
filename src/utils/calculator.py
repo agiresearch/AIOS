@@ -1,3 +1,8 @@
+# Helper utilities for calculating metrics on the metrics determined by each 
+# agent. This is determined conrrently and sequentially and the difference 
+# in times between the both is scored as well.
+# Used in eval.py when evaluating the agents
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 import os
@@ -11,6 +16,7 @@ def load_agent_tasks(agent_name):
 
 
 def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
+    """ get the time spent on each agent in the system """
     agent_tasks = []
     for agent_name, agent_num in agent_list:
         task_inputs = load_agent_tasks(agent_name=agent_name)[0:agent_num]
@@ -56,6 +62,7 @@ def get_numbers_concurrent(agent_list, agent_factory, agent_thread_pool):
 
 
 def get_numbers_sequential(agent_list, agent_factory):
+    """ use a FIFO method to get the time spent on each agent in the system """
     stats = {
         'turnaround_times': [],
         'waiting_times': [],
