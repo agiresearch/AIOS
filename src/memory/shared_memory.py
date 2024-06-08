@@ -1,7 +1,10 @@
+# This file will be an implementation of the shared memory mechanism for 
+# multi-agent systems
+
 from src.memory.base import BaseMemory
 
 '''
-TO DO: implement the shared memory mechanism
+TODO: implement the shared memory mechanism
 '''
 class SharedMemory(BaseMemory):
     def __init__(self):

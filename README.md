@@ -13,6 +13,9 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 <img src="images/AIOS-Architecture.png">
 </p>
 
+The objective of AIOS is to provide the LLM kernel which will be an abstraction on top of the OS kernel. The kernel intends to facilitate the installation of agents, which are utilities the kernel can interact with in order to perform tasks the user queries. For example, the MathAgent facilitates mathematical computations, such as currency conversion, integral calculus, or even basic algebraic manipulation. The method of installation is intended to be in a manner similar to [apt](https://en.wikipedia.org/wiki/APT_(software)) or [brew](https://brew.sh). 
+
+At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
 ## 📰 2. News
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
@@ -28,7 +31,15 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 
 ## ✈️ 3. Getting Started
 
-### 3.1 Installation
+### 3.1 Prerequisites
+- Python 3.11
+- [Anaconda](https://www.anaconda.com/download/success)
+- [git](https://git-scm.com/downloads)
+- [pip](https://pypi.org/project/pip/)
+
+At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free). 
+
+### 3.2 Installation
 To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
 
 **Git clone AIOS and [OpenAGI]((https://github.com/agiresearch/OpenAGI))**
@@ -36,7 +47,6 @@ To run AIOS, you will need to install our agent creation package, [OpenAGI](http
 git clone https://github.com/agiresearch/AIOS.git
 git clone https://github.com/agiresearch/OpenAGI.git
 ```
-**Make sure you have Python = 3.11**
 Install the required packages using pip
 ```bash
 conda create -n AIOS python=3.11
@@ -44,13 +54,27 @@ source activate AIOS
 cd AIOS
 pip install -r requirements.txt
 ```
-**Allow your code to be able to see 'openagi'**
+
+If you don't have an Nvidia GPU, you could also use a venv
+```bash
+cd AIOS
+python -m venv venv
+chmod +x venv/bin/activate
+. venv/bin/activate
+pip install -r requirements.txt
 ```
+**Allow your code to be able to see 'openagi'**
+```bash
 cd ../OpenAGI
 pip install -e .
 ```
 
-### 3.2 Usage
+OpenAGI is **now on PyPi**, and can be installed easily with the following:
+```bash
+pip install pyopenagi
+```
+
+### 3.3 Usage
 If you use open-sourced models from huggingface, you need to setup your [Hugging Face token](https://huggingface.co/settings/tokens) and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
@@ -68,6 +92,10 @@ You can also create .env file from the .env.example file, and then use dotenv to
 ```bash
 cp .env.example .env
 ```
+
+### 3.4 Documentation
+There is a README.md in each directory which provides a brief explanation on what the contents of the directory include.
+
 
 #### (1) Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents
@@ -98,7 +126,7 @@ Then, you can run the Python script with the input parameter to start using AIOS
 python main.py --llm_name ollama/llama3
 ```
 #### (2) Interactive Mode
-In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., run \<xxxAgent\>: \<YOUR TASK\>, print agent).
+In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., `run \<xxxAgent\>: \<YOUR TASK\>`, `print agent`).
 Different from the interactive mode, you need to set all the default loggers as file loggers.
 ```bash
 # For open-sourced LLMs
@@ -116,14 +144,20 @@ You can use bash script to start the interactive simulation session like this
 ```bash
 bash scripts/interactive/gpt4.sh
 ````
-Instance of available commands
+
+Example run of simulator.py:
 ```bash
 run MathAgent: Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
 print agent
 ```
 
+A `run` command will **not output** to the standard output. Instead, it will create a log file.
+
 #### (3) Evaluation Mode
-In the evaluation mode, we allow you to configure different types of predefined agents (MathAgent, NarrativeAgent, RecAgent) with a configurable number of agents for each type. Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
+In the evaluation mode, we draw prompts for each agent from `agent_configs/` and evaluate the performance of the agents by allowing the user to specify which agents should be run. 
+
+Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
+
 ```bash
 python eval.py --llm_name gpt-3.5-turbo --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1
 ```
@@ -137,9 +171,16 @@ python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,Ac
 python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode sequential-only
 ```
 
-### 3.3 Supported LLM backbones
-- gpt-3.5-turbo, gpt-4
+You could also run the models locally:
+```bash
+python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
+```
+
+### 3.5 Supported LLM backbones
+- gpt-3.5-turbo, gpt-4 gpt-4o
 - gemini-pro
+- ollama models (macbook)
+- claude3
 - open-sourced LLM from Huggingface
 
 ## 🖋️ 4. References

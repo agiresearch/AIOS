@@ -1,3 +1,6 @@
+# This is a main script that tests the functionality of specific agents. 
+# It requires no user input.
+
 import os
 import sys
 import json
@@ -30,6 +33,7 @@ def clean_cache(root_directory):
     delete_directories(root_directory, targets)
 
 def main():
+    # parse arguments and set configuration for this run accordingly
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
     args = parser.parse_args()
@@ -51,6 +55,8 @@ def main():
         log_mode = llm_kernel_log_mode
     )
 
+    # run agents concurrently for maximum efficiency using a scheduler
+
     scheduler = FIFOScheduler(
         llm = llm,
         log_mode = scheduler_log_mode
@@ -69,7 +75,7 @@ def main():
 
     scheduler.start()
 
-    # construct agents
+    # construct example agents
 
     travel_agent = agent_thread_pool.submit(
         agent_factory.run_agent,

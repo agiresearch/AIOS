@@ -1,3 +1,6 @@
+# This tests the buffer manager that the project relies on. It manually 
+# changes the access histories and entries to check all the edge cases.
+
 from src.memory.lru_k_replacer import LRU_K_Replacer
 import pytest
 

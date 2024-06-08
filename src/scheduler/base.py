@@ -1,3 +1,6 @@
+# base implementation of the scheduler, sets up the threads and init
+# which all sub classes will inherit and wouldn't need to change.
+
 from queue import Queue, Empty
 from threading import Thread
 
