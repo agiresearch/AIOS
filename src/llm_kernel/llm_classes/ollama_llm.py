@@ -1,3 +1,5 @@
+# wrapper around ollama for LLMs
+
 import re
 from .base_llm import BaseLLMKernel
 import time
@@ -28,7 +30,10 @@ class OllamaLLM(BaseLLMKernel):
             agent_process,
             temperature=0.0
         ):
+        # ensures the models are from ollama
         assert re.search(r'ollama', self.mode, re.IGNORECASE)
+        
+        """ simple wrapper around ollama functions """ 
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
         prompt = agent_process.message.prompt

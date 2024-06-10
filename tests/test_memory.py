@@ -1,3 +1,5 @@
+# This is a more generic test that ensures malloc is working.
+
 import pytest
 from src.memory.base import Memory
 

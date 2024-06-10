@@ -1,3 +1,6 @@
+# This gives sample prompts to the LLMs to make sure they are working. This 
+# file will require a lot of API keys for each closed LLM.
+
 import os
 import torch
 import pytest
