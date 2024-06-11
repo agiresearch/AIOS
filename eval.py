@@ -1,4 +1,4 @@
-# This file is used to evaluate the configuration passed through arguments to the simulation of the kernel 
+# This file is used to evaluate the configuration passed through arguments to the simulation of the kernel
 
 import os
 import sys
@@ -8,9 +8,9 @@ from src.scheduler.fifo_scheduler import FIFOScheduler
 
 from src.scheduler.rr_scheduler import RRScheduler
 
-from openagi.src.agents.agent_factory import AgentFactory
+from pyopenagi.src.agents.agent_factory import AgentFactory
 
-from openagi.src.agents.agent_process import AgentProcessFactory
+from pyopenagi.src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
@@ -22,7 +22,6 @@ from multiprocessing import Process
 
 from src.utils.utils import delete_directories
 from src.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
-from src.utils
 
 import argparse
 
