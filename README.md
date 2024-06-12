@@ -13,7 +13,7 @@ AIOS, a Large Language Model (LLM) Agent operating system, embeds large language
 <img src="images/AIOS-Architecture.png">
 </p>
 
-The objective of AIOS is to provide the LLM kernel which will be an abstraction on top of the OS kernel. The kernel intends to facilitate the installation of agents, which are utilities the kernel can interact with in order to perform tasks the user queries. For example, the MathAgent facilitates mathematical computations, such as currency conversion, integral calculus, or even basic algebraic manipulation. The method of installation is intended to be in a manner similar to [apt](https://en.wikipedia.org/wiki/APT_(software)) or [brew](https://brew.sh). 
+The objective of AIOS is to provide the LLM kernel which will be an abstraction on top of the OS kernel. The kernel intends to facilitate the installation of agents, which are utilities the kernel can interact with in order to perform tasks the user queries. For example, the MathAgent facilitates mathematical computations, such as currency conversion, integral calculus, or even basic algebraic manipulation. The method of installation is intended to be in a manner similar to [apt](https://en.wikipedia.org/wiki/APT_(software)) or [brew](https://brew.sh).
 
 At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
@@ -37,7 +37,7 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 - [git](https://git-scm.com/downloads)
 - [pip](https://pypi.org/project/pip/)
 
-At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free). 
+At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free).
 
 ### 3.2 Installation
 To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
@@ -62,16 +62,6 @@ python -m venv venv
 chmod +x venv/bin/activate
 . venv/bin/activate
 pip install -r requirements.txt
-```
-**Allow your code to be able to see 'openagi'**
-```bash
-cd ../OpenAGI
-pip install -e .
-```
-
-OpenAGI is **now on PyPi**, and can be installed easily with the following:
-```bash
-pip install pyopenagi
 ```
 
 ### 3.3 Usage
@@ -154,7 +144,7 @@ print agent
 A `run` command will **not output** to the standard output. Instead, it will create a log file.
 
 #### (3) Evaluation Mode
-In the evaluation mode, we draw prompts for each agent from `agent_configs/` and evaluate the performance of the agents by allowing the user to specify which agents should be run. 
+In the evaluation mode, we draw prompts for each agent from `agent_configs/` and evaluate the performance of the agents by allowing the user to specify which agents should be run.
 
 Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
 

@@ -1,5 +1,5 @@
 # This simulates AIOS as an LLM kernel, although it is only acting as a userspace
-# wrapper in this script. 
+# wrapper in this script.
 
 import os
 import sys
@@ -22,9 +22,9 @@ from src.utils.utils import (
     parse_global_args,
 )
 
-from openagi.src.agents.agent_factory import AgentFactory
+from pyopenagi.src.agents.agent_factory import AgentFactory
 
-from openagi.src.agents.agent_process import AgentProcessFactory
+from pyopenagi.src.agents.agent_process import AgentProcessFactory
 
 import warnings
 
