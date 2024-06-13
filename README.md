@@ -42,10 +42,9 @@ At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Ma
 ### 3.2 Installation
 To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
 
-**Git clone AIOS and [OpenAGI]((https://github.com/agiresearch/OpenAGI))**
+**Git clone AIOS**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-git clone https://github.com/agiresearch/OpenAGI.git
 ```
 Install the required packages using pip
 ```bash
