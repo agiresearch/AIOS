@@ -27,7 +27,7 @@ def parse_global_args():
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
-
+    parser.add_argument("--use_backend", type=str, default = None, choices=["ollama", "vllm"])
     return parser
 
 

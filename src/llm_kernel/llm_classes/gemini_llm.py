@@ -6,7 +6,7 @@ from .base_llm import BaseLLMKernel
 import time
 from ...utils.utils import get_from_env
 
-from ...utils.message import Response
+from pyopenagi.utils.chat_template import Response
 class GeminiLLM(BaseLLMKernel):
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
@@ -37,7 +37,7 @@ class GeminiLLM(BaseLLMKernel):
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
-        # ensures the model is the current one 
+        # ensures the model is the current one
         assert re.search(r'gemini', self.model_name, re.IGNORECASE)
 
         """ wrapper around functions"""

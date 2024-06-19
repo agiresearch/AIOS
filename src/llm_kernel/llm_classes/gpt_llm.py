@@ -5,7 +5,7 @@ import time
 # could be dynamically imported similar to other models
 from openai import OpenAI
 
-from ...utils.message import Response
+from pyopenagi.utils.chat_template import Response
 
 class GPTLLM(BaseLLMKernel):
 
@@ -34,7 +34,8 @@ class GPTLLM(BaseLLMKernel):
         """ wrapper around openai api """
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.message.prompt
+        messages = agent_process.query.messages
+        print(messages)
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -42,11 +43,9 @@ class GPTLLM(BaseLLMKernel):
         time.sleep(2)
         response = self.model.chat.completions.create(
             model=self.model_name,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            tools = agent_process.message.tools,
-            tool_choice = "required" if agent_process.message.tools else None
+            messages = messages,
+            tools = agent_process.query.tools,
+            tool_choice = "required" if agent_process.query.tools else None
         )
 
         # print(response.choices[0].message)

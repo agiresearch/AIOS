@@ -6,7 +6,7 @@ from .base_llm import BaseLLMKernel
 import time
 from transformers import AutoTokenizer
 
-from ...utils.message import Response
+from pyopenagi.utils.chat_template import Query, Response
 
 from ...utils.utils import get_from_env
 
@@ -49,14 +49,14 @@ class OpenLLM(BaseLLMKernel):
             start_idx = restored_context["start_idx"]
             beams = restored_context["beams"]
             beam_scores = restored_context["beam_scores"]
-            beam_attention_masks = restored_context["beam_attention_masks"]
+            beam_attention_mask = restored_context["beam_attention_mask"]
 
             outputs = self.generate(
                 search_mode = "beam_search",
                 beam_size = 1,
                 beams = beams,
                 beam_scores = beam_scores,
-                beam_attention_masks = beam_attention_masks,
+                beam_attention_mask = beam_attention_mask,
                 max_new_tokens = self.MAX_NEW_TOKENS,
                 start_idx = start_idx,
                 timestamp = agent_process.get_time_limit()
@@ -64,26 +64,66 @@ class OpenLLM(BaseLLMKernel):
         else:
             """ use the system prompt otherwise """
             # prompt = agent_process.prompt
-            prompt = agent_process.message.prompt
+            # prompt = agent_process.message.prompt
+            messages = agent_process.query.messages
+            # print(messages)
+            tools = agent_process.query.tools
+
+            # print(tools)
+
+            if agent_process.query.tools:
+                prompt = self.tokenizer.apply_chat_template(
+                    messages,
+                    tools = tools,
+                    tokenize = False
+                )
+            else:
+                prompt = self.tokenizer.apply_chat_template(
+                    messages,
+                    tokenize = False
+                )
+
+            # prompt = self.tokenizer.apply_chat_template(
+            #     messages, chat_template="tool_use",
+            #     tools=agent_process.message.tools,
+            #     add_generation_prompt=True,
+            #     tokenize = False
+            #     # return_dict=True, return_tensors="pt"
+            # )
+            if tools:
+                print(prompt)
+            # print(inputs)
+            # input_ids = inputs["input_ids"][0]
+            # attention_mask = inputs["attention_mask"][0]
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-            attention_masks = input_ids != self.tokenizer.pad_token_id
+            attention_mask = input_ids != self.tokenizer.pad_token_id
             input_ids = input_ids.to(self.eval_device)
-            attention_masks = attention_masks.to(self.eval_device)
+            attention_mask = attention_mask.to(self.eval_device)
+
+            # outputs = self.model.generate(
+            #     input_ids = input_ids,
+            #     attention_mask = attention_mask,
+            #     max_new_tokens = self.MAX_NEW_TOKENS
+            # )
 
             outputs = self.generate(
                 input_ids = input_ids,
-                attention_masks = attention_masks,
+                attention_mask = attention_mask,
                 search_mode = "beam_search",
                 beam_size = 1,
                 max_new_tokens=self.MAX_NEW_TOKENS,
                 start_idx = 0,
                 timestamp = agent_process.get_time_limit()
             )
-
+        # output_ids = outputs
+        # print(output_ids)
         output_ids = outputs["result"]
 
         """ devectorize the output """
-        prompt = agent_process.message.prompt
+        prompt = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize = False
+        )
         result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
         result = result[len(prompt)+1: ]
 
@@ -113,7 +153,7 @@ class OpenLLM(BaseLLMKernel):
                     "start_idx": outputs["start_idx"],
                     "beams": outputs["beams"],
                     "beam_scores": outputs["beam_scores"],
-                    "beam_attention_masks": outputs["beam_attention_masks"]
+                    "beam_attention_mask": outputs["beam_attention_mask"]
                 }
             )
             agent_process.set_response(
@@ -127,10 +167,10 @@ class OpenLLM(BaseLLMKernel):
 
     def generate(self,
                  input_ids: torch.Tensor = None,
-                 attention_masks: torch.Tensor = None,
+                 attention_mask: torch.Tensor = None,
                  beams: torch.Tensor = None,
                  beam_scores: torch.Tensor = None,
-                 beam_attention_masks: torch.Tensor = None,
+                 beam_attention_mask: torch.Tensor = None,
                  beam_size: int = None,
                  max_new_tokens: int = None,
                  search_mode: str = None,
@@ -141,11 +181,11 @@ class OpenLLM(BaseLLMKernel):
         if search_mode == "beam_search":
             output_ids = self.beam_search(
                 input_ids = input_ids,
-                attention_masks = attention_masks,
+                attention_mask = attention_mask,
                 beam_size = beam_size,
                 beams = beams,
                 beam_scores = beam_scores,
-                beam_attention_masks = beam_attention_masks,
+                beam_attention_mask = beam_attention_mask,
                 max_new_tokens = max_new_tokens,
                 start_idx = start_idx,
                 timestamp = timestamp
@@ -157,25 +197,25 @@ class OpenLLM(BaseLLMKernel):
 
     def beam_search(self,
                     input_ids: torch.Tensor = None,
-                    attention_masks: torch.Tensor = None,
+                    attention_mask: torch.Tensor = None,
                     beams=None,
                     beam_scores=None,
-                    beam_attention_masks=None,
+                    beam_attention_mask=None,
                     beam_size: int = None,
                     max_new_tokens: int = None,
                     start_idx: int = 0,
                     timestamp: int = None
                     ):
 
-        """ 
+        """
         beam search gets multiple token sequences concurrently and calculates
-        which token sequence is the most likely opposed to calculating the 
+        which token sequence is the most likely opposed to calculating the
         best token greedily
         """
 
-        if beams is None or beam_scores is None or beam_attention_masks is None:
+        if beams is None or beam_scores is None or beam_attention_mask is None:
             beams = input_ids.repeat(beam_size, 1)
-            beam_attention_masks = attention_masks.repeat(beam_size, 1)
+            beam_attention_mask = attention_mask.repeat(beam_size, 1)
             beam_scores = torch.zeros(beam_size, device=self.eval_device)
 
         start_time = time.time()
@@ -187,7 +227,7 @@ class OpenLLM(BaseLLMKernel):
         for step in range(start_idx, max_new_tokens):
             with torch.no_grad():
                 # Obtain logits for the last tokens across all beams
-                outputs = self.model(beams, attention_mask=beam_attention_masks)
+                outputs = self.model(beams, attention_mask=beam_attention_mask)
                 next_token_logits = outputs.logits[:, -1, :]
 
                 # Apply softmax to convert logits to probabilities
@@ -208,7 +248,7 @@ class OpenLLM(BaseLLMKernel):
 
             # Update beams, scores, and attention masks
             beams = torch.cat([beams[beam_indices], token_indices.unsqueeze(-1)], dim=-1)
-            beam_attention_masks = torch.cat([beam_attention_masks[beam_indices], torch.ones_like(token_indices).unsqueeze(-1)], dim=-1)
+            beam_attention_mask = torch.cat([beam_attention_mask[beam_indices], torch.ones_like(token_indices).unsqueeze(-1)], dim=-1)
             beam_scores = top_scores
 
             # Check for stopping criteria
@@ -236,7 +276,7 @@ class OpenLLM(BaseLLMKernel):
             "start_idx": idx,
             "beams": beams,
             "beam_scores": beam_scores,
-            "beam_attention_masks": beam_attention_masks,
+            "beam_attention_mask": beam_attention_mask,
             "result": best_beam
         }
 

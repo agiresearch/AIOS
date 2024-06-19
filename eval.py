@@ -8,9 +8,9 @@ from src.scheduler.fifo_scheduler import FIFOScheduler
 
 from src.scheduler.rr_scheduler import RRScheduler
 
-from pyopenagi.src.agents.agent_factory import AgentFactory
+from pyopenagi.agents.agent_factory import AgentFactory
 
-from pyopenagi.src.agents.agent_process import AgentProcessFactory
+from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 

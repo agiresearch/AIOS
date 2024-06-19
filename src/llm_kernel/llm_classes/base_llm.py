@@ -1,4 +1,4 @@
-# This file contains the abstract base class for each llm kernel, providing a 
+# This file contains the abstract base class for each llm kernel, providing a
 # common interface for all LLMs to implement.
 
 import os
@@ -9,7 +9,7 @@ from datetime import datetime
 from src.context.simple_context import SimpleContextManager
 import logging
 
-# abc allows to make abstract classes 
+# abc allows to make abstract classes
 from abc import ABC, abstractmethod
 
 from src.utils.logger import LLMKernelLogger
