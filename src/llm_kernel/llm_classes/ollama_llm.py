@@ -5,7 +5,9 @@ from .base_llm import BaseLLMKernel
 import time
 import ollama
 
-from ...utils.message import Response
+from transformers import AutoTokenizer
+
+from pyopenagi.utils.chat_template import Response
 class OllamaLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -13,40 +15,36 @@ class OllamaLLM(BaseLLMKernel):
                  eval_device: str = None,
                  max_new_tokens: int = 256,
                  log_mode: str = "console"):
-        super().__init__(llm_name,
-                         max_gpu_memory,
-                         eval_device,
-                         max_new_tokens,
-                         log_mode)
-        self.model_name = llm_name.split('/')[1]
-        self.mode = 'ollama'
+        super().__init__(
+            llm_name,
+            max_gpu_memory,
+            eval_device,
+            max_new_tokens,
+            log_mode
+        )
 
     def load_llm_and_tokenizer(self) -> None:
         self.model = None
         self.tokenizer = None
-
 
     def process(self,
             agent_process,
             temperature=0.0
         ):
         # ensures the models are from ollama
-        assert re.search(r'ollama', self.mode, re.IGNORECASE)
-        
-        """ simple wrapper around ollama functions """ 
+        assert re.search(r'ollama', self.model_name, re.IGNORECASE)
+
+        """ simple wrapper around ollama functions """
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        prompt = agent_process.message.prompt
+        messages = agent_process.query.messages
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
         response = ollama.chat(
-            model=self.model_name,
-            messages=[
-            {
-                "role": "user", "content": prompt
-            }],
+            model=self.model_name.split("/")[-1],
+            messages=messages
         )
         agent_process.set_response(
             Response(

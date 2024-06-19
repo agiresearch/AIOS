@@ -4,12 +4,12 @@ import re
 from .base_llm import BaseLLMKernel
 import time
 
-from ...utils.message import Response
+from pyopenagi.utils.chat_template import Response
 
 class BedrockLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
-        """ 
+        """
         langchain_community is only needed for this use case
         it doesn't need to be required for the entire project, only when
         running this llm

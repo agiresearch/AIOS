@@ -8,7 +8,7 @@
 AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
 
 
-## 🏠 1. Architecture of AIOS
+## 🏠 Architecture of AIOS
 <p align="center">
 <img src="images/AIOS-Architecture.png">
 </p>
@@ -17,7 +17,7 @@ The objective of AIOS is to provide the LLM kernel which will be an abstraction 
 
 At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
-## 📰 2. News
+## 📰 News
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
@@ -29,9 +29,9 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 - **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
 
-## ✈️ 3. Getting Started
+## ✈️ Getting Started
 
-### 3.1 Prerequisites
+### Prerequisites
 - Python 3.11
 - [Anaconda](https://www.anaconda.com/download/success)
 - [git](https://git-scm.com/downloads)
@@ -39,7 +39,7 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 
 At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free).
 
-### 3.2 Installation
+### Installation
 To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
 
 **Git clone AIOS**
@@ -63,7 +63,7 @@ chmod +x venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3.3 Usage
+### Usage
 If you use open-sourced models from huggingface, you need to setup your [Hugging Face token](https://huggingface.co/settings/tokens) and cache directory
 ```bash
 export HUGGING_FACE_HUB_TOKEN=<YOUR READ TOKEN>
@@ -82,11 +82,11 @@ You can also create .env file from the .env.example file, and then use dotenv to
 cp .env.example .env
 ```
 
-### 3.4 Documentation
+### Documentation
 There is a README.md in each directory which provides a brief explanation on what the contents of the directory include.
 
 
-#### (1) Demonstration Mode
+#### Demonstration Mode
 In the demonstration mode, we provide a toy example: we hardcode three agents and allow you to change the parameters. Then you can see the output of each step in running multiple agents
 For open-sourced LLMs, you need to setup the name of the LLM you would like to use the max gpu memory, the evaluation device and the maximum length of generated new tokens.
 ```bash
@@ -114,7 +114,7 @@ Then, you can run the Python script with the input parameter to start using AIOS
 ```bash
 python main.py --llm_name ollama/llama3
 ```
-#### (2) Interactive Mode
+#### Interactive Mode
 In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., `run \<xxxAgent\>: \<YOUR TASK\>`, `print agent`).
 Different from the interactive mode, you need to set all the default loggers as file loggers.
 ```bash
@@ -142,7 +142,7 @@ print agent
 
 A `run` command will **not output** to the standard output. Instead, it will create a log file.
 
-#### (3) Evaluation Mode
+#### Evaluation Mode
 In the evaluation mode, we draw prompts for each agent from `agent_configs/` and evaluate the performance of the agents by allowing the user to specify which agents should be run.
 
 Additionally, you can evaluate the acceleration performance with or without AIOS by comparing the waiting time and turnaround time.
@@ -162,17 +162,17 @@ python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,Ac
 
 You could also run the models locally:
 ```bash
-python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
+python eval.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
 ```
 
-### 3.5 Supported LLM backbones
+### Supported LLM backbones
 - gpt-3.5-turbo, gpt-4 gpt-4o
 - gemini-pro
 - ollama models (macbook)
 - claude3
 - open-sourced LLM from Huggingface
 
-## 🖋️ 4. References
+## 🖋️ References
 ```
 @article{mei2024aios,
   title={AIOS: LLM Agent Operating System},
@@ -188,22 +188,22 @@ python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}
 }
 ```
 
-## 🚀 5. Contributions
+## 🚀 Contributions
 AIOS is dedicated to facilitating the development and deployment of LLM agents in a systematic way, collaborators and contributions are always welcome to foster a cohesive, effective and efficient AIOS-Agent ecosystem!
 
 For detailed information on how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) or [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
 
-## 🌍 6. AIOS Contributors
+## 🌍 AIOS Contributors
 [![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=300)](https://github.com/agiresearch/AIOS/graphs/contributors)
 
 
-## 🤝 7. Discord Channel
+## 🤝 Discord Channel
 If you would like to join the community, ask questions, chat with fellows, learn about or propose new features, and participate in future developments, join our [Discord Community](https://discord.gg/B2HFxEgTJX)!
 
-## 📪 8. Contact
+## 📪 Contact
 
 For issues related to AIOS development, we encourage submitting [issues](https://github.com/agiresearch/AIOS/issues), [pull requests](https://github.com/agiresearch/AIOS/pulls), or initiating discussions in the AIOS [Discord Channel](https://discord.gg/B2HFxEgTJX). For other issues please feel free to contact Kai Mei (marknju2018@gmail.com) and Yongfeng Zhang (yongfeng@email.com).
 
-## 🌟 9. Star History
+## 🌟 Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=agiresearch/AIOS&type=Date)](https://star-history.com/#agiresearch/AIOS&Date)

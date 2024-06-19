@@ -13,9 +13,9 @@ from src.utils.utils import (
     parse_global_args,
 )
 
-from pyopenagi.src.agents.agent_factory import AgentFactory
+from pyopenagi.agents.agent_factory import AgentFactory
 
-from pyopenagi.src.agents.agent_process import AgentProcessFactory
+from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
@@ -45,6 +45,7 @@ def main():
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
+    use_backend = args.use_backend
     load_dotenv()
 
     llm = llms.LLMKernel(
@@ -52,7 +53,8 @@ def main():
         max_gpu_memory = max_gpu_memory,
         eval_device = eval_device,
         max_new_tokens = max_new_tokens,
-        log_mode = llm_kernel_log_mode
+        log_mode = llm_kernel_log_mode,
+        use_backend = args.use_backend
     )
 
     # run agents concurrently for maximum efficiency using a scheduler
@@ -94,18 +96,19 @@ def main():
     #     "Summarize recent advancements in quantum computing from the past five years."
     # )
 
-    rec_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "RecAgent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
-    )
-
-    # creation_agent = agent_thread_pool.submit(
+    # rec_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
-    #     "CreationAgent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    #     "RecAgent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
     # )
 
+    creation_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "CreationAgent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    )
+
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
-    agent_tasks = [rec_agent]
+    # agent_tasks = [rec_agent]
+    agent_tasks = [creation_agent]
 
     for r in as_completed(agent_tasks):
         res = r.result()
