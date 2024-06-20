@@ -72,6 +72,49 @@ class BaseLLMKernel(ABC):
         # raise NotImplementedError
         return
 
+    # only use for open-sourced LLM
+    def tool_calling_input_format(self, messages, tools):
+        prefix_prompt = "In and only in current step, you need to call tools. Available tools are: "
+        tool_prompt = json.dumps(tools)
+        suffix_prompt = "".join(
+            [
+                'Must call functions that are available. To call a function, respond '
+                'immediately and only with a list of JSON object of the following format:'
+                '{[{"name":"function_name_value","arguments":{"":"argument_value1",'
+                '"argument_name2":"argument_value2"}}]}'
+            ]
+        )
+        messages[-1]["content"] += (prefix_prompt + tool_prompt + suffix_prompt)
+        return messages
+
+    def tool_calling_output_format(self, tool_calling_messages):
+        print(f"tool calling messages are: {tool_calling_messages}")
+        try:
+            tool_callings = []
+            tool_calling_messages = json.loads(tool_calling_messages)
+            class ToolFunction:
+                def __init__(self, name, arguments) -> None:
+                    self.name = name
+                    self.arguments = arguments
+
+            class ToolCalling:
+                def __init__(self, function) -> None:
+                    self.function = function
+
+            for tool_calling_message in tool_calling_messages:
+                tool_callings.append(
+                    ToolCalling(
+                        function = ToolFunction(
+                            name = tool_calling_message["name"],
+                            arguments = json.dumps(tool_calling_message["arguments"])
+                        )
+                    )
+                )
+            return tool_callings
+
+        except json.JSONDecodeError:
+            return None
+
     def address_request(self,
             agent_process,
             temperature=0.0

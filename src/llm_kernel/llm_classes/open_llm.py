@@ -41,6 +41,8 @@ class OpenLLM(BaseLLMKernel):
             level = "executing"
         )
 
+        messages = agent_process.query.messages
+
         """ context_manager works only with open llms """
         if self.context_manager.check_restoration(agent_process.get_pid()):
             restored_context = self.context_manager.gen_recover(
@@ -65,33 +67,16 @@ class OpenLLM(BaseLLMKernel):
             """ use the system prompt otherwise """
             # prompt = agent_process.prompt
             # prompt = agent_process.message.prompt
-            messages = agent_process.query.messages
             # print(messages)
             tools = agent_process.query.tools
 
-            # print(tools)
-
-            if agent_process.query.tools:
-                prompt = self.tokenizer.apply_chat_template(
-                    messages,
-                    tools = tools,
-                    tokenize = False
-                )
-            else:
-                prompt = self.tokenizer.apply_chat_template(
-                    messages,
-                    tokenize = False
-                )
-
-            # prompt = self.tokenizer.apply_chat_template(
-            #     messages, chat_template="tool_use",
-            #     tools=agent_process.message.tools,
-            #     add_generation_prompt=True,
-            #     tokenize = False
-            #     # return_dict=True, return_tensors="pt"
-            # )
             if tools:
-                print(prompt)
+                messages = self.tool_calling_input_format(messages, tools)
+
+            prompt = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize = False
+            )
             # print(inputs)
             # input_ids = inputs["input_ids"][0]
             # attention_mask = inputs["attention_mask"][0]
@@ -99,12 +84,6 @@ class OpenLLM(BaseLLMKernel):
             attention_mask = input_ids != self.tokenizer.pad_token_id
             input_ids = input_ids.to(self.eval_device)
             attention_mask = attention_mask.to(self.eval_device)
-
-            # outputs = self.model.generate(
-            #     input_ids = input_ids,
-            #     attention_mask = attention_mask,
-            #     max_new_tokens = self.MAX_NEW_TOKENS
-            # )
 
             outputs = self.generate(
                 input_ids = input_ids,
@@ -120,6 +99,7 @@ class OpenLLM(BaseLLMKernel):
         output_ids = outputs["result"]
 
         """ devectorize the output """
+
         prompt = self.tokenizer.apply_chat_template(
             messages,
             tokenize = False
@@ -134,11 +114,23 @@ class OpenLLM(BaseLLMKernel):
                 self.context_manager.clear_restoration(
                     agent_process.get_pid()
                 )
-            agent_process.set_response(
-                Response(
-                    response_message=result
-                )
+
+            tool_calls = self.tool_calling_output_format(
+                result
             )
+            if tool_calls:
+                agent_process.set_response(
+                    Response(
+                        response_message = None,
+                        tool_calls = tool_calls
+                    )
+                )
+            else:
+                agent_process.set_response(
+                    Response(
+                        response_message = result
+                    )
+                )
             agent_process.set_status("done")
 
         else:
