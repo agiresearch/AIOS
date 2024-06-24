@@ -12,7 +12,6 @@ from ...utils.utils import get_from_env
 from transformers import AutoTokenizer
 
 import json
-
 class vLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -26,8 +25,6 @@ class vLLM(BaseLLMKernel):
                          eval_device,
                          max_new_tokens,
                          log_mode)
-
-
 
     def load_llm_and_tokenizer(self) -> None:
         """ fetch the model from huggingface and run it """
@@ -46,7 +43,8 @@ class vLLM(BaseLLMKernel):
         """ only casual lms for now """
         self.model = vllm.LLM(
             model = self.model_name,
-            download_dir = get_from_env("HF_HOME")
+            download_dir = get_from_env("HF_HOME"),
+            # dtype = 'float32'
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
@@ -54,7 +52,16 @@ class vLLM(BaseLLMKernel):
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
+        self.sampling_params = vllm.SamplingParams(
+            temperature=0.8,
+            top_p=0.95,
+            max_tokens=self.MAX_NEW_TOKENS,
+        )
 
+    def parse_tool_callings(self, result):
+        pattern = r'\[\{.*?\}\]'
+        matches = re.findall(pattern, result)
+        return matches[-1]
 
     def process(self,
                 agent_process,
@@ -72,22 +79,27 @@ class vLLM(BaseLLMKernel):
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
+            # print(messages)
             prompt = self.tokenizer.apply_chat_template(
                 messages,
-                tools = tools,
+                # tools = tools,
                 tokenize = False
             )
-            result = self.model.generate(
-                prompt
-            )[0].outputs[0].text
+            # prompt = self.parse_messages(messages)
+            response = self.model.generate(
+                prompt, self.sampling_params
+            )
+            # print(response)
+            result = response[0].outputs[0].text
+
+            result = self.parse_tool_callings(result)
+
+            print(result)
 
             tool_calls = self.tool_calling_output_format(
                 result
             )
             if tool_calls:
-                # print("Match json format")
-                # print(f"Matched tool call is: {tool_calls}")
-
                 agent_process.set_response(
                     Response(
                         response_message = None,
@@ -101,15 +113,18 @@ class vLLM(BaseLLMKernel):
                     )
                 )
 
-
         else:
             prompt = self.tokenizer.apply_chat_template(
                 messages,
                 tokenize = False
             )
-            result = self.model.generate(
-                prompt
-            )[0].outputs[0].text
+
+            # prompt = self.parse_messages(messages)
+            response = self.model.generate(
+                prompt, self.sampling_params
+            )
+
+            result = response[0].outputs[0].text
 
             agent_process.set_response(
                 Response(

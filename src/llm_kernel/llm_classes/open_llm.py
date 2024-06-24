@@ -33,7 +33,7 @@ class OpenLLM(BaseLLMKernel):
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
-    def parse_result(self, result):
+    def parse_tool_callings(self, result):
         pattern = r'\[\{.*?\}\]'
         matches = re.findall(pattern, result)
         return matches[-1]
@@ -73,9 +73,6 @@ class OpenLLM(BaseLLMKernel):
             )
         else:
             """ use the system prompt otherwise """
-            # prompt = agent_process.prompt
-            # prompt = agent_process.message.prompt
-            # print(messages)
 
             if tools:
                 messages = self.tool_calling_input_format(messages, tools)
@@ -84,9 +81,7 @@ class OpenLLM(BaseLLMKernel):
                 messages,
                 tokenize = False
             )
-            # print(inputs)
-            # input_ids = inputs["input_ids"][0]
-            # attention_mask = inputs["attention_mask"][0]
+
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
 
             attention_mask = input_ids != self.tokenizer.pad_token_id
@@ -103,7 +98,7 @@ class OpenLLM(BaseLLMKernel):
                 timestamp = agent_process.get_time_limit()
             )
             # TODO temporarily
-            outputs["result"] = outputs["result"][input_ids.shape[1]:]
+            outputs["result"] = outputs["result"][input_ids.shape[-1]:]
         # output_ids = outputs
         # print(output_ids)
         output_ids = outputs["result"]
@@ -120,7 +115,7 @@ class OpenLLM(BaseLLMKernel):
                 )
 
             if tools:
-                result = self.parse_result(result)
+                result = self.parse_tool_callings(result)
                 tool_calls = self.tool_calling_output_format(
                     result
                 )
