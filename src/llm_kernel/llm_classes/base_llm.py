@@ -88,7 +88,7 @@ class BaseLLMKernel(ABC):
         return messages
 
     def tool_calling_output_format(self, tool_calling_messages):
-        print(f"tool calling messages are: {tool_calling_messages}")
+        # print(f"tool calling messages are: {tool_calling_messages}")
         try:
             tool_callings = []
             tool_calling_messages = json.loads(tool_calling_messages)

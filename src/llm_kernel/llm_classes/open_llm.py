@@ -10,6 +10,8 @@ from pyopenagi.utils.chat_template import Query, Response
 
 from ...utils.utils import get_from_env
 
+import re
+
 class OpenLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
@@ -31,6 +33,11 @@ class OpenLLM(BaseLLMKernel):
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
+    def parse_result(self, result):
+        pattern = r'\[\{.*?\}\]'
+        matches = re.findall(pattern, result)
+        return matches[-1]
+
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
@@ -42,6 +49,7 @@ class OpenLLM(BaseLLMKernel):
         )
 
         messages = agent_process.query.messages
+        tools = agent_process.query.tools
 
         """ context_manager works only with open llms """
         if self.context_manager.check_restoration(agent_process.get_pid()):
@@ -68,7 +76,6 @@ class OpenLLM(BaseLLMKernel):
             # prompt = agent_process.prompt
             # prompt = agent_process.message.prompt
             # print(messages)
-            tools = agent_process.query.tools
 
             if tools:
                 messages = self.tool_calling_input_format(messages, tools)
@@ -81,6 +88,7 @@ class OpenLLM(BaseLLMKernel):
             # input_ids = inputs["input_ids"][0]
             # attention_mask = inputs["attention_mask"][0]
             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+
             attention_mask = input_ids != self.tokenizer.pad_token_id
             input_ids = input_ids.to(self.eval_device)
             attention_mask = attention_mask.to(self.eval_device)
@@ -94,18 +102,14 @@ class OpenLLM(BaseLLMKernel):
                 start_idx = 0,
                 timestamp = agent_process.get_time_limit()
             )
+            # TODO temporarily
+            outputs["result"] = outputs["result"][input_ids.shape[1]:]
         # output_ids = outputs
         # print(output_ids)
         output_ids = outputs["result"]
 
         """ devectorize the output """
-
-        prompt = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize = False
-        )
-        result = self.tokenizer.decode(output_ids, skip_special_tokens=True)
-        result = result[len(prompt)+1: ]
+        result = self.tokenizer.decode(output_ids, skip_special_tokens=False)
 
         if outputs["finished_flag"]: # finished flag is set as True
 
@@ -115,10 +119,11 @@ class OpenLLM(BaseLLMKernel):
                     agent_process.get_pid()
                 )
 
-            tool_calls = self.tool_calling_output_format(
-                result
-            )
-            if tool_calls:
+            if tools:
+                result = self.parse_result(result)
+                tool_calls = self.tool_calling_output_format(
+                    result
+                )
                 agent_process.set_response(
                     Response(
                         response_message = None,
