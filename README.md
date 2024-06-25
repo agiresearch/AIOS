@@ -18,6 +18,7 @@ The objective of AIOS is to provide the LLM kernel which will be an abstraction 
 At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
 ## 📰 News
+- **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
@@ -92,8 +93,13 @@ For open-sourced LLMs, you need to setup the name of the LLM you would like to u
 ```bash
 # For open-sourced LLMs
 python main.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens>
-## Use google/gemma-1.1-2b-it for example
-python main.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
+## Use meta-llama/Meta-Llama-3-8B-Instruct for example
+python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
+```
+For inference acceleration, you can also use vllm as the backend.
+```bash
+## Use meta-llama/Meta-Llama-3-8B-Instruct for example
+CUDA_VISILE_DEVICES=0,1 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --use_backend vllm --max_gpu_memory '{"0": "24GB", "1": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
 For close-sourced LLMs, you just need to setup the name of the LLM.
 ```bash
@@ -108,11 +114,11 @@ bash scripts/run/gpt4.sh
 ````
 You can use an open-source model on an Apple MacBook with Ollama. First, you will need to pull the model. Let's use llama3 as an example:
 ```bash
-ollama pull llama3
+ollama pull llama3:8b
 ```
 Then, you can run the Python script with the input parameter to start using AIOS with Llama3 and Ollama on your MacBook:
 ```bash
-python main.py --llm_name ollama/llama3
+python main.py --llm_name ollama/llama3:8b
 ```
 #### Interactive Mode
 In the deployment mode, the outputs of running agents are stored in files. And in this mode, you are provided with multiple commands to run agents and see resource usage of agents (e.g., `run \<xxxAgent\>: \<YOUR TASK\>`, `print agent`).
@@ -120,8 +126,8 @@ Different from the interactive mode, you need to set all the default loggers as 
 ```bash
 # For open-sourced LLMs
 python simulator.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens> --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
-## Use google/gemma-1.1-2b-it for example
-python simulator.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
+## Use meta-llama/Meta-Llama-3-8B-Instruct for example
+python simulator.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file
 ```
 ```bash
 # For close-sourced LLMs
@@ -162,7 +168,7 @@ python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,Ac
 
 You could also run the models locally:
 ```bash
-python eval.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
+python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
 ```
 
 ### Supported LLM backbones
@@ -170,7 +176,7 @@ python eval.py --llm_name google/gemma-1.1-2b-it --max_gpu_memory '{"0": "24GB"}
 - gemini-pro
 - ollama models (macbook)
 - claude3
-- open-sourced LLM from Huggingface
+- open-sourced LLM from Huggingface (native, vllm)
 
 ## 🖋️ References
 ```
