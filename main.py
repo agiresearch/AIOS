@@ -90,25 +90,26 @@ def main():
     #     "Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD."
     # )
 
-    # academic_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "AcademicAgent",
-    #     "Summarize recent advancements in quantum computing from the past five years."
-    # )
+    academic_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "AcademicAgent",
+        "Summarize recent advancements in quantum computing from the past five years."
+    )
 
     # rec_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
     #     "RecAgent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
     # )
 
-    creation_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "CreationAgent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
-    )
+    # creation_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "CreationAgent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    # )
 
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
     # agent_tasks = [rec_agent]
-    agent_tasks = [creation_agent]
+    # agent_tasks = [creation_agent]
+    agent_tasks = [academic_agent]
 
     for r in as_completed(agent_tasks):
         res = r.result()
