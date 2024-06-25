@@ -22,10 +22,8 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
-- **[2024-04-29]** 📊 The evaluation mode of AIOS is added, which supports customizable agent types and agent instance numbers in each agent type.
-- **[2024-04-14]** 🚀 AIOS currently supports generation interrupt (for open-sourced llms from huggingface) and customized console loggers.
-- **[2024-04-05]** 🛠️ AIOS codebase has been updated to add shell simulator, rapid API calls, and pre-commit test cases. Please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md) for how to test your contributions and create pull requests.
-- **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats!
+- **[2024-04-05]** 🛠️ AIOS currently supports external tool callings (google search, wolframalpha, rapid API, etc).
+- **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats! For how to contribute to AIOS, please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md).
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
 - **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
@@ -41,8 +39,6 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free).
 
 ### Installation
-To run AIOS, you will need to install our agent creation package, [OpenAGI](https://github.com/agiresearch/OpenAGI).
-
 **Git clone AIOS**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
@@ -172,11 +168,11 @@ python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '
 ```
 
 ### Supported LLM backbones
-- gpt-3.5-turbo, gpt-4 gpt-4o
-- gemini-pro
-- ollama models (macbook)
+- gpt-3.5-turbo, gpt-4, gpt-4o
+- gemini-1.0-pro
+- ollama
 - claude3
-- open-sourced LLM from Huggingface (native, vllm)
+- open-sourced LLMs from huggingface (native, vllm)
 
 ## 🖋️ References
 ```
