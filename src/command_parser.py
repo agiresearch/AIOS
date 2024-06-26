@@ -1,7 +1,6 @@
 # This file contains helpful parsing utilities
 # This is not used for now
 
-import os
 
 class BaseParser:
     def __init__(self, llm, parser_type):

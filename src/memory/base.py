@@ -2,7 +2,6 @@
 # pointers in low level languages
 # The memory is organized in blocks of a single byte
 
-from threading import Thread
 
 # use C compatible data types for maximum memory efficiency
 import ctypes

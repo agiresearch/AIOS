@@ -1,9 +1,9 @@
-# Helper utilities for calculating metrics on the metrics determined by each 
-# agent. This is determined conrrently and sequentially and the difference 
+# Helper utilities for calculating metrics on the metrics determined by each
+# agent. This is determined conrrently and sequentially and the difference
 # in times between the both is scored as well.
 # Used in eval.py when evaluating the agents
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
 import numpy as np
 import os
 
@@ -78,7 +78,7 @@ def get_numbers_sequential(agent_list, agent_factory):
 
             agent_turnaround_time = output["agent_turnaround_time"] + accumulated_time
             agent_waiting_time = output["agent_waiting_time"] + accumulated_time
-            rounds = output["rounds"]
+            _rounds = output["rounds"]
 
             # Adjust times by the accumulated time
             request_waiting_times = output["request_waiting_times"]

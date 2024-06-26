@@ -3,17 +3,13 @@ from .base_llm import BaseLLMKernel
 import time
 
 # could be dynamically imported similar to other models
-from openai import OpenAI
-from .constant import MODEL_CLASS
 
 from pyopenagi.utils.chat_template import Response
 from ...utils.utils import get_from_env
 
 from transformers import AutoTokenizer
 
-import json
 
-import os
 class vLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,

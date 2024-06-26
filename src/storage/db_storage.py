@@ -3,7 +3,6 @@
 
 from src.storage.base import BaseStorage
 
-import json
 
 class DBStorage(BaseStorage):
     def __init__(self):

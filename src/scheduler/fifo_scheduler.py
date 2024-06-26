@@ -5,7 +5,6 @@
 from .base import BaseScheduler
 
 from queue import Queue, Empty
-from threading import Thread
 
 import time
 class FIFOScheduler(BaseScheduler):
