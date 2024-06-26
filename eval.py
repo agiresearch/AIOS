@@ -1,12 +1,9 @@
 # This file is used to evaluate the configuration passed through arguments to the simulation of the kernel
 
-import os
-import sys
 import json
 
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 
-from aios.scheduler.rr_scheduler import RRScheduler
 
 from pyopenagi.agents.agent_factory import AgentFactory
 
@@ -16,19 +13,16 @@ import warnings
 
 from aios.llm_kernel import llms
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
-from multiprocessing import Process
 
 from aios.utils.utils import delete_directories
 from aios.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
 import argparse
 
-import random
 
-import numpy as np
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
 
 # Construct help message and parse argumets using argparse
 def parse_global_args():

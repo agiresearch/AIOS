@@ -5,11 +5,9 @@ from .base_llm import BaseLLMKernel
 import time
 import ollama
 
-from transformers import AutoTokenizer
 
 from pyopenagi.utils.chat_template import Response
 
-import json
 class OllamaLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,

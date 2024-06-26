@@ -4,13 +4,10 @@
 
 from .base import BaseScheduler
 
-from .base import BaseScheduler
 
 # allows for memory to be shared safely between threads
 from queue import Queue, Empty
-from threading import Thread
 
-import time
 
 from ..context.simple_context import SimpleContextManager
 

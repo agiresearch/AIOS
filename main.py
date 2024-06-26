@@ -1,13 +1,9 @@
 # This is a main script that tests the functionality of specific agents.
 # It requires no user input.
 
-import os
-import sys
-import json
 
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 
-from aios.scheduler.rr_scheduler import RRScheduler
 
 from aios.utils.utils import (
     parse_global_args,
@@ -23,7 +19,6 @@ from aios.llm_kernel import llms
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from multiprocessing import Process
 
 from aios.utils.utils import delete_directories
 from dotenv import find_dotenv, load_dotenv
@@ -45,7 +40,7 @@ def main():
     scheduler_log_mode = args.scheduler_log_mode
     agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
-    use_backend = args.use_backend
+    _use_backend = args.use_backend
     load_dotenv()
 
     llm = llms.LLMKernel(
@@ -112,7 +107,7 @@ def main():
     agent_tasks = [academic_agent]
 
     for r in as_completed(agent_tasks):
-        res = r.result()
+        _res = r.result()
 
     scheduler.stop()
 
