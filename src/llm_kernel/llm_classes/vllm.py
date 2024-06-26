@@ -12,6 +12,8 @@ from ...utils.utils import get_from_env
 from transformers import AutoTokenizer
 
 import json
+
+import os
 class vLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -28,10 +30,8 @@ class vLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
         """ fetch the model from huggingface and run it """
-        self.max_gpu_memory = self.convert_map(self.max_gpu_memory)
-
-        # available_gpu_nums =
-        # self.auth_token = get_from_env("HF_AUTH_TOKENS")
+        self.available_gpus = list(self.max_gpu_memory.keys())
+        self.gpu_nums = len(self.available_gpus)
         try:
             import vllm
         except ImportError:
@@ -44,11 +44,10 @@ class vLLM(BaseLLMKernel):
         self.model = vllm.LLM(
             model = self.model_name,
             download_dir = get_from_env("HF_HOME"),
-            # dtype = 'float32'
+            tensor_parallel_size = self.gpu_nums
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
-            # use_auth_token = self.auth_token
         )
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
