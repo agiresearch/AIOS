@@ -1,6 +1,6 @@
 # Storing to json files to offload conversation history
 
-from src.storage.base import BaseStorage
+from aios.storage.base import BaseStorage
 
 import json
 
@@ -9,11 +9,11 @@ class JsonStorage(BaseStorage):
         pass
 
     def sto_save(self, agent_id, content):
-        with open("src/storage/agent" + str(agent_id) + ".json", "w") as f:
+        with open("aios/storage/agent" + str(agent_id) + ".json", "w") as f:
             json.dump(content, f, indent=2)
 
     def sto_load(self, agent_id):
-        with open("src/storage/agent" + str(agent_id) + ".json", "r") as f:
+        with open("aios/storage/agent" + str(agent_id) + ".json", "r") as f:
             interaction_history = json.load(f)
             return interaction_history
 

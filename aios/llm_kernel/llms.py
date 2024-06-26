@@ -1,4 +1,4 @@
-# This file just wraps around the LLM classes in src/llm_kernel/llm_classes
+# This file just wraps around the LLM classes in aios/llm_kernel/llm_classes
 # and provides an easy interface for the rest of the code to access
 # All abstractions will be implemented here
 
