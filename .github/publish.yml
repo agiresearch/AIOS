@@ -1,0 +1,29 @@
+name: Publish Python Package
+
+on:
+  pull_request
+
+jobs:
+  deploy:
+    if: contains(github.event.pull_request.title, 'v*.*.*') && startsWith(github.event.pull_request.title, 'v*.*.*')
+    runs-on: ubuntu-latest
+
+    environment: release
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install hatch
+      - name: Build package
+        run: hatch build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

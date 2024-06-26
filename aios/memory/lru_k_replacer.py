@@ -22,7 +22,7 @@ class LRU_K_Replacer:
         self.entries: Dict[int, Block_Entry] = {}
 
         """ counts the amount of times a block has been used in the cache """
-        self.hit_list = OrderedDict() 
+        self.hit_list = OrderedDict()
 
         """ holds the memory block that is being cached by id """
         self.cache_list = OrderedDict()

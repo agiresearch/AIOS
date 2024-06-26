@@ -1,4 +1,4 @@
-# This file makes it easier for threads to access memory for each agent by 
+# This file makes it easier for threads to access memory for each agent by
 # placing a lock on memory that needs to be read later. This is implemented as
 # wrapper upon the access methods in BaseMemoryManager
 

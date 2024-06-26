@@ -1,4 +1,4 @@
-# This implements a (mostly) FIFO task queue using threads and queue, in a 
+# This implements a (mostly) FIFO task queue using threads and queue, in a
 # similar fashion to the round robin scheduler. However, the timeout is 1 second
 # instead of 0.05 seconds.
 
@@ -17,8 +17,8 @@ class FIFOScheduler(BaseScheduler):
     def run(self):
         while self.active:
             try:
-                """ 
-                wait 1 second between each iteration at the minimum 
+                """
+                wait 1 second between each iteration at the minimum
                 if there is nothing received in a second, it will raise Empty
                 """
                 agent_process = self.agent_process_queue.get(block=True, timeout=1)

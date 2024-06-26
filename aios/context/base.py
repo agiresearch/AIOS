@@ -1,4 +1,4 @@
-# This file contains the stub implementation of the context manager. 
+# This file contains the stub implementation of the context manager.
 # It is subclassed in the simple_context.py file for the SimpleContextManager.
 
 import os

@@ -4,9 +4,9 @@ import os
 import sys
 import json
 
-from src.scheduler.fifo_scheduler import FIFOScheduler
+from aios.scheduler.fifo_scheduler import FIFOScheduler
 
-from src.scheduler.rr_scheduler import RRScheduler
+from aios.scheduler.rr_scheduler import RRScheduler
 
 from pyopenagi.agents.agent_factory import AgentFactory
 
@@ -14,14 +14,14 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
-from src.llm_kernel import llms
+from aios.llm_kernel import llms
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from multiprocessing import Process
 
-from src.utils.utils import delete_directories
-from src.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
+from aios.utils.utils import delete_directories
+from aios.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
 import argparse
 
@@ -32,7 +32,7 @@ from dotenv import find_dotenv, load_dotenv
 
 # Construct help message and parse argumets using argparse
 def parse_global_args():
-    """ parser in src/utils/utils.py with --agents and --agent-log-mode argument """
+    """ parser in aios/utils/utils.py with --agents and --agent-log-mode argument """
     parser = argparse.ArgumentParser(description="Parse global parameters")
     parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")

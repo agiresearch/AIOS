@@ -1,4 +1,4 @@
-# This file will be an implementation of the shared memory mechanism for 
+# This file will be an implementation of the shared memory mechanism for
 # multi-agent systems
 
 from src.memory.base import BaseMemory

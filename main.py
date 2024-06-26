@@ -5,11 +5,11 @@ import os
 import sys
 import json
 
-from src.scheduler.fifo_scheduler import FIFOScheduler
+from aios.scheduler.fifo_scheduler import FIFOScheduler
 
-from src.scheduler.rr_scheduler import RRScheduler
+from aios.scheduler.rr_scheduler import RRScheduler
 
-from src.utils.utils import (
+from aios.utils.utils import (
     parse_global_args,
 )
 
@@ -19,13 +19,13 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
-from src.llm_kernel import llms
+from aios.llm_kernel import llms
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from multiprocessing import Process
 
-from src.utils.utils import delete_directories
+from aios.utils.utils import delete_directories
 from dotenv import find_dotenv, load_dotenv
 
 def clean_cache(root_directory):

@@ -1,5 +1,5 @@
-# Helper utilities for calculating metrics on the metrics determined by each 
-# agent. This is determined conrrently and sequentially and the difference 
+# Helper utilities for calculating metrics on the metrics determined by each
+# agent. This is determined conrrently and sequentially and the difference
 # in times between the both is scored as well.
 # Used in eval.py when evaluating the agents
 
