@@ -1,7 +1,7 @@
 # TODO: Not implemented
 # Storing to databases has not been implemented yet
 
-from src.storage.base import BaseStorage
+from aios.storage.base import BaseStorage
 
 
 class DBStorage(BaseStorage):

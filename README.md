@@ -111,9 +111,11 @@ bash scripts/run/gpt4.sh
 You can use an open-source model on an Apple MacBook with Ollama. First, you will need to pull the model. Let's use llama3 as an example:
 ```bash
 ollama pull llama3:8b
+ollama pull llama3:8b
 ```
 Then, you can run the Python script with the input parameter to start using AIOS with Llama3 and Ollama on your MacBook:
 ```bash
+python main.py --llm_name ollama/llama3:8b
 python main.py --llm_name ollama/llama3:8b
 ```
 #### Interactive Mode
@@ -172,7 +174,7 @@ python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '
 - gemini-1.0-pro
 - ollama
 - claude3
-- open-sourced LLMs from huggingface (native, vllm)
+- open-sourced LLM from Huggingface
 
 ## 🖋️ References
 ```

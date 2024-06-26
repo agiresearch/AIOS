@@ -1,0 +1,40 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-requirements-txt"]
+
+[project]
+
+dynamic = ["dependencies"]
+
+description = "AIOS: LLM Agent Operating System"
+keywords = ["llm", "os"]
+license = {file = "LICENSE"}
+
+name = "pyaios"
+readme = "README.md"
+requires-python = ">=3.9"
+version = "0.0.1"
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/agiresearch/AIOS"
+Repository = "https://github.com/agiresearch/AIOS.git"
+
+
+[tool.hatch.build]
+exclude = ["build", "dist", "__pycache__/", ".pytest_cache/"]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["aios"]

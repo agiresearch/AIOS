@@ -1,11 +1,11 @@
-# This file contains the stub implementation of the context manager. 
+# This file contains the stub implementation of the context manager.
 # It is subclassed in the simple_context.py file for the SimpleContextManager.
 
 import os
 
 class BaseContextManager:
     def __init__(self):
-        self.context_dir = os.path.join(os.getcwd(), "src", "context", "context_restoration")
+        self.context_dir = os.path.join(os.getcwd(), "aios", "context", "context_restoration")
         if not os.path.exists(self.context_dir):
             os.makedirs(self.context_dir)
 

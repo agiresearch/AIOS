@@ -1,8 +1,8 @@
-# This file makes it easier for threads to access memory for each agent by 
+# This file makes it easier for threads to access memory for each agent by
 # placing a lock on memory that needs to be read later. This is implemented as
 # wrapper upon the access methods in BaseMemoryManager
 
-from src.memory.base import (
+from aios.memory.base import (
     MemoryRequest,
     BaseMemoryManager
 )
@@ -17,7 +17,7 @@ from utils.compressor import (
     ZLIBCompressor
 )
 
-from src.memory.base import (
+from aios.memory.base import (
     Memory
 )
 
