@@ -1,11 +1,11 @@
 name: Publish Python Package
 
 on:
-  pull_request
-
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
   deploy:
-    if: contains(github.event.pull_request.title, 'v*.*.*') && startsWith(github.event.pull_request.title, 'v*.*.*')
+    if: ${{ github.event.pull_request.title ==~ /^v\d+\.\d+\.\d+$/ }}
     runs-on: ubuntu-latest
 
     environment: release
