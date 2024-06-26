@@ -1,13 +1,9 @@
 # This simulates AIOS as an LLM kernel, although it is only acting as a userspace
 # wrapper in this script.
 
-import os
-import sys
-import json
 
 from src.command_parser import (
-    PunctuationParser,
-    ChatGPTParser
+    PunctuationParser
 )
 
 from src.command_executor import (
@@ -16,7 +12,6 @@ from src.command_executor import (
 
 from src.scheduler.fifo_scheduler import FIFOScheduler
 
-from src.scheduler.rr_scheduler import RRScheduler
 
 from src.utils.utils import (
     parse_global_args,
@@ -30,10 +25,9 @@ import warnings
 
 from src.llm_kernel import llms
 
-import threading
 
 from src.utils.utils import delete_directories
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
 
 def clean_cache(root_directory):
     targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}

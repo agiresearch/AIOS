@@ -1,15 +1,11 @@
 # This file parses commands given to simulator.py and evaluates them using agents
 
-import os
-import sys
 
 # Facilitates interaction with agents
-from openagi.src.agents.agent_factory import AgentFactory
 
-import subprocess
 
 # Enables commands to be executed concurrently
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 class Executor:
     def __init__(self, agent_factory):
