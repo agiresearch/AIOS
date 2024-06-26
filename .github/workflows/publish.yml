@@ -5,8 +5,8 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   deploy:
-    if: ${{ github.event.pull_request.title ==~ /^v\d+\.\d+\.\d+$/ }}
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.title ==~ /^v\d+\.\d+\.\d+$/ }}
 
     environment: release
     permissions:
