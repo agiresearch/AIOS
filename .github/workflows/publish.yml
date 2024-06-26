@@ -2,14 +2,14 @@ name: Publish Python Package
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  # push:
-  #   tags:
-  #     - 'v*'
+    types: [closed]
+    branches:
+      - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # if: ${{ github.event.pull_request.title ==~ /^v\d+\.\d+\.\d+$/ }}
+    if: github.event.pull_request.merged == true && github.event.pull_request.title ==~ /^v\d+\.\d+\.\d+(\.post\d+)?$/
 
     environment: release
     permissions:

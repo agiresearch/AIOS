@@ -13,10 +13,10 @@ license = {file = "LICENSE"}
 name = "pyaios"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "0.0.1"
+version = "0.0.1.post1"
 
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 3 - Beta",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "License :: OSI Approved :: MIT License",
