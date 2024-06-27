@@ -10,10 +10,10 @@ description = "AIOS: LLM Agent Operating System"
 keywords = ["llm", "os"]
 license = {file = "LICENSE"}
 
-name = "pyaios"
+name = "aios_core"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "0.0.1.beta1"
+version = "0.0.1.beta2"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
