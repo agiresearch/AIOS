@@ -2,14 +2,9 @@
 # wrapper in this script.
 
 
-from aios.command_parser import (
-    PunctuationParser,
-    ChatGPTParser
-)
+from aios.command_parser import PunctuationParser
 
-from aios.command_executor import (
-    Executor
-)
+from aios.command_executor import Executor
 
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 
@@ -30,9 +25,16 @@ from aios.llm_kernel import llms
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
 
+
 def clean_cache(root_directory):
-    targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
+    targets = {
+        ".ipynb_checkpoints",
+        "__pycache__",
+        ".pytest_cache",
+        "context_restoration",
+    }
     delete_directories(root_directory, targets)
+
 
 def main():
     # parse arguments into configuration for this runtime
@@ -50,31 +52,26 @@ def main():
     load_dotenv()
 
     llm = llms.LLMKernel(
-        llm_name = llm_name,
-        max_gpu_memory = max_gpu_memory,
-        eval_device = eval_device,
-        max_new_tokens = max_new_tokens,
-        log_mode = llm_kernel_log_mode
+        llm_name=llm_name,
+        max_gpu_memory=max_gpu_memory,
+        eval_device=eval_device,
+        max_new_tokens=max_new_tokens,
+        log_mode=llm_kernel_log_mode,
     )
 
     # allow agents to execute concurrently using a simple scheduler
-    scheduler = FIFOScheduler(
-        llm = llm,
-        log_mode = scheduler_log_mode
-    )
+    scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
 
     agent_process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue,
-        agent_process_factory = agent_process_factory,
-        agent_log_mode = agent_log_mode
+        llm=llm,
+        agent_process_queue=scheduler.agent_process_queue,
+        agent_process_factory=agent_process_factory,
+        agent_log_mode=agent_log_mode,
     )
 
-    parser = PunctuationParser(
-        llm = llm
-    )
+    parser = PunctuationParser(llm=llm)
 
     executor = Executor(agent_factory=agent_factory)
 
@@ -104,6 +101,7 @@ def main():
     scheduler.stop()
 
     clean_cache("./")
+
 
 if __name__ == "__main__":
     main()
