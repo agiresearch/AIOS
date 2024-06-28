@@ -21,11 +21,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 from aios.utils.utils import delete_directories
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
+
 
 def clean_cache(root_directory):
-    targets = {'.ipynb_checkpoints', '__pycache__', ".pytest_cache", "context_restoration"}
+    targets = {
+        ".ipynb_checkpoints",
+        "__pycache__",
+        ".pytest_cache",
+        "context_restoration",
+    }
     delete_directories(root_directory, targets)
+
 
 def main():
     # parse arguments and set configuration for this run accordingly
@@ -44,28 +51,25 @@ def main():
     load_dotenv()
 
     llm = llms.LLMKernel(
-        llm_name = llm_name,
-        max_gpu_memory = max_gpu_memory,
-        eval_device = eval_device,
-        max_new_tokens = max_new_tokens,
-        log_mode = llm_kernel_log_mode,
-        use_backend = args.use_backend
+        llm_name=llm_name,
+        max_gpu_memory=max_gpu_memory,
+        eval_device=eval_device,
+        max_new_tokens=max_new_tokens,
+        log_mode=llm_kernel_log_mode,
+        use_backend=args.use_backend,
     )
 
     # run agents concurrently for maximum efficiency using a scheduler
 
-    scheduler = FIFOScheduler(
-        llm = llm,
-        log_mode = scheduler_log_mode
-    )
+    scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
 
     agent_process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        llm = llm,
-        agent_process_queue = scheduler.agent_process_queue,
-        agent_process_factory = agent_process_factory,
-        agent_log_mode = agent_log_mode
+        llm=llm,
+        agent_process_queue=scheduler.agent_process_queue,
+        agent_process_factory=agent_process_factory,
+        agent_log_mode=agent_log_mode,
     )
 
     agent_thread_pool = ThreadPoolExecutor(max_workers=500)
@@ -88,7 +92,7 @@ def main():
     academic_agent = agent_thread_pool.submit(
         agent_factory.run_agent,
         "AcademicAgent",
-        "Summarize recent advancements in quantum computing from the past five years."
+        "Summarize recent advancements in quantum computing from the past five years.",
     )
 
     # rec_agent = agent_thread_pool.submit(
@@ -112,6 +116,7 @@ def main():
     scheduler.stop()
 
     clean_cache(root_directory="./")
+
 
 if __name__ == "__main__":
     main()
