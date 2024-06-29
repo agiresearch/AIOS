@@ -21,7 +21,7 @@ class BaseLLMKernel(ABC):
         ):
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
-        self.MAX_NEW_TOKENS = max_new_tokens
+        self.max_new_tokens = max_new_tokens
 
         self.log_mode = log_mode
 

@@ -5,9 +5,7 @@ from .base_llm import BaseLLMKernel
 import time
 import ollama
 
-
 from pyopenagi.utils.chat_template import Response
-
 class OllamaLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -44,8 +42,6 @@ class OllamaLLM(BaseLLMKernel):
             level = "executing"
         )
 
-        # print(f"Current messages: {messages}, use tools: {True if tools else False}")
-
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
             response = ollama.chat(
@@ -53,15 +49,11 @@ class OllamaLLM(BaseLLMKernel):
                 messages=messages
             )
 
-            # print(response)
             tool_calls = self.tool_calling_output_format(
                 response["message"]["content"]
             )
 
             if tool_calls:
-                # print("Match json format")
-                # print(f"Matched tool call is: {tool_calls}")
-
                 agent_process.set_response(
                     Response(
                         response_message = None,
@@ -79,9 +71,9 @@ class OllamaLLM(BaseLLMKernel):
             messages = self.tool_calling_input_format(messages, tools)
             response = ollama.chat(
                 model=self.model_name.split("/")[-1],
-                messages=messages
+                messages=messages,
+                num_predict=self.max_new_tokens
             )
-            # print(response)
             agent_process.set_response(
                 Response(
                     response_message = response['message']['content']
