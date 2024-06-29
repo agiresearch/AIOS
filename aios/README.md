@@ -1,4 +1,4 @@
-# src/
+# aios/
 
 This folder contains the internal implementation of AIOS.
 

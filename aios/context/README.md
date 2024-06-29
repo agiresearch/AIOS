@@ -1,4 +1,4 @@
-# src/context
+# aios/context
 
 This folder contains the SimpleContextManager class and the base implementation.
 This allows for snapshotting of context data for the LLMs.

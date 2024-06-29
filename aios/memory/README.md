@@ -1,4 +1,4 @@
-# src/memory/
+# aios/memory/
 
 Implements the memory management needed between the agents the LLMs so it can be shared across multiple agents.
 
