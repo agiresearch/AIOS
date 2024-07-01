@@ -72,7 +72,9 @@ class OllamaLLM(BaseLLMKernel):
             response = ollama.chat(
                 model=self.model_name.split("/")[-1],
                 messages=messages,
-                num_predict=self.max_new_tokens
+                options= ollama.Options(
+                    num_predict=self.max_new_tokens
+                )
             )
             agent_process.set_response(
                 Response(
