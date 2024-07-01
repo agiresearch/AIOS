@@ -50,7 +50,7 @@ class vLLM(BaseLLMKernel):
         self.sampling_params = vllm.SamplingParams(
             temperature=0.8,
             top_p=0.95,
-            max_tokens=self.MAX_NEW_TOKENS,
+            max_tokens=self.max_new_tokens,
         )
 
     def parse_tool_callings(self, result):

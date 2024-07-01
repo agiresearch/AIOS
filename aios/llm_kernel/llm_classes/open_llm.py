@@ -67,7 +67,7 @@ class OpenLLM(BaseLLMKernel):
                 beams = beams,
                 beam_scores = beam_scores,
                 beam_attention_mask = beam_attention_mask,
-                max_new_tokens = self.MAX_NEW_TOKENS,
+                max_new_tokens = self.max_new_tokens,
                 start_idx = start_idx,
                 timestamp = agent_process.get_time_limit()
             )
@@ -93,7 +93,7 @@ class OpenLLM(BaseLLMKernel):
                 attention_mask = attention_mask,
                 search_mode = "beam_search",
                 beam_size = 1,
-                max_new_tokens=self.MAX_NEW_TOKENS,
+                max_new_tokens=self.max_new_tokens,
                 start_idx = 0,
                 timestamp = agent_process.get_time_limit()
             )

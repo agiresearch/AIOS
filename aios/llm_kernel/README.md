@@ -1,4 +1,4 @@
-# src/llm_kernel/
+# aios/llm_kernel/
 
 This directory contains wrapper classes that abstract the LLMs into a single class called LLMKernel. Currently, the following models are supported:
 
