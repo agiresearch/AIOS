@@ -27,7 +27,7 @@ class LLMKernel:
             )
         # For locally-deployed LLM
         else:
-            if use_backend == "ollama" and llm_name.startswith("ollama"):
+            if use_backend == "ollama" or llm_name.startswith("ollama"):
                 self.model = OllamaLLM(
                     llm_name=llm_name,
                     max_gpu_memory=max_gpu_memory,
