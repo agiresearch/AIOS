@@ -7,7 +7,10 @@ from .bed_rock import BedrockLLM
 #used for closed LLM model registry
 MODEL_REGISTRY = {
     'bedrock/anthropic.claude-3-haiku-20240307-v1:0': BedrockLLM,
-    'gemini-pro': GeminiLLM,
+    'gemini-1.0-pro': GeminiLLM,
+    "gemini-1.0-pro-001": GeminiLLM,
+    "gemini-1.5-flash-latest": GeminiLLM,
+    "gemini-1.5-pro-latest": GeminiLLM,
     'gpt-3.5-turbo': GPTLLM,
     'gpt-4': GPTLLM,
     'gpt-4o': GPTLLM

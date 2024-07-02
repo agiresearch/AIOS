@@ -1,5 +1,4 @@
-google_api_python_client==2.123.0
-googlemaps==4.10.0
+google-generativeai
 openai==1.20.0
 pandas==2.2.2
 protobuf==4.25.3

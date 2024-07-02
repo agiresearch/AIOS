@@ -77,36 +77,20 @@ class BaseLLMKernel(ABC):
             [
                 'Must call functions that are available. To call a function, respond '
                 'immediately and only with a list of JSON object of the following format:'
-                '{[{"name":"function_name_value","arguments":{"":"argument_value1",'
-                '"argument_name2":"argument_value2"}}]}'
+                '{[{"name":"function_name_value","parameters":{"parameter_name1":"parameter_value1",'
+                '"parameter_name2":"parameter_value2"}}]}'
             ]
         )
         messages[-1]["content"] += (prefix_prompt + tool_prompt + suffix_prompt)
         return messages
 
+    # used for parsing string output as tool callings
     def tool_calling_output_format(self, tool_calling_messages):
         # print(f"tool calling messages are: {tool_calling_messages}")
         try:
-            tool_callings = []
-            tool_calling_messages = json.loads(tool_calling_messages)
-            class ToolFunction:
-                def __init__(self, name, arguments) -> None:
-                    self.name = name
-                    self.arguments = arguments
-
-            class ToolCalling:
-                def __init__(self, function) -> None:
-                    self.function = function
-
-            for tool_calling_message in tool_calling_messages:
-                tool_callings.append(
-                    ToolCalling(
-                        function = ToolFunction(
-                            name = tool_calling_message["name"],
-                            arguments = json.dumps(tool_calling_message["arguments"])
-                        )
-                    )
-                )
+            pattern = r'\[\{.*?\}\]'
+            matches = re.findall(pattern, tool_calling_messages)
+            tool_callings = json.loads(matches[-1])
             return tool_callings
 
         except json.JSONDecodeError:

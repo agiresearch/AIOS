@@ -6,6 +6,7 @@ import time
 from openai import OpenAI
 
 from pyopenagi.utils.chat_template import Response
+import json
 
 class GPTLLM(BaseLLMKernel):
 
@@ -23,6 +24,21 @@ class GPTLLM(BaseLLMKernel):
     def load_llm_and_tokenizer(self) -> None:
         self.model = OpenAI()
         self.tokenizer = None
+
+    def parse_tool_calls(self, tool_calls):
+        if tool_calls:
+            parsed_tool_calls = []
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                parsed_tool_calls.append(
+                    {
+                        "name": function_name,
+                        "parameters": function_args
+                    }
+                )
+            return parsed_tool_calls
+        return None
 
     def process(self,
             agent_process,
@@ -47,12 +63,16 @@ class GPTLLM(BaseLLMKernel):
             tools = agent_process.query.tools,
             tool_choice = "required" if agent_process.query.tools else None
         )
-
+        response_message = response.choices[0].message.content
+        tool_calls = self.parse_tool_calls(
+            response.choices[0].message.tool_calls
+        )
+        # print(tool_calls)
         # print(response.choices[0].message)
         agent_process.set_response(
             Response(
-                response_message = response.choices[0].message.content,
-                tool_calls = response.choices[0].message.tool_calls
+                response_message = response_message,
+                tool_calls = tool_calls
             )
         )
         agent_process.set_status("done")
