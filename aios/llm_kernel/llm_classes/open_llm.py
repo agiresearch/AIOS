@@ -115,7 +115,6 @@ class OpenLLM(BaseLLMKernel):
                 )
 
             if tools:
-                result = self.parse_tool_callings(result)
                 tool_calls = self.tool_calling_output_format(
                     result
                 )

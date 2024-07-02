@@ -171,7 +171,7 @@ python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '
 
 ### Supported LLM backbones
 - gpt-3.5-turbo, gpt-4, gpt-4o
-- gemini-1.0-pro
+- gemini-1.0-pro, gemini-1.5-flash-latest, gemini-1.5-pro-latest
 - ollama
 - claude3
 - open-sourced LLM from Huggingface

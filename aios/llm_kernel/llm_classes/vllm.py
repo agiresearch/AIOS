@@ -1,4 +1,3 @@
-import re
 from .base_llm import BaseLLMKernel
 import time
 
@@ -53,11 +52,6 @@ class vLLM(BaseLLMKernel):
             max_tokens=self.max_new_tokens,
         )
 
-    def parse_tool_callings(self, result):
-        pattern = r'\[\{.*?\}\]'
-        matches = re.findall(pattern, result)
-        return matches[-1]
-
     def process(self,
                 agent_process,
                 temperature=0.0) -> None:
@@ -86,10 +80,6 @@ class vLLM(BaseLLMKernel):
             )
             # print(response)
             result = response[0].outputs[0].text
-
-            result = self.parse_tool_callings(result)
-
-            print(result)
 
             tool_calls = self.tool_calling_output_format(
                 result
