@@ -5,6 +5,8 @@
 [![Code License](https://img.shields.io/badge/Code%20License-MIT-green.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 <a href='https://discord.gg/B2HFxEgTJX'><img src='https://img.shields.io/badge/Community-Discord-8A2BE2'></a>
 
+<a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+
 AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
 
 
@@ -169,12 +171,12 @@ You could also run the models locally:
 python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
 ```
 
-### Supported LLM backbones
-- gpt-3.5-turbo, gpt-4, gpt-4o
-- gemini-1.0-pro, gemini-1.5-flash-latest, gemini-1.5-pro-latest
+### Supported LLM Endpoints
+- OpenAI API
+- Gemini API
 - ollama
-- claude3
-- open-sourced LLM from Huggingface
+- vllm
+- native huggingface models (locally)
 
 ## 🖋️ References
 ```

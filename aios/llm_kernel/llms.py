@@ -3,7 +3,7 @@
 # All abstractions will be implemented here
 
 from .llm_classes.model_registry import MODEL_REGISTRY
-from .llm_classes.open_llm import OpenLLM
+from .llm_classes.huggingface_native_llm import OpenLLM
 
 # standard implementation of LLM methods
 from .llm_classes.ollama_llm import OllamaLLM

@@ -1,0 +1,35 @@
+name: Usage
+description: Raise an issue here if you don't know how to use aios.
+title: "[Usage] "
+labels: ["usage"]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Checked other resources
+    description: Please confirm and check all the following options.
+    options:
+      - label: I added a very descriptive title to this issue.
+        required: true
+      - label: I am sure the issue hasn't been already addressed by searching through https://github.com/agiresearch/AIOS/issues.
+        required: true
+      - label: The usage issue is not resolved by updating to the latest stable version in the main branch.
+        required: true
+- type: textarea
+  attributes:
+    label: Your current environment
+    description: |
+      Your current environment information (including OS, GPU, Cuda-version)
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: How would you like to use aios
+    description: |
+      A detailed description of how you want to use aios.
+    value: |
+      I want to run aios with the llm endpoint: xxx for agent: xxx.
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!

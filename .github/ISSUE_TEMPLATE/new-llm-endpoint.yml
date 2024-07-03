@@ -1,0 +1,33 @@
+name: Request for a new llm endpoint support
+description: Submit a proposal/request for a new llm endpoint.
+title: "[New LLM-Endpoint] "
+labels: ["new llm endpoint"]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Checked other resources
+    description: Please confirm and check all the following options.
+    options:
+      - label: I added a very descriptive title to this issue.
+        required: true
+      - label: I am sure the issue hasn't been already addressed by searching through https://github.com/agiresearch/AIOS/issues.
+        required: true
+      - label: I am sure the new endpoint is not supported by aios currently by looking through https://github.com/agiresearch/aios/tree/main/aios/llm_kernel/llm_classes.
+        required: true
+- type: textarea
+  attributes:
+    label: The llm endpoint to consider.
+    description: >
+      An endpoint url, pointing to the llm endpoint that is good to integrate, e.g. https://ollama.com/ .
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: What's your expected advantage of integrating the llm endpoint?
+    description: >
+      For example, lower latency, cost-free, cpu-only enabled?
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
