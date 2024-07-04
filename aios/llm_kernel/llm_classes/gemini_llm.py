@@ -63,13 +63,11 @@ class GeminiLLM(BaseLLMKernel):
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
 
-            # convert role to fit the gemini role types
+        # convert role to fit the gemini role types
         messages = self.convert_messages(
             messages=messages,
         )
 
-        # print(messages)
-        # TODO: add tool calling
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
