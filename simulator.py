@@ -19,7 +19,7 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
-from aios.llm_kernel import llms
+from aios.llm_core import llms
 
 
 from aios.utils.utils import delete_directories

@@ -11,16 +11,14 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
-from aios.llm_kernel import llms
+from aios.llm_core import llms
 
 from concurrent.futures import ThreadPoolExecutor
-
 
 from aios.utils.utils import delete_directories
 from aios.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
 import argparse
-
 
 from dotenv import load_dotenv
 
