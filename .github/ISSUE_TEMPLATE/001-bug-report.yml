@@ -1,0 +1,36 @@
+name: Bug report
+description: Raise an issue here if you find a bug.
+title: "[Bug]: "
+labels: ["bug"]
+
+body:
+- type: checkboxes
+  attributes:
+    label: Checked other resources
+    description: Please confirm and check all the following options.
+    options:
+    - label: I added a very descriptive title to this issue.
+      required: true
+    - label: I am sure the issue hasn't been already addressed by searching through https://github.com/agiresearch/AIOS/issues.
+      required: true
+    - label: The usage issue is not resolved by updating to the latest stable version in the main branch.
+      required: true
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Describe your current environment
+    description: |
+      Your current environment information (including OS, GPU, Cuda-version)
+- type: textarea
+  attributes:
+    label: Describe the bug
+    description: |
+      Please provide a clear and concise description of what the bug is.
+      If relevant, add a minimal example so that we can reproduce the error by running the code.
+  validations:
+    required: true
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
