@@ -5,6 +5,5 @@ protobuf==4.25.3
 pydantic==2.7.0
 Pympler==1.0.1
 click==8.1.7
-ollama==0.1.7
+ollama
 pyopenagi
-vllm

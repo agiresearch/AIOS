@@ -3,7 +3,7 @@
 
 from threading import Thread
 
-from aios.llm_kernel.llms import LLMKernel
+from aios.llm_core.llms import LLMKernel
 
 from aios.utils.logger import SchedulerLogger
 class BaseScheduler:

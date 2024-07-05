@@ -7,16 +7,14 @@
 
 <a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-AIOS, a Large Language Model (LLM) Agent operating system, embeds large language model into Operating Systems (OS) as the brain of the OS, enabling an operating system "with soul" -- an important step towards AGI. AIOS is designed to optimize resource allocation, facilitate context switch across agents, enable concurrent execution of agents, provide tool service for agents, maintain access control for agents, and provide a rich set of toolkits for LLM Agent developers.
-
+AIOS is to build a Large Language Model (LLM) Agent operating system, which intends to embed large language model into the Operating System as the brain of the OS. AIOS is designated to address problems (e.g., scheduling, context switch, memory management, etc.) during the development and deployment of LLM-based agents for a better ecosystem among agent developers and users.
 
 ## 🏠 Architecture of AIOS
 <p align="center">
 <img src="images/AIOS-Architecture.png">
 </p>
 
-The objective of AIOS is to provide the LLM kernel which will be an abstraction on top of the OS kernel. The kernel intends to facilitate the installation of agents, which are utilities the kernel can interact with in order to perform tasks the user queries. For example, the MathAgent facilitates mathematical computations, such as currency conversion, integral calculus, or even basic algebraic manipulation. The method of installation is intended to be in a manner similar to [apt](https://en.wikipedia.org/wiki/APT_(software)) or [brew](https://brew.sh).
-
+AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel intends to facilitate the installation and usage of agents.
 At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
 
 ## 📰 News
