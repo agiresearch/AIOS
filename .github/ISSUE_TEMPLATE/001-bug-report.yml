@@ -1,6 +1,6 @@
 name: Bug report
 description: Raise an issue here if you find a bug.
-title: "[Bug]: "
+title: "[Bug] "
 labels: ["bug"]
 
 body:
