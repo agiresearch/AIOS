@@ -1,1 +1,1 @@
-python main.py --llm_name ollama/llama3
+python main.py --llm_name ollama/llama3:8b
