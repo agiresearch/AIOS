@@ -7,7 +7,7 @@
 
 <a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-AIOS is to build a Large Language Model (LLM) Agent operating system, which intends to embed large language model into the Operating System as the brain of the OS. AIOS is designated to address problems (e.g., scheduling, context switch, memory management, etc.) during the development and deployment of LLM-based agents for a better ecosystem among agent developers and users.
+The goal of AIOS is to build a large language model (LLM) agent operating system, which intends to embed large language model into the operating system as the brain of the OS. AIOS is designed to address problems (e.g., scheduling, context switch, memory management, etc.) during the development and deployment of LLM-based agents, for a better ecosystem among agent developers and users.
 
 ## 🏠 Architecture of AIOS
 <p align="center">
@@ -39,6 +39,7 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 At the minimum, we recommend a Nvidia GPU with 4 GB of memory or an ARM based Macbook. It should be able to run on machines with inferior hardware, but task completion time will increase greatly. If you notice a large delay in execution, you can try to use an API based model, such as gpt (paid) or gemini (free).
 
 ### Installation
+
 **Git clone AIOS**
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
@@ -140,7 +141,7 @@ bash scripts/interactive/gpt4.sh
 
 Example run of simulator.py:
 ```bash
-run MathAgent: Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
+run example/math_agent: Calculate the surface area and volume of a cylinder with a radius of 5 units and height of 10 units using the formulas "2 * pi * r * h + 2 * pi * r2" and "pi * r2 * h".
 print agent
 ```
 
@@ -160,13 +161,13 @@ bash scripts/eval/gpt4.sh
 ````
 If you want to obtain metrics for either concurrent execution (with AIOS) or sequential execution (without AIOS), you can specify the mode parameter when running the eval.py file."
 ```bash
-python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode concurrent-only
-python eval.py --llm_name gpt-4 --agents MathAgent:1,TravelAgent:1,RecAgent:1,AcademicAgent:1,CreationAgent:1 --mode sequential-only
+python eval.py --llm_name gpt-4 --agents example/math_agent:1,example/travel_agent:1,example/rec_agent:1,example/academic_agent:1,example/creation_agent:1 --mode concurrent-only
+python eval.py --llm_name gpt-4 --agents example/math_agent:1,example/travel_agent:1,example/rec_agent:1,example/academic_agent:1,example/creation_agent:1 --mode sequential-only
 ```
 
 You could also run the models locally:
 ```bash
-python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents MathAgent:1,TravelAgent:1 --mode concurrent-only
+python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256 --agents example/math_agent:1,example/travel_agent:1,example/rec_agent:1,example/academic_agent:1,example/creation_agent:1 --mode concurrent-only
 ```
 
 ### Supported LLM Endpoints
