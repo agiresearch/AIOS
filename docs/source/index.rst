@@ -1,13 +1,10 @@
-Welcome to Lumache's documentation!
+Welcome to AIOS's documentation!
 ===================================
 
-**Lumache** (/lu'make/) is a Python library for cooks and food lovers
-that creates recipes mixing random ingredients.
-It pulls data from the `Open Food Facts database <https://world.openfoodfacts.org/>`_
-and offers a *simple* and *intuitive* API.
-
-Check out the :doc:`usage` section for further information, including
-how to :ref:`installation` the project.
+The goal of AIOS is to build a large language model (LLM) agent operating system,
+which intends to embed large language model into the operating system as the brain of the OS.
+AIOS is designed to address problems (e.g., scheduling, context switch, memory management, etc.)
+during the development and deployment of LLM-based agents, for a better ecosystem among agent developers and users.
 
 .. note::
 
@@ -18,5 +15,5 @@ Contents
 
 .. toctree::
 
+   installation
    usage
-   api
