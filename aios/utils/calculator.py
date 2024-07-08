@@ -9,7 +9,7 @@ import os
 
 
 def load_agent_tasks(agent_name):
-    file_path = os.path.join(os.getcwd(), "agent_configs", f"{agent_name}_task.txt")
+    file_path = os.path.join(os.getcwd(), "data/agent_tasks", f"{agent_name}_task.txt")
     with open(file_path) as f:
         task_inputs = f.readlines()
         return task_inputs
