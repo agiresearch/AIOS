@@ -27,6 +27,13 @@ intersphinx_disabled_domains = ['std']
 
 templates_path = ['_templates']
 
+html_theme_options = {
+    "repository_url": "https://github.com/agiresearch/AIOS",
+    "use_repository_button": True,
+    'use_edit_page_button': True
+}
+
+html_title = "AIOS"
 # -- Options for HTML output
 
 html_theme = 'sphinx_book_theme'
