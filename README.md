@@ -29,6 +29,9 @@ At the present moment, AIOS is a userspace wrapper around the current kernel. Ho
 
 
 ## ✈️ Getting Started
+Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) for more information.
+- [Installation](https://aios.readthedocs.io/en/latest/get_started/installation.html)
+- [Quickstart](https://aios.readthedocs.io/en/latest/get_started/usage.html)
 
 ### Prerequisites
 - Python 3.11
@@ -91,7 +94,7 @@ For open-sourced LLMs, you need to setup the name of the LLM you would like to u
 # For open-sourced LLMs
 python main.py --llm_name <llm_name> --max_gpu_memory <max_gpu_memory> --eval_device <eval_device> --max_new_tokens <max_new_tokens>
 ## Use meta-llama/Meta-Llama-3-8B-Instruct for example
-python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "48GB"}' --eval_device "cuda:0" --max_new_tokens 256
+python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '{"0": "24GB", "1": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
 For inference acceleration, you can also use vllm as the backend.
 ```bash
@@ -109,14 +112,12 @@ You can use bash script to start the agent execution like this
 ```bash
 bash scripts/run/gpt4.sh
 ````
-You can use an open-source model on an Apple MacBook with Ollama. First, you will need to pull the model. Let's use llama3 as an example:
+You can use an open-source model on an Apple MacBook with ollama. First, you will need to pull the model. Let's use llama3 as an example:
 ```bash
-ollama pull llama3:8b
 ollama pull llama3:8b
 ```
 Then, you can run the Python script with the input parameter to start using AIOS with Llama3 and Ollama on your MacBook:
 ```bash
-python main.py --llm_name ollama/llama3:8b
 python main.py --llm_name ollama/llama3:8b
 ```
 #### Interactive Mode
@@ -171,11 +172,11 @@ python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '
 ```
 
 ### Supported LLM Endpoints
-- OpenAI API
-- Gemini API
-- ollama
-- vllm
-- native huggingface models (locally)
+- [OpenAI API](https://platform.openai.com/api-keys)
+- [Gemini API](https://ai.google.dev/gemini-api)
+- [ollama](https://ollama.com/)
+- [vllm](https://docs.vllm.ai/en/stable/)
+- [native huggingface models (locally)](https://huggingface.co/)
 
 ## 🖋️ References
 ```
@@ -194,9 +195,7 @@ python eval.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --max_gpu_memory '
 ```
 
 ## 🚀 Contributions
-AIOS is dedicated to facilitating the development and deployment of LLM agents in a systematic way, collaborators and contributions are always welcome to foster a cohesive, effective and efficient AIOS-Agent ecosystem!
-
-For detailed information on how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) or [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
+For how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) or [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
 
 ## 🌍 AIOS Contributors
 [![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=300)](https://github.com/agiresearch/AIOS/graphs/contributors)

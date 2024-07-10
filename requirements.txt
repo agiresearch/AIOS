@@ -7,3 +7,6 @@ Pympler==1.0.1
 click==8.1.7
 ollama
 pyopenagi
+torch
+transformers
+accelerate
