@@ -8,3 +8,6 @@ click==8.1.7
 ollama
 pyopenagi
 fastapi
+torch
+transformers
+accelerate

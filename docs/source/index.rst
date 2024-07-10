@@ -3,10 +3,10 @@ Welcome to AIOS!
 
 .. raw:: html
 
-   <p style="text-align:center">
+   <h1 style="text-align:center">
    <strong>AIOS: LLM Agent Operating System
    </strong>
-   </p>
+   </h1>
 
    <p style="text-align:center">
    <script async defer src="https://buttons.github.io/buttons.js"></script>
@@ -25,11 +25,4 @@ Documentation
    :caption: Get Started
 
    get_started/installation
-   get_started/usage
-
-.. toctree::
-   :maxdepth: 1
-   :caption: OpenAGI
-
-   openagi/installation
-   openagi/usage
+   get_started/quickstart
