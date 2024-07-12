@@ -37,9 +37,8 @@ def stop_server():
 
 if __name__ == "__main__":
     start_server()
-    
+
     # Example: Stop the server after 10 seconds
     import time
     time.sleep(10)
-    
     stop_server()
