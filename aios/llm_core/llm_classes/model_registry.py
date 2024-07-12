@@ -24,7 +24,6 @@ MODEL_REGISTRY = {
     'gpt-4-turbo-2024-04-09': GPTLLM,
     'gpt-4-turbo-preview': GPTLLM,
     'gpt-4-0125-preview': GPTLLM,
-    'gpt'
     'gpt-4': GPTLLM,
   
     # GPT4o
