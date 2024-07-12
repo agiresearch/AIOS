@@ -14,10 +14,11 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 <img src="images/AIOS-Architecture.png">
 </p>
 
-AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel intends to facilitate the installation and usage of agents.
-At the present moment, AIOS is a userspace wrapper around the current kernel. However, this is subject to change as outlined in the [Q4 Goals and Objectives](https://github.com/agiresearch/AIOS/issues/127).
+AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel intends to facilitate the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
+- **[2024-07-10]** 🛠️ AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
+- **[2024-07-03]** 🛠️ AIOS Github issue template is now available [template](https://github.com/agiresearch/AIOS/issues/new/choose).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
