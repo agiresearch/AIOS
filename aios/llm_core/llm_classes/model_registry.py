@@ -3,6 +3,7 @@
 from .gpt_llm import GPTLLM
 from .gemini_llm import GeminiLLM
 from .bed_rock import BedrockLLM
+from .claude_llm import ClaudeLLM
 
 #used for closed LLM model registry
 MODEL_REGISTRY = {
@@ -25,9 +26,11 @@ MODEL_REGISTRY = {
     'gpt-4-0125-preview': GPTLLM,
     'gpt'
     'gpt-4': GPTLLM,
-
+  
     # GPT4o
     'gpt-4o': GPTLLM,
     'gpt-4o-2024-05-13': GPTLLM,
-
+  
+    # claude 
+    'claude-3-5-sonnet-20240620': ClaudeLLM
 }

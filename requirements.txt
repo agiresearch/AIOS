@@ -11,3 +11,4 @@ fastapi
 torch
 transformers
 accelerate
+anthropic
