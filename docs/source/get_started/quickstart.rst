@@ -6,7 +6,7 @@ Be sure to complete the :ref:`installation instructions <aios_installation>` bef
 
 Use with OpenAI API
 -------------------
-You need to get your OpenAI API key from https://platform.openai.com/api-keys
+You need to get your OpenAI API key from https://platform.openai.com/api-keys.
 Then set up your OpenAI API key as an environment variable
 
 .. code-block:: console
@@ -70,7 +70,7 @@ using the following command
 
 .. code-block:: console
 
-    $ python main.py --llm_name ollama/llama3:8b --use_backend --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
+    $ python main.py --llm_name ollama/llama3:8b --use_backend ollama --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 
 Use with native huggingface llm models
 --------------------------------------
