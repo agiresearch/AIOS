@@ -1,4 +1,10 @@
-Thank you for your contribution to AIOS! Before submitting the pull request, please ensure the PR meets the following criteria. This helps improve the efficiency of the review process.
+Thank you for your contribution to AIOS!
+Before submitting the pull request, please ensure **the PR meets the following criteria**! This helps improve the efficiency of the review process.
+
+### Code Quality
+Before submitting your PR, you need to follow the steps below to maintain code quality.
+- Use `pip install -r requirements-dev.txt` to install the extra dependencies in requirements-dev.txt for the following checks.
+- Use `pre-commit install` to install pre-commit locally before you commit messages. The pre-commit can help correct the style that are added or modified.
 
 ### PR title and classification
 Only specific types of PRs will be reviewed. The PR title is prefixed appropriately (i.e., "prefix: description") to indicate the type of change. Please use one of the prefixs as below:
@@ -16,7 +22,6 @@ Only specific types of PRs will be reviewed. The PR title is prefixed appropriat
 - **Description:** a description of the change
 - **Issue:** the issue # it fixes, if applicable
 - **Dependencies:** any dependencies required for this change
-
 
 ### For the Reviews
 - After the PR is submitted, the PR will be assigned to a reviewer. Every reviewer will pick up the PRs based on their expertise and availability.
