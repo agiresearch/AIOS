@@ -3,6 +3,7 @@
 from .gpt_llm import GPTLLM
 from .gemini_llm import GeminiLLM
 from .bed_rock import BedrockLLM
+from .claude_llm import ClaudeLLM
 
 #used for closed LLM model registry
 MODEL_REGISTRY = {
@@ -13,5 +14,6 @@ MODEL_REGISTRY = {
     "gemini-1.5-pro-latest": GeminiLLM,
     'gpt-3.5-turbo': GPTLLM,
     'gpt-4': GPTLLM,
-    'gpt-4o': GPTLLM
+    'gpt-4o': GPTLLM,
+    'claude-3-5-sonnet-20240620': ClaudeLLM
 }
