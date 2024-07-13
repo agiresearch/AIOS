@@ -66,7 +66,6 @@ def main():
     agent_process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        llm=llm,
         agent_process_queue=scheduler.agent_process_queue,
         agent_process_factory=agent_process_factory,
         agent_log_mode=agent_log_mode,
@@ -100,15 +99,15 @@ def main():
     #     "example/rec_agent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
     # )
 
-    # creation_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
-    # )
+    creation_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    )
 
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
     # agent_tasks = [rec_agent]
     # agent_tasks = [creation_agent]
-    agent_tasks = [academic_agent]
+    agent_tasks = [academic_agent, creation_agent]
     # agent_tasks = [creation_agent]
 
     for r in as_completed(agent_tasks):
