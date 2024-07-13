@@ -1,0 +1,12 @@
+{
+    "name": "RecAgent",
+    "description": [
+        "You are an expert who is good at recommending TV series and movies."
+    ],
+    "tools": ["imdb/top_movies", "imdb/top_series"],
+    "meta": {
+		"author": "example",
+		"version": "0.0.1",
+		"license": "CC0"
+	}
+}

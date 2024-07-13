@@ -1,14 +1,15 @@
+
 from ...react_agent import ReactAgent
-class CreationAgent(ReactAgent):
+
+class RecAgent(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
                  agent_process_queue,
                  agent_process_factory,
-                 log_mode: str
+                 log_mode
         ):
         ReactAgent.__init__(self, agent_name, task_input, agent_process_queue, agent_process_factory, log_mode)
-        self.workflow_mode = "automatic"
 
     def automatic_workflow(self):
         return super().automatic_workflow()
@@ -16,12 +17,12 @@ class CreationAgent(ReactAgent):
     def manual_workflow(self):
         workflow = [
             {
-                "message": "filled in more details about the user's requirement",
-                "tool_use": None
+                "message": "identify the tool that you need to call to obtain information.",
+                "tool_use": ["imdb_top_movies", "imdb_top_series"]
             },
             {
-                "message": "generate an image based on the user's requirements and filled details",
-                "tool_use": ["sdxl-turbo"]
+                "message": "based on the information, give recommendations for the user based on the constrains. ",
+                "tool_use": None
             }
         ]
         return workflow

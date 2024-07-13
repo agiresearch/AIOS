@@ -218,11 +218,11 @@ if __name__ == '__main__':
     agent = args.agent
 
     client = Interactor()
-    client.check_reqs_installed(agent)
+    # client.check_reqs_installed(agent)
     # client = Interactor()
-    # if mode == "download":
-    #     client.download_agent(agent) # download agents
+    if mode == "download":
+        client.download_agent(agent) # download agents
 
-    # else:
-    #     assert mode == "upload"
-    #     client.upload_agent(agent) # upload agents
+    else:
+        assert mode == "upload"
+        client.upload_agent(agent) # upload agents
