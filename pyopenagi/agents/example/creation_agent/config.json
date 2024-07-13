@@ -1,0 +1,14 @@
+{
+    "name": "creation_agent",
+    "description": [
+        "You are an expert who is good at content creation. "
+    ],
+    "tools": [
+        "stability-ai/sdxl_turbo"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.0.1",
+        "license": "CC0"
+    }
+}

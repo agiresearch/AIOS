@@ -76,7 +76,6 @@ def main():
     agent_process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        llm=llm,
         agent_process_queue=scheduler.agent_process_queue,
         agent_process_factory=agent_process_factory,
         agent_log_mode=agent_log_mode

@@ -1,0 +1,14 @@
+{
+	"name": "travel_agent",
+	"description": [
+		"You are an expert in planning and managing travel itineraries."
+	],
+	"tools": [
+		"trip_advisor/"
+	],
+	"meta": {
+		"author": "example",
+		"version": "0.0.1",
+		"license": "CC0"
+	}
+}

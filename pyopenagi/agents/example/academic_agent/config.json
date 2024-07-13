@@ -1,0 +1,14 @@
+{
+    "name": "academic_agentt",
+    "description": [
+        "You are an expert who is good at looking up and summarizing academic articles. "
+    ],
+    "tools": [
+        "arxiv/arxiv"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.0.1",
+        "license": "CC0"
+    }
+}
