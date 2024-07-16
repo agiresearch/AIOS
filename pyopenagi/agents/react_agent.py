@@ -148,7 +148,7 @@ class ReactAgent(BaseAgent):
                 message = step["message"]
                 tool_use = step["tool_use"]
 
-                prompt = f"At step {self.rounds + 1}, you need to {message}. "
+                prompt = f"At step {i + 1}, you need to {message}. "
                 self.messages.append({
                     "role": "user",
                     "content": prompt
@@ -174,7 +174,7 @@ class ReactAgent(BaseAgent):
                 self.request_turnaround_times.extend(turnaround_times)
 
                 if tool_calls:
-                    for i in range(self.plan_max_fail_times):
+                    for _ in range(self.plan_max_fail_times):
                         actions, observations, success = self.call_tools(tool_calls=tool_calls)
 
                         action_messages = "[Action]: " + ";".join(actions)
@@ -198,7 +198,7 @@ class ReactAgent(BaseAgent):
                 if i == len(workflow) - 1:
                     final_result = self.messages[-1]
 
-                self.logger.log(f"At step {self.rounds + 1}, {self.messages[-1]}\n", level="info")
+                self.logger.log(f"At step {i + 1}, {self.messages[-1]}\n", level="info")
 
                 self.rounds += 1
 
