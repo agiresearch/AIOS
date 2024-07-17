@@ -22,7 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
-
+from datasets import load_dataset
 
 def clean_cache(root_directory):
     targets = {
@@ -88,27 +88,37 @@ def main():
     #     "Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD."
     # )
 
-    academic_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/academic_agent",
-        "Summarize recent advancements in quantum computing from the past five years.",
-    )
-
-    # rec_agent = agent_thread_pool.submit(
+    # academic_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
-    #     "example/rec_agent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
+    #     "example/academic_agent",
+    #     "Summarize recent advancements in quantum computing from the past five years.",
     # )
 
-    creation_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
-    )
+    # # rec_agent = agent_thread_pool.submit(
+    # #     agent_factory.run_agent,
+    # #     "example/rec_agent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
+    # # )
+
+    # creation_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
+    # )
+
+    query_data_list = load_dataset('osunlp/TravelPlanner','test')['test']
+
+    for i in range(1):
+        travel_planner_agent = agent_thread_pool.submit(
+            agent_factory.run_agent,
+            "example/travel_planner_agent",
+            query_data_list[i]['query'],
+        )
 
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
     # agent_tasks = [rec_agent]
     # agent_tasks = [creation_agent]
-    agent_tasks = [academic_agent, creation_agent]
+    # agent_tasks = [academic_agent, creation_agent]
     # agent_tasks = [creation_agent]
+    agent_tasks = [travel_planner_agent]
 
     for r in as_completed(agent_tasks):
         _res = r.result()

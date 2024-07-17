@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 
 class Attractions:
-    def __init__(self, path="../database/attractions/attractions.csv"):
+    def __init__(self, path="../environment/database/attractions/attractions.csv"):
         self.path = path
         self.data = pd.read_csv(self.path).dropna()[['Name','Latitude','Longitude','Address','Phone','Website',"City"]]
         print("Attractions loaded.")

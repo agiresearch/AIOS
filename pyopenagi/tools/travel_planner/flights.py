@@ -3,7 +3,7 @@ from pandas import DataFrame
 
 class Flights:
 
-    def __init__(self, path="../database/flights/clean_Flights_2022.csv"):
+    def __init__(self, path="../environment/database/flights/clean_Flights_2022.csv"):
         self.path = path
         self.data = pd.read_csv(self.path).dropna()[['Flight Number', 'Price', 'DepTime', 'ArrTime', 'ActualElapsedTime','FlightDate','OriginCityName','DestCityName','Distance']]
 

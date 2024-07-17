@@ -319,7 +319,7 @@ def valid_city_format(city_list: List[str], city_set: Set[str]) -> bool:
 
 def to_string(data) -> str:
     if data is not None:
-        if type(data) == DataFrame:
+        if type(data) is DataFrame:
             return data.to_string(index=False)
         else:
             return str(data)
