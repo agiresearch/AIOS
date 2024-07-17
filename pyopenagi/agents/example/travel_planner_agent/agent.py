@@ -56,7 +56,7 @@ class TravelPlannerAgent(ReactAgent):
         self.illegal_early_stop_patience = illegal_early_stop_patience
         self.max_retries = max_retries
         self.retry_record = {key: 0 for key in self.tool_list.keys()}
-        self.retry_record["palnner"] = 0
+        self.retry_record["planner"] = 0
         self.retry_record[INVALID_ACTION] = 0
 
         self.last_actions = []
@@ -289,8 +289,6 @@ class TravelPlannerAgent(ReactAgent):
         self.retry_record = {key: 0 for key in self.retry_record}
         self.retry_record[INVALID_ACTION] = 0
 
-    #utils
-
 
 def parse_action(string: str):
     """match action type and action arg
@@ -312,7 +310,7 @@ def parse_action(string: str):
         else:
             return None, None
 
-    except Exception as e:
+    except Exception:
         return None, None
 
 

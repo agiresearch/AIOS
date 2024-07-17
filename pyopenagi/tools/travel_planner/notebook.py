@@ -7,13 +7,13 @@ class Notebook:
 
     def run(self, input_data: DataFrame, short_description: str):
         self.data.append({"Short Description": short_description, "Content": input_data})
-        return "The information has been recorded in Notebook, and its index is {len(self.data) - 1}."
+        return f"The information has been recorded in Notebook, and its index is {len(self.data) - 1}."
 
     def update(self, input_data: DataFrame, index: int, short_decription: str):
         self.data[index]["Content"] = input_data
         self.data[index]["Short Description"] = short_decription
 
-        return f"The information has been updated in Notebook."
+        return "The information has been updated in Notebook."
 
     def list(self):
         results = []
