@@ -1,4 +1,3 @@
--r requirements.txt
 pre-commit
 pytest
 ruff

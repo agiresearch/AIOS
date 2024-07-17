@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: # No branch constraints, runs on all branches
+    branches:
       - '**'
   pull_request:
     branches:
