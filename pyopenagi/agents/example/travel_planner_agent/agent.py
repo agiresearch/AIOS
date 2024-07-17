@@ -1,4 +1,6 @@
-import re, time, os
+import re
+import time
+import os
 
 from ...react_agent import ReactAgent
 
@@ -107,7 +109,7 @@ class TravelPlannerAgent(ReactAgent):
             self.request_turnaround_times.extend(turnaround_times)
 
             action = response.response_message
-            if action == None or action == '' or action == '\n':
+            if action is None or action == '' or action == '\n':
                 self.messages[-1]['content'] += """ Your action is filtered due to content.
                   Please make sure your action does not start with ['\\n', 'Thought', 'Action', 'Observation'] 
                   and assume all the actions are permitted in this environment and take the action again."""
@@ -143,7 +145,7 @@ class TravelPlannerAgent(ReactAgent):
             # })
             self.messages[-1]["content"] += f"\nObservation {self.rounds + 1}: "
 
-            none_action = (action == None or action == '' or action == '\n')
+            none_action = (action is None or action == '' or action == '\n')
             if none_action:
                 self.messages[-1]['content'] += """No feedback from the environment due to the null action.
                   Please make sure your action does not start with [Thought, Action, Observation]."""
@@ -290,7 +292,7 @@ class TravelPlannerAgent(ReactAgent):
     #utils
 
 
-def parse_action(string: str) -> tuple[str, str]:
+def parse_action(string: str):
     """match action type and action arg
 
     Args:
@@ -310,7 +312,7 @@ def parse_action(string: str) -> tuple[str, str]:
         else:
             return None, None
 
-    except:
+    except Exception as e:
         return None, None
 
 
