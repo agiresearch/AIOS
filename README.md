@@ -17,7 +17,7 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
-- **[2024-07-10]** 🛠️ AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
+- **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
 - **[2024-07-03]** 🛠️ AIOS Github issue template is now available [template](https://github.com/agiresearch/AIOS/issues/new/choose).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
@@ -55,6 +55,8 @@ pip install -r requirements.txt
 ```
 
 ### Quickstart
+Tips(💡): For the config of LLM endpoints, multiple API keys may be required to set up.
+Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
 
 #### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
@@ -145,7 +147,7 @@ export HF_HOME=<YOUR_HF_HOME>
 #### Use with vllm
 If you want to speed up the inference of huggingface models, you can use vllm as the backend.
 
-💡Note: It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+Note(📝): It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
 
 Considering that vllm itself does not support passing designated GPU ids, you need to either
 setup the environment variable,
@@ -165,6 +167,8 @@ or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 ```python
 CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --use_backend vllm --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
+
+
 
 ### Supported LLM Endpoints
 - [OpenAI API](https://platform.openai.com/api-keys)

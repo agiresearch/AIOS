@@ -18,8 +18,13 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     "sphinx_copybutton",
-    "sphinx.ext.viewcode"
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosummary",
 ]
+
+
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
