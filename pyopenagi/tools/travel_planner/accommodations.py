@@ -1,10 +1,12 @@
 import pandas as pd
+import os
 from pandas import DataFrame
 
 
 class Accommodations:
-    def __init__(self, path="../environment/database/accommodations/clean_accommodations_2022.csv"):
-        self.path = path
+    def __init__(self, path="../../environment/travelPlanner/accommodations/clean_accommodations_2022.csv"):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['NAME','price','room type', 'house_rules', 'minimum nights', 'maximum occupancy', 'review rate number', 'city']]
         print("Accommodations loaded.")
 
@@ -20,3 +22,6 @@ class Accommodations:
             return "There is no attraction in this city."
         
         return results
+    
+    def get_tool_call_format(self):
+        pass

@@ -1,10 +1,12 @@
 import pandas as pd
+import os
 from pandas import DataFrame
 
 class Flights:
 
-    def __init__(self, path="../environment/database/flights/clean_Flights_2022.csv"):
-        self.path = path
+    def __init__(self, path="../../environment/travelPlanner/flights/clean_Flights_2022.csv"):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['Flight Number', 'Price', 'DepTime', 'ArrTime', 'ActualElapsedTime','FlightDate','OriginCityName','DestCityName','Distance']]
 
     def load_db(self):
@@ -23,4 +25,7 @@ class Flights:
         if len(results) == 0:
             return "There is no flight from {} to {} on {}.".format(origin, destination, departure_date)
         return results
+    
+    def get_tool_call_format(self):
+        pass
     

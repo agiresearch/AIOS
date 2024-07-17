@@ -24,7 +24,7 @@ class Notebook:
     def list_all(self):
         results = []
         for idx, unit in enumerate(self.data):
-            if type(unit['Content']) == DataFrame:
+            if type(unit['Content']) is DataFrame:
                 results.append({"index":idx, "Short Description":unit['Short Description'], "Content":unit['Content'].to_string(index=False)})
             else:
                 results.append({"index":idx, "Short Description":unit['Short Description'], "Content":unit['Content']})
@@ -36,5 +36,8 @@ class Notebook:
     
     def reset(self):
         self.data = []
+
+    def get_tool_call_format(self):
+        pass
     
     

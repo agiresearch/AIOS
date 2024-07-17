@@ -1,6 +1,9 @@
+import os
+
 class Cities:
-    def __init__(self ,path="../environment/database/background/citySet_with_states.txt") -> None:
-        self.path = path
+    def __init__(self ,path="../../environment/travelPlanner/background/citySet_with_states.txt") -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.path = os.path.join(current_dir, path)
         self.load_data()
         print("Cities loaded.")
 
@@ -19,3 +22,6 @@ class Cities:
             return ValueError("Invalid State")
         else:
             return self.data[state]
+        
+    def get_tool_call_format(self):
+        pass

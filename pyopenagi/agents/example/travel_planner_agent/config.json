@@ -8,9 +8,8 @@
         "travel_planner/attractions",
         "travel_planner/cities",
         "travel_planner/flights",
-        "travel_planner/googleDistanceMatrix",
+        "travel_planner/google_distance_matrix",
         "travel_planner/notebook",
-        "travel_planner/planner",
         "travel_planner/restaurants"
 	],
 	"meta": {
