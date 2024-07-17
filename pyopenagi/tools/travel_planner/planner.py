@@ -35,22 +35,4 @@ Accommodation: -
 Given information: {text}
 Query: {query}
 Travel Plan:"""
-
-
-from pyopenagi.agents.base_agent import BaseAgent
-
-class Planner(BaseAgent):
-
-    def __init__(self, 
-                 agent_name, 
-                 task_input, 
-                 llm, 
-                 agent_process_queue, 
-                 agent_process_factory, 
-                 log_mode: str,
-        ):
-        BaseAgent.__init__(agent_name, task_input, llm, agent_process_queue, agent_process_factory, log_mode)
-
-    def run(self, text, query):
-        pass
     
