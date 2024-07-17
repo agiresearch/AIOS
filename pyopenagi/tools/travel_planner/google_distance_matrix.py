@@ -1,4 +1,4 @@
-import re
+import re, os
 import pandas as pd
 import numpy as np
 
@@ -6,9 +6,11 @@ import numpy as np
 # Please be assured that this will not influence the experiment results shown in the paper. 
 
 class GoogleDistanceMatrix:
-    def __init__(self, subscription_key: str="") -> None:
+    def __init__(self, path="../../environment/travelPlanner/googleDistanceMatrix/distance.csv", subscription_key: str="") -> None:
         self.gplaces_api_key: str = subscription_key
-        self.data =  pd.read_csv('../database/googleDistanceMatrix/distance.csv')
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.path = os.path.join(current_dir, path)
+        self.data =  pd.read_csv(self.path)
         print("GoogleDistanceMatrix loaded.")
 
     def run(self, origin, destination, mode='driving'):
@@ -30,6 +32,9 @@ class GoogleDistanceMatrix:
                 return f"{mode}, from {origin} to {destination}, duration: {info['duration']}, distance: {info['distance']}, cost: {info['cost']}"
 
         return f"{mode}, from {origin} to {destination}, no valid information."
+    
+    def get_tool_call_format(self):
+        pass
     
 def extract_before_parenthesis(s):
     match = re.search(r'^(.*?)\([^)]*\)', s)
