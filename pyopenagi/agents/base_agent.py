@@ -3,8 +3,7 @@ import os
 import json
 
 from .agent_process import (
-    AgentProcess,
-    # AgentProcessQueue
+    AgentProcess
 )
 
 import time
@@ -37,7 +36,6 @@ class BaseAgent:
     def __init__(self,
                  agent_name,
                  task_input,
-                 agent_process_queue,
                  agent_process_factory,
                  log_mode: str
         ):
@@ -45,7 +43,6 @@ class BaseAgent:
         self.config = self.load_config()
         self.tool_names = self.config["tools"]
 
-        self.agent_process_queue = agent_process_queue
         self.agent_process_factory = agent_process_factory
 
         self.tool_list = dict()
