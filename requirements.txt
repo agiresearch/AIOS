@@ -6,7 +6,6 @@ pydantic==2.7.0
 Pympler==1.0.1
 click==8.1.7
 ollama
-pyopenagi
 fastapi
 torch
 transformers

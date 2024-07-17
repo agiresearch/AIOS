@@ -11,8 +11,6 @@ class ReactAgent(BaseAgent):
     def __init__(self,
                  agent_name,
                  task_input,
-                #  llm,
-                 agent_process_queue,
                  agent_process_factory,
                  log_mode: str
         ):
@@ -20,7 +18,6 @@ class ReactAgent(BaseAgent):
             self,
             agent_name,
             task_input,
-            agent_process_queue,
             agent_process_factory,
             log_mode
         )

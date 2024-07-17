@@ -67,6 +67,10 @@ class AgentProcess:
     def set_time_limit(self, time_limit):
         self.time_limit = time_limit
 
+
+class LLMRequestProcess(AgentProcess):
+    pass
+
 class AgentProcessFactory:
     def __init__(self, agent_process_log_mode = None):
         self.max_pid = 1024
