@@ -8,7 +8,8 @@ The Travel Planner Agent is replicated from the RecAgent used in the paper "Trav
 
 This agent depends on the [database](https://drive.google.com/file/d/1pF1Sw6pBmq2sFkJvm-LzJOqrmfWoQgxE/view). Please download it and place it in the `pyopenagi/environment/` directory.
 
-然后修改main.py中的main()方法代码如下面所示
+Then modify the main() method code in main.py as shown below.
+
 ```python
 def main():
     # parse arguments and set configuration for this run accordingly
