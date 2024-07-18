@@ -33,6 +33,7 @@ AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kern
 Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) for more information.
 - [Installation](https://aios.readthedocs.io/en/latest/get_started/installation.html)
 - [Quickstart](https://aios.readthedocs.io/en/latest/get_started/quickstart.html)
+- [List Available Agent](https://aios.readthedocs.io/en/latest/get_started/list_agent.html)
 
 ### Installation
 

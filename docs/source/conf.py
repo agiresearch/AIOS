@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../'))
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
@@ -22,8 +25,16 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
+    'sphinx.ext.linkcode'
 ]
 
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+    filename = info['module'].replace('.', '/')
+    return f"https://github.com/agiresearch/AIOS/blob/main/{filename}.py"
 
 
 intersphinx_mapping = {
@@ -31,6 +42,16 @@ intersphinx_mapping = {
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
 intersphinx_disabled_domains = ['std']
+
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+    'inherited-members': True,
+    'member-order': 'bysource',
+    'show-inheritance-diagram': True,
+    # 'source': True,
+}
 
 templates_path = ['_templates']
 
