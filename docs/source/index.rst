@@ -26,3 +26,4 @@ Documentation
 
    get_started/installation
    get_started/quickstart
+   get_started/list_agent

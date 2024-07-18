@@ -4,6 +4,20 @@ Quickstart
 ==========
 Be sure to complete the :ref:`installation instructions <aios_installation>` before continuing with this guide.
 
+.. tip::
+
+    For the config of LLM endpoints, multiple API keys may be required to set up.
+    Here we provide the .env.example for easier configuration of these API keys,
+    you can just copy .env.example as .env and set up the required keys based on your needs.
+
+    .. code-block:: python
+
+        OPENAI_API_KEY=''
+        GEMINI_API_KEY=''
+        HF_HOME=''
+        HF_AUTH_TOKENS=''
+
+
 Use with OpenAI API
 -------------------
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
