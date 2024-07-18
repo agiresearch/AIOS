@@ -105,12 +105,12 @@ def main():
     # query_data_list = load_dataset('osunlp/TravelPlanner','test')['test']
     query_data_list = [{"query": "Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."},
                         {"query": "Please assist in crafting a travel plan for a solo traveller, journeying from Detroit to San Diego for 3 days, from March 5th to March 7th, 2022. The travel plan should accommodate a total budget of $3,000."}]
-    for i in range(1):
-        travel_planner_agent = agent_thread_pool.submit(
-            agent_factory.run_agent,
-            "example/travel_planner_agent",
-            query_data_list[1]['query'],
-        )
+    
+    travel_planner_agent = agent_thread_pool.submit(
+        agent_factory.run_agent,
+        "example/travel_planner_agent",
+        query_data_list[1]['query'],
+    )
 
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
     # agent_tasks = [rec_agent]
