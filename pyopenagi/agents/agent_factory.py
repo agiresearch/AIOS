@@ -62,7 +62,6 @@ class AgentFactory:
         agent = agent_class(
             agent_name = agent_name,
             task_input = task_input,
-            agent_process_queue = self.agent_process_queue,
             agent_process_factory = self.agent_process_factory,
             log_mode = self.agent_log_mode
         )

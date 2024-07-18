@@ -3,11 +3,10 @@ class TravelAgent(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
-                 agent_process_queue,
                  agent_process_factory,
                  log_mode: str
         ):
-        ReactAgent.__init__(self, agent_name, task_input, agent_process_queue, agent_process_factory, log_mode)
+        ReactAgent.__init__(self, agent_name, task_input, agent_process_factory, log_mode)
 
     def automatic_workflow(self):
         return super().automatic_workflow()
