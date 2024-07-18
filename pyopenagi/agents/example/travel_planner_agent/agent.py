@@ -32,7 +32,6 @@ class TravelPlannerAgent(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
-                 agent_process_queue,
                  agent_process_factory,
                  log_mode: str,
                  mode: str = 'zero_shot',
@@ -41,7 +40,7 @@ class TravelPlannerAgent(ReactAgent):
                  illegal_early_stop_patience: int = 3,
                  city_file_path='../../../environment/travelPlanner/background/citySet.txt'
                  ):
-        ReactAgent.__init__(self, agent_name, task_input, agent_process_queue, agent_process_factory, log_mode)
+        ReactAgent.__init__(self, agent_name, task_input, agent_process_factory, log_mode)
 
         self.answer = ''
         self.max_rounds = max_rounds
@@ -74,10 +73,9 @@ class TravelPlannerAgent(ReactAgent):
 
         while not self.is_halted() and not self.is_finished():
             # request llm for thought
-            # self.messages.append({
-            #     "role": "user", "content": f'Thought {self.rounds + 1}: '
-            # })
-            self.messages[-1]["content"] += f"\nThought {self.rounds + 1}: "
+            self.messages.append({
+                "role": "user", "content": f'Thought {self.rounds + 1}: '
+            })
             response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
                 query=Query(
                     messages=self.messages,
@@ -91,14 +89,12 @@ class TravelPlannerAgent(ReactAgent):
 
             thought = response.response_message
             self.messages[-1]['content'] += thought
-            # self.logger.log(f"{self.messages[-1]}\n", level="info")
             self.logger.log(f"Thought {self.rounds + 1}: {thought}\n", level="info")
 
             # request llm for action
-            # self.messages.append({
-            #     "role": "user", "content": f'Action {self.rounds + 1}: '
-            # })
-            self.messages[-1]["content"] += f"\nAction {self.rounds + 1}: "
+            self.messages.append({
+                "role": "user", "content": f'Action {self.rounds + 1}: '
+            })
             response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
                 query=Query(
                     messages=self.messages,
@@ -116,7 +112,6 @@ class TravelPlannerAgent(ReactAgent):
             else:
                 self.messages[-1]['content'] += ' ' + action
 
-            # self.logger.log(f"{self.messages[-1]}\n", level="info")
             self.logger.log(f"Action {self.rounds + 1}: {action}\n", level="info")
 
             if len(self.last_actions) > 0 and self.last_actions[-1] != action:
@@ -140,10 +135,9 @@ class TravelPlannerAgent(ReactAgent):
                 }
 
             # request tools for observation
-            # self.messages.append({
-            #     "role": "user", "content": f'Observation {self.rounds + 1}: '
-            # })
-            self.messages[-1]["content"] += f"\nObservation {self.rounds + 1}: "
+            self.messages.append({
+                "role": "user", "content": f'Observation {self.rounds + 1}: '
+            })
 
             none_action = (action is None or action == '' or action == '\n')
             if none_action:
@@ -167,7 +161,6 @@ class TravelPlannerAgent(ReactAgent):
                 self.action_dispatch(action_type, action_arg)
 
                 self.messages[-1]['content'] += self.current_observation
-                # self.logger.log(f"{self.messages[-1]}", "info")
 
             if none_action:
                 self.logger.log(
@@ -197,7 +190,7 @@ class TravelPlannerAgent(ReactAgent):
 
     def build_system_instruction(self):
         self.messages.append({
-            "role": "user", "content": ZEROSHOT_REACT_INSTRUCTION.format(query=self.task_input, scratchpad="")
+            "role": "user", "content": ZEROSHOT_REACT_INSTRUCTION
         })
 
     def build_planner_instruction(self, query: str, text: str) -> None:
@@ -239,6 +232,7 @@ class TravelPlannerAgent(ReactAgent):
 
             self.current_observation = to_string(response.response_message)
             self.answer = self.current_observation
+            self.current_observation = "\n" + self.current_observation  # align output
             self.__reset_record()
 
         elif action_type == 'NotebookWrite':
