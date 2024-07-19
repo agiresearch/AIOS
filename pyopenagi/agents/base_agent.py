@@ -130,18 +130,24 @@ class BaseAgent:
     def load_tools(self, tool_names):
         for tool_name in tool_names:
             org, name = tool_name.split("/")
-
             module_name = ".".join(["pyopenagi", "tools", org, name])
-
             class_name = self.snake_to_camel(name)
 
             tool_module = importlib.import_module(module_name)
-
             tool_class = getattr(tool_module, class_name)
 
             self.tool_list[name] = tool_class()
-
             self.tools.append(tool_class().get_tool_call_format())
+
+    def pre_select_tools(self, tool_names):
+        pre_selected_tools = []
+        for tool_name in tool_names:
+            for tool in self.tools:
+                if tool["function"]["name"] == tool_name:
+                    pre_selected_tools.append(tool)
+                    break
+
+        return pre_selected_tools
 
     def setup_logger(self):
         logger = AgentLogger(self.agent_name, self.log_mode)

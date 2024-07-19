@@ -68,7 +68,6 @@ class OllamaLLM(BaseLLMKernel):
                 )
 
         else:
-            messages = self.tool_calling_input_format(messages, tools)
             response = ollama.chat(
                 model=self.model_name.split("/")[-1],
                 messages=messages,
