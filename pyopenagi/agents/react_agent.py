@@ -150,8 +150,11 @@ class ReactAgent(BaseAgent):
                     "role": "user",
                     "content": prompt
                 })
+                if self.tools:
+                    used_tools = self.pre_select_tools(tool_use)
 
-                used_tools = self.tools if tool_use else None
+                else:
+                    used_tools = None
 
                 response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
                     query = Query(
