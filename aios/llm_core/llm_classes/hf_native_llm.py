@@ -12,7 +12,7 @@ from ...utils.utils import get_from_env
 
 import re
 
-class OpenLLM(BaseLLMKernel):
+class HfNativeLLM(BaseLLMKernel):
 
     def load_llm_and_tokenizer(self) -> None:
         """ fetch the model from huggingface and run it """
@@ -50,6 +50,7 @@ class OpenLLM(BaseLLMKernel):
 
         messages = agent_process.query.messages
         tools = agent_process.query.tools
+        message_return_type = agent_process.query.message_return_type
 
         """ context_manager works only with open llms """
         if self.context_manager.check_restoration(agent_process.get_pid()):
@@ -115,7 +116,7 @@ class OpenLLM(BaseLLMKernel):
                 )
 
             if tools:
-                tool_calls = self.tool_calling_output_format(
+                tool_calls = self.parse_tool_calls(
                     result
                 )
                 agent_process.set_response(
@@ -147,6 +148,8 @@ class OpenLLM(BaseLLMKernel):
                     "beam_attention_mask": outputs["beam_attention_mask"]
                 }
             )
+            if message_return_type == "json":
+                result = self.json_parse_format(result)
             agent_process.set_response(
                 Response(
                     response_message = result

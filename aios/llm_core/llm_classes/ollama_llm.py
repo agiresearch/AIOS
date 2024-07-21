@@ -37,6 +37,7 @@ class OllamaLLM(BaseLLMKernel):
         agent_process.set_start_time(time.time())
         messages = agent_process.query.messages
         tools = agent_process.query.tools
+        message_return_type = agent_process.query.message_return_type
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -49,7 +50,7 @@ class OllamaLLM(BaseLLMKernel):
                 messages=messages
             )
 
-            tool_calls = self.tool_calling_output_format(
+            tool_calls = self.parse_tool_calls(
                 response["message"]["content"]
             )
 
@@ -75,9 +76,16 @@ class OllamaLLM(BaseLLMKernel):
                     num_predict=self.max_new_tokens
                 )
             )
+            result = response['message']['content']
+
+            # print(f"***** original result: {result} *****")
+
+            if message_return_type == "json":
+                result = self.json_parse_format(result)
+
             agent_process.set_response(
                 Response(
-                    response_message = response['message']['content']
+                    response_message = result
                 )
             )
 

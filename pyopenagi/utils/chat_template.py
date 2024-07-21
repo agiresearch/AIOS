@@ -1,7 +1,8 @@
 class Query:
     def __init__(self,
             messages,
-            tools = None
+            tools = None,
+            message_return_type = "text"
         ) -> None:
         """Query format
 
@@ -13,8 +14,8 @@ class Query:
             tools (optional): tools that are used for function calling. Defaults to None.
         """
         self.messages = messages
-
         self.tools = tools
+        self.message_return_type = message_return_type
 
 class Response:
     def __init__(

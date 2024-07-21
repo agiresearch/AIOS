@@ -39,27 +39,27 @@ class ReactAgent(BaseAgent):
                 'Generate a plan of steps you need to take.',
                 'The plan must follow the json format as: ',
                 '[',
-                '{"message1": "message_value1","tool_use": [tool_name1, tool_name2,...]}',
-                '{"message2": "message_value2", "tool_use": [tool_name1, tool_name2,...]}',
+                '{"message": "message_value1","tool_use": [tool_name1, tool_name2,...]}',
+                '{"message": "message_value2", "tool_use": [tool_name1, tool_name2,...]}',
                 '...',
                 ']',
                 'In each step of the planned workflow, you must select the most related tool to use',
-                'Plan examples can be:',
+                'Followings are some plan examples:',
                 '[',
                 '{"message": "Gather information from arxiv", "tool_use": ["arxiv"]},',
-                '{"message", "Based on the gathered information, write a summarization", "tool_use": None}',
+                '{"message", "Based on the gathered information, write a summarization", "tool_use": []}',
                 '];',
                 '[',
                 '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": None}',
+                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
                 '];',
                 '[',
                 '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": None}',
+                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
                 '];',
                 '[',
                 '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},'
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": None}',
+                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
                 ']'
             ]
         )
@@ -145,21 +145,24 @@ class ReactAgent(BaseAgent):
                 message = step["message"]
                 tool_use = step["tool_use"]
 
+                # print(f"message: {message}")
+                # print(f"tool use: {tool_use}")
+
                 prompt = f"At step {i + 1}, you need to {message}. "
                 self.messages.append({
                     "role": "user",
                     "content": prompt
                 })
-                if self.tools:
-                    used_tools = self.pre_select_tools(tool_use)
+                if tool_use:
+                    selected_tools = self.pre_select_tools(tool_use)
 
                 else:
-                    used_tools = None
+                    selected_tools = None
 
                 response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
                     query = Query(
                         messages = self.messages,
-                        tools = used_tools
+                        tools = selected_tools
                     )
                 )
                 if self.rounds == 0:

@@ -8,7 +8,6 @@ from ...utils.utils import get_from_env
 
 from transformers import AutoTokenizer
 
-
 class vLLM(BaseLLMKernel):
 
     def __init__(self, llm_name: str,
@@ -63,8 +62,8 @@ class vLLM(BaseLLMKernel):
         )
 
         messages = agent_process.query.messages
-        # print(messages)
         tools = agent_process.query.tools
+        message_return_type = agent_process.query.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -81,7 +80,7 @@ class vLLM(BaseLLMKernel):
             # print(response)
             result = response[0].outputs[0].text
 
-            tool_calls = self.tool_calling_output_format(
+            tool_calls = self.parse_tool_calls(
                 result
             )
             if tool_calls:
@@ -110,6 +109,8 @@ class vLLM(BaseLLMKernel):
             )
 
             result = response[0].outputs[0].text
+            if message_return_type == "json":
+                result = self.json_parse_format(result)
 
             agent_process.set_response(
                 Response(

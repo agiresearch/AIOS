@@ -76,6 +76,7 @@ class BaseAgent:
 
     def check_workflow(self, message):
         try:
+            # print(f"Workflow message: {message}")
             workflow = json.loads(message)
             if not isinstance(workflow, list):
                 return None
@@ -94,7 +95,8 @@ class BaseAgent:
             response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
                 query = Query(
                     messages = self.messages,
-                    tools = None
+                    tools = None,
+                    message_return_type="json"
                 )
             )
 

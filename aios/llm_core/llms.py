@@ -3,7 +3,7 @@
 # All abstractions will be implemented here
 
 from .llm_classes.model_registry import MODEL_REGISTRY
-from .llm_classes.huggingface_native_llm import OpenLLM
+from .llm_classes.hf_native_llm import HfNativeLLM
 
 # standard implementation of LLM methods
 from .llm_classes.ollama_llm import OllamaLLM
@@ -45,7 +45,7 @@ class LLMKernel:
                     log_mode=log_mode
                 )
             else: # use huggingface LLM without backend
-                self.model = OpenLLM(
+                self.model = HfNativeLLM(
                     llm_name=llm_name,
                     max_gpu_memory=max_gpu_memory,
                     eval_device=eval_device,

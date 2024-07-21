@@ -58,7 +58,9 @@ class GeminiLLM(BaseLLMKernel):
 
         agent_process.set_status("executing")
         agent_process.set_start_time(time.time())
-        messages, tools = agent_process.query.messages, agent_process.query.tools
+        messages = agent_process.query.messages
+        tools = agent_process.query.tools
+        message_return_type = agent_process.query.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -80,7 +82,7 @@ class GeminiLLM(BaseLLMKernel):
         try:
             result = outputs.candidates[0].content.parts[0].text
             if tools:
-                tool_calls = self.tool_calling_output_format(result)
+                tool_calls = self.parse_tool_calls(result)
                 if tool_calls:
                     agent_process.set_response(
                         Response(
@@ -95,6 +97,8 @@ class GeminiLLM(BaseLLMKernel):
                         )
                     )
             else:
+                if message_return_type == "json":
+                    result = self.json_parse_format(result)
                 agent_process.set_response(
                     Response(
                         response_message=result,

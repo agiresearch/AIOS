@@ -85,16 +85,24 @@ class BaseLLMKernel(ABC):
         return messages
 
     # used for parsing string output as tool callings
-    def tool_calling_output_format(self, tool_calling_messages):
+    def json_parse_format(self, message):
         # print(f"tool calling messages are: {tool_calling_messages}")
-        try:
-            pattern = r'\[\{.*?\}\]'
-            matches = re.findall(pattern, tool_calling_messages)
-            tool_callings = json.loads(matches[-1])
-            return tool_callings
+        pattern = r'\[\s*(\{(?:[^{}]|\{[^{}]*\})*\}\s*,?\s*)+\]'
+        matches = re.search(pattern, message)
 
-        except json.JSONDecodeError:
-            return None
+        # print(message)
+        if matches:
+            try:
+                parsed_output = json.loads(matches.group(0))
+                return json.dumps(parsed_output)
+            except json.JSONDecodeError:
+                return '[]'
+
+        else:
+            return '[]'
+
+    def parse_tool_calls(self, message):
+        return json.loads(self.json_parse_format(message))
 
     def address_request(self,
             agent_process,
