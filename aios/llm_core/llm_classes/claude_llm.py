@@ -3,10 +3,10 @@ import json
 import time
 import anthropic
 from typing import List, Dict, Any
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 from pyopenagi.utils.chat_template import Response
 
-class ClaudeLLM(BaseLLMKernel):
+class ClaudeLLM(BaseLLM):
     """
     ClaudeLLM class for interacting with Anthropic's Claude models.
 

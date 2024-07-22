@@ -50,7 +50,7 @@ def main():
     use_backend = args.use_backend
     load_dotenv()
 
-    llm = llms.LLMKernel(
+    llm = llms.LLM(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,

@@ -1,4 +1,4 @@
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 
 # could be dynamically imported similar to other models
@@ -8,7 +8,7 @@ from ...utils.utils import get_from_env
 
 from transformers import AutoTokenizer
 
-class vLLM(BaseLLMKernel):
+class vLLM(BaseLLM):
 
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,

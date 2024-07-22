@@ -1,7 +1,7 @@
 import heapq
 from threading import Lock, Event
 from pympler import asizeof
-from .interact import Interactor, list_available_agents
+from .interact import Interactor
 import os
 import importlib
 
@@ -31,7 +31,7 @@ class AgentFactory:
         return ''.join(x.title() for x in components)
 
     def list_agents(self):
-        agent_list = list_available_agents()
+        agent_list = Interactor().list_available_agents()
         for agent in agent_list:
             print(agent)
 

@@ -1,12 +1,12 @@
 # wrapper around ollama for LLMs
 
 import re
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 import ollama
 
 from pyopenagi.utils.chat_template import Response
-class OllamaLLM(BaseLLMKernel):
+class OllamaLLM(BaseLLM):
 
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
