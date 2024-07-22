@@ -2,13 +2,13 @@
 
 import re
 
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 from ...utils.utils import get_from_env
 import json
 
 from pyopenagi.utils.chat_template import Response
-class GeminiLLM(BaseLLMKernel):
+class GeminiLLM(BaseLLM):
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
                  eval_device: str = None,

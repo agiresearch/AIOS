@@ -2,7 +2,7 @@
 
 import torch
 from .constant import MODEL_CLASS
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 from transformers import AutoTokenizer
 
@@ -12,7 +12,7 @@ from ...utils.utils import get_from_env
 
 import re
 
-class HfNativeLLM(BaseLLMKernel):
+class HfNativeLLM(BaseLLM):
 
     def load_llm_and_tokenizer(self) -> None:
         """ fetch the model from huggingface and run it """

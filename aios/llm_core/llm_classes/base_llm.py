@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 
 from aios.utils.logger import LLMKernelLogger
 
-class BaseLLMKernel(ABC):
+class BaseLLM(ABC):
     def __init__(self,
                  llm_name: str,
                  max_gpu_memory: dict = None,
@@ -110,12 +110,6 @@ class BaseLLMKernel(ABC):
         ):
         self.process(agent_process)
         return
-
-    def address_request_list(self,
-            agent_process,
-            temperature=0.0
-        ):
-        raise NotImplementedError
 
     @abstractmethod
     def process(self,

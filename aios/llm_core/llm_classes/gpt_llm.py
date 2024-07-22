@@ -1,5 +1,5 @@
 import re
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 
 # could be dynamically imported similar to other models
@@ -8,7 +8,7 @@ from openai import OpenAI
 from pyopenagi.utils.chat_template import Response
 import json
 
-class GPTLLM(BaseLLMKernel):
+class GPTLLM(BaseLLM):
 
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
