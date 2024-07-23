@@ -1,17 +1,27 @@
 import queue
 
 class BaseQueue:
+    def __init__(self):
+        self._queue = queue.Queue()
 
-    _queue = queue.Queue()
+    def add_message(self, message):
+        self._queue.put(message)
 
-    @classmethod
-    def add_message(cls, message):
-        cls._queue.put(message)
+    def get_message(self, timeout=None):
+        try:
+            return self._queue.get(block=True, timeout=timeout)
+        except queue.Empty:
+            return None
 
-    @classmethod
-    def get_message(cls):
-        return cls._queue.get(block=True, timeout=1)
+    def is_empty(self):
+        return self._queue.empty()
 
-    @classmethod
-    def is_empty(cls):
-        return cls._queue.empty()
+    def size(self):
+        return self._queue.qsize()
+
+    def clear(self):
+        while not self._queue.empty():
+            try:
+                self._queue.get_nowait()
+            except queue.Empty:
+                break
