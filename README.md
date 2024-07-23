@@ -33,7 +33,6 @@ AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kern
 Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) for more information.
 - [Installation](https://aios.readthedocs.io/en/latest/get_started/installation.html)
 - [Quickstart](https://aios.readthedocs.io/en/latest/get_started/quickstart.html)
-- [List Available Agent](https://aios.readthedocs.io/en/latest/get_started/list_agent.html)
 
 ### Installation
 
@@ -56,8 +55,10 @@ pip install -r requirements.txt
 ```
 
 ### Quickstart
-Tips(💡): For the config of LLM endpoints, multiple API keys may be required to set up.
-Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
+> [!TIP]
+>
+> For the config of LLM endpoints, multiple API keys may be required to set up.
+> Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
 
 #### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
@@ -148,7 +149,9 @@ export HF_HOME=<YOUR_HF_HOME>
 #### Use with vllm
 If you want to speed up the inference of huggingface models, you can use vllm as the backend.
 
-Note(📝): It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+> [!NOTE]
+>
+> It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
 
 Considering that vllm itself does not support passing designated GPU ids, you need to either
 setup the environment variable,
