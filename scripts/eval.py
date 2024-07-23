@@ -1,9 +1,4 @@
 # This file is used to evaluate the configuration passed through arguments to the simulation of the kernel
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 
 from pyopenagi.agents.agent_factory import AgentFactory
