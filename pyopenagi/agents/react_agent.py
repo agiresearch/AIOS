@@ -80,11 +80,11 @@ class ReactAgent(BaseAgent):
         else:
             assert self.workflow_mode == "automatic"
             self.messages.append(
-                {"role": "system", "content": prefix}
+                {"role": "system", "content": prefix + plan_instruction}
             )
-            self.messages.append(
-                {"role": "user", "content": plan_instruction}
-            )
+            # self.messages.append(
+            #     {"role": "user", "content": plan_instruction}
+            # )
 
     def automatic_workflow(self):
         return super().automatic_workflow()
@@ -186,7 +186,7 @@ class ReactAgent(BaseAgent):
                         self.messages.append(
                             {
                                 "role": "assistant",
-                                "content": action_messages + ";;" + observation_messages
+                                "content": action_messages + ". " + observation_messages
                             }
                         )
                         if success:

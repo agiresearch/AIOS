@@ -6,9 +6,15 @@ from ..utils.chat_template import Query
 
 class AgentProcess:
     def __init__(self,
-            agent_name,
+            agent_name: str,
             query: Query
         ):
+        """Agent Process
+
+        Args:
+            agent_name (str): Name of the agent
+            query (Query): Query sent by the agent
+        """
         self.agent_name = agent_name
         self.query = query
         self.pid: int = None

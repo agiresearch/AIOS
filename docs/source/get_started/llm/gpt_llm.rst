@@ -1,5 +1,7 @@
 GPT Endpoints
 =============
 
-.. autoclass:: aios.llm_core.llm_classes.gpt_llm.GPTLLM
-    :members:
+Source https://github.com/agiresearch/AIOS/blob/main/aios/llm_core/llm_classes/gpt_llm.py.
+
+.. literalinclude:: ../../../../aios/llm_core/llm_classes/gpt_llm.py
+    :language: python
