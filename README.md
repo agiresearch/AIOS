@@ -2,7 +2,7 @@
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
-<a href='https://aios.readthedocs.io/'><img src='https://img.shields.io/badge/Docs-AIOS-green'></a>
+<a href='https://aios.readthedocs.io/'><img src='https://img.shields.io/badge/Documentation-AIOS-green'></a>
 [![Code License](https://img.shields.io/badge/Code%20License-MIT-yellow.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 <a href='https://discord.gg/B2HFxEgTJX'><img src='https://img.shields.io/badge/Community-Discord-8A2BE2'></a>
 
