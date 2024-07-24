@@ -15,7 +15,10 @@ Welcome to AIOS!
    <a class="github-button" href="https://github.com/agiresearch/AIOS/fork" data-icon="octicon-repo-forked" data-size="large" aria-label="Fork">Fork</a>
    </p>
 
-AIOS is to build LLM-based agent operating system for better development and deployment of LLM agents.
+The goal of AIOS is to build a large language model (LLM) agent operating system,
+which intends to embed large language model into the operating system as the brain of the OS.
+AIOS is designed to address problems (e.g., scheduling, context switch, memory management, etc.) during the development and deployment of LLM-based agents,
+for a better ecosystem among agent developers and users.
 
 Documentation
 -------------
@@ -32,5 +35,6 @@ Documentation
    :maxdepth: 2
    :caption: For Agent Developers
 
+   agent_developer/agents/agent_index
    agent_developer/agent_database
    agent_developer/external_tools/tool_index

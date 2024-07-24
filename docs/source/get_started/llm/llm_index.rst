@@ -1,9 +1,18 @@
-.. _llm:
+.. _llm_index:
+
+LLM Classes
+===========
 
 LLM
-===
+---
 
 .. autoclass:: aios.llm_core.llms.LLM
+    :members:
+
+BaseLLM
+-------
+
+.. autoclass:: aios.llm_core.llm_classes.base_llm.BaseLLM
     :members:
 
 .. toctree::
