@@ -2,8 +2,8 @@
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
-<a href='https://aios.readthedocs.io/'><img src='https://img.shields.io/badge/Docs-AIOS-yellow'></a>
-[![Code License](https://img.shields.io/badge/Code%20License-MIT-green.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
+<a href='https://aios.readthedocs.io/'><img src='https://img.shields.io/badge/Docs-AIOS-green'></a>
+[![Code License](https://img.shields.io/badge/Code%20License-MIT-yellow.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 <a href='https://discord.gg/B2HFxEgTJX'><img src='https://img.shields.io/badge/Community-Discord-8A2BE2'></a>
 
 <a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
