@@ -1,9 +1,5 @@
 # This file is used to evaluate the configuration passed through arguments to the simulation of the kernel
-
-import json
-
 from aios.scheduler.fifo_scheduler import FIFOScheduler
-
 
 from pyopenagi.agents.agent_factory import AgentFactory
 
@@ -18,23 +14,15 @@ from concurrent.futures import ThreadPoolExecutor
 from aios.utils.utils import delete_directories
 from aios.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
-import argparse
-
 from dotenv import load_dotenv
 
+from aios.utils.utils import parse_global_args
+
 # Construct help message and parse argumets using argparse
-def parse_global_args():
+def extra_args():
     """ parser in aios/utils/utils.py with --agents and --agent-log-mode argument """
-    parser = argparse.ArgumentParser(description="Parse global parameters")
-    parser.add_argument('--llm_name', type=str, default="gemma-2b-it", help="Specify the LLM name of AIOS")
-    parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
-    parser.add_argument('--eval_device', type=str, help='Evaluation device (example: "cuda:0")')
-    parser.add_argument('--max_new_tokens', type=int, default=256,
-                        help="The maximum number of new tokens for generation")
-    parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"])
-    parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"])
+    parser = parse_global_args()
     parser.add_argument("--mode", type=str, default="compare", choices=["compare", "concurrent-only", "sequential-only"])
-    parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--agents", type=str, required=True,
                         help="following the format of <agent1>:<agent1_num>,<agent2>:<agent2_num>")
 
@@ -48,7 +36,7 @@ def clean_cache(root_directory):
 
 def main():
     warnings.filterwarnings("ignore")
-    parser = parse_global_args()
+    parser = extra_args()
     args = parser.parse_args()
 
     llm_name = args.llm_name
@@ -60,7 +48,7 @@ def main():
     llm_kernel_log_mode = args.llm_kernel_log_mode
     load_dotenv()
 
-    llm = llms.LLMKernel(
+    llm = llms.LLM(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
