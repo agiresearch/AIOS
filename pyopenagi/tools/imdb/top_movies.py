@@ -6,7 +6,7 @@ from pyopenagi.utils.utils import get_from_env
 
 import requests
 
-class TopMoviesAPI(BaseRapidAPITool):
+class TopMovies(BaseRapidAPITool):
     def __init__(self):
         super().__init__()
         self.url = "https://imdb-top-100-movies.p.rapidapi.com/"
