@@ -9,7 +9,7 @@ import numpy as np
 # shown in the paper.
 
 class GoogleDistanceMatrix:
-    def __init__(self, path="../../environment/travelPlanner/googleDistanceMatrix/distance.csv",
+    def __init__(self, path="../../environments/travelPlanner/googleDistanceMatrix/distance.csv",
                  subscription_key: str = "") -> None:
         self.gplaces_api_key: str = subscription_key
         current_dir = os.path.dirname(os.path.abspath(__file__))

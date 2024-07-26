@@ -4,7 +4,7 @@ from pandas import DataFrame
 
 
 class Accommodations:
-    def __init__(self, path="../../environment/travelPlanner/accommodations/clean_accommodations_2022.csv"):
+    def __init__(self, path="../../environments/travelPlanner/accommodations/clean_accommodations_2022.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['NAME','price','room type', 'house_rules', 'minimum nights', 'maximum occupancy', 'review rate number', 'city']]

@@ -38,7 +38,7 @@ class TravelPlannerAgent(ReactAgent):
                  max_rounds: int = 30,
                  max_retries: int = 3,
                  illegal_early_stop_patience: int = 3,
-                 city_file_path='../../../environment/travelPlanner/background/citySet.txt'
+                 city_file_path='../../../environments/travelPlanner/background/citySet.txt'
                  ):
         ReactAgent.__init__(self, agent_name, task_input, agent_process_factory, log_mode)
 
@@ -192,6 +192,9 @@ class TravelPlannerAgent(ReactAgent):
         self.messages.append({
             "role": "user", "content": ZEROSHOT_REACT_INSTRUCTION
         })
+        self.messages.append({
+            "role": "user", "content": "Query: " + self.task_input
+        })
 
     def build_planner_instruction(self, query: str, text: str) -> None:
         self.messages.clear()
@@ -238,8 +241,7 @@ class TravelPlannerAgent(ReactAgent):
         elif action_type == 'NotebookWrite':
             try:
                 action_name = actionMapping[action_type]
-                args = action_arg.split(', ')
-                self.current_observation = to_string(self.tool_list[action_name].run(self.current_data, *args))
+                self.current_observation = to_string(self.tool_list[action_name].run(self.current_data, action_arg))
                 self.__reset_record()
 
             except Exception as e:

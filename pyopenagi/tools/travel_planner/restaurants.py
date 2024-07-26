@@ -3,7 +3,7 @@ import os
 from pandas import DataFrame
 
 class Restaurants:
-    def __init__(self, path="../../environment/travelPlanner/restaurants/clean_restaurant_2022.csv"):
+    def __init__(self, path="../../environments/travelPlanner/restaurants/clean_restaurant_2022.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['Name','Average Cost','Cuisines','Aggregate Rating','City']]

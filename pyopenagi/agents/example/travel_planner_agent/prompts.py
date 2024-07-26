@@ -49,6 +49,8 @@ Example: Planner[Give me a 3-day trip plan from Seattle to New York] would retur
 You should use as many as possible steps to collect engough information to input to the Planner tool. 
 
 Each action only calls one function once. Do not add any description in the action.
+
+Each reponse only execute one step of 'Thought', 'Action', 'Observation'. If you have a step 'Thought', don't generate 'Action'.
 """
 
 

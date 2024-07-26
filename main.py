@@ -15,6 +15,8 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 
 import warnings
 
+import json
+
 from aios.llm_core import llms
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -103,24 +105,36 @@ def main():
     # )
 
     # query_data_list = load_dataset('osunlp/TravelPlanner','test')['test']
-    query_data_list = [{"query": "Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."},
-                        {"query": "Please assist in crafting a travel plan for a solo traveller, journeying from Detroit to San Diego for 3 days, from March 5th to March 7th, 2022. The travel plan should accommodate a total budget of $3,000."}]
+    query_data_list = [{"query": "Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."}]
+
+    # query_data_list = [{"query": "Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."},
+    #                     {"query": "Please assist in crafting a travel plan for a solo traveller, journeying from Detroit to San Diego for 3 days, from March 5th to March 7th, 2022. The travel plan should accommodate a total budget of $3,000."},
+    #                     {"query": "Could you devise a travel plan for me? This trip starts in Salt Lake City and ends in San Jose, spanning 3 days from March 4th to March 6th, 2022. The budget for this trip is set at $1,300."},
+    #                     {"query": "Please help create a travel plan starting from Midland and ending in Las Vegas for 1 person. The trip is scheduled from March 5th to March 7th, 2022, and the budget for the trip is set at $1,700."},
+    #                     {"query": "Could you craft a 3-day travel itinerary for me, leaving from Raleigh and going to Tampa, from March 25th to March 27th, 2022, on a budget of $1,000?"}]
     
-    travel_planner_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/travel_planner_agent",
-        query_data_list[1]['query'],
-    )
+    agent_tasks = []
+    for data in query_data_list:
+        agent_task = agent_thread_pool.submit(
+            agent_factory.run_agent,
+            "example/travel_planner_agent",
+            data['query'],
+        )
+        agent_tasks.append(agent_task)
 
     # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
     # agent_tasks = [rec_agent]
     # agent_tasks = [creation_agent]
     # agent_tasks = [academic_agent, creation_agent]
     # agent_tasks = [creation_agent]
-    agent_tasks = [travel_planner_agent]
 
+    res_list = []
     for r in as_completed(agent_tasks):
         _res = r.result()
+        res_list.append(_res)
+        # 将数据写入JSON文件
+        with open('temp/travel_planner_result.json', 'w') as json_file:
+            json.dump(res_list, json_file, indent=4)
 
     scheduler.stop()
 

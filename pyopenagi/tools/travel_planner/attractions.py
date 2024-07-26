@@ -4,7 +4,7 @@ from pandas import DataFrame
 
 
 class Attractions:
-    def __init__(self, path="../../environment/travelPlanner/attractions/attractions.csv"):
+    def __init__(self, path="../../environments/travelPlanner/attractions/attractions.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['Name','Latitude','Longitude','Address','Phone','Website',"City"]]

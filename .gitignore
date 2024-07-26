@@ -10,7 +10,8 @@ context_restoration/
 .pytest_cache
 .env
 temp/
-pyopenagi/environments
+pyopenagi/environments/
+
 # IPython
 profile_default/
 ipython_config.py
@@ -155,3 +156,4 @@ dmypy.json
 cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
+/pyopenagi/environments/
