@@ -6,7 +6,7 @@ The Travel Planner Agent is replicated from the RecAgent used in the paper "Trav
 
 ## Start
 
-This agent depends on the [database](https://drive.google.com/file/d/1pF1Sw6pBmq2sFkJvm-LzJOqrmfWoQgxE/view). Please download it and place it in the `pyopenagi/environments/` directory.
+This agent depends on the [database](https://drive.google.com/file/d/1pF1Sw6pBmq2sFkJvm-LzJOqrmfWoQgxE/view). Please download it and place it in the `pyopenagi/environments/` directory, then rename the 'database' as 'travelPlanner', like `pyopenagi/environments/travelPlanner`.
 
 Then modify the main() method code in main.py as shown below.
 
