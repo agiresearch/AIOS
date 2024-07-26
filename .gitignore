@@ -9,7 +9,8 @@ src/storage/*.json
 context_restoration/
 .pytest_cache
 .env
-
+temp/
+pyopenagi/environments
 # IPython
 profile_default/
 ipython_config.py
@@ -128,7 +129,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-/pyopenagi/environment
 
 # Spyder project settings
 .spyderproject
