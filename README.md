@@ -43,7 +43,7 @@ git clone https://github.com/agiresearch/AIOS.git
 ```
 ```bash
 conda create -n AIOS python=3.11
-source activate AIOS
+conda activate AIOS
 cd AIOS
 ```
 If you have GPU environments, you can install the dependencies using
