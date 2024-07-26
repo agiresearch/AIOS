@@ -103,5 +103,6 @@ class UniformedMemoryManager(BaseMemoryManager):
         }
 
     def mem_clear(self, agent_id):
-        self.aid_to_mid.pop(agent_id)
-        heapq.heappush(agent_id)
+        memory_block = self.aid_to_memory.pop(agent_id)
+        memory_block_id = memory_block['memory_block_id']
+        heapq.heappush(self.free_memory_blocks, memory_block_id)
