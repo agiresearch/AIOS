@@ -132,7 +132,8 @@ def main():
     for r in as_completed(agent_tasks):
         _res = r.result()
         res_list.append(_res)
-        # 将数据写入JSON文件
+        
+        # write reult to a temporary json file
         with open('temp/travel_planner_result.json', 'w') as json_file:
             json.dump(res_list, json_file, indent=4)
 

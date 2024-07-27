@@ -2,12 +2,16 @@ import pandas as pd
 import os
 from pandas import DataFrame
 
-class Flights:
+from ..base import BaseTool
+
+
+class Flights(BaseTool):
 
     def __init__(self, path="../../environments/travelPlanner/flights/clean_Flights_2022.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)
         self.data = pd.read_csv(self.path).dropna()[['Flight Number', 'Price', 'DepTime', 'ArrTime', 'ActualElapsedTime','FlightDate','OriginCityName','DestCityName','Distance']]
+        print("Flights loaded.")
 
     def load_db(self):
         self.data = pd.read_csv(self.path).dropna().rename(columns={'Unnamed: 0': 'Flight Number'})

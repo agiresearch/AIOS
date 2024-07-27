@@ -1,7 +1,10 @@
 from pandas import DataFrame
 
+from ..base import BaseTool
 
-class Notebook:
+
+
+class Notebook(BaseTool):
     def __init__(self) -> None:
         self.data = []
 

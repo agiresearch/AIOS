@@ -1,6 +1,9 @@
 import os
 
-class Cities:
+from ..base import BaseTool
+
+
+class Cities(BaseTool):
     def __init__(self ,path="../../environments/travelPlanner/background/citySet_with_states.txt") -> None:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)

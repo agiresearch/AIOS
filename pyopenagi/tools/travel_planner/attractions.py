@@ -2,8 +2,10 @@ import pandas as pd
 import os
 from pandas import DataFrame
 
+from ..base import BaseTool
 
-class Attractions:
+
+class Attractions(BaseTool):
     def __init__(self, path="../../environments/travelPlanner/attractions/attractions.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)

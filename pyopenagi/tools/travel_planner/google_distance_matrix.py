@@ -3,12 +3,15 @@ import os
 import pandas as pd
 import numpy as np
 
+from ..base import BaseTool
+
+
 
 # This tool refers to the "DistanceMatrix" in the paper. Considering this data obtained from Google API,
 # we consistently use this name in the code. Please be assured that this will not influence the experiment results
 # shown in the paper.
 
-class GoogleDistanceMatrix:
+class GoogleDistanceMatrix(BaseTool):
     def __init__(self, path="../../environments/travelPlanner/googleDistanceMatrix/distance.csv",
                  subscription_key: str = "") -> None:
         self.gplaces_api_key: str = subscription_key
