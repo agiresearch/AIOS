@@ -1,13 +1,14 @@
 import os
 import sys
+from sphinx.ext import autodoc
 sys.path.insert(0, os.path.abspath('../../'))
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
 
 project = 'AIOS'
-copyright = '2024, AGIResearch Team'
-author = 'the AGIResearch Team'
+copyright = '2024, AGI Research'
+author = 'AGI Research'
 
 release = '0.1'
 version = '0.1.0'
@@ -46,10 +47,10 @@ intersphinx_disabled_domains = ['std']
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
-    'show-inheritance': True,
-    'inherited-members': True,
+    'show-inheritance': False,
+    'inherited-members': False,
     'member-order': 'bysource',
-    'show-inheritance-diagram': True,
+    'show-inheritance-diagram': False,
     # 'source': True,
 }
 
@@ -66,5 +67,45 @@ html_title = "AIOS"
 
 html_theme = 'sphinx_book_theme'
 
+exclude_patterns = ["**/*.template.rst"]
+
+def setup(app):
+    from docs.source.generate_tools import generate_tools
+    generate_tools()
+
 # -- Options for EPUB output
 # epub_show_urls = 'footnote'
+# Mock out external dependencies here, otherwise the autodoc pages may be blank.
+autodoc_mock_imports = [
+    "torch",
+    "transformers",
+    "psutil",
+    "PIL",
+    "numpy",
+    "tqdm",
+]
+
+class MockedClassDocumenter(autodoc.ClassDocumenter):
+    """Remove note about base class when a class is derived from object."""
+
+    def add_line(self, line: str, source: str, *lineno: int) -> None:
+        if line == "   Bases: :py:class:`object`":
+            return
+        super().add_line(line, source, *lineno)
+
+
+autodoc.ClassDocumenter = MockedClassDocumenter
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "typing_extensions":
+    ("https://typing-extensions.readthedocs.io/en/latest", None),
+    "pillow": ("https://pillow.readthedocs.io/en/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "torch": ("https://pytorch.org/docs/stable", None),
+    "psutil": ("https://psutil.readthedocs.io/en/stable", None),
+}
+
+autodoc_preserve_defaults = True
+
+navigation_with_keys = False

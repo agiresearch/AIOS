@@ -4,7 +4,7 @@ import requests
 from requests.models import Response
 import json
 
-from pyopenagi.tools.imdb.top_series import TopSeriesAPI
+from pyopenagi.tools.imdb.top_series import TopSeries
 from dotenv import load_dotenv, find_dotenv
 
 @pytest.fixture(scope="module")
@@ -12,7 +12,7 @@ def test_rapid_api_key():
     load_dotenv(find_dotenv())
     if "RAPID_API_KEY" not in os.environ or not os.environ["RAPID_API_KEY"]:
         with pytest.raises(ValueError):
-            TopSeriesAPI()
+            TopSeries()
         pytest.skip("RAPID api key is not set.")
     else:
         return True
@@ -76,7 +76,7 @@ def test_top_series_api_valid_input_outputs_valid_delimiter_count(
     valid_start, valid_end
 ):
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     params = {"start": valid_start, "end": valid_end}
     result = top_series_api.run(params=params)
     assert isinstance(result, str)
@@ -85,7 +85,7 @@ def test_top_series_api_valid_input_outputs_valid_delimiter_count(
 @pytest.mark.usefixtures("test_rapid_api_key")
 def test_top_series_api_reverse_range_returns_blank():
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     params = {"start": 100, "end": 0}
     result = top_series_api.run(params=params)
     assert result == "Top 100-0 series ranked by IMDB are: "
@@ -103,7 +103,7 @@ def test_top_series_api_reverse_range_returns_blank():
 @pytest.mark.usefixtures("test_rapid_api_key")
 def test_top_series_api_invalid_start_type_raises_typeerror(invalid_start, valid_end):
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     params = {"start": invalid_start, "end": valid_end}
     with pytest.raises(TypeError):
         top_series_api.run(params=params)
@@ -121,7 +121,7 @@ def test_top_series_api_invalid_start_type_raises_typeerror(invalid_start, valid
 @pytest.mark.usefixtures("test_rapid_api_key")
 def test_top_series_api_invalid_end_type_raises_typeerror(invalid_start, valid_end):
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     params = {"start": invalid_start, "end": valid_end}
     with pytest.raises(TypeError):
         top_series_api.run(params=params)
@@ -129,7 +129,7 @@ def test_top_series_api_invalid_end_type_raises_typeerror(invalid_start, valid_e
 @pytest.mark.usefixtures("test_rapid_api_key")
 def test_top_series_api_invalid_start_count_raises_indexerror():
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     invalid_start = {"start": 101, "end": 102}
     with pytest.raises(IndexError):
         top_series_api.run(params=invalid_start)
@@ -137,7 +137,7 @@ def test_top_series_api_invalid_start_count_raises_indexerror():
 @pytest.mark.usefixtures("test_rapid_api_key")
 def test_top_series_api_invalid_end_count_raises_indexerror():
     load_dotenv(find_dotenv())
-    top_series_api = TopSeriesAPI()
+    top_series_api = TopSeries()
     invalid_end = {"start": 1, "end": 101}
     with pytest.raises(IndexError):
         top_series_api.run(params=invalid_end)

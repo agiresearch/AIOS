@@ -1,1 +1,0 @@
-python simulator.py --llm_name gpt-4 --scheduler_log_mode file --agent_log_mode file --llm_kernel_log_mode file

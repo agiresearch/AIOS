@@ -36,8 +36,9 @@ Add your test code into the `tests/` directory if any, then run test via [pytest
 ```
 pytest -v tests/
 ```
-sample output
 
+##### Sample Output
+```
 ============================================================================================================================= test session starts ==============================================================================================================================
 platform darwin -- Python 3.11.9, pytest-8.1.1, pluggy-1.5.0 -- ""
 cachedir: .pytest_cache

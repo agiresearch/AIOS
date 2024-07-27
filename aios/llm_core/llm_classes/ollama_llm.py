@@ -1,12 +1,12 @@
 # wrapper around ollama for LLMs
 
 import re
-from .base_llm import BaseLLMKernel
+from .base_llm import BaseLLM
 import time
 import ollama
 
 from pyopenagi.utils.chat_template import Response
-class OllamaLLM(BaseLLMKernel):
+class OllamaLLM(BaseLLM):
 
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
@@ -37,6 +37,7 @@ class OllamaLLM(BaseLLMKernel):
         agent_process.set_start_time(time.time())
         messages = agent_process.query.messages
         tools = agent_process.query.tools
+        message_return_type = agent_process.query.message_return_type
         self.logger.log(
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
@@ -49,7 +50,7 @@ class OllamaLLM(BaseLLMKernel):
                 messages=messages
             )
 
-            tool_calls = self.tool_calling_output_format(
+            tool_calls = self.parse_tool_calls(
                 response["message"]["content"]
             )
 
@@ -68,7 +69,6 @@ class OllamaLLM(BaseLLMKernel):
                 )
 
         else:
-            messages = self.tool_calling_input_format(messages, tools)
             response = ollama.chat(
                 model=self.model_name.split("/")[-1],
                 messages=messages,
@@ -76,9 +76,16 @@ class OllamaLLM(BaseLLMKernel):
                     num_predict=self.max_new_tokens
                 )
             )
+            result = response['message']['content']
+
+            # print(f"***** original result: {result} *****")
+
+            if message_return_type == "json":
+                result = self.json_parse_format(result)
+
             agent_process.set_response(
                 Response(
-                    response_message = response['message']['content']
+                    response_message = result
                 )
             )
 
