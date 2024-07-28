@@ -84,7 +84,7 @@ class ClaudeLLM(BaseLLM):
 
             response_message = response.content[0].text
             self.logger.log(f"API Response: {response_message}", level="info")
-            tool_calls = self.tool_calling_output_format(response_message) if tools else None
+            tool_calls = self.parse_tool_calls(response_message) if tools else None
 
             agent_process.set_response(
                 Response(
