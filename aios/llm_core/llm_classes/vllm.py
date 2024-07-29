@@ -110,7 +110,7 @@ class vLLM(BaseLLM):
 
             result = response[0].outputs[0].text
             if message_return_type == "json":
-                result = self.json_parse_format(result)
+                result = self.parse_json_format(result)
 
             agent_process.set_response(
                 Response(
