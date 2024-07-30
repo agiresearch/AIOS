@@ -80,6 +80,8 @@ class vLLM(BaseLLM):
             # print(response)
             result = response[0].outputs[0].text
 
+            print(f"***** Result: {result} *****")
+
             tool_calls = self.parse_tool_calls(
                 result
             )
