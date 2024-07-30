@@ -19,7 +19,7 @@ class SdxlTurbo(BaseHuggingfaceTool):
             "type": "function",
             "function": {
                 "name": "sdxl_turbo",
-                "description": "generate images by calling sdxl-turbo model",
+                "description": "generate images with the given texts",
                 "parameters": {
                     "type": "object",
                     "properties": {

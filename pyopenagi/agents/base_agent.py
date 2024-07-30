@@ -39,6 +39,7 @@ class BaseAgent:
                  agent_process_factory,
                  log_mode: str
         ):
+
         self.agent_name = agent_name
         self.config = self.load_config()
         self.tool_names = self.config["tools"]
@@ -47,6 +48,8 @@ class BaseAgent:
 
         self.tool_list = dict()
         self.tools = []
+        self.tool_info = [] # simplified information of the tool: {"name": "xxx", "description": "xxx"}
+
         self.load_tools(self.tool_names)
 
         self.start_time = None
@@ -130,16 +133,19 @@ class BaseAgent:
         return ''.join(x.title() for x in components)
 
     def load_tools(self, tool_names):
+
         for tool_name in tool_names:
             org, name = tool_name.split("/")
             module_name = ".".join(["pyopenagi", "tools", org, name])
             class_name = self.snake_to_camel(name)
-
             tool_module = importlib.import_module(module_name)
             tool_class = getattr(tool_module, class_name)
-
             self.tool_list[name] = tool_class()
-            self.tools.append(tool_class().get_tool_call_format())
+            tool_format = tool_class().get_tool_call_format()
+            self.tools.append(tool_format)
+            self.tool_info.append(
+                {"name": tool_format["function"]["name"], "description": tool_format["function"]["description"]}
+            )
 
     def pre_select_tools(self, tool_names):
         pre_selected_tools = []
