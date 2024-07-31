@@ -22,8 +22,6 @@ class ReactAgent(BaseAgent):
             log_mode
         )
 
-        # self.tool_list = {}
-
         self.plan_max_fail_times = 3
         self.tool_call_max_fail_times = 3
 
@@ -33,10 +31,11 @@ class ReactAgent(BaseAgent):
                 "".join(self.config["description"])
             ]
         )
+
         plan_instruction = "".join(
             [
-                f'You are given the available tools from the tool list: {json.dumps(self.tools)} to help you solve problems.',
-                'Generate a plan of steps you need to take.',
+                f'You are given the available tools from the tool list: {json.dumps(self.tool_info)} to help you solve problems. ',
+                'Generate a plan of steps you need to take. ',
                 'The plan must follow the json format as: ',
                 '[',
                 '{"message": "message_value1","tool_use": [tool_name1, tool_name2,...]}',
@@ -46,45 +45,27 @@ class ReactAgent(BaseAgent):
                 'In each step of the planned workflow, you must select the most related tool to use',
                 'Followings are some plan examples:',
                 '[',
-                '{"message": "Gather information from arxiv", "tool_use": ["arxiv"]},',
-                '{"message", "Based on the gathered information, write a summarization", "tool_use": []}',
+                '{"message": "gather information from arxiv. ", "tool_use": ["arxiv"]},',
+                '{"message", "write a summarization based on the gathered information. ", "tool_use": []}',
                 '];',
                 '[',
-                '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
+                '{"message": "identify the tool that you need to call to obtain information. ", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
+                '{"message", "give recommendations for the user based on the information. ", "tool_use": []}',
                 '];',
-                '[',
-                '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
-                '];',
-                '[',
-                '{"message": "identify the tool that you need to call to obtain information.", "tool_use": ["imdb_top_movies", "imdb_top_series"]},'
-                '{"message", "based on the information, give recommendations for the user based on the constrains.", "tool_use": []}',
-                ']'
             ]
         )
-        # exection_instruction = "".join(
-        #     [
-        #         'To execute each step in the workflow, you need to output as the following json format:',
-        #         '{"[Action]": "Your action that is indended to take",',
-        #         '"[Observation]": "What will you do? If you will call an external tool, give a valid tool call of the tool name and tool parameters"}'
-        #     ]
-        # )
+
         if self.workflow_mode == "manual":
             self.messages.append(
                 {"role": "system", "content": prefix}
             )
-            # self.messages.append(
-            #     {"role": "user", "content": exection_instruction}
-            # )
+
         else:
             assert self.workflow_mode == "automatic"
             self.messages.append(
-                {"role": "system", "content": prefix}
+                {"role": "system", "content": prefix + plan_instruction}
             )
-            self.messages.append(
-                {"role": "user", "content": plan_instruction}
-            )
+
 
     def automatic_workflow(self):
         return super().automatic_workflow()
@@ -134,6 +115,10 @@ class ReactAgent(BaseAgent):
 
         self.messages.append(
             {"role": "assistant", "content": f"[Thinking]: The workflow generated for the problem is {json.dumps(workflow)}"}
+        )
+
+        self.messages.append(
+            {"role": "user", "content": "[Thinking]: Follow the workflow to solve the problem step by step. "}
         )
 
         self.logger.log(f"Generated workflow is: {workflow}\n", level="info")
@@ -186,7 +171,7 @@ class ReactAgent(BaseAgent):
                         self.messages.append(
                             {
                                 "role": "assistant",
-                                "content": action_messages + ";;" + observation_messages
+                                "content": action_messages + ". " + observation_messages
                             }
                         )
                         if success:

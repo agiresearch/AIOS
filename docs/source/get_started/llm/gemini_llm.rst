@@ -1,5 +1,7 @@
 Gemini Endpoints
 ================
 
-.. autoclass:: aios.llm_core.llm_classes.gemini_llm.GeminiLLM
-    :members:
+Source https://github.com/agiresearch/AIOS/blob/main/aios/llm_core/llm_classes/gemini_llm.py.
+
+.. literalinclude:: ../../../../aios/llm_core/llm_classes/gemini_llm.py
+    :language: python

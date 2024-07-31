@@ -14,7 +14,8 @@ class Interactor:
         script_dir = os.path.dirname(script_path)
         self.base_folder = script_dir
 
-    def list_available_agents():
+    def list_available_agents(self) -> list:
+        """List available agents in the database"""
         url = "https://openagi-beta.vercel.app/api/get_all_agents"
         response = requests.get(url)
         response: dict = response.json()
@@ -25,16 +26,18 @@ class Interactor:
             })
         return agent_list
 
-    def download_agent(self, agent):
+    def download_agent(self, agent: str) -> None:
+        """Download an agent from the database
+
+        Args:
+            agent (str): in the format of "author/agent_name"
+        """
         assert "/" in agent, 'agent_name should in the format of "author/agent_name"'
         author, name = agent.split("/")
         # print(author, name)
         query = f'https://openagi-beta.vercel.app/api/download?author={author}&name={name}'
         response = requests.get(query)
         response: dict = response.json()
-
-        # if response:
-        #     print("Successfully downloaded")
 
         agent_folder = os.path.join(self.base_folder, agent)
 
@@ -58,7 +61,12 @@ class Interactor:
             agent
         )
 
-    def upload_agent(self, agent):
+    def upload_agent(self, agent) -> None:
+        """Upload an agent to the database
+
+        Args:
+            agent (str): in the format of "author/agent_name"
+        """
         agent_dir = os.path.join(self.base_folder, agent)
 
         author, name = agent.split("/")

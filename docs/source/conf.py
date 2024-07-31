@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information
 
 project = 'AIOS'
-copyright = '2024, AGIResearch Team'
-author = 'the AGIResearch Team'
+copyright = '2024, AGI Research'
+author = 'AGI Research'
 
 release = '0.1'
 version = '0.1.0'
@@ -47,10 +47,10 @@ intersphinx_disabled_domains = ['std']
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
-    'show-inheritance': True,
-    'inherited-members': True,
+    'show-inheritance': False,
+    'inherited-members': False,
     'member-order': 'bysource',
-    'show-inheritance-diagram': True,
+    'show-inheritance-diagram': False,
     # 'source': True,
 }
 
@@ -67,34 +67,23 @@ html_title = "AIOS"
 
 html_theme = 'sphinx_book_theme'
 
+exclude_patterns = ["**/*.template.rst"]
+
+def setup(app):
+    from docs.source.generate_tools import generate_tools
+    generate_tools()
+
 # -- Options for EPUB output
 # epub_show_urls = 'footnote'
 # Mock out external dependencies here, otherwise the autodoc pages may be blank.
 autodoc_mock_imports = [
-    "cpuinfo",
     "torch",
     "transformers",
     "psutil",
-    "prometheus_client",
-    "sentencepiece",
-    "vllm.cuda_utils",
-    "vllm._C",
     "PIL",
     "numpy",
-    'triton',
     "tqdm",
-    "tensorizer",
-    "pynvml",
 ]
-
-# for mock_target in autodoc_mock_imports:
-#     if mock_target in sys.modules:
-#         logger.info(
-#             "Potentially problematic mock target (%s) found; "
-#             "autodoc_mock_imports cannot mock modules that have already "
-#             "been loaded into sys.modules when the sphinx build starts.",
-#             mock_target)
-
 
 class MockedClassDocumenter(autodoc.ClassDocumenter):
     """Remove note about base class when a class is derived from object."""

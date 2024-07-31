@@ -2,7 +2,8 @@
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
-[![Code License](https://img.shields.io/badge/Code%20License-MIT-green.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
+<a href='https://aios.readthedocs.io/'><img src='https://img.shields.io/badge/Documentation-AIOS-green'></a>
+[![Code License](https://img.shields.io/badge/Code%20License-MIT-orange.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 <a href='https://discord.gg/B2HFxEgTJX'><img src='https://img.shields.io/badge/Community-Discord-8A2BE2'></a>
 
 <a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -25,7 +26,7 @@ AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kern
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
 - **[2024-04-05]** 🛠️ AIOS currently supports external tool callings (google search, wolframalpha, rapid API, etc).
 - **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats! For how to contribute to AIOS, please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md).
-- **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released and AIOS repository is officially launched!
+- **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released!
 - **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
 
@@ -33,7 +34,6 @@ AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kern
 Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) for more information.
 - [Installation](https://aios.readthedocs.io/en/latest/get_started/installation.html)
 - [Quickstart](https://aios.readthedocs.io/en/latest/get_started/quickstart.html)
-- [List Available Agent](https://aios.readthedocs.io/en/latest/get_started/list_agent.html)
 
 ### Installation
 
@@ -43,7 +43,7 @@ git clone https://github.com/agiresearch/AIOS.git
 ```
 ```bash
 conda create -n AIOS python=3.11
-source activate AIOS
+conda activate AIOS
 cd AIOS
 ```
 If you have GPU environments, you can install the dependencies using
@@ -56,8 +56,10 @@ pip install -r requirements.txt
 ```
 
 ### Quickstart
-Tips(💡): For the config of LLM endpoints, multiple API keys may be required to set up.
-Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
+> [!TIP]
+>
+> For the config of LLM endpoints, multiple API keys may be required to set up.
+> Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
 
 #### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
@@ -148,7 +150,9 @@ export HF_HOME=<YOUR_HF_HOME>
 #### Use with vllm
 If you want to speed up the inference of huggingface models, you can use vllm as the backend.
 
-Note(📝): It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+> [!NOTE]
+>
+> It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
 
 Considering that vllm itself does not support passing designated GPU ids, you need to either
 setup the environment variable,
