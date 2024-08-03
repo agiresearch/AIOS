@@ -1,6 +1,6 @@
 from ..base import BaseTool
 # from langchain_core.documents import Document
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 class Wikipedia(BaseTool):
     """Wikipedia tool, refactored from langchain.
 
@@ -21,7 +21,7 @@ class Wikipedia(BaseTool):
 
     def build_client(self):
         try:
-            import pyopenagi.tools.wikipedia.wikipedia as wikipedia
+            import wikipedia
 
             wikipedia.set_lang(self.lang)
 
@@ -32,12 +32,13 @@ class Wikipedia(BaseTool):
             )
         return wikipedia
 
-    def run(self, query: Dict[str, str]) -> str:
+    def run(self, params) -> str:
         """Run Wikipedia search and get page summaries."""
-        if not isinstance(query, dict) or 'query' not in query:
-            raise TypeError("Query must be a dictionary with a 'query' key")
-        query_str = query['query'][:self.WIKIPEDIA_MAX_QUERY_LENGTH]  # Extract and slice the query string
-        page_titles = self.wiki_client.search(query_str, results=self.top_k_results)
+        query = params["query"]
+        # if not isinstance(query, dict) or 'query' not in query:
+        #     raise TypeError("Query must be a dictionary with a 'query' key")
+        # query_str = query['query'][:self.WIKIPEDIA_MAX_QUERY_LENGTH]  # Extract and slice the query string
+        page_titles = self.wiki_client.search(query, results=self.top_k_results)
         summaries = []
         for page_title in page_titles[: self.top_k_results]:
             if wiki_page := self._fetch_page(page_title):
