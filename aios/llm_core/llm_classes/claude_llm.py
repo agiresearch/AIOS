@@ -65,14 +65,14 @@ class ClaudeLLM(BaseLLM):
         messages = agent_process.query.messages
         tools = agent_process.query.tools
 
-        self.logger.log(f"Original messages: {messages}", level="info")
+        self.logger.log(f"{messages}", level="info")
         self.logger.log(f"{agent_process.agent_name} is switched to executing.", level="executing")
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
 
         anthropic_messages = self._convert_to_anthropic_messages(messages)
-        self.logger.log(f"Anthropic messages: {anthropic_messages}", level="info")
+        self.logger.log(f"{anthropic_messages}", level="info")
 
         try:
             response = self.model.messages.create(

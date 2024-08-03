@@ -15,7 +15,7 @@ class GPTLLM(BaseLLM):
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
                  eval_device: str = None,
-                 max_new_tokens: int = 256,
+                 max_new_tokens: int = 1024,
                  log_mode: str = "console"):
         super().__init__(llm_name,
                          max_gpu_memory,
