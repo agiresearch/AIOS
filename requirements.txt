@@ -11,3 +11,4 @@ torch
 transformers
 accelerate
 anthropic
+python-dotenv

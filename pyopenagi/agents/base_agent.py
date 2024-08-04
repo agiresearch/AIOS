@@ -137,8 +137,8 @@ class BaseAgent:
             for k in tool_call["parameters"]:
                 if "path" in k:
                     path = tool_call["parameters"][k]
-                if not path.startswith(save_dir):
-                    tool_call["parameters"][k] = os.path.join(save_dir, os.path.basename(path))
+                    if not path.startswith(save_dir):
+                        tool_call["parameters"][k] = os.path.join(save_dir, os.path.basename(path))
         return tool_calls
 
     def snake_to_camel(self, snake_str):

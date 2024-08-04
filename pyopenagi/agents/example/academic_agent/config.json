@@ -5,8 +5,7 @@
         "Help users find relevant research papers, summarize key findings, and generate potential research questions."
     ],
     "tools": [
-        "arxiv/arxiv",
-        "wikipedia/wikipedia"
+        "arxiv/arxiv"
     ],
     "meta": {
         "author": "example",

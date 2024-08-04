@@ -23,7 +23,7 @@ class MathAgent(ReactAgent):
                 "tool_use": []
             },
             {
-                "message": "Provide step-by-step solutions with explanations",
+                "message": "Provide final answer/solution",
                 "tool_use": []
             }
         ]

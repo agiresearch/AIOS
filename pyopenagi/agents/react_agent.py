@@ -78,7 +78,10 @@ class ReactAgent(BaseAgent):
         success = True
         actions = []
         observations = []
+
+        # print(tool_calls)
         for tool_call in tool_calls:
+            # print(tool_call)
             function_name = tool_call["name"]
             function_to_call = self.tool_list[function_name]
             function_params = tool_call["parameters"]
@@ -160,7 +163,7 @@ class ReactAgent(BaseAgent):
 
                 if tool_calls:
                     for _ in range(self.plan_max_fail_times):
-                        tool_calls = self.call_tools(tool_calls)
+                        tool_calls = self.check_path(tool_calls)
                         actions, observations, success = self.call_tools(tool_calls=tool_calls)
 
                         action_messages = "[Action]: " + ";".join(actions)

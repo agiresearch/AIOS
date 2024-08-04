@@ -1,7 +1,5 @@
 import requests
 
-import soundfile as sf
-
 from ...utils.utils import get_from_env
 
 from ..base import BaseHuggingfaceTool
@@ -23,8 +21,8 @@ class TextToSpeech(BaseHuggingfaceTool):
 
         response = requests.post(API_URL, headers=headers, json=payload)
 
-	    # audio = response.content
-        sf.save(path, response.content)
+        with open(path,"wb") as f:
+            f.write(response.content)
 
         return f"a generated audio saved at {path}"
         # pass
