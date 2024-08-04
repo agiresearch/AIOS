@@ -1,6 +1,6 @@
 from ...react_agent import ReactAgent
 
-class CreationAgent(ReactAgent):
+class CocktailMixlogist(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
@@ -14,23 +14,15 @@ class CreationAgent(ReactAgent):
     def manual_workflow(self):
         workflow = [
             {
-                "message": "Gather content requirements (platform, topic, style)",
+                "message": "Gather user preferences (alcoholic or non-alcoholic, taste profile, occasion)",
                 "tool_use": []
             },
             {
-                "message": "Develop content concept and key messages",
+                "message": "Identify available ingredients and potential substitutions",
                 "tool_use": []
             },
             {
-                "message": "Generate engaging text content",
-                "tool_use": []
-            },
-            {
-                "message": "Create visually appealing images",
-                "tool_use": ["text_to_image"]
-            },
-            {
-                "message": "Optimize content for platform and engagement",
+                "message": "Create cocktail or mocktail recipes",
                 "tool_use": []
             }
         ]

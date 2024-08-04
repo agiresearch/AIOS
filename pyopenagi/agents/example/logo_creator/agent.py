@@ -1,6 +1,6 @@
 from ...react_agent import ReactAgent
 
-class CreationAgent(ReactAgent):
+class LogoCreator(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
@@ -8,30 +8,24 @@ class CreationAgent(ReactAgent):
                  log_mode: str
         ):
         ReactAgent.__init__(self, agent_name, task_input, agent_process_factory, log_mode)
-        # self.workflow_mode = "automatic"
         self.workflow_mode = "manual"
+
+    def automatic_workflow(self):
+        return super().automatic_workflow()
 
     def manual_workflow(self):
         workflow = [
             {
-                "message": "Gather content requirements (platform, topic, style)",
+                "message": "Gather business information (name, industry, target audience)",
                 "tool_use": []
             },
             {
-                "message": "Develop content concept and key messages",
+                "message": "Identify brand personality and values",
                 "tool_use": []
             },
             {
-                "message": "Generate engaging text content",
-                "tool_use": []
-            },
-            {
-                "message": "Create visually appealing images",
+                "message": "Generate logo concepts and variations",
                 "tool_use": ["text_to_image"]
-            },
-            {
-                "message": "Optimize content for platform and engagement",
-                "tool_use": []
             }
         ]
         return workflow

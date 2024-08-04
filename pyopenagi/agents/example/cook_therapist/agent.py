@@ -1,6 +1,6 @@
 from ...react_agent import ReactAgent
 
-class CreationAgent(ReactAgent):
+class CookTherapist(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
@@ -14,23 +14,19 @@ class CreationAgent(ReactAgent):
     def manual_workflow(self):
         workflow = [
             {
-                "message": "Gather content requirements (platform, topic, style)",
+                "message": "Gather user input on desired ingredients, dietary restrictions, or cuisine type.",
                 "tool_use": []
             },
             {
-                "message": "Develop content concept and key messages",
+                "message": "Create a detailed recipe, including ingredients, measurements, and step-by-step instructions.",
                 "tool_use": []
             },
             {
-                "message": "Generate engaging text content",
-                "tool_use": []
-            },
-            {
-                "message": "Create visually appealing images",
+                "message": "Generate an image of the final dish.",
                 "tool_use": ["text_to_image"]
             },
             {
-                "message": "Optimize content for platform and engagement",
+                "message": "Present the recipe, including image, instructions, and nutritional information.",
                 "tool_use": []
             }
         ]

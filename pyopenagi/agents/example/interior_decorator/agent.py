@@ -1,6 +1,6 @@
 from ...react_agent import ReactAgent
 
-class CreationAgent(ReactAgent):
+class InteriorDecorator(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
@@ -14,26 +14,23 @@ class CreationAgent(ReactAgent):
     def manual_workflow(self):
         workflow = [
             {
-                "message": "Gather content requirements (platform, topic, style)",
+                "message": "Gather user preferences, room dimensions, and desired style.",
                 "tool_use": []
             },
             {
-                "message": "Develop content concept and key messages",
-                "tool_use": []
-            },
-            {
-                "message": "Generate engaging text content",
-                "tool_use": []
-            },
-            {
-                "message": "Create visually appealing images",
+                "message": "Generate mood board images based on user input using text_to_image.",
                 "tool_use": ["text_to_image"]
             },
             {
-                "message": "Optimize content for platform and engagement",
+                "message": "Analyze generated images for color schemes, furniture styles, and overall ambiance.",
+                "tool_use": []
+            },
+            {
+                "message": "Recommend specific furniture, decor items, and color palettes based on analysis.",
                 "tool_use": []
             }
         ]
+
         return workflow
 
     def run(self):

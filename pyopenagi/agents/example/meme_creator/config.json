@@ -1,8 +1,7 @@
 {
-    "name": "creation_agent",
+    "name": "meme_creator",
     "description": [
-        "You are a social media content creator. ",
-        "Generate compelling text and visually appealing images"
+        "You are a meme creator. Given a topic, text, or an image, create a funny and relevant meme."
     ],
     "tools": [
         "stability-ai/text_to_image"

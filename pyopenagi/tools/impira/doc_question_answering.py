@@ -15,7 +15,7 @@ class DocQuestionAnswering(BaseHuggingfaceTool):
         API_URL = "https://api-inference.huggingface.co/models/impira/layoutlm-document-qa"
         headers = {"Authorization": "Bearer " + get_from_env("HF_AUTH_TOKENS")}
 
-        question = params["prompt"]
+        question = params["question"]
 
         path = params["path"]
 

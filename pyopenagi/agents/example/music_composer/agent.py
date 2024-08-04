@@ -1,6 +1,6 @@
 from ...react_agent import ReactAgent
 
-class CreationAgent(ReactAgent):
+class MusicComposer(ReactAgent):
     def __init__(self,
                  agent_name,
                  task_input,
@@ -14,23 +14,23 @@ class CreationAgent(ReactAgent):
     def manual_workflow(self):
         workflow = [
             {
-                "message": "Gather content requirements (platform, topic, style)",
+                "message": "Gather user information about desired music genre, mood, and tempo.",
                 "tool_use": []
             },
             {
-                "message": "Develop content concept and key messages",
+                "message": "Generate basic melody, chord progression, or rhythm structure.",
                 "tool_use": []
             },
             {
-                "message": "Generate engaging text content",
+                "message": "Provide suggestions for musical development and experimentation.",
                 "tool_use": []
             },
             {
-                "message": "Create visually appealing images",
-                "tool_use": ["text_to_image"]
+                "message": "Convert musical elements into audio.",
+                "tool_use": ["text_to_speech"]
             },
             {
-                "message": "Optimize content for platform and engagement",
+                "message": "Offer feedback on composition and suggest improvements.",
                 "tool_use": []
             }
         ]
