@@ -70,10 +70,14 @@ class GoogleSearch(BaseTool):
         return res.get("items", [])
 
 
-    def run(self, query: str) -> str:
+    def run(self, params: dict) -> str:
         """Run query through GoogleSearch and parse result."""
+        query = params["query"]
+        # print(query)
         response = self._google_search_results(query, num=self.k)
+        # print(response)
         result = self.parse_result(response)
+        print(result)
         return result
 
     def parse_result(self, response):
@@ -85,3 +89,25 @@ class GoogleSearch(BaseTool):
                 snippets.append(result["snippet"])
 
         return " ".join(snippets)
+
+    def get_tool_call_format(self):
+        tool_call_format = {
+            "type": "function",
+            "function": {
+                "name": "google_search",
+                "description": "search information using google search api",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "prompt description of the image to be generated"
+                        }
+                    },
+                    "required": [
+                        "query"
+                    ]
+                }
+            }
+        }
+        return tool_call_format

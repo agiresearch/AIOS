@@ -78,7 +78,10 @@ class ReactAgent(BaseAgent):
         success = True
         actions = []
         observations = []
+
+        # print(tool_calls)
         for tool_call in tool_calls:
+            # print(tool_call)
             function_name = tool_call["name"]
             function_to_call = self.tool_list[function_name]
             function_params = tool_call["parameters"]
@@ -86,7 +89,7 @@ class ReactAgent(BaseAgent):
             try:
                 function_response = function_to_call.run(function_params)
                 actions.append(f"I will call the {function_name} with the params as {function_params}")
-                observations.append(f"The knowledge I get from {function_name} is: {function_response}")
+                observations.append(f"The output of calling the {function_name} tool is: {function_response}")
 
             except Exception:
                 actions.append("I fail to call any tools.")
@@ -130,10 +133,7 @@ class ReactAgent(BaseAgent):
                 message = step["message"]
                 tool_use = step["tool_use"]
 
-                # print(f"message: {message}")
-                # print(f"tool use: {tool_use}")
-
-                prompt = f"At step {i + 1}, you need to {message}. "
+                prompt = f"At step {i + 1}, you need to: {message}. "
                 self.messages.append({
                     "role": "user",
                     "content": prompt
@@ -163,6 +163,7 @@ class ReactAgent(BaseAgent):
 
                 if tool_calls:
                     for _ in range(self.plan_max_fail_times):
+                        tool_calls = self.check_path(tool_calls)
                         actions, observations, success = self.call_tools(tool_calls=tool_calls)
 
                         action_messages = "[Action]: " + ";".join(actions)
@@ -186,7 +187,8 @@ class ReactAgent(BaseAgent):
                 if i == len(workflow) - 1:
                     final_result = self.messages[-1]
 
-                self.logger.log(f"At step {i + 1}, {self.messages[-1]}\n", level="info")
+                step_result = self.messages[-1]["content"]
+                self.logger.log(f"At step {i + 1}, {step_result}\n", level="info")
 
                 self.rounds += 1
 

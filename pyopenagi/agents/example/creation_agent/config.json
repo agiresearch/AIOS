@@ -1,10 +1,11 @@
 {
     "name": "creation_agent",
     "description": [
-        "You are an expert who is good at content creation. "
+        "You are a social media content creator. ",
+        "Generate compelling text and visually appealing images"
     ],
     "tools": [
-        "stability-ai/sdxl_turbo"
+        "stability-ai/text_to_image"
     ],
     "meta": {
         "author": "example",

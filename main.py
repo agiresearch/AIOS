@@ -75,40 +75,106 @@ def main():
 
     scheduler.start()
 
-    # construct example agents
-
-    # travel_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/travel_agent", "I want to take a trip to Paris, France from July 4th to July 10th 2024 and I am traveling from New York City. Help me plan this trip."
-    # )
-
-    # math_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/math_agent",
-    #     "Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD."
-    # )
-
     academic_agent = agent_thread_pool.submit(
         agent_factory.run_agent,
         "example/academic_agent",
-        "Summarize recent advancements in quantum computing from the past five years.",
+        "Find recent papers on the impact of social media on mental health in adolescents.",
     )
-
+    # creation_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/creation_agent", "Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
+    # )
+    # cocktail_mixlogist = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/cocktail_mixlogist", "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
+    # )
+    # cook_therapist = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/cook_therapist", "Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
+    # )
+    # fashion_stylist = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/fashion_stylist", "Design a custom tuxedo for a slender man with a preference for classic styles, incorporating a modern twist such as velvet lapels or a slim-fit cut."
+    # )
+    # festival_card_designer = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/festival_card_designer", "Design a festival card for a vintage-themed music festival targeting young adults, with a square card size."
+    # )
+    # fitness_trainer = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/fitness_trainer", "Create a workout plan for a busy professional aiming to lose 10 pounds in 3 months."
+    # )
+    # game_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/game_agent", "Recommend a relaxing puzzle game for Nintendo Switch, suitable for a casual player."
+    # )
+    # interior_decorator = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/interior_decorator", "I want to transform my small, dark living room into a bright and airy space. I love minimalist Scandinavian design and prefer neutral colors. Can you help me?"
+    # )
+    # language_tutor = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/language_tutor", "Help me improve my English presentation skills by providing tips on structure, delivery, and visual aids."
+    # )
+    # logo_creator = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/logo_creator", "Design a minimalist logo for a tech startup specializing in AI-powered cybersecurity solutions."
+    # )
+    # math_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/math_agent", "Solve the equation: 2^(3x-1) = 5^(x+2)."
+    # )
+    # meme_creator = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/meme_creator", "Create a meme about the struggles of adulting."
+    # )
+    # music_composer = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/music_composer", "Compose a dreamy indie-pop song with a catchy chorus."
+    # )
+    # plant_care_assistant = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/plant_care_assistant", "How can I revive a dying peace lily with brown tips?"
+    # )
+    # music_composer = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/music_composer", "Compose a dreamy indie-pop song with a catchy chorus."
+    # )
     # rec_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
-    #     "example/rec_agent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
+    #     "example/rec_agent", "Recommend a Wes Anderson-style comedy set in the 1970s about a dysfunctional family."
+    # )
+    # story_teller = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/story_teller", "Create a dystopian short story featuring a protagonist with a unique biological adaptation, exploring themes of societal oppression and rebellion."
+    # )
+    # tech_support_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/tech_support_agent", "My Windows 10 laptop is running extremely slow, even after restarting and closing unnecessary programs. I've noticed high disk usage, but I don't know how to fix it."
+    # )
+    # travel_agent = agent_thread_pool.submit(
+    #     agent_factory.run_agent,
+    #     "example/tech_support_agent", "I want to take a trip to Paris, France from July 4th to July 10th, 2024, and I am traveling from New York City. Help me plan this trip."
     # )
 
-    creation_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
-    )
-
-    # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
+    agent_tasks = [academic_agent]
+    # agent_tasks = [cocktail_mixlogist]
+    # agent_tasks = [cook_therapist]
+    # agent_tasks = [creation_agent]
+    # agent_tasks = [fashion_stylist]
+    # agent_tasks = [festival_card_designer]
+    # agent_tasks = [fitness_trainer]
+    # agent_tasks = [game_agent]
+    # agent_tasks = [interior_decorator]
+    # agent_tasks = [language_tutor]
+    # agent_tasks = [logo_creator]
+    # agent_tasks = [math_agent]
+    # agent_tasks = [meme_creator]
+    # agent_tasks = [music_composer]
+    # agent_tasks = [plant_care_assistant]
     # agent_tasks = [rec_agent]
-    # agent_tasks = [creation_agent]
-    agent_tasks = [academic_agent, creation_agent]
-    # agent_tasks = [creation_agent]
+    # agent_tasks = [story_teller]
+    # agent_tasks = [tech_support_agent]
 
     for r in as_completed(agent_tasks):
         _res = r.result()

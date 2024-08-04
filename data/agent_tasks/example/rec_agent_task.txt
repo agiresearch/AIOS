@@ -1,30 +1,100 @@
-Recommend three action movies from the past five years ranked between 1 and 20 with ratings above 8.0.
-Suggest three family-friendly TV series released in the last decade ranked between 1 and 50 with ratings above 7.5.
-Find two romantic comedies from 2010-2020 ranked between 10 and 50 with ratings above 7.5.
-Recommend three TV series with strong female leads, released in the last five years, ranked between 1 and 20 with ratings above 8.0.
-Suggest three critically acclaimed horror movies from the last ten years ranked between 10 and 50 with ratings above 7.5.
-Recommend four movies suitable for a weekend marathon ranked between 1 and 30 with ratings above 7.5.
-Find three TV series with intriguing crime and mystery plots released in the last five years ranked between 1 and 20 with ratings above 8.0.
-Suggest two top-rated sci-fi movies from the last five years ranked between 1 and 10 with ratings above 8.5.
-Recommend three comedy TV series for light-hearted entertainment ranked between 10 and 50 with ratings above 7.5.
-Find three movies that have won multiple awards ranked between 1 and 20 with ratings above 8.0.
-Suggest three TV series with a historical setting released in the last decade ranked between 10 and 50 with ratings above 7.5.
-Recommend three animated movies for children ranked between 10 and 50 with ratings above 7.0.
-Find three top fantasy TV series with epic storylines released in the last decade ranked between 1 and 20 with ratings above 8.0.
-Suggest two documentaries on current events ranked between 1 and 20 with ratings above 7.5.
-Recommend three movies that are adaptations of famous books ranked between 1 and 20 with ratings above 8.0.
-Find three TV series based on true stories ranked between 1 and 20 with ratings above 8.0.
-Suggest two top-rated thrillers with unexpected twists released in the last decade ranked between 1 and 20 with ratings above 8.5.
-Recommend three TV series suitable for binge-watching over a weekend ranked between 1 and 20 with ratings above 8.0.
-Find three movies featuring strong ensemble casts ranked between 10 and 50 with ratings above 7.5.
-Suggest three feel-good TV series for relaxing evenings ranked between 10 and 50 with ratings above 7.5.
-Recommend two top-rated war movies released in the last twenty years ranked between 1 and 20 with ratings above 8.0.
-Find three TV series that explore futuristic themes ranked between 1 and 20 with ratings above 8.0.
-Suggest two classic movies from the 20th century ranked between 1 and 20 with ratings above 8.0.
-Recommend three TV series with complex character development released in the last decade ranked between 1 and 20 with ratings above 8.0.
-Find three movies directed by renowned filmmakers ranked between 1 and 20 with ratings above 8.0.
-Suggest three sitcoms for light-hearted fun ranked between 10 and 50 with ratings above 7.5.
-Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0.
-Find three TV series highly rated by critics ranked between 1 and 10 with ratings above 8.5.
-Suggest three top-rated indie movies released in the last decade ranked between 1 and 20 with ratings above 8.0.
-Recommend three TV series with a strong fan following and cult status ranked between 1 and 20 with ratings above 8.0.
+Recommend a Wes Anderson-style comedy set in the 1970s about a dysfunctional family.
+Suggest a Netflix original crime drama series starring Idris Elba, set in London.
+Find a Pixar animated movie featuring strong female characters and a coming-of-age story.
+Recommend a Marvel superhero movie with a focus on character development rather than action.
+Suggest a HBO Max drama series about the music industry in the 1990s.
+Find a A24 horror film with a psychological focus and a minimalist aesthetic.
+Recommend a Disney animated musical with classic songs and a timeless story.
+Suggest a Criterion Collection film noir starring Humphrey Bogart.
+Find a BBC documentary about the natural world with David Attenborough as narrator.
+Recommend a Studio Ghibli animated film about environmentalism.
+Recommend a science fiction film starring Keanu Reeves with themes of existentialism.
+Suggest a drama series with Meryl Streep exploring themes of aging and identity.
+Find a comedy starring Eddie Murphy with social commentary on race.
+Recommend a horror film with Jamie Lee Curtis exploring themes of trauma.
+Suggest a drama series with Viola Davis exploring themes of power and corruption.
+Find a documentary featuring Leonardo DiCaprio exploring environmental issues.
+Recommend a romantic comedy with Ryan Gosling and Emma Stone exploring themes of fate.
+Suggest a crime drama series with Matthew McConaughey exploring themes of redemption.
+Find a historical drama with Cate Blanchett exploring themes of feminism.
+Recommend a science fiction film with Brad Pitt exploring themes of artificial intelligence.
+Recommend a western film set in the 1890s in Arizona with a complex anti-hero.
+Suggest a period drama series set in Victorian England exploring class dynamics.
+Find a coming-of-age film set in the 1990s in the suburbs with a focus on friendship.
+Recommend a war film set in World War II in Europe with a focus on moral dilemmas.
+Suggest a crime drama series set in contemporary New York City with a focus on corruption.
+Find a historical drama film set in ancient Rome with political intrigue.
+Recommend a romantic comedy set in Paris with a charming love story.
+Suggest a spy thriller set in Cold War Berlin with double agents.
+Find a documentary about the culture of Tokyo in the 1980s.
+Recommend a film noir set in Los Angeles in the 1940s with a femme fatale.
+Recommend a psychological thriller with themes of identity crisis.
+Suggest a comedy series about the challenges of parenthood.
+Find a drama film exploring themes of loss and grief.
+Recommend a science fiction film with themes of artificial intelligence.
+Suggest a horror film with themes of isolation.
+Find a romantic comedy with themes of second chances.
+Recommend a crime drama series with themes of corruption.
+Suggest a historical drama film exploring themes of social injustice.
+Find a coming-of-age film with themes of self-discovery.
+Recommend a superhero film with themes of anti-heroism.
+Recommend a western set in Texas with a bounty hunter protagonist.
+Suggest a period drama series set in the Regency era in England.
+Find a coming-of-age film set in the 1990s in the suburbs.
+Recommend a war film set in Vietnam with a focus on PTSD.
+Suggest a crime drama series set in contemporary Los Angeles with a focus on gangs.
+Find a historical drama film set in ancient Egypt with political intrigue.
+Recommend a romantic comedy set in Italy with a food-centric plot.
+Suggest a spy thriller set in Cold War Moscow with double agents.
+Find a documentary about the music scene in Seattle in the 1990s.
+Recommend a film noir set in New York City in the 1940s with a femme fatale.
+Recommend a heartwarming indie drama with a minimalist aesthetic.
+Suggest a dark, atmospheric thriller with a sense of dread.
+Find a comedic drama with witty dialogue and relatable characters.
+Recommend an uplifting documentary about human resilience.
+Suggest a suspenseful spy thriller with complex characters and double-crosses.
+Find a thought-provoking science fiction film with philosophical implications.
+Recommend a nostalgic coming-of-age drama with a bittersweet ending.
+Suggest a dark comedy with absurd humor and unexpected twists.
+Find a documentary about social issues with a call to action.
+Recommend a feel-good romantic comedy with a charming cast.
+Recommend a psychological horror with a haunted house setting.
+Suggest a dystopian science fiction series with a rebellion plot.
+Find a buddy comedy with mismatched protagonists.
+Recommend a historical epic with battles and political intrigue.
+Suggest a legal drama series with courtroom showdowns.
+Find a heist movie with a complex plan.
+Recommend a musical with a tragic love story.
+Suggest a superhero origin story with a troubled protagonist.
+Find a documentary about the fashion industry with behind-the-scenes access.
+Recommend a road trip movie with unexpected stops.
+Recommend a family-friendly adventure movie with animal characters.
+Suggest a teen drama series about high school experiences and friendships.
+Find a documentary about space exploration suitable for children.
+Recommend a horror movie for adults with a psychological focus.
+Suggest a romantic comedy for seniors with a sweet and nostalgic tone.
+Recommend an animated short film with a strong visual style.
+Suggest a docuseries about true crime with multiple seasons.
+Find a mockumentary comedy with a satirical edge.
+Recommend a biopic about a famous musician with concert footage.
+Suggest a reality TV show with a competition format.
+Recommend a critically acclaimed drama film on Netflix.
+Suggest a binge-worthy comedy series on Hulu.
+Find a documentary about climate change on Amazon Prime Video.
+Recommend a horror movie with a jump scare on Disney+.
+Suggest a reality TV show with a survival theme on Discovery+.
+Recommend a coming-of-age film with a music-driven narrative.
+Suggest a docuseries about food with cultural exploration.
+Find a historical drama with a political thriller element.
+Recommend a science fiction film with a dystopian setting.
+Suggest a crime drama series with a procedural format.
+Recommend a cyberpunk short film with a neo-noir aesthetic.
+Suggest a true crime podcast with immersive storytelling.
+Find a mockumentary about the paranormal with found footage elements.
+Recommend a historical drama miniseries with a limited number of episodes.
+Suggest a reality competition show with a cooking focus.
+Recommend a critically acclaimed foreign film on Criterion Channel.
+Suggest a binge-worthy teen drama series on HBO Max.
+Find a documentary about nature on Disney+.
+Recommend a horror anthology series on Shudder.
+Suggest a reality competition show for cooking enthusiasts on Food Network.

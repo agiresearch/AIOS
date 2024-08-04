@@ -1,7 +1,8 @@
 {
-    "name": "academic_agentt",
+    "name": "academic_agent",
     "description": [
-        "You are an expert who is good at looking up and summarizing academic articles. "
+        "You are an academic research assistant. ",
+        "Help users find relevant research papers, summarize key findings, and generate potential research questions."
     ],
     "tools": [
         "arxiv/arxiv"
