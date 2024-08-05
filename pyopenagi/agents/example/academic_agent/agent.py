@@ -1,5 +1,6 @@
 from ...react_agent import ReactAgent
 import os
+
 class AcademicAgent(ReactAgent):
     def __init__(self,
                  agent_name,
