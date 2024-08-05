@@ -6,6 +6,7 @@ import time
 from ..utils.chat_template import Query
 
 import json
+import traceback
 
 class ReactAgent(BaseAgent):
     def __init__(self,
@@ -126,92 +127,97 @@ class ReactAgent(BaseAgent):
 
         self.logger.log(f"Generated workflow is: {workflow}\n", level="info")
 
-        if workflow:
-            final_result = ""
+        try:
+            if workflow:
+                final_result = ""
 
-            for i, step in enumerate(workflow):
-                message = step["message"]
-                tool_use = step["tool_use"]
+                for i, step in enumerate(workflow):
+                    message = step["message"]
+                    tool_use = step["tool_use"]
 
-                prompt = f"At step {i + 1}, you need to: {message}. "
-                self.messages.append({
-                    "role": "user",
-                    "content": prompt
-                })
-                if tool_use:
-                    selected_tools = self.pre_select_tools(tool_use)
-
-                else:
-                    selected_tools = None
-
-                response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
-                    query = Query(
-                        messages = self.messages,
-                        tools = selected_tools
-                    )
-                )
-                if self.rounds == 0:
-                    self.set_start_time(start_times[0])
-
-                # execute action
-                response_message = response.response_message
-
-                tool_calls = response.tool_calls
-
-                self.request_waiting_times.extend(waiting_times)
-                self.request_turnaround_times.extend(turnaround_times)
-
-                if tool_calls:
-                    for _ in range(self.plan_max_fail_times):
-                        tool_calls = self.check_path(tool_calls)
-                        actions, observations, success = self.call_tools(tool_calls=tool_calls)
-
-                        action_messages = "[Action]: " + ";".join(actions)
-                        observation_messages = "[Observation]: " + ";".join(observations)
-
-                        self.messages.append(
-                            {
-                                "role": "assistant",
-                                "content": action_messages + ". " + observation_messages
-                            }
-                        )
-                        if success:
-                            break
-                else:
-                    thinkings = response_message
+                    prompt = f"At step {i + 1}, you need to: {message}. "
                     self.messages.append({
-                        "role": "assistant",
-                        "content": thinkings
+                        "role": "user",
+                        "content": prompt
                     })
+                    if tool_use:
+                        selected_tools = self.pre_select_tools(tool_use)
 
-                if i == len(workflow) - 1:
-                    final_result = self.messages[-1]
+                    else:
+                        selected_tools = None
 
-                step_result = self.messages[-1]["content"]
-                self.logger.log(f"At step {i + 1}, {step_result}\n", level="info")
+                    response, start_times, end_times, waiting_times, turnaround_times = self.get_response(
+                        query = Query(
+                            messages = self.messages,
+                            tools = selected_tools
+                        )
+                    )
 
-                self.rounds += 1
+                    if self.rounds == 0:
+                        self.set_start_time(start_times[0])
 
-            self.set_status("done")
-            self.set_end_time(time=time.time())
+                    # execute action
+                    response_message = response.response_message
 
-            return {
-                "agent_name": self.agent_name,
-                "result": final_result,
-                "rounds": self.rounds,
-                "agent_waiting_time": self.start_time - self.created_time,
-                "agent_turnaround_time": self.end_time - self.created_time,
-                "request_waiting_times": self.request_waiting_times,
-                "request_turnaround_times": self.request_turnaround_times,
-            }
+                    tool_calls = response.tool_calls
 
-        else:
-            return {
-                "agent_name": self.agent_name,
-                "result": "Failed to generate a valid workflow in the given times.",
-                "rounds": self.rounds,
-                "agent_waiting_time": None,
-                "agent_turnaround_time": None,
-                "request_waiting_times": self.request_waiting_times,
-                "request_turnaround_times": self.request_turnaround_times,
-            }
+                    self.request_waiting_times.extend(waiting_times)
+                    self.request_turnaround_times.extend(turnaround_times)
+
+                    if tool_calls:
+                        for _ in range(self.plan_max_fail_times):
+                            tool_calls = self.check_path(tool_calls)
+                            actions, observations, success = self.call_tools(tool_calls=tool_calls)
+
+                            action_messages = "[Action]: " + ";".join(actions)
+                            observation_messages = "[Observation]: " + ";".join(observations)
+
+                            self.messages.append(
+                                {
+                                    "role": "assistant",
+                                    "content": action_messages + ". " + observation_messages
+                                }
+                            )
+                            if success:
+                                break
+                    else:
+                        thinkings = response_message
+                        self.messages.append({
+                            "role": "assistant",
+                            "content": thinkings
+                        })
+
+                    if i == len(workflow) - 1:
+                        final_result = self.messages[-1]
+
+                    step_result = self.messages[-1]["content"]
+                    self.logger.log(f"At step {i + 1}, {step_result}\n", level="info")
+
+                    self.rounds += 1
+
+                self.set_status("done")
+                self.set_end_time(time=time.time())
+
+                return {
+                    "agent_name": self.agent_name,
+                    "result": final_result,
+                    "rounds": self.rounds,
+                    "agent_waiting_time": self.start_time - self.created_time,
+                    "agent_turnaround_time": self.end_time - self.created_time,
+                    "request_waiting_times": self.request_waiting_times,
+                    "request_turnaround_times": self.request_turnaround_times,
+                }
+
+            else:
+                return {
+                    "agent_name": self.agent_name,
+                    "result": "Failed to generate a valid workflow in the given times.",
+                    "rounds": self.rounds,
+                    "agent_waiting_time": None,
+                    "agent_turnaround_time": None,
+                    "request_waiting_times": self.request_waiting_times,
+                    "request_turnaround_times": self.request_turnaround_times,
+                }
+        except Exception as e:
+            print(e)
+            return {}

@@ -1,25 +1,13 @@
 # This is a main script that tests the functionality of specific agents.
 # It requires no user input.
 
-
-from aios.scheduler.fifo_scheduler import FIFOScheduler
-
-
 from aios.utils.utils import (
     parse_global_args,
 )
 
-from pyopenagi.agents.agent_factory import AgentFactory
-
-from pyopenagi.agents.agent_process import AgentProcessFactory
-
 import warnings
 
-from aios.llm_core import llms
-from aios.hooks.llm import useKernel
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -56,31 +44,33 @@ def main():
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
         max_new_tokens=max_new_tokens,
-        log_mode=llm_kernel_log_mode,
+        log_mode='console',
         use_backend=use_backend
     )
 
     # run agents concurrently for maximum efficiency using a scheduler
 
-    scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
+    # scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
 
-    agent_process_factory = AgentProcessFactory()
-
-    agent_factory = AgentFactory(
-        agent_process_queue=scheduler.agent_process_queue,
-        agent_process_factory=agent_process_factory,
-        agent_log_mode=agent_log_mode,
+    startScheduler, stopScheduler = useFIFOScheduler(
+        llm=llm,
+        log_mode='console',
+        get_queue_message=None
     )
 
-    agent_thread_pool = ThreadPoolExecutor(max_workers=500)
-
-    scheduler.start()
-
-    academic_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/academic_agent",
-        "Find recent papers on the impact of social media on mental health in adolescents.",
+    submitAgent, awaitAgentExecution = useFactory(
+        log_mode='console',
+        max_workers=500
     )
+
+    # scheduler.start()
+    startScheduler()
+
+    submitAgent(
+        agent_name="example/academic_agent",
+        task_input="Find recent papers on the impact of social media on mental health in adolescents."
+    )
+
     # creation_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
     #     "example/creation_agent", "Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
@@ -158,7 +148,7 @@ def main():
     #     "example/tech_support_agent", "I want to take a trip to Paris, France from July 4th to July 10th, 2024, and I am traveling from New York City. Help me plan this trip."
     # )
 
-    agent_tasks = [academic_agent]
+    # agent_tasks = [academic_agent]
     # agent_tasks = [cocktail_mixlogist]
     # agent_tasks = [cook_therapist]
     # agent_tasks = [creation_agent]
@@ -177,16 +167,12 @@ def main():
     # agent_tasks = [story_teller]
     # agent_tasks = [tech_support_agent]
 
-    for r in as_completed(agent_tasks):
-        _res = r.result()
-
-        import json
+    awaitAgentExecution()
         
-        with open('log.json', 'w+') as file:
-            file.write(json.dumps(_res))
 
 
-    scheduler.stop()
+    # scheduler.stop()
+    stopScheduler()
 
     clean_cache(root_directory="./")
 

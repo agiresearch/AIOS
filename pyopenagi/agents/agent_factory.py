@@ -7,7 +7,7 @@ import importlib
 
 class AgentFactory:
     def __init__(self,
-                 agent_process_queue,
+                #  agent_process_queue,
                  agent_process_factory,
                  agent_log_mode
         ):
@@ -15,7 +15,7 @@ class AgentFactory:
         # self.llm = llm
         self.aid_pool = [i for i in range(self.max_aid)]
         heapq.heapify(self.aid_pool)
-        self.agent_process_queue = agent_process_queue
+        # self.agent_process_queue = agent_process_queue
         self.agent_process_factory = agent_process_factory
 
         self.current_agents = {}

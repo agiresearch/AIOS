@@ -1,107 +1,95 @@
+from concurrent.futures import ThreadPoolExecutor, Future, as_completed
+from typing import Any
+
 from aios.llm_core.llms import LLM
 
-from aios.hooks.types.llm import LLMParams, SchedulerParams, LLMRequestQueue
+from aios.scheduler.fifo_scheduler import FIFOScheduler
+
+from aios.hooks.types.llm import AgentSubmitDeclaration, FactoryParams, LLMParams, SchedulerParams, LLMRequestQueue, QueueGetMessage, QueueAddMessage, QueueCheckEmpty
 from aios.hooks.validate import validate
 
-from aios.hooks.stores import queue as QueueStore
-import queue
+from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 from aios.hooks.utils import generate_random_string
+from pyopenagi.agents.agent_factory import AgentFactory
+from pyopenagi.agents.agent_process import AgentProcessFactory
 
 @validate(LLMParams)
 def useKernel(params: LLMParams) -> LLM:
     return LLM(**params.model_dump())
 
-def useLLMRequestQueue() -> LLMRequestQueue:
+def useLLMRequestQueue() -> tuple[LLMRequestQueue, QueueGetMessage, QueueAddMessage, QueueCheckEmpty]:
     r_str = generate_random_string()
-    QueueStore.LLM_REQUEST_QUEUE[r_str] = LLMRequestQueue()
-    return QueueStore.LLM_REQUEST_QUEUE[r_str]
+    _ = LLMRequestQueue()
 
-@validate(SchedulerParams)
-def useScheduler(params: SchedulerParams):
-    pass
+    QueueStore.LLM_REQUEST_QUEUE[r_str] = _
+
+    def getMessage():
+        return QueueStore.getMessage(_)
+    
+    def addMessage(message: str):
+        return QueueStore.addMessage(_, message)
+    
+    def isEmpty():
+        return QueueStore.isEmpty(_)
+
+
+    return _, getMessage, addMessage, isEmpty
 
 @validate(SchedulerParams)
 def useFIFOScheduler(params: SchedulerParams):
-    pass
+    if params.get_queue_message is None:
+        _, get_message, _, _ = useLLMRequestQueue()
+        params.get_queue_message = get_message
 
-def useFactory():
-    pass
+    scheduler = FIFOScheduler(**params.model_dump())
 
+    def startScheduler():
+        scheduler.start()
 
-# This implements a (mostly) FIFO task queue using threads and queue, in a
-# similar fashion to the round robin scheduler. However, the timeout is 1 second
-# instead of 0.05 seconds.
+    def stopScheduler():
+        scheduler.stop()
 
-from .base import BaseScheduler
-
-from queue import Queue, Empty
-
-import time
-
-from pyopenagi.queues.llm_request_queue import LLMRequestQueue
-
-class FIFOScheduler(BaseScheduler):
-    def __init__(self, llm, log_mode):
-        super().__init__(llm, log_mode)
-        self.agent_process_queue = Queue()
+    return startScheduler, stopScheduler
 
 
-    def run(self):
-        while self.active:
-            try:
-                """
-                wait 1 second between each iteration at the minimum
-                if there is nothing received in a second, it will raise Empty
-                """
-                # agent_process = self.agent_process_queue.get(block=True, timeout=1)
-                agent_process = LLMRequestQueue.get_message()
-                # print("Get the request")
-                agent_process.set_status("executing")
-                self.logger.log(f"{agent_process.agent_name} is executing. \n", "execute")
-                agent_process.set_start_time(time.time())
-                self.execute_request(agent_process)
-            except Empty:
-                pass
+@validate(FactoryParams)
+def useFactory(params: FactoryParams):
+    process_factory = AgentProcessFactory()
 
-    def execute_request(self, agent_process):
-        self.llm.address_request(
-            agent_process=agent_process
+    agent_factory = AgentFactory(
+        agent_process_factory=process_factory,
+        agent_log_mode=params.log_mode,
+    )
+
+    thread_pool = ThreadPoolExecutor(max_workers=params.max_workers)
+
+    @validate(AgentSubmitDeclaration)
+    def submitAgent(declaration_params: AgentSubmitDeclaration) -> None:
+        _submitted_agent: Future = thread_pool.submit(
+            agent_factory.run_agent,
+            declaration_params.agent_name,
+            declaration_params.task_input
         )
 
+        ProcessStore.addProcess(_submitted_agent)
 
-# base implementation of the scheduler, sets up the threads and init
-# which all sub classes will inherit and wouldn't need to change.
+    def awaitAgentExecution() -> list[dict[str, Any]]:
+        res = []
 
-from threading import Thread
+        for r in as_completed(ProcessStore.AGENT_PROCESSES):
+            _ = r.result()
+            res.append(_)
 
-from aios.llm_core.llms import LLM
+        return res
 
-from aios.utils.logger import SchedulerLogger
-class BaseScheduler:
-    def __init__(self, llm: LLM, log_mode):
-        self.active = False # start/stop the scheduler
-        self.log_mode = log_mode
-        self.logger = self.setup_logger()
-        self.thread = Thread(target=self.run)
-        self.llm = llm
+        
+    return submitAgent, awaitAgentExecution
 
-    def run(self):
-        pass
 
-    def start(self):
-        """start the scheduler"""
-        self.active = True
-        self.thread.start()
 
-    def setup_logger(self):
-        logger = SchedulerLogger("Scheduler", self.log_mode)
-        return logger
 
-    def stop(self):
-        """stop the scheduler"""
-        self.active = False
-        self.thread.join()
 
-    def execute_request(self, agent_process):
-        pass
+
+
+

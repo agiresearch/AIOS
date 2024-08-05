@@ -187,6 +187,7 @@ class BaseAgent:
             query,
             temperature=0.0
         ):
+        
         thread = CustomizedThread(target=self.query_loop, args=(query, ))
         thread.start()
         return thread.join()

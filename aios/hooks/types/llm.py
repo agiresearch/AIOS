@@ -1,10 +1,16 @@
 from pydantic import BaseModel
-from typing import TypeAlias
+from typing import Any, TypeAlias, Callable
 
 from aios.llm_core.llms import LLM
 from queue import Queue
 
-LLMRequestQueue: TypeAlias = Queue
+from pyopenagi.agents.agent_process import AgentProcess
+
+LLMRequestQueue: TypeAlias = Queue[AgentProcess]
+
+QueueGetMessage: TypeAlias = Callable[[], AgentProcess]
+QueueAddMessage: TypeAlias = Callable[[str], None]
+QueueCheckEmpty: TypeAlias = Callable[[], bool]
 
 class LLMParams(BaseModel):
     llm_name: str
@@ -16,6 +22,15 @@ class LLMParams(BaseModel):
 
 
 class SchedulerParams(BaseModel):
-    llm: LLM
+    llm: Any
     log_mode: str
-    queue: LLMRequestQueue
+    get_queue_message: QueueGetMessage | None
+
+
+class FactoryParams(BaseModel):
+    log_mode: str = "console",
+    max_workers: int = 500
+
+class AgentSubmitDeclaration(BaseModel): 
+    agent_name: str
+    task_input: str | int | float | dict | tuple | list

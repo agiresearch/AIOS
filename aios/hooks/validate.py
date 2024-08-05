@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ValidationError
-from typing import  Callable, Type
+from typing import Callable, Type
 
 def validate(model_class: Type[BaseModel]):
     """
@@ -10,7 +10,6 @@ def validate(model_class: Type[BaseModel]):
     def decorator(func: Callable):
         def wrapper(*args, **kwargs):
             try:
-                
                 params = model_class(**kwargs)
                 
                 return func(params)
