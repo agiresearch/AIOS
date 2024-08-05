@@ -16,6 +16,7 @@ from pyopenagi.agents.agent_process import AgentProcessFactory
 import warnings
 
 from aios.llm_core import llms
+from aios.hooks.llm import useKernel
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -50,7 +51,7 @@ def main():
     use_backend = args.use_backend
     load_dotenv()
 
-    llm = llms.LLM(
+    llm = useKernel(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
@@ -178,8 +179,11 @@ def main():
 
     for r in as_completed(agent_tasks):
         _res = r.result()
+
+        import json
         
-        
+        with open('log.json', 'w+') as file:
+            file.write(json.dumps(_res))
 
 
     scheduler.stop()
