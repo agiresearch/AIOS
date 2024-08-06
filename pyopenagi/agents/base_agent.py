@@ -16,7 +16,7 @@ from ..utils.chat_template import Query
 
 import importlib
 
-from ..queues.llm_request_queue import LLMRequestQueue
+from aios.hooks.stores._global import global_llm_req_queue_add_message
 
 class CustomizedThread(Thread):
     def __init__(self, target, args=()):
@@ -187,7 +187,7 @@ class BaseAgent:
             query,
             temperature=0.0
         ):
-        
+
         thread = CustomizedThread(target=self.query_loop, args=(query, ))
         thread.start()
         return thread.join()
@@ -203,7 +203,10 @@ class BaseAgent:
             # reinitialize agent status
             agent_process.set_created_time(current_time)
             agent_process.set_response(None)
-            LLMRequestQueue.add_message(agent_process)
+
+            global_llm_req_queue_add_message(agent_process)
+
+            # LLMRequestQueue.add_message(agent_process)
 
             thread.start()
             thread.join()

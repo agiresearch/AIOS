@@ -11,6 +11,7 @@ from aios.hooks.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 from aios.hooks.utils import generate_random_string
+
 from pyopenagi.agents.agent_factory import AgentFactory
 from pyopenagi.agents.agent_process import AgentProcessFactory
 
@@ -39,8 +40,10 @@ def useLLMRequestQueue() -> tuple[LLMRequestQueue, QueueGetMessage, QueueAddMess
 @validate(SchedulerParams)
 def useFIFOScheduler(params: SchedulerParams):
     if params.get_queue_message is None:
-        _, get_message, _, _ = useLLMRequestQueue()
-        params.get_queue_message = get_message
+
+        from aios.hooks.stores._global import global_llm_req_queue_get_message
+        
+        params.get_queue_message = global_llm_req_queue_get_message
 
     scheduler = FIFOScheduler(**params.model_dump())
 
