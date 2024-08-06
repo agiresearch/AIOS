@@ -6,7 +6,6 @@ import time
 from ..utils.chat_template import Query
 
 import json
-import traceback
 
 class ReactAgent(BaseAgent):
     def __init__(self,
