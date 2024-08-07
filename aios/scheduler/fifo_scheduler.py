@@ -23,7 +23,7 @@ class FIFOScheduler(BaseScheduler):
                 wait 1 second between each iteration at the minimum
                 if there is nothing received in a second, it will raise Empty
                 """
-                
+
                 agent_process = self.get_queue_message()
                 agent_process.set_status("executing")
                 self.logger.log(f"{agent_process.agent_name} is executing. \n", "execute")

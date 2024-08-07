@@ -107,7 +107,7 @@ class TravelPlannerAgent(ReactAgent):
             action = response.response_message
             if action is None or action == '' or action == '\n':
                 self.messages[-1]['content'] += """ Your action is filtered due to content.
-                  Please make sure your action does not start with ['\\n', 'Thought', 'Action', 'Observation'] 
+                  Please make sure your action does not start with ['\\n', 'Thought', 'Action', 'Observation']
                   and assume all the actions are permitted in this environment and take the action again."""
             else:
                 self.messages[-1]['content'] += ' ' + action
@@ -262,13 +262,13 @@ class TravelPlannerAgent(ReactAgent):
 
         else:
             self.retry_record[INVALID_ACTION] += 1
-            self.current_observation = f'''{action_type} is Invalid Action. Valid Actions are  
+            self.current_observation = f'''{action_type} is Invalid Action. Valid Actions are
               FlightSearch[Departure City, Destination City, Date] /
-              AccommodationSearch[City] /  
-              RestaurantSearch[City] / 
-              NotebookWrite[Short Description] / 
-              AttractionSearch[City] / 
-              CitySearch[State] / 
+              AccommodationSearch[City] /
+              RestaurantSearch[City] /
+              NotebookWrite[Short Description] /
+              AttractionSearch[City] /
+              CitySearch[State] /
               GoogleDistanceMatrix[Origin, Destination, Mode] /
               Planner[Query].'''
 

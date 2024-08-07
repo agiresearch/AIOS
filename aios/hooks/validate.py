@@ -11,7 +11,7 @@ def validate(model_class: Type[BaseModel]):
         def wrapper(*args, **kwargs):
             try:
                 params = model_class(**kwargs)
-                
+
                 return func(params)
             except ValidationError as e:
                 print(f"Validation error: {e}")

@@ -35,4 +35,3 @@ Accommodation: -
 Given information: {text}
 Query: {query}
 Travel Plan:"""
-    

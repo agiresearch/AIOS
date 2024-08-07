@@ -30,6 +30,6 @@ class FactoryParams(BaseModel):
     log_mode: str = "console",
     max_workers: int = 500
 
-class AgentSubmitDeclaration(BaseModel): 
+class AgentSubmitDeclaration(BaseModel):
     agent_name: str
     task_input: str | int | float | dict | tuple | list

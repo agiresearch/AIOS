@@ -9,7 +9,8 @@ class Attractions(BaseTool):
     def __init__(self, path="../../environments/travelPlanner/attractions/attractions.csv"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.path = os.path.join(current_dir, path)
-        self.data = pd.read_csv(self.path).dropna()[['Name','Latitude','Longitude','Address','Phone','Website',"City"]]
+        self.data = pd.read_csv(self.path).dropna()[
+            ['Name', 'Latitude', 'Longitude', 'Address', 'Phone', 'Website', "City"]]
         print("Attractions loaded.")
 
     def load_db(self):
@@ -24,14 +25,14 @@ class Attractions(BaseTool):
         results = results.reset_index(drop=True)
         if len(results) == 0:
             return "There is no attraction in this city."
-        return results  
-    
+        return results
+
     def get_tool_call_format(self):
         tool_call_format = {
-			"type": "function",
-			"function": {
-				"name": "Attractions",
-				"description": "Search for Attractions by query",
-			}
-		}
+            "type": "function",
+            "function": {
+                "name": "Attractions",
+                "description": "Search for Attractions by query",
+            }
+        }
         return tool_call_format

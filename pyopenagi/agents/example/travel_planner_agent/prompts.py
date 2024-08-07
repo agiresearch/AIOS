@@ -1,4 +1,3 @@
-
 ZEROSHOT_REACT_INSTRUCTION = """Collect information for a query plan using interleaving 'Thought', 'Action', and 'Observation' steps. Ensure you gather valid information related to transportation, dining, attractions, and accommodation. All information should be written in Notebook, which will then be input into the Planner tool. Note that the nested use of tools is prohibited. 'Thought' can reason about the current situation, and 'Action' can have 8 different types:
 (1) FlightSearch[Departure City, Destination City, Date]:
 Description: A flight information retrieval tool.
@@ -43,17 +42,15 @@ Example: NotebookWrite[Flights from Rome to Paris in 2022-02-01] would store the
 
 (8) Planner[Query]
 Description: A smart planning tool that crafts detailed plans based on user input and the information stroed in Notebook.
-Parameters: 
+Parameters:
 Query: The query from user.
 Example: Planner[Give me a 3-day trip plan from Seattle to New York] would return a detailed 3-day trip plan.
-You should use as many as possible steps to collect engough information to input to the Planner tool. 
+You should use as many as possible steps to collect engough information to input to the Planner tool.
 
 Each action only calls one function once. Do not add any description in the action.
 
 Each reponse only execute one step of 'Thought', 'Action', 'Observation'. If you have a step 'Thought', don't generate 'Action'.
 """
-
-
 
 PLANNER_INSTRUCTION = """You are a proficient planner. Based on the provided information and query, please give me a detailed plan, including specifics such as flight numbers (e.g., F0123456), restaurant names, and accommodation names. Note that all the information in your plan should be derived from the provided data. You must adhere to the format given in the example. Additionally, all details should align with commonsense. The symbol '-' indicates that information is unnecessary. For example, in the provided sample, you do not need to plan after returning to the departure city. When you travel to two cities in one day, you should note it in the 'Current City' section as in the example (i.e., from A to B).
 
@@ -92,4 +89,3 @@ Accommodation: -
 Given information: {text}
 Query: {query}
 Travel Plan:"""
-
