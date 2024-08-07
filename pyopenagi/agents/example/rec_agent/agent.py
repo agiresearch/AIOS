@@ -17,11 +17,11 @@ class RecAgent(ReactAgent):
         workflow = [
             {
                 "message": "identify the tool that you need to call to obtain information.",
-                "tool_use": ["imdb/top_movies", "imdb/top_series"]
+                "tool_use": ["google_search"]
             },
             {
                 "message": "based on the information, give recommendations for the user based on the constrains. ",
-                "tool_use": None
+                "tool_use": []
             }
         ]
         return workflow
