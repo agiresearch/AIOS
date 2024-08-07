@@ -178,9 +178,9 @@ class Interactor:
 
         try:
             result = subprocess.run(['conda', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except:
+        except Exception:
             result = subprocess.run(['pip', 'list', '--format=freeze'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
+
         # Decode the output from bytes to string
         with open(reqs_path, "r") as f:
             reqs = []

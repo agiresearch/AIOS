@@ -31,7 +31,7 @@ class FIFOScheduler(BaseScheduler):
                 self.execute_request(agent_process)
             except Empty:
                 pass
-            except:
+            except Exception:
                 traceback.print_exc()
 
     def execute_request(self, agent_process):

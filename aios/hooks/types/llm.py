@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Any, TypeAlias, Callable
 
-from aios.llm_core.llms import LLM
 from queue import Queue
 
 from pyopenagi.agents.agent_process import AgentProcess
