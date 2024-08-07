@@ -1,0 +1,20 @@
+{
+	"name": "travel_planner_agent",
+	"description": [
+		"TravelPlanner: A Benchmark for Real-World Planning with Language Agents"
+	],
+	"tools": [
+		"travel_planner/accommodations",
+        "travel_planner/attractions",
+        "travel_planner/cities",
+        "travel_planner/flights",
+        "travel_planner/google_distance_matrix",
+        "travel_planner/notebook",
+        "travel_planner/restaurants"
+	],
+	"meta": {
+		"author": "example",
+		"version": "0.0.1",
+		"license": "CC0"
+	}
+}

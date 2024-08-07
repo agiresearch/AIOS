@@ -27,10 +27,10 @@ def useLLMRequestQueue() -> tuple[LLMRequestQueue, QueueGetMessage, QueueAddMess
 
     def getMessage():
         return QueueStore.getMessage(_)
-    
+
     def addMessage(message: str):
         return QueueStore.addMessage(_, message)
-    
+
     def isEmpty():
         return QueueStore.isEmpty(_)
 
@@ -42,7 +42,7 @@ def useFIFOScheduler(params: SchedulerParams):
     if params.get_queue_message is None:
 
         from aios.hooks.stores._global import global_llm_req_queue_get_message
-        
+
         params.get_queue_message = global_llm_req_queue_get_message
 
     scheduler = FIFOScheduler(**params.model_dump())
@@ -86,13 +86,5 @@ def useFactory(params: FactoryParams):
 
         return res
 
-        
+
     return submitAgent, awaitAgentExecution
-
-
-
-
-
-
-
-

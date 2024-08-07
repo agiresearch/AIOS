@@ -12,4 +12,3 @@ def addMessage(q: LLMRequestQueue, message: str):
 
 def isEmpty(q: LLMRequestQueue):
     return q.empty()
-
