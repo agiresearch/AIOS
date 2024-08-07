@@ -33,9 +33,9 @@ def main():
     max_gpu_memory = args.max_gpu_memory
     eval_device = args.eval_device
     max_new_tokens = args.max_new_tokens
-    # scheduler_log_mode = args.scheduler_log_mode
-    # agent_log_mode = args.agent_log_mode
-    # llm_kernel_log_mode = args.llm_kernel_log_mode
+    scheduler_log_mode = args.scheduler_log_mode
+    agent_log_mode = args.agent_log_mode
+    llm_kernel_log_mode = args.llm_kernel_log_mode
     use_backend = args.use_backend
     load_dotenv()
 
@@ -44,7 +44,7 @@ def main():
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
         max_new_tokens=max_new_tokens,
-        log_mode='console',
+        log_mode=llm_kernel_log_mode,
         use_backend=use_backend
     )
 
@@ -54,12 +54,12 @@ def main():
 
     startScheduler, stopScheduler = useFIFOScheduler(
         llm=llm,
-        log_mode='console',
+        log_mode=scheduler_log_mode,
         get_queue_message=None
     )
 
     submitAgent, awaitAgentExecution = useFactory(
-        log_mode='console',
+        log_mode=agent_log_mode,
         max_workers=500
     )
 
