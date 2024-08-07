@@ -12,6 +12,7 @@ from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
 
+
 def clean_cache(root_directory):
     targets = {
         ".ipynb_checkpoints",
@@ -65,15 +66,15 @@ def main():
     # scheduler.start()
     startScheduler()
 
-    # submitAgent(
-    #     agent_name="example/academic_agent",
-    #     task_input="Find recent papers on the impact of social media on mental health in adolescents."
-    # )
-
     submitAgent(
-        agent_name="example/travel_planner_agent",
-        task_input="Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."
+        agent_name="example/academic_agent",
+        task_input="Find recent papers on the impact of social media on mental health in adolescents."
     )
+
+    # submitAgent(
+    #     agent_name="example/travel_planner_agent",
+    #     task_input="Please plan a trip for me starting from Sarasota to Chicago for 3 days, from March 22nd to March 24th, 2022. The budget for this trip is set at $1,900."
+    # )
 
     # creation_agent = agent_thread_pool.submit(
     #     agent_factory.run_agent,
@@ -172,8 +173,6 @@ def main():
     # agent_tasks = [tech_support_agent]
 
     awaitAgentExecution()
-        
-
 
     # scheduler.stop()
     stopScheduler()
