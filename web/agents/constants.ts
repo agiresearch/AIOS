@@ -1,0 +1,1 @@
+export const groq_token = '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'

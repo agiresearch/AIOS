@@ -1,0 +1,15 @@
+{ 
+    "meta": {
+        "author": "Balaji Rama",
+        "version": "0.1",
+        "name": "new_agent1",
+        "description": "Description Here For the New Agent",
+        "license": "CC-0",
+        "logo": "Path To Logo"
+    },
+
+    "external": {
+        "ephemeral_cache_name": "Name Of Folder To Save Temp Data",
+        "persistent_cache_name": "Long Term Cache"
+    }
+}

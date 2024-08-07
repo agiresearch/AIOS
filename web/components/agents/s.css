@@ -1,0 +1,4 @@
+.mention_input {
+    display: 'flex';
+    flex-grow: 1;
+}
