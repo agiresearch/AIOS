@@ -1,0 +1,46 @@
+{
+  "name": "openagi-beta",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate && npx patch-package"
+  },
+  "dependencies": {
+    "@hello-pangea/dnd": "^16.6.0",
+    "@nextui-org/react": "^2.4.5",
+    "@prisma/client": "^5.16.1",
+    "@vercel/blob": "^0.23.3",
+    "axios": "^1.7.2",
+    "framer-motion": "^11.3.7",
+    "groq-sdk": "^0.5.0",
+    "ldrs": "^1.0.2",
+    "lucide-react": "^0.396.0",
+    "mathjs": "^13.0.0",
+    "next": "14.2.3",
+    "patch-package": "^8.0.0",
+    "react": "^18",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^18",
+    "react-icons": "^5.2.1",
+    "react-mentions": "^4.4.10",
+    "react-type-animation": "^3.2.0",
+    "reactflow": "^11.11.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-beautiful-dnd": "^13.1.8",
+    "@types/react-dom": "^18",
+    "@types/react-mentions": "^4.1.13",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8",
+    "prisma": "^5.16.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

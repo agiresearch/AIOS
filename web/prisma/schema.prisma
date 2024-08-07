@@ -1,0 +1,22 @@
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model AgentConfig {
+    id           String @id @default(cuid())
+    author       String
+    name         String
+    version      String
+    license      String
+    code         String
+    config       String
+    dependencies String
+}
