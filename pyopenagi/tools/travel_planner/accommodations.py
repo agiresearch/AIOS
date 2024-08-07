@@ -26,4 +26,11 @@ class Accommodations(BaseTool):
         return results
     
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Accommodations",
+				"description": "Search for an Accommodations by query",
+			}
+		}
+        return tool_call_format

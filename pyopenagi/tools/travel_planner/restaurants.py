@@ -26,4 +26,11 @@ class Restaurants(BaseTool):
         return results
     
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Restaurants",
+				"description": "Search for Restaurants by query",
+			}
+		}
+        return tool_call_format

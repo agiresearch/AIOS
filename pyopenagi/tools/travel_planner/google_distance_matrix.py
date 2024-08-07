@@ -42,7 +42,14 @@ class GoogleDistanceMatrix(BaseTool):
         return f"{mode}, from {origin} to {destination}, no valid information."
 
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "GoogleDistanceMatrix",
+				"description": "Distance information",
+			}
+		}
+        return tool_call_format
 
 
 def extract_before_parenthesis(s):

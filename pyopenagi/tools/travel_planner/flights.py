@@ -29,7 +29,14 @@ class Flights(BaseTool):
         if len(results) == 0:
             return "There is no flight from {} to {} on {}.".format(origin, destination, departure_date)
         return results
-    
+
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Flights",
+				"description": "Search for Flights by query",
+			}
+		}
+        return tool_call_format
     

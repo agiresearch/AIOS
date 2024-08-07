@@ -27,4 +27,11 @@ class Cities(BaseTool):
             return self.data[state]
         
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Cities",
+				"description": "Search for Cities by query",
+			}
+		}
+        return tool_call_format

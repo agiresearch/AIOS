@@ -27,4 +27,11 @@ class Attractions(BaseTool):
         return results  
     
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Attractions",
+				"description": "Search for Attractions by query",
+			}
+		}
+        return tool_call_format

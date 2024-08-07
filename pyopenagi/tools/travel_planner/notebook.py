@@ -44,4 +44,11 @@ class Notebook(BaseTool):
         self.data = []
 
     def get_tool_call_format(self):
-        pass
+        tool_call_format = {
+			"type": "function",
+			"function": {
+				"name": "Notebook",
+				"description": "Note information",
+			}
+		}
+        return tool_call_format
