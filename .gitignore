@@ -78,6 +78,7 @@ cover/
 
 # Django stuff:
 *.log
+
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -94,7 +95,10 @@ docs/_build/
 
 # PyBuilder
 .pybuilder/
-target/
+
+**/target/**
+**/build/**
+**/output/**
 
 # Jupyter Notebook
 
@@ -174,7 +178,6 @@ cython_debug/
 
 # production
 /build
-
 # misc
 .DS_Store
 *.pem
