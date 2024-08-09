@@ -1,0 +1,16 @@
+{
+    "scripts": {
+        "start": "tsx build.ts"
+    },
+    "dependencies": {
+        "discord.js-selfbot-v13": "^3.1.4",
+        "openai": "^4.52.0",
+        "tslog": "^4.9.3",
+        "yaml": "^2.4.5"
+    },
+    "devDependencies": {
+        "ts-node": "^10.9.2",
+        "tsx": "^4.15.7",
+        "typescript": "^5.5.2"
+    }
+}
