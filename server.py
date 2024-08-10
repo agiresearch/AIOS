@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
 from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
 
+from pyopenagi.agents.interact import Interactor
+
 from state import useGlobalState
 from dotenv import load_dotenv
 import atexit
@@ -22,10 +24,12 @@ app.add_middleware(
 
 
 getLLMState, setLLMState, setLLMCallback = useGlobalState()
-# getScheduler, setScheduler, setSchedulerCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
-# isRunning, setIsRunning, setIsRunningCallback = useGlobalState()
+getInteractor, setInteracter, setInteracterCallback = useGlobalState()
 
+setInteracter(
+    Interactor()
+)
 
 #initial
 setLLMState(
@@ -89,12 +93,9 @@ async def add_agent(
 @app.get("/execute_agents")
 async def execute_agents(
     factory: dict = Depends(getFactory),
-    # is_running: bool = Depends(isRunning),
-    # scheduler: dict = Depends(getScheduler),
 ):
     try:
         response  = factory.get('execute')()
-        # scheduler.get('stop')()
         
         return {
             'success': True,
@@ -107,11 +108,29 @@ async def execute_agents(
 
 
 @app.get("/get_all_agents")
-async def get_all_agents(*args, **kwargs):
-    pass
+async def get_all_agents(
+    interactor: Interactor = Depends(getInteractor),
+):
+    def transform_string(input_string: str):
+        last_part = input_string.split('/')[-1].replace('_', ' ')
+        return ' '.join(word.capitalize() for word in last_part.split())
+    
+    agents = interactor.list_available_agents()
+    agent_names = [transform_string(a.get('agent')) for a in agents]
+
+    _ =[{
+        'id': agents[i].get('agent'),
+        'display': agent_names[i]
+    } for i in range(len(agents))]
+    
+    return {
+        'agents': _
+    }
 
 def cleanup():
     stopScheduler()
-    # Place your cleanup code here
 
 atexit.register(cleanup)
+
+
+    
