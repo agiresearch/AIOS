@@ -6,6 +6,9 @@ from server import app
 
 server = None
 
+import sys, os
+sys.path.append((os.path.dirname(os.path.abspath(__file__))))
+
 logging.getLogger("uvicorn.error").disabled = True
 logging.getLogger("uvicorn.access").disabled = True
 
@@ -40,5 +43,8 @@ if __name__ == "__main__":
 
     # Example: Stop the server after 10 seconds
     import time
-    time.sleep(10)
-    stop_server()
+    try:
+        while True:
+            time.sleep(1)
+    except:
+        stop_server()
