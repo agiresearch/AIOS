@@ -4,7 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
 from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
 
+from pyopenagi.agents.interact import Interactor
+
 from state import useGlobalState
+from dotenv import load_dotenv
+import atexit
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -18,11 +24,12 @@ app.add_middleware(
 
 
 getLLMState, setLLMState, setLLMCallback = useGlobalState()
-getScheduler, setScheduler, setSchedulerCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
-isRunning, setIsRunning, setIsRunningCallback = useGlobalState()
+getInteractor, setInteracter, setInteracterCallback = useGlobalState()
 
-setIsRunning(False)
+setInteracter(
+    Interactor()
+)
 
 #initial
 setLLMState(
@@ -42,10 +49,6 @@ startScheduler, stopScheduler = useFIFOScheduler(
     get_queue_message=None
 )
 
-setScheduler({
-    'start': startScheduler,
-    'stop': stopScheduler
-})
 
 submitAgent, awaitAgentExecution = useFactory(
     log_mode='console',
@@ -57,6 +60,8 @@ setFactory({
     'execute': awaitAgentExecution
 })
 
+startScheduler()
+
 @app.post("/set_kernel")
 async def set_kernel(req: LLMParams):
     setLLMState(
@@ -67,21 +72,20 @@ async def set_kernel(req: LLMParams):
 async def add_agent(
     req: AgentSubmitDeclaration, 
     factory: dict = Depends(getFactory), 
-    is_running: bool = Depends(isRunning),
-    scheduler: dict = Depends(getScheduler),
 ):
-    if not is_running:
-        scheduler.get('start')()
-    
     try:
         submit_agent = factory.get('submit')
-        submit_agent(**req)
+        submit_agent(
+            agent_name=req.agent_name,
+            task_input=req.task_input
+        )
         
         return {
             'success': True,
             'agent': req.agent_name
         }
-    except Exception:
+    except Exception as e:
+        print(e)
         return {
             'success': False
         }
@@ -89,13 +93,9 @@ async def add_agent(
 @app.get("/execute_agents")
 async def execute_agents(
     factory: dict = Depends(getFactory),
-    # is_running: bool = Depends(isRunning),
-    scheduler: dict = Depends(getScheduler),
 ):
     try:
         response  = factory.get('execute')()
-        scheduler.get('stop')()
-        setIsRunning(False)
         
         return {
             'success': True,
@@ -108,5 +108,29 @@ async def execute_agents(
 
 
 @app.get("/get_all_agents")
-async def get_all_agents(*args, **kwargs):
-    pass
+async def get_all_agents(
+    interactor: Interactor = Depends(getInteractor),
+):
+    def transform_string(input_string: str):
+        last_part = input_string.split('/')[-1].replace('_', ' ')
+        return ' '.join(word.capitalize() for word in last_part.split())
+    
+    agents = interactor.list_available_agents()
+    agent_names = [transform_string(a.get('agent')) for a in agents]
+
+    _ =[{
+        'id': agents[i].get('agent'),
+        'display': agent_names[i]
+    } for i in range(len(agents))]
+    
+    return {
+        'agents': _
+    }
+
+def cleanup():
+    stopScheduler()
+
+atexit.register(cleanup)
+
+
+    

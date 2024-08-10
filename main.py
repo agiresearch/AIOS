@@ -49,9 +49,6 @@ def main():
     )
 
     # run agents concurrently for maximum efficiency using a scheduler
-
-    # scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
-
     startScheduler, stopScheduler = useFIFOScheduler(
         llm=llm,
         log_mode=scheduler_log_mode,
@@ -63,7 +60,6 @@ def main():
         max_workers=500
     )
 
-    # scheduler.start()
     startScheduler()
 
     submitAgent(
@@ -153,28 +149,8 @@ def main():
     #     "example/tech_support_agent", "I want to take a trip to Paris, France from July 4th to July 10th, 2024, and I am traveling from New York City. Help me plan this trip."
     # )
 
-    # agent_tasks = [academic_agent]
-    # agent_tasks = [cocktail_mixlogist]
-    # agent_tasks = [cook_therapist]
-    # agent_tasks = [creation_agent]
-    # agent_tasks = [fashion_stylist]
-    # agent_tasks = [festival_card_designer]
-    # agent_tasks = [fitness_trainer]
-    # agent_tasks = [game_agent]
-    # agent_tasks = [interior_decorator]
-    # agent_tasks = [language_tutor]
-    # agent_tasks = [logo_creator]
-    # agent_tasks = [math_agent]
-    # agent_tasks = [meme_creator]
-    # agent_tasks = [music_composer]
-    # agent_tasks = [plant_care_assistant]
-    # agent_tasks = [rec_agent]
-    # agent_tasks = [story_teller]
-    # agent_tasks = [tech_support_agent]
-
     awaitAgentExecution()
 
-    # scheduler.stop()
     stopScheduler()
 
     clean_cache(root_directory="./")
