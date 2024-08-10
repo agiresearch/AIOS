@@ -175,6 +175,7 @@ node_modules/
 
 # next.js
 /.next/
+.next/
 /out/
 
 # production
