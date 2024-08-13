@@ -55,6 +55,7 @@ export default function AgentsPage() {
         if (!chatStarted)
             setChatStarted(true);
 
+        console.log('value is', value);
         const parsed = parseAgentCommands(value);
 
         setMessages((prev) => {
