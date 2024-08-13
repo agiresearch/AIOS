@@ -89,9 +89,9 @@ async def add_agent(
             'pid': process_id
         }
     except Exception as e:
-        print(e)
         return {
-            'success': False
+            'success': False,
+            'exception': f"{e}"
         }
 
 # @app.get("/execute_agents")

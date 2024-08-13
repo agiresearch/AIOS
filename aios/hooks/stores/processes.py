@@ -1,6 +1,6 @@
 from concurrent.futures import Future
 
-AGENT_PROCESSES: dict[str, Future] = []
+AGENT_PROCESSES: dict[str, Future] = {}
 
 def addProcess(p: Future, pi: str) -> None:
     # AGENT_PROCESSES.append(p)

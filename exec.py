@@ -9,7 +9,7 @@ import webbrowser
 #     # Run the _exec.py Python script asynchronously
 #     subprocess.Popen(['python', '_exec.py'])
 
-def run_npm():
+def run_npm(open: bool=False):
     # Change directory to the 'web' subdirectory
     os.chdir('web')
     
@@ -20,12 +20,15 @@ def run_npm():
     
     subprocess.Popen(['npm', 'run', 'dev'])
 
+    if open:
+        time.sleep(5)
+        webbrowser.open_new_tab("http://localhost:3000")
+
+
 if __name__ == "__main__":
     start_server()
-    run_npm()
+    run_npm(True)
 
-    webbrowser.open_new_tab("http://localhost:3000")
-    
     try:
         while True:
             time.sleep(1)
