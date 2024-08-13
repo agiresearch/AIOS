@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, Future, as_completed
 from typing import Any
+from random import randint
 
 from aios.llm_core.llms import LLM
 
@@ -75,16 +76,27 @@ def useFactory(params: FactoryParams):
             declaration_params.task_input
         )
 
-        ProcessStore.addProcess(_submitted_agent)
+        random_code = randint(100000, 999999)
 
-    def awaitAgentExecution() -> list[dict[str, Any]]:
-        res = []
+        ProcessStore.addProcess(_submitted_agent, random_code)
 
-        for r in as_completed(ProcessStore.AGENT_PROCESSES):
-            _ = r.result()
-            res.append(_)
+        return random_code
 
-        return res
+    # def awaitAgentExecution() -> dict[str, Any]:
+    #     res = []
+
+    #     for r in as_completed(ProcessStore.AGENT_PROCESSES):
+    #         _ = r.result()
+    #         res.append(_)
+
+    #     return res
+
+    def awaitAgentExecution(process_id: str) -> dict[str, Any]:
+        future = ProcessStore.AGENT_PROCESSES.get(process_id)
+        if future:
+            return future.result()
+        else:
+            raise ValueError(f"Process with ID '{process_id}' not found.")
 
 
     return submitAgent, awaitAgentExecution
