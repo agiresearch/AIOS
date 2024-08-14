@@ -12,13 +12,13 @@ class DataType:
 
 # Type instances for primitive types
 string = DataType("string")
-number = DataType("number")
+_float = DataType("float")
 integer = DataType("integer")
 boolean = DataType("boolean")
 null = DataType("null")
 
 # Function for complex types
-def obj(properties: dict = None) -> DataType:
+def _obj(properties: dict = None) -> DataType:
     return DataType("object", properties)
 
 def array(subtype: DataType) -> DataType:

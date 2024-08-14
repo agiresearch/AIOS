@@ -18,6 +18,8 @@ class CoreSchema:
         field = FieldSchema(key_name, data_type, description)
         self.fields.append(field)
 
+        return self
+
     def to_llm_format(self) -> str:
         formatted_fields = [field.to_llm_format() for field in self.fields]
         return "{\n  " + ",\n  ".join(formatted_fields) + "\n}"

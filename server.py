@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
 from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
 
+from aios.hooks.parser import useCompletion, string
+from aios.core.schema import CoreSchema
+from aios.hooks.types.parser import ParserQuery
+
 from pyopenagi.agents.interact import Interactor
 
 from state import useGlobalState
@@ -62,8 +66,6 @@ setFactory({
 
 startScheduler()
 
-existing_ids = []
-
 @app.post("/set_kernel")
 async def set_kernel(req: LLMParams):
     setLLMState(
@@ -93,23 +95,6 @@ async def add_agent(
             'success': False,
             'exception': f"{e}"
         }
-
-# @app.get("/execute_agents")
-# async def execute_agents(
-#     factory: dict = Depends(getFactory),
-# ):
-#     try:
-#         response  = factory.get('execute')()
-        
-#         return {
-#             'success': True,
-#             'response': response
-#         }
-#     except Exception as e:
-#         return {
-#             'success': False,
-#             'exception': f"{e}"
-#         }
     
 @app.get("/execute_agent")
 async def execute_agent(
@@ -128,6 +113,15 @@ async def execute_agent(
             'success': False,
             'exception': f"{e}"
         }
+    
+@app.post("/agent_parser")
+async def parse_query(
+    req: ParserQuery
+):
+    parser_schema = CoreSchema()
+    parser_schema \
+        .add_field('agent_name', string, 'name of agent') \
+        .add_field('phrase', string, 'agent instruction')
 
 
 @app.get("/get_all_agents")
