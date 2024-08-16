@@ -13,3 +13,4 @@ transformers
 accelerate
 anthropic
 python-dotenv
+litellm

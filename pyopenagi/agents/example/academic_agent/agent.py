@@ -1,6 +1,5 @@
 from ...react_agent import ReactAgent
 import os
-
 class AcademicAgent(ReactAgent):
     def __init__(self,
                  agent_name,
@@ -26,7 +25,6 @@ class AcademicAgent(ReactAgent):
             except Exception:
                 continue
         return tool_calls
-
     def manual_workflow(self):
         workflow = [
             {
@@ -47,6 +45,5 @@ class AcademicAgent(ReactAgent):
             }
         ]
         return workflow
-
     def run(self):
         return super().run()

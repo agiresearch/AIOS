@@ -1,8 +1,12 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
 from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
+
+from aios.hooks.parser import useCompletion, string
+from aios.core.schema import CoreSchema
+from aios.hooks.types.parser import ParserQuery
 
 from pyopenagi.agents.interact import Interactor
 
@@ -75,36 +79,49 @@ async def add_agent(
 ):
     try:
         submit_agent = factory.get('submit')
-        submit_agent(
+        
+        process_id = submit_agent(
             agent_name=req.agent_name,
             task_input=req.task_input
         )
         
         return {
             'success': True,
-            'agent': req.agent_name
+            'agent': req.agent_name,
+            'pid': process_id
         }
     except Exception as e:
-        print(e)
         return {
-            'success': False
+            'success': False,
+            'exception': f"{e}"
         }
-
-@app.get("/execute_agents")
-async def execute_agents(
+    
+@app.get("/execute_agent")
+async def execute_agent(
+    pid: int = Query(..., description="The process ID"),
     factory: dict = Depends(getFactory),
 ):
     try:
-        response  = factory.get('execute')()
+        response = factory.get('execute')(pid)
         
         return {
             'success': True,
             'response': response
         }
-    except Exception:
+    except Exception as e:
         return {
-            'success': False
+            'success': False,
+            'exception': f"{e}"
         }
+    
+@app.post("/agent_parser")
+async def parse_query(
+    req: ParserQuery
+):
+    parser_schema = CoreSchema()
+    parser_schema \
+        .add_field('agent_name', string, 'name of agent') \
+        .add_field('phrase', string, 'agent instruction')
 
 
 @app.get("/get_all_agents")

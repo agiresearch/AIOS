@@ -25,6 +25,9 @@ class SchedulerParams(BaseModel):
     log_mode: str
     get_queue_message: QueueGetMessage | None
 
+class AgentParserParams(BaseModel):
+    llm: Any
+    query: str
 
 class FactoryParams(BaseModel):
     log_mode: str = "console",

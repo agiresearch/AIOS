@@ -103,9 +103,13 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 
             await new Promise(resolve => setTimeout(resolve, 1050));
 
-            const response = await axios.get('http://localhost:8000/execute_agents')
+            const response = await axios.get(`http://localhost:8000/execute_agent?pid=${_submit.data.pid}`)
 
-            const recent_response = response.data.response[response.data.response.length-1].result.content
+            console.log(response.data)
+
+            // const recent_response = response.data.response[response.data.response.length-1].result.content
+            const recent_response = response.data.response.result.content
+            
             setResponse(recent_response)
         }
 
