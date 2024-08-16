@@ -16,6 +16,11 @@ from aios.hooks.utils import generate_random_string
 from pyopenagi.agents.agent_factory import AgentFactory
 from pyopenagi.agents.agent_process import AgentProcessFactory
 
+import threading
+
+ids = []
+
+
 @validate(LLMParams)
 def useKernel(params: LLMParams) -> LLM:
     return LLM(**params.model_dump())
@@ -78,6 +83,9 @@ def useFactory(params: FactoryParams):
 
         random_code = randint(100000, 999999)
 
+        while random_code in ids:
+            random_code = randint(100000, 999999)
+
         ProcessStore.addProcess(_submitted_agent, random_code)
 
         return random_code
@@ -93,7 +101,10 @@ def useFactory(params: FactoryParams):
 
     def awaitAgentExecution(process_id: str) -> dict[str, Any]:
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
+
         if future:
+            with threading.Lock():
+                ids = [x for x in ids if x != process_id]
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")
