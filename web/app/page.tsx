@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image'
-import { IdeaCard } from '@/components/agents/IdeaCard';
+import { Example, IdeaCard } from '@/components/agents/IdeaCard';
 import { useEffect, useRef, useState } from 'react';
 import useAutosizeTextArea from '@/hooks/useAutosizeTextArea';
 import { Textarea, Button } from '@nextui-org/react';
@@ -39,6 +39,7 @@ export default function AgentsPage() {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const [chatStarted, setChatStarted] = useState(false);
     const [agents, setAgents] = useState<any>();
+    const target = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const _ = async () => {
@@ -51,11 +52,13 @@ export default function AgentsPage() {
 
     const handleKeyDown = (event: any) => {
         if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-          event.preventDefault();
-        //   console.log('Enter key pressed without any modifiers');
-          handleQuery()
+            event.preventDefault();
+            //   console.log('Enter key pressed without any modifiers');
+            if (target.current) {
+                target.current.click()
+            }
         }
-      };
+    };
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -105,6 +108,44 @@ export default function AgentsPage() {
 
     const [messages, setMessages] = useState<Array<ChatMessageProps | ChatBreakProps>>([]);
 
+    const callback = (a: Example[], phrase: string) => {
+        if (!chatStarted)
+            setChatStarted(true);
+
+        console.log('value is', phrase);
+        const parsed = parseAgentCommands(phrase);
+
+        setMessages((prev) => {
+            return [
+                ...prev,
+                {
+                    direction: 'right',
+                    agentName: 'user',
+                    query: parsed
+                },
+                {
+                    size: 10
+                },
+                ...parsed.map(p => ({
+                    direction: 'left',
+                    agentName: p.name,
+                    query: p.content
+                } as ChatMessageProps)),
+
+                {
+                    size: 10
+                },
+            ]
+
+        })
+    }
+
+    // useEffect(() => {
+    //     if (value.at(0) == ';' && value.at(1) == ';') {
+
+    //     }
+    // }, [value])
+
     return (
         <main className="w-full h-screen overflow-hidden flex flex-row">
             <div className="h-full w-1/6"></div>
@@ -112,10 +153,35 @@ export default function AgentsPage() {
                 {!chatStarted ? (<div className='center-panel flex flex-col w-2/3 absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-y-8'>
                     <Image src={'https://avatars.githubusercontent.com/u/130198651?v=4'} width={460} height={460} alt={'AGI Research Logo'} className='w-[10%] aspect-square rounded-full' />
                     <div className='flex flex-row justify-between w-full gap-x-3 pt-4'>
-                        <IdeaCard />
-                        <IdeaCard />
-                        <IdeaCard />
-                        <IdeaCard />
+                        <IdeaCard examples={[
+                            {
+                                agent_name: 'example/math_agent',
+                                task: 'What\'s 90+4?'
+                            }
+                        ]} cb={callback} phrase={`
+                        @[Math Agent](example/math_agent) What's 90+4?
+                        `} />
+                        <IdeaCard examples={[
+                            {
+                                agent_name: 'example/academic_agent',
+                                task: 'Get me information on sea turtles.'
+                            }
+                        ]} cb={callback} phrase={`
+                        @[Academic Agent](example/academic_agent) Get me information on sea turtles.
+                        `} />
+                        <IdeaCard examples={[
+                            {
+                                agent_name: 'example/math_agent',
+                                task: 'what is 45*2-4 to the power of 4'
+                            },
+                            {
+                                agent_name: 'example/academic_agent',
+                                task: 'What are the effects of smoking on cancer?'
+                            }
+                        ]} cb={callback} phrase={`
+                        @[Math Agent](example/math_agent) what is 45*2-4 to the power of 4
+                        @[Academic Agent](example/academic_agent) What are the effects of smoking on cancer?
+                        `} />
                     </div>
                 </div>) : (<div className='flex flex-col gap-y-3 pt-3'>
                     <div className='flex items-center flex-row gap-x-10 p-5 justify-center'>
@@ -144,7 +210,7 @@ export default function AgentsPage() {
                     >
                         <Mention data={agents} onAdd={undefined} style={defaultMentionStyle} trigger={'@'} />
                     </MentionsInput>
-                    <Button isIconOnly className='bg-transparent hover:opacity-40' onClick={() => handleQuery()}>
+                    <Button isIconOnly className='bg-transparent hover:opacity-40' onClick={() => handleQuery()} ref={target}>
                         <SearchCode />
                     </Button>
 
