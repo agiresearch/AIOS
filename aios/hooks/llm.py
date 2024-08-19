@@ -103,8 +103,8 @@ def useFactory(params: FactoryParams):
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
 
         if future:
-            with threading.Lock():
-                ids = [x for x in ids if x != process_id]
+            # with threading.Lock():
+            # ids = [x for x in ids if x != process_id]
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")
