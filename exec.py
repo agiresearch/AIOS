@@ -5,6 +5,12 @@ import time
 from _exec import start_server, stop_server
 import webbrowser
 
+import sys
+
+sys.path.append(os.getcwd())
+
+print(sys.path[-1])
+
 # def run_exec():
 #     # Run the _exec.py Python script asynchronously
 #     subprocess.Popen(['python', '_exec.py'])

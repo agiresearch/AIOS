@@ -45,9 +45,25 @@ export default function AgentsPage() {
             const response = await axios.get('http://localhost:8000/get_all_agents');
             setAgents(response.data.agents)
         }
-        
+
         _()
     }, [])
+
+    const handleKeyDown = (event: any) => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+          event.preventDefault();
+        //   console.log('Enter key pressed without any modifiers');
+          handleQuery()
+        }
+      };
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
 
     useAutosizeTextArea(textAreaRef.current, value);
 
@@ -74,7 +90,7 @@ export default function AgentsPage() {
                     agentName: p.name,
                     query: p.content
                 } as ChatMessageProps)),
-                
+
                 {
                     size: 10
                 },
