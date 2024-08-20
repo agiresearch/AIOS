@@ -1,3 +1,6 @@
+# executable that you can use to upload to the agent hub and download from it
+# we also use this to check dependencies to run agents
+
 import argparse
 import json
 import subprocess
@@ -173,7 +176,7 @@ class Interactor:
             file.write(code_data)
 
     def check_reqs_installed(self, agent):
-    # Run the `conda list` command and capture the output
+        # Run the `conda list` command and capture the output
         reqs_path = os.path.join(self.base_folder, agent, "meta_requirements.txt")
 
         try:
@@ -203,7 +206,6 @@ class Interactor:
                 return False
 
         return True
-
 
     def install_agent_reqs(self, agent):
         reqs_path = os.path.join(self.base_folder, agent, "meta_requirements.txt")

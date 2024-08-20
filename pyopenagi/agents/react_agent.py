@@ -1,3 +1,7 @@
+# Where the internal agent handling is done
+# to prevent excessive boilerplate in each agent
+# TODO: not venv friendly
+
 
 from .base_agent import BaseAgent
 
@@ -71,6 +75,7 @@ class ReactAgent(BaseAgent):
         return super().automatic_workflow()
 
     def manual_workflow(self):
+        """ to be implemented """
         pass
 
     def call_tools(self, tool_calls):
