@@ -50,6 +50,10 @@ class Interactor:
         encoded_config = response.get('config')
         encoded_code = response.get("code")
         encoded_reqs = response.get('dependencies')
+        
+        if (encoded_config is None) or (encoded_code is None) or (encoded_reqs is None):
+            print("Agent not found. Try uploading it first?")
+            return
 
         self.download_config(
             self.decompress(encoded_config),
@@ -215,8 +219,11 @@ class Interactor:
             "pip",
             "install",
             "-r",
-            reqs_path
-        ])
+            reqs_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        print("Installing dependencies for agent: " + agent)
 
 def parse_args():
     parser = argparse.ArgumentParser()
