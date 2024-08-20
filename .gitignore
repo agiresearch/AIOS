@@ -3,11 +3,10 @@ logs/
 .DS_Store
 .ipynb_checkpoints
 __pycache__
-src/storage/*.json
 /venv/
 .idea
-context_restoration/
-.pytest_cache
+**/context_restoration/**
+**/.pytest_cache/**
 .env
 temp/
 pyopenagi/environments/
@@ -164,7 +163,7 @@ cython_debug/
 
 
 # dependencies
-/node_modules
+**/node_modules/**
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -174,6 +173,7 @@ cython_debug/
 
 # next.js
 /.next/
+
 /out/
 
 # production
