@@ -14,7 +14,7 @@ class Interactor:
         script_dir = os.path.dirname(script_path)
         self.base_folder = script_dir
 
-    def list_available_agents(self) -> list:
+    def list_available_agents(self) -> list[dict]:
         """List available agents in the database"""
         url = "https://openagi-beta.vercel.app/api/get_all_agents"
         response = requests.get(url)

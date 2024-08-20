@@ -61,7 +61,6 @@ def main():
         max_workers=500
     )
 
-    # scheduler.start()
     startScheduler()
 
     # register your agents and submit agent tasks
@@ -85,7 +84,6 @@ def main():
 
     awaitAgentExecution()
 
-    # scheduler.stop()
     stopScheduler()
 
     clean_cache(root_directory="./")

@@ -31,3 +31,7 @@ body {
     text-wrap: balance;
   }
 }
+
+* {
+  color: black
+}
