@@ -1,7 +1,7 @@
 from ..base import BaseTool 
 from time import sleep
 
-class CurrencyConverter(BaseTool):
+class Transcriber(BaseTool):
     def __init__(self):
         """ big library, not everyone needs it installed """
         try:

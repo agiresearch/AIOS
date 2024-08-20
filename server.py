@@ -18,8 +18,6 @@ from state import useGlobalState
 from dotenv import load_dotenv
 import atexit
 
-from _exec import start_server, stop_server
-
 load_dotenv()
 
 app = FastAPI()
@@ -120,6 +118,7 @@ async def execute_agent(
             'response': response
         }
     except Exception as e:
+        print("Got an exception while executing agent: ", e)
         return {
             'success': False,
             'exception': f"{e}"
@@ -159,9 +158,3 @@ def cleanup():
     stopScheduler()
 
 atexit.register(cleanup)
-
-if __name__ == '__main__':
-    start_server()
-
-    # when CTRL+C
-    stop_server()
