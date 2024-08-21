@@ -1,3 +1,8 @@
+# This file contains helpful utilities for the rest of the code, encompassing
+# parsing, environment variables, logging, etc.
+
+# TODO: switch to click
+
 import argparse
 
 import os

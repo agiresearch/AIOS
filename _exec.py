@@ -21,7 +21,7 @@ def start_server():
     print("Server started")
 
 def stop_server():
-    global serverge
+    global server
     if server:
         server.should_exit = True
         server.force_exit = True
