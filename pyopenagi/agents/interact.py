@@ -213,17 +213,18 @@ class Interactor:
 
     def install_agent_reqs(self, agent):
         reqs_path = os.path.join(self.base_folder, agent, "meta_requirements.txt")
-        subprocess.check_call([
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "-r",
-            reqs_path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        print("Installing dependencies for agent: " + agent)
+        with open ("deplogs.txt", "a") as f:
+            subprocess.check_call([
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                reqs_path],
+                stdout=f,
+                stderr=f
+            )
+        print("Installing dependencies for agent: " + agent + ". Writing to deplogs.txt")
 
 def parse_args():
     parser = argparse.ArgumentParser()

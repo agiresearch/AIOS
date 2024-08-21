@@ -28,7 +28,19 @@ Your local folder will be like the following:
                 │── config.json
                 └── meta_requirements.txt
 
+
+Here is the outline for each file
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Agent Files
+
+   agent.py
+   config.json
+   meta_requirements.txt
+
 Here we provide some useful agent templates to use the agent.
+
 
 .. toctree::
    :maxdepth: 2
