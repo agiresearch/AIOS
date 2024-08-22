@@ -21,6 +21,7 @@ Here is some example python:
 From here you can decide whether you want automatic workflow generation or manual workflow. In this case, we will first start with manual workflows.
 
 .. code-block:: python
+
             # add manual workflow to init
             self.workflow_mode = "manual"
    def manual_workflow(self):
@@ -36,5 +37,4 @@ From here you can decide whether you want automatic workflow generation or manua
         ]
 
         return workflow
-
 
