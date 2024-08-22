@@ -87,7 +87,6 @@ def main():
         system_message="You are a helpful AI assistant. "
                        "You can help with simple calculations. "
                        "Return 'TERMINATE' when the task is done.",
-        agent_process_factory=process_factory
     )
 
     # The user proxy agent is used for interacting with the assistant agent
