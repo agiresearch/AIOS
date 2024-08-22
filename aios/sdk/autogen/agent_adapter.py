@@ -265,7 +265,6 @@ def _adapter_generate_oai_reply_from_client(self, llm_client, messages, cache) -
         context=messages[-1].pop("context", None), messages=all_messages, cache=cache, agent=self
     )
     extracted_response = llm_client.extract_text_or_completion_object(response)[0]
-
     if extracted_response is None:
         warnings.warn(f"Extracted_response from {response} is None.", UserWarning)
         return None
