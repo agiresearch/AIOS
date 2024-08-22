@@ -13,10 +13,11 @@ from aios.utils.utils import delete_directories
 from aios.utils.utils import (
     parse_global_args,
 )
+from autogen import ConversableAgent
 from pyopenagi.agents.agent_process import AgentProcessFactory
+from typing import Annotated, Literal
 
-from autogen import ConversableAgent, UserProxyAgent
-
+Operator = Literal["+", "-", "*", "/"]
 
 def clean_cache(root_directory):
     targets = {
@@ -26,6 +27,19 @@ def clean_cache(root_directory):
         "context_restoration",
     }
     delete_directories(root_directory, targets)
+
+
+def calculator(a: int, b: int, operator: Annotated[Operator, "operator"]) -> int:
+    if operator == "+":
+        return a + b
+    elif operator == "-":
+        return a - b
+    elif operator == "*":
+        return a * b
+    elif operator == "/":
+        return int(a / b)
+    else:
+        raise ValueError("Invalid operator")
 
 
 def main():
@@ -67,18 +81,37 @@ def main():
 
     prepare_autogen(process_factory)
 
-    # Create the agent that uses the LLM.
-    assistant = ConversableAgent("agent")
+    # Let's first define the assistant agent that suggests tool calls.
+    assistant = ConversableAgent(
+        name="Assistant",
+        system_message="You are a helpful AI assistant. "
+                       "You can help with simple calculations. "
+                       "Return 'TERMINATE' when the task is done.",
+        agent_process_factory=process_factory
+    )
 
-    # Create the agent that represents the user in the conversation.
-    user_proxy = UserProxyAgent("user", code_execution_config=False)
+    # The user proxy agent is used for interacting with the assistant agent
+    # and executes tool calls.
+    user_proxy = ConversableAgent(
+        name="User",
+        is_termination_msg=lambda msg: msg.get("content") is not None and "TERMINATE" in msg["content"],
+        human_input_mode="NEVER",
+    )
+
+    # Register the tool signature with the assistant agent.
+    assistant.register_for_llm(name="calculator", description="A simple calculator")(calculator)
+
+    # Register the tool function with the user proxy agent.
+    user_proxy.register_for_execution(name="calculator")(calculator)
 
     startScheduler()
 
-    # Let the assistant start the conversation.  It will end when the user types exit.
-    assistant.initiate_chat(user_proxy, message="How can I help you today?")
+    # Generate a reply.
+    chat_result = user_proxy.initiate_chat(assistant, message="What is  (2 + 1) / 3?")
 
     stopScheduler()
+
+    print(chat_result)
 
     clean_cache(root_directory="./")
 

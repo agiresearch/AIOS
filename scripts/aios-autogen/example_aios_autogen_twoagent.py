@@ -13,9 +13,8 @@ from aios.utils.utils import delete_directories
 from aios.utils.utils import (
     parse_global_args,
 )
+from autogen import ConversableAgent
 from pyopenagi.agents.agent_process import AgentProcessFactory
-
-from autogen import ConversableAgent, UserProxyAgent
 
 
 def clean_cache(root_directory):
@@ -67,18 +66,26 @@ def main():
 
     prepare_autogen(process_factory)
 
-    # Create the agent that uses the LLM.
-    assistant = ConversableAgent("agent")
+    cathy = ConversableAgent(
+        "cathy",
+        system_message="Your name is Cathy and you are a part of a duo of comedians.",
+        human_input_mode="NEVER",  # Never ask for human input.
+    )
 
-    # Create the agent that represents the user in the conversation.
-    user_proxy = UserProxyAgent("user", code_execution_config=False)
+    joe = ConversableAgent(
+        "joe",
+        system_message="Your name is Joe and you are a part of a duo of comedians.",
+        human_input_mode="NEVER",  # Never ask for human input.
+    )
 
     startScheduler()
 
     # Let the assistant start the conversation.  It will end when the user types exit.
-    assistant.initiate_chat(user_proxy, message="How can I help you today?")
+    result = joe.initiate_chat(cathy, message="How can I help you today?", max_turns=2)
 
     stopScheduler()
+
+    print(result)
 
     clean_cache(root_directory="./")
 
