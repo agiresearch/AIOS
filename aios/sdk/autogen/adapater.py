@@ -7,6 +7,7 @@ from aios.sdk.autogen.agent_adapter import (
     _adapter_generate_oai_reply_from_client,
     adapter_generate_tool_calls_reply,
     adapter_execute_function,
+    _adapter_a_execute_tool_call,
     adapter_update_tool_signature
 )
 
@@ -46,6 +47,7 @@ def prepare_autogen(agent_process_factory: Optional[AgentProcessFactory] = None)
     ConversableAgent._generate_oai_reply_from_client = _adapter_generate_oai_reply_from_client
     ConversableAgent.generate_tool_calls_reply = adapter_generate_tool_calls_reply
     ConversableAgent.execute_function = adapter_execute_function
+    ConversableAgent._a_execute_tool_call = _adapter_a_execute_tool_call
     ConversableAgent.update_tool_signature = adapter_update_tool_signature
     ConversableAgent.__init__ = adapter_autogen_agent_init
 

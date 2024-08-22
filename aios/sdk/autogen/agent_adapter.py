@@ -391,6 +391,15 @@ def adapter_execute_function(self, func_call, verbose: bool = False) -> Tuple[bo
         "content": str(content),
     }
 
+async def _adapter_a_execute_tool_call(self, tool_call):
+    id = tool_call["id"]
+    function_call = tool_call
+    _, func_return = await self.a_execute_function(function_call)
+    return {
+        "tool_call_id": id,
+        "role": "tool",
+        "content": func_return.get("content", ""),
+    }
 
 def adapter_update_tool_signature(self, tool_sig: Union[str, Dict], is_remove: None):
     """update a tool_signature in the LLM configuration for tool_call.
