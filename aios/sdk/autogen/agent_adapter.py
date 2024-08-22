@@ -1,6 +1,6 @@
 import asyncio
-import copy
 import inspect
+import logging
 import warnings
 from collections import defaultdict
 from typing import (
@@ -16,7 +16,6 @@ from autogen._pydantic import model_dump
 from autogen.coding import CodeExecutorFactory
 from autogen.io import IOStream
 
-from aios.sdk.autogen.client_adapter import AutogenClientAdapter
 from pyopenagi.agents.agent_process import AgentProcessFactory
 from termcolor import colored
 
@@ -41,22 +40,24 @@ except ImportError:
         "Please install it with `pip install pyautogen`."
     )
 
+logger = logging.getLogger(__name__)
+
 
 def adapter_autogen_agent_init(
-    self,
-    name: str,
-    system_message: Optional[Union[str, List]] = "You are a helpful AI Assistant.",
-    is_termination_msg: Optional[Callable[[Dict], bool]] = None,
-    max_consecutive_auto_reply: Optional[int] = None,
-    human_input_mode: Literal["ALWAYS", "NEVER", "TERMINATE"] = "TERMINATE",
-    function_map: Optional[Dict[str, Callable]] = None,
-    code_execution_config: Union[Dict, Literal[False]] = False,
-    llm_config: Optional[Union[Dict, Literal[False]]] = None,
-    default_auto_reply: Union[str, Dict] = "",
-    description: Optional[str] = None,
-    chat_messages: Optional[Dict[Agent, List[Dict]]] = None,
-    silent: Optional[bool] = None,
-    agent_process_factory: Optional[AgentProcessFactory] = None,
+        self,
+        name: str,
+        system_message: Optional[Union[str, List]] = "You are a helpful AI Assistant.",
+        is_termination_msg: Optional[Callable[[Dict], bool]] = None,
+        max_consecutive_auto_reply: Optional[int] = None,
+        human_input_mode: Literal["ALWAYS", "NEVER", "TERMINATE"] = "TERMINATE",
+        function_map: Optional[Dict[str, Callable]] = None,
+        code_execution_config: Union[Dict, Literal[False]] = False,
+        llm_config: Optional[Union[Dict, Literal[False]]] = None,
+        default_auto_reply: Union[str, Dict] = "",
+        description: Optional[str] = None,
+        chat_messages: Optional[Dict[Agent, List[Dict]]] = None,
+        silent: Optional[bool] = None,
+        agent_process_factory: Optional[AgentProcessFactory] = None,
 ):
     if agent_process_factory:
         self.agent_process_factory = agent_process_factory
@@ -64,7 +65,7 @@ def adapter_autogen_agent_init(
 
     # just save tool/function message in aios
     self.llm_config = {}
-    self.client = None if (self.llm_config is False or not agent_process_factory) else AutogenClientAdapter(
+    self.client = None if (self.llm_config is False or not self.agent_process_factory) else OpenAIWrapper(
         **self.llm_config,
         agent_process_factory=self.agent_process_factory,
         agent_name=self.agent_name
@@ -91,17 +92,6 @@ def adapter_autogen_agent_init(
         else (lambda x: content_str(x.get("content")) == "TERMINATE")
     )
     self.silent = silent
-    # Take a copy to avoid modifying the given dict
-    if isinstance(llm_config, dict):
-        try:
-            llm_config = copy.deepcopy(llm_config)
-        except TypeError as e:
-            raise TypeError(
-                "Please implement __deepcopy__ method for each value class in llm_config to support deepcopy."
-                " Refer to the docs for more details: https://microsoft.github.io/autogen/docs/topics/llm_configuration#adding-http-client-in-llm_config-for-proxy"
-            ) from e
-
-    self._validate_llm_config(llm_config)
 
     if logging_enabled():
         log_new_agent(self, locals())
@@ -440,4 +430,8 @@ def adapter_update_tool_signature(self, tool_sig: Union[str, Dict], is_remove: N
     if len(self.llm_config["tools"]) == 0:
         del self.llm_config["tools"]
 
-    self.client = OpenAIWrapper(**self.llm_config)
+    self.client = OpenAIWrapper(
+        **self.llm_config,
+        agent_process_factory=self.agent_process_factory,
+        agent_name=self.agent_name
+    )
