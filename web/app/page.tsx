@@ -149,7 +149,10 @@ export default function AgentsPage() {
 
     return (
         <main className="w-full h-screen overflow-hidden flex flex-row">
-            <div className="h-full w-1/6"></div>
+            <div className="h-full w-1/6 flex flex-col items-center justify-center">
+                <p className='text-3xl text-red-600'>Coming</p>
+                <p className='text-3xl text-red-600'>Soon</p>
+            </div>
             <div className="h-full w-5/6 bg-white relative">
                 {!chatStarted ? (<div className='center-panel flex flex-col w-2/3 absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-y-8'>
                     <Image src={'https://avatars.githubusercontent.com/u/130198651?v=4'} width={460} height={460} alt={'AGI Research Logo'} className='w-[10%] aspect-square rounded-full' />
