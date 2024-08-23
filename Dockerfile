@@ -1,15 +1,14 @@
-FROM ubuntu:22.04
+FROM python:3.11.8-slim-bullseye
 
-RUN apt-get update && apt-get install -y \
-    git wget curl vim tmux python3 python3-pip
+ENV PYTHONUNBUFFERED True
 
-WORKDIR /workspace
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . ./
 
-RUN curl https://ollama.ai/install.sh | sh
+ENV PORT 8000
 
-RUN git clone https://github.com/agiresearch/AIOS.git \
-    && cd AIOS \
-    && pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the default command to run when starting the container
-CMD ["/bin/bash"]
+# As an example here we're running the web service with one worker on uvicorn.
+CMD exec uvicorn server:app --host 0.0.0.0 --port ${PORT} --workers 1

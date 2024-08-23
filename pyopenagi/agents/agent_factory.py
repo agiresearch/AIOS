@@ -36,12 +36,14 @@ class AgentFactory:
             print(agent)
 
     def load_agent_instance(self, agent_name):
+        # dynamically loads the module from the path
         author, name = agent_name.split("/")
         module_name = ".".join(["pyopenagi", "agents", author, name, "agent"])
         class_name = self.snake_to_camel(name)
 
         agent_module = importlib.import_module(module_name)
 
+        # dynamically loads the class
         agent_class = getattr(agent_module, class_name)
         return agent_class
 
@@ -49,6 +51,7 @@ class AgentFactory:
         script_path = os.path.abspath(__file__)
         script_dir = os.path.dirname(script_path)
 
+        # downloads the agent if its not installed already
         interactor = Interactor()
 
         if not os.path.exists(os.path.join(script_dir, agent_name)):
@@ -57,6 +60,7 @@ class AgentFactory:
         if not interactor.check_reqs_installed(agent_name):
             interactor.install_agent_reqs(agent_name)
 
+        # we instantiate the agent directly from the class
         agent_class = self.load_agent_instance(agent_name)
 
         agent = agent_class(
@@ -66,10 +70,12 @@ class AgentFactory:
             log_mode = self.agent_log_mode
         )
 
-        aid = heapq.heappop(self.aid_pool)
 
+        # set the identifier for the agent
+        aid = heapq.heappop(self.aid_pool)
         agent.set_aid(aid)
 
+        # use a lock to make sure only one agent can read the values at a time
         if not self.terminate_signal.is_set():
             with self.current_agents_lock:
                 self.current_agents[aid] = agent

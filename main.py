@@ -64,10 +64,18 @@ def main():
     startScheduler()
 
     # register your agents and submit agent tasks
-    submitAgent(
+    """ submitAgent(
         agent_name="example/academic_agent",
         task_input="Find recent papers on the impact of social media on mental health in adolescents."
     )
+    """
+
+    """
+    submitAgent(
+        agent_name="om-raheja/transcribe_agent",
+        task_input="listen to my yap for 5 seconds and write a response to it"
+    )
+    """
 
     submitAgent(
         agent_name="example/academic_agent",

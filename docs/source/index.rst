@@ -38,3 +38,9 @@ Documentation
    agent_developer/agents/agent_index
    agent_developer/agent_database
    agent_developer/external_tools/tool_index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: For WebUI Developers
+
+   webui_developer/webui_index

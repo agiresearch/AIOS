@@ -28,7 +28,24 @@ Your local folder will be like the following:
                 │── config.json
                 └── meta_requirements.txt
 
+
+Here is the outline for each file
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Agent Files
+
+   agent.py
+   config.json
+
+``meta_requirements.txt`` is used to install dependencies for your agent. For example, if you want to use the transformers library, you can add ``transformers`` to ``meta_requirements.txt``. All of the dependencies can be installed with:
+
+.. code-block:: bash
+
+   pip install -r meta_requirements.txt
+
 Here we provide some useful agent templates to use the agent.
+
 
 .. toctree::
    :maxdepth: 2
