@@ -64,7 +64,7 @@ def adapter_autogen_agent_init(
     self.agent_name = name
 
     # just save tool/function message in aios
-    self.llm_config = {}
+    self.llm_config = {} if llm_config is not False else False
     self.client = None if (self.llm_config is False or not self.agent_process_factory) else OpenAIWrapper(
         **self.llm_config,
         agent_process_factory=self.agent_process_factory,

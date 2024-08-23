@@ -9,6 +9,8 @@ from aios.context.simple_context import SimpleContextManager
 from abc import ABC, abstractmethod
 
 from aios.utils.logger import LLMKernelLogger
+from aios.utils.id_generator import generator_tool_call_id
+
 
 class BaseLLM(ABC):
     def __init__(self,
@@ -17,7 +19,7 @@ class BaseLLM(ABC):
                  eval_device: str = None,
                  max_new_tokens: int = 256,
                  log_mode: str = "console"
-        ):
+                 ):
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
         self.max_new_tokens = max_new_tokens
@@ -32,13 +34,13 @@ class BaseLLM(ABC):
 
         self.logger.log(
             "AIOS LLM successfully loaded.\n",
-            level = "info"
+            level="info"
         )
 
     def convert_map(self, map: dict) -> dict:
         """ helper utility to convert the keys of a map to int """
         new_map = {}
-        for k,v in map.items():
+        for k, v in map.items():
             new_map[int(k)] = v
         return new_map
 
@@ -51,7 +53,7 @@ class BaseLLM(ABC):
         return logger
 
     @abstractmethod
-    def load_llm_and_tokenizer(self) -> None: # load model from config
+    def load_llm_and_tokenizer(self) -> None:  # load model from config
         # raise NotImplementedError
         """Load model and tokenizers for each type of LLMs
         """
@@ -75,6 +77,17 @@ class BaseLLM(ABC):
                 '"parameter_name2":"parameter_value2"}}]}'
             ]
         )
+
+        # translate tool call message for models don't support tool call
+        for message in messages:
+            if "tool_calls" in message:
+                message["content"] = json.dumps(message.pop("tool_calls"))
+            elif message["role"] == "tool":
+                message["role"] = "user"
+                tool_call_id = message.pop("tool_call_id")
+                content = message.pop("content")
+                message["content"] = f"The result of the execution of function(id :{tool_call_id}) is: {content}. "
+
         messages[-1]["content"] += (prefix_prompt + tool_prompt + suffix_prompt)
         return messages
 
@@ -106,15 +119,19 @@ class BaseLLM(ABC):
         return '[]'
 
     def parse_tool_calls(self, message):
-        return json.loads(self.parse_json_format(message))
+        # add tool call id and type for models don't support tool call
+        tool_calls = json.loads(self.parse_json_format(message))
+        for tool_call in tool_calls:
+            tool_call["id"] = generator_tool_call_id()
+            tool_call["type"] = "function"
+        return tool_calls
 
     def address_request(self,
-            agent_process,
-            temperature=0.0
-        ):
+                        agent_process,
+                        temperature=0.0
+                        ):
         self.process(agent_process)
         return
-
 
     @abstractmethod
     def process(self,
