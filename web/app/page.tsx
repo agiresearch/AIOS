@@ -17,6 +17,7 @@ import Container from '@/components/agents/Container';
 import { AgentCommand, ChatBreak, ChatBreakProps, ChatMessage, ChatMessageProps, isChatBreakProps, isChatMessageProps } from '@/components/agents/ChatMessage';
 import axios from 'axios';
 
+import { serverUrl } from '@/lib/env';
 
 function parseAgentCommands(input: string): AgentCommand[] {
     const result: AgentCommand[] = [];
@@ -43,7 +44,7 @@ export default function AgentsPage() {
 
     useEffect(() => {
         const _ = async () => {
-            const response = await axios.get('http://localhost:8000/get_all_agents');
+            const response = await axios.get(`${serverUrl}/get_all_agents`);
             setAgents(response.data.agents)
         }
 
