@@ -43,6 +43,7 @@ class OllamaLLM(BaseLLM):
             level = "executing"
         )
 
+        # with and without overhead for tool handling
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
             try:
