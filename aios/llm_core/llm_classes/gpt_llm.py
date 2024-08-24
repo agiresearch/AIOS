@@ -36,7 +36,9 @@ class GPTLLM(BaseLLM):
                 parsed_tool_calls.append(
                     {
                         "name": function_name,
-                        "parameters": function_args
+                        "parameters": function_args,
+                        "type": tool_call.type,
+                        "id": tool_call.id
                     }
                 )
             return parsed_tool_calls
