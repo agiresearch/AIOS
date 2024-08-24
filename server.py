@@ -8,6 +8,10 @@ from aios.hooks.parser import useCompletion, string
 from aios.core.schema import CoreSchema
 from aios.hooks.types.parser import ParserQuery
 
+from aios.utils.utils import (
+    parse_global_args,
+)
+
 from pyopenagi.agents.interact import Interactor
 
 from state import useGlobalState
@@ -35,17 +39,22 @@ setInteracter(
     Interactor()
 )
 
-#initial
+parser = parse_global_args()
+args = parser.parse_args()
+
+# check if the llm information was specified in args
+
 setLLMState(
     useKernel(
-        llm_name='gpt-4o-mini',
-        max_gpu_memory=None,
-        eval_device=None,
-        max_new_tokens=256,
-        log_mode='console',
-        use_backend=None
+        llm_name=args.llm_name,
+        max_gpu_memory=args.max_gpu_memory,
+        eval_device=args.eval_device,
+        max_new_tokens=args.max_new_tokens,
+        log_mode=args.llm_kernel_log_mode,
+        use_backend=args.use_backend
     )
 )
+
 
 startScheduler, stopScheduler = useFIFOScheduler(
     llm=getLLMState(),
@@ -109,6 +118,7 @@ async def execute_agent(
             'response': response
         }
     except Exception as e:
+        print("Got an exception while executing agent: ", e)
         return {
             'success': False,
             'exception': f"{e}"
@@ -148,6 +158,3 @@ def cleanup():
     stopScheduler()
 
 atexit.register(cleanup)
-
-
-    

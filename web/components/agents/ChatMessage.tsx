@@ -9,6 +9,8 @@ import type { } from 'ldrs'
  
 import { StoryAgent, MathAgent } from '@/agents/build';
 
+import { serverUrl } from "@/lib/env";
+
 // export const agents = [
 //     {
 //         id: 'math',
@@ -94,7 +96,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 
     useEffect(() => {
         const _ = async (s: string, v: string) => {
-            const _submit = await axios.post('http://localhost:8000/add_agent', {
+            const _submit = await axios.post(`${serverUrl}/add_agent`, {
                 agent_name: v,
                 task_input: s    
             });
@@ -103,7 +105,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 
             await new Promise(resolve => setTimeout(resolve, 1050));
 
-            const response = await axios.get(`http://localhost:8000/execute_agent?pid=${_submit.data.pid}`)
+            const response = await axios.get(`${serverUrl}/execute_agent?pid=${_submit.data.pid}`)
 
             console.log(response.data)
 
