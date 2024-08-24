@@ -18,7 +18,10 @@ const Nightshade: React.FC<NightshadeProps> = () => {
         <Sidebar />
         <div className='w-[100vw] h-full bg-inherit flex flex-col'>
             <div className='h-[10%] w-full border-b-1 border-[rgba(153, 153, 153, 0.5)] flex flex-center items-center justify-start gap-x-5 px-3'>
-                <Image src={'https://avatars.githubusercontent.com/u/130198651?v=4'} width={460} height={460} alt={'AGI Research Logo'} className='h-[40%] aspect-square rounded-full' />
+                <div className="aspect-square h-4/5 rounded-full">
+                    <Image src={'https://avatars.githubusercontent.com/u/130198651?v=4'} width={460} height={460} alt={'AGI Research Logo'} className='h-full w-full rounded-full' />
+                </div>
+                
                 <h2 className="p-4 pl-[24px] text-2xl font-medium">AIOS</h2>
             </div>
             <div className='h-[90%] w-full flex flex-row'>
