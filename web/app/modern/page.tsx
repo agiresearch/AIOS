@@ -3,6 +3,7 @@
 import { Sidebar } from "@/components/modern/sidebar";
 import { Settings } from '@/components/modern/settings'
 import { Instruction } from "@/components/modern/instruction";
+import { Interface } from "@/components/modern/interface";
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image'
@@ -26,7 +27,7 @@ const Nightshade: React.FC<NightshadeProps> = () => {
             </div>
             <div className='h-[90%] w-full flex flex-row'>
                 <Instruction />
-                {/* <Interface secureHandler={useKey} /> */}
+                <Interface />
                 <Settings />
             </div>
         </div>
