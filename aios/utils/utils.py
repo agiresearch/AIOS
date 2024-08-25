@@ -23,6 +23,8 @@ def parse_global_args():
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
     parser.add_argument('--eval_device', type=str, help="Evaluation device")
     parser.add_argument('--max_new_tokens', type=int, default=256, help="The maximum number of new tokens for generation")
+    parser.add_argument("--agent_log_mode", type=str,default="console",choices=["console", "file"])
+    parser.add_argument("--scheduler_log_mode", type=str,default="console",choices=["console", "file"])
     parser.add_argument("--llm_kernel_log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--use_backend", type=str, default="ollama", choices=["ollama", "vllm"])
 
