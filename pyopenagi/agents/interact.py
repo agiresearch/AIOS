@@ -1,3 +1,6 @@
+# executable that you can use to upload to the agent hub and download from it
+# we also use this to check dependencies to run agents
+
 import argparse
 import json
 import subprocess
@@ -14,7 +17,7 @@ class Interactor:
         script_dir = os.path.dirname(script_path)
         self.base_folder = script_dir
 
-    def list_available_agents(self) -> list:
+    def list_available_agents(self) -> list[dict]:
         """List available agents in the database"""
         url = "https://openagi-beta.vercel.app/api/get_all_agents"
         response = requests.get(url)
@@ -47,6 +50,10 @@ class Interactor:
         encoded_config = response.get('config')
         encoded_code = response.get("code")
         encoded_reqs = response.get('dependencies')
+        
+        if (encoded_config is None) or (encoded_code is None) or (encoded_reqs is None):
+            print("Agent not found. Try uploading it first?")
+            return
 
         self.download_config(
             self.decompress(encoded_config),
@@ -173,10 +180,14 @@ class Interactor:
             file.write(code_data)
 
     def check_reqs_installed(self, agent):
-    # Run the `conda list` command and capture the output
+        # Run the `conda list` command and capture the output
         reqs_path = os.path.join(self.base_folder, agent, "meta_requirements.txt")
 
-        result = subprocess.run(['conda', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            result = subprocess.run(['conda', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except Exception:
+            result = subprocess.run(['pip', 'list', '--format=freeze'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
         # Decode the output from bytes to string
         with open(reqs_path, "r") as f:
             reqs = []
@@ -200,17 +211,20 @@ class Interactor:
 
         return True
 
-
     def install_agent_reqs(self, agent):
         reqs_path = os.path.join(self.base_folder, agent, "meta_requirements.txt")
-        subprocess.check_call([
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "-r",
-            reqs_path
-        ])
+        with open ("deplogs.txt", "a") as f:
+            subprocess.check_call([
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                reqs_path],
+                stdout=f,
+                stderr=f
+            )
+        print("Installing dependencies for agent: " + agent + ". Writing to deplogs.txt")
 
 def parse_args():
     parser = argparse.ArgumentParser()

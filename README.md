@@ -42,10 +42,21 @@ Git clone AIOS
 git clone https://github.com/agiresearch/AIOS.git
 ```
 ```bash
-conda create -n AIOS python=3.11
-source activate AIOS
 cd AIOS
+conda create -n venv python=3.10  # For Python 3.10
+# or
+conda create -n venv python=3.11  # For Python 3.11
+conda activate venv
 ```
+or if using pip
+```bash
+cd AIOS
+python -m venv venv
+source venv/bin/activate 
+cd ..
+cd ..
+```
+
 If you have GPU environments, you can install the dependencies using
 ```bash
 pip install -r requirements-cuda.txt
@@ -60,6 +71,8 @@ pip install -r requirements.txt
 >
 > For the config of LLM endpoints, multiple API keys may be required to set up.
 > Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
+
+Note: `main.py` is deprecated. Please use `exec.py` for the WebUI, or `agent_repl.py` for the TUI.
 
 #### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
@@ -173,7 +186,24 @@ or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Instruct --use_backend vllm --max_gpu_memory '{"0": "24GB"}' --eval_device "cuda:0" --max_new_tokens 256
 ```
 
+### Web Quickstart
+#### Requirements
 
+##### Python
+- Supported versions: **Python 3.8 - 3.11**
+##### Node
+- Supported versions: **LTS** support ONLY
+
+Run
+```
+python exec.py
+```
+which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
+
+Interact with all agents by using the `@` to tag an agent.
+
+### Supported Agent Framework
+- [autogen](https://github.com/microsoft/autogen)
 
 ### Supported LLM Endpoints
 - [OpenAI API](https://platform.openai.com/api-keys)

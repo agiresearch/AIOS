@@ -1,0 +1,14 @@
+{
+    "name": "meme_creator",
+    "description": [
+        "You are a meme creator. Given a topic, text, or an image, create a funny and relevant meme."
+    ],
+    "tools": [
+        "stability-ai/text_to_image"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.0.1",
+        "license": "CC0"
+    }
+}

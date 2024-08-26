@@ -13,14 +13,19 @@ class MathAgent(ReactAgent):
         return super().automatic_workflow()
 
     def manual_workflow(self):
+        # TODO: add pemdas calculation support in the future
         workflow = [
             {
-                "message": "identify the tool to call to do some pre-calculation. ",
-                "tool_use": ["wolfram_alpha", "currency_converter"]
+                "message": "Identify the problem type and relevant formulas",
+                "tool_use": ["wikipedia"]
             },
             {
-                "message":"perform mathematical operations using the pre-calculated result, which could involve addition, subtraction, multiplication, or division with other numeric values to solve the problem.",
-                "tool_use": None
+                "message": "Break down the problem into steps",
+                "tool_use": []
+            },
+            {
+                "message": "Provide final answer/solution",
+                "tool_use": []
             }
         ]
         return workflow

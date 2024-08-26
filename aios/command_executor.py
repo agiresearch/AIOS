@@ -1,6 +1,5 @@
 # This file parses commands given to simulator.py and evaluates them using agents
 
-
 # Facilitates interaction with agents
 
 
@@ -42,6 +41,8 @@ class Executor:
             return NotImplementedError
 
     def run_agent(self, agent_name, task_input):
+        """ run command """
+
         # self.agent_factory.activate_agent(agent_name, task_input)
         # print(agent_name, task_input)
 

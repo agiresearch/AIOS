@@ -80,6 +80,8 @@ class vLLM(BaseLLM):
             # print(response)
             result = response[0].outputs[0].text
 
+            print(f"***** Result: {result} *****")
+
             tool_calls = self.parse_tool_calls(
                 result
             )
@@ -110,7 +112,7 @@ class vLLM(BaseLLM):
 
             result = response[0].outputs[0].text
             if message_return_type == "json":
-                result = self.json_parse_format(result)
+                result = self.parse_json_format(result)
 
             agent_process.set_response(
                 Response(

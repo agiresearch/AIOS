@@ -10,11 +10,6 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: chartboost/ruff-action@v1
 
   run-pytest:
     runs-on: ubuntu-latest

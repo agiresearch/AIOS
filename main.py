@@ -1,24 +1,13 @@
 # This is a main script that tests the functionality of specific agents.
 # It requires no user input.
 
-
-from aios.scheduler.fifo_scheduler import FIFOScheduler
-
-
 from aios.utils.utils import (
     parse_global_args,
 )
 
-from pyopenagi.agents.agent_factory import AgentFactory
-
-from pyopenagi.agents.agent_process import AgentProcessFactory
-
 import warnings
 
-from aios.llm_core import llms
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -50,7 +39,7 @@ def main():
     use_backend = args.use_backend
     load_dotenv()
 
-    llm = llms.LLM(
+    llm = useKernel(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
@@ -61,59 +50,49 @@ def main():
 
     # run agents concurrently for maximum efficiency using a scheduler
 
-    scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
-
-    agent_process_factory = AgentProcessFactory()
-
-    agent_factory = AgentFactory(
-        agent_process_queue=scheduler.agent_process_queue,
-        agent_process_factory=agent_process_factory,
-        agent_log_mode=agent_log_mode,
+    startScheduler, stopScheduler = useFIFOScheduler(
+        llm=llm,
+        log_mode=scheduler_log_mode,
+        get_queue_message=None
     )
 
-    agent_thread_pool = ThreadPoolExecutor(max_workers=500)
-
-    scheduler.start()
-
-    # construct example agents
-
-    # travel_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/travel_agent", "I want to take a trip to Paris, France from July 4th to July 10th 2024 and I am traveling from New York City. Help me plan this trip."
-    # )
-
-    # math_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/math_agent",
-    #     "Convert 15000 MXN to Canadian Dollars and find out how much it would be in USD if 1 CAD equals 0.79 USD."
-    # )
-
-    academic_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/academic_agent",
-        "Summarize recent advancements in quantum computing from the past five years.",
+    submitAgent, awaitAgentExecution = useFactory(
+        log_mode=agent_log_mode,
+        max_workers=500
     )
 
-    # rec_agent = agent_thread_pool.submit(
-    #     agent_factory.run_agent,
-    #     "example/rec_agent", "Recommend two movies with groundbreaking visual effects released in the last fifteen years ranked between 1 and 20 with ratings above 8.0."
+    startScheduler()
+
+    # register your agents and submit agent tasks
+    """ submitAgent(
+        agent_name="example/academic_agent",
+        task_input="Find recent papers on the impact of social media on mental health in adolescents."
+    )
+    """
+
+    """
+    submitAgent(
+        agent_name="om-raheja/transcribe_agent",
+        task_input="listen to my yap for 5 seconds and write a response to it"
+    )
+    """
+
+    agent_id = submitAgent(
+        agent_name="example/academic_agent",
+        task_input="Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
+    )
+    # submitAgent(
+    #     agent_name="example/cocktail_mixlogist",
+    #     task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
+    # )
+    # submitAgent(
+    #     agent_name="example/cook_therapist",
+    #     task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
     # )
 
-    creation_agent = agent_thread_pool.submit(
-        agent_factory.run_agent,
-        "example/creation_agent", "Create an image of a lush jungle with an ancient temple, evoking a sense of mystery and adventure."
-    )
+    awaitAgentExecution(agent_id)
 
-    # agent_tasks = [travel_agent, rec_agent, creation_agent, math_agent, academic_agent]
-    # agent_tasks = [rec_agent]
-    # agent_tasks = [creation_agent]
-    agent_tasks = [academic_agent, creation_agent]
-    # agent_tasks = [creation_agent]
-
-    for r in as_completed(agent_tasks):
-        _res = r.result()
-
-    scheduler.stop()
+    stopScheduler()
 
     clean_cache(root_directory="./")
 

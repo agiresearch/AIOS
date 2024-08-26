@@ -149,7 +149,7 @@ class HfNativeLLM(BaseLLM):
                 }
             )
             if message_return_type == "json":
-                result = self.json_parse_format(result)
+                result = self.parse_json_format(result)
             agent_process.set_response(
                 Response(
                     response_message = result

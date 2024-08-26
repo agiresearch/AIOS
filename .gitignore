@@ -3,12 +3,13 @@ logs/
 .DS_Store
 .ipynb_checkpoints
 __pycache__
-src/storage/*.json
 /venv/
 .idea
-context_restoration/
-.pytest_cache
+**/context_restoration/**
+**/.pytest_cache/**
 .env
+temp/
+pyopenagi/environments/
 
 # IPython
 profile_default/
@@ -33,7 +34,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -76,6 +77,7 @@ cover/
 
 # Django stuff:
 *.log
+
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -92,7 +94,10 @@ docs/_build/
 
 # PyBuilder
 .pybuilder/
-target/
+
+**/target/**
+**/build/**
+**/output/**
 
 # Jupyter Notebook
 
@@ -154,3 +159,40 @@ dmypy.json
 cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
+/pyopenagi/environments/
+
+
+# dependencies
+**/node_modules/**
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+.next/
+/out/
+
+# production
+/build
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

@@ -3,18 +3,18 @@
 # instead of 0.05 seconds.
 
 from .base import BaseScheduler
+from aios.hooks.types.llm import QueueGetMessage
 
 from queue import Queue, Empty
 
+import traceback
 import time
 
-from pyopenagi.queues.llm_request_queue import LLMRequestQueue
-
 class FIFOScheduler(BaseScheduler):
-    def __init__(self, llm, log_mode):
+    def __init__(self, llm, log_mode, get_queue_message: QueueGetMessage):
         super().__init__(llm, log_mode)
         self.agent_process_queue = Queue()
-
+        self.get_queue_message = get_queue_message
 
     def run(self):
         while self.active:
@@ -23,15 +23,16 @@ class FIFOScheduler(BaseScheduler):
                 wait 1 second between each iteration at the minimum
                 if there is nothing received in a second, it will raise Empty
                 """
-                # agent_process = self.agent_process_queue.get(block=True, timeout=1)
-                agent_process = LLMRequestQueue.get_message()
-                # print("Get the request")
+
+                agent_process = self.get_queue_message()
                 agent_process.set_status("executing")
                 self.logger.log(f"{agent_process.agent_name} is executing. \n", "execute")
                 agent_process.set_start_time(time.time())
                 self.execute_request(agent_process)
             except Empty:
                 pass
+            except Exception:
+                traceback.print_exc()
 
     def execute_request(self, agent_process):
         self.llm.address_request(

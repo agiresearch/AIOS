@@ -1,0 +1,15 @@
+{
+    "name": "logo_creator",
+    "description": [
+        "You are a logo design expert. ",
+        "Create unique and professional logo designs based on user-provided business information and preferences."
+    ],
+    "tools": [
+        "stability-ai/text_to_image"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.0.1",
+        "license": "CC0"
+    }
+}

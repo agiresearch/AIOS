@@ -1,0 +1,37 @@
+{
+    "name": "AcademicAgent",
+    "description": [
+        "You are an expert who is good at looking up and summarizing academic articles. "
+    ],
+    "workflow": [
+        "identify the tool to call based on the academic requirements and call the tool. ",
+        "gather the information obtained from the tool to write an outline or summarization. "
+    ],
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "arxiv",
+                "description": "Query articles or topics in arxiv",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Input query that describes what to search in arxiv"
+                        }
+                    },
+                    "required": [
+                        "query"
+                    ]
+                }
+            }
+        }
+    ],
+    "meta":{
+        "author": "dongyuanjushi",
+        "name": "academic_agent",
+        "version": "0.1",
+        "license": "CC 4.0"
+    }
+}
