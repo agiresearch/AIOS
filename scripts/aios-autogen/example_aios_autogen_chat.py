@@ -1,16 +1,21 @@
 # This is a main script that tests the functionality of specific agents.
 # It requires no user input.
+import sys
+import os
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+import warnings
+from dotenv import load_dotenv
+from aios.sdk.autogen.adapater import prepare_autogen
+from aios.hooks.llm import useKernel, useFIFOScheduler
+from aios.utils.utils import delete_directories
 from aios.utils.utils import (
     parse_global_args,
 )
+from pyopenagi.agents.agent_process import AgentProcessFactory
 
-import warnings
-
-from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
-
-from aios.utils.utils import delete_directories
-from dotenv import load_dotenv
+from autogen import ConversableAgent, UserProxyAgent
 
 
 def clean_cache(root_directory):
@@ -34,7 +39,7 @@ def main():
     eval_device = args.eval_device
     max_new_tokens = args.max_new_tokens
     scheduler_log_mode = args.scheduler_log_mode
-    agent_log_mode = args.agent_log_mode
+    # agent_log_mode = args.agent_log_mode
     llm_kernel_log_mode = args.llm_kernel_log_mode
     use_backend = args.use_backend
     load_dotenv()
@@ -50,47 +55,28 @@ def main():
 
     # run agents concurrently for maximum efficiency using a scheduler
 
+    # scheduler = FIFOScheduler(llm=llm, log_mode=scheduler_log_mode)
+
     startScheduler, stopScheduler = useFIFOScheduler(
         llm=llm,
         log_mode=scheduler_log_mode,
         get_queue_message=None
     )
 
-    submitAgent, awaitAgentExecution = useFactory(
-        log_mode=agent_log_mode,
-        max_workers=500
-    )
+    process_factory = AgentProcessFactory()
+
+    prepare_autogen(process_factory)
+
+    # Create the agent that uses the LLM.
+    assistant = ConversableAgent("agent")
+
+    # Create the agent that represents the user in the conversation.
+    user_proxy = UserProxyAgent("user", code_execution_config=False)
 
     startScheduler()
 
-    # register your agents and submit agent tasks
-    """ submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Find recent papers on the impact of social media on mental health in adolescents."
-    )
-    """
-
-    """
-    submitAgent(
-        agent_name="om-raheja/transcribe_agent",
-        task_input="listen to my yap for 5 seconds and write a response to it"
-    )
-    """
-
-    agent_id = submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
-    )
-    # submitAgent(
-    #     agent_name="example/cocktail_mixlogist",
-    #     task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
-    # )
-    # submitAgent(
-    #     agent_name="example/cook_therapist",
-    #     task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
-    # )
-
-    awaitAgentExecution(agent_id)
+    # Let the assistant start the conversation.  It will end when the user types exit.
+    assistant.initiate_chat(user_proxy, message="How can I help you today?")
 
     stopScheduler()
 

@@ -36,7 +36,9 @@ class GPTLLM(BaseLLM):
                 parsed_tool_calls.append(
                     {
                         "name": function_name,
-                        "parameters": function_args
+                        "parameters": function_args,
+                        "type": tool_call.type,
+                        "id": tool_call.id
                     }
                 )
             return parsed_tool_calls
@@ -58,7 +60,7 @@ class GPTLLM(BaseLLM):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
-        time.sleep(2)
+        # time.sleep(2)
         try:
             response = self.model.chat.completions.create(
                 model=self.model_name,

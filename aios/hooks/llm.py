@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor, Future, as_completed
+from concurrent.futures import ThreadPoolExecutor, Future
 from typing import Any
 from random import randint
 
@@ -16,10 +16,7 @@ from aios.hooks.utils import generate_random_string
 from pyopenagi.agents.agent_factory import AgentFactory
 from pyopenagi.agents.agent_process import AgentProcessFactory
 
-import threading
-
 ids = []
-
 
 @validate(LLMParams)
 def useKernel(params: LLMParams) -> LLM:
@@ -108,6 +105,5 @@ def useFactory(params: FactoryParams):
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")
-
 
     return submitAgent, awaitAgentExecution
