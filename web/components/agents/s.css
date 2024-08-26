@@ -1,4 +1,29 @@
 .mention_input {
     display: 'flex';
     flex-grow: 1;
+    /* overflow-y: auto !important; */
+}
+
+.mention_input__suggestions {
+    background-color: #3c3937;
+    border-color: white;
+    border-radius: 1rem;
+    border-width:1px;
+    border-style: solid;
+}
+
+.mention_input__suggestions__list {
+    padding: 0.5rem;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}
+
+strong {
+    background-color: darkslategray !important;
+    color:aqua !important;
+    z-index: 5000;
+    /* border-radius: 0.5rem; */
+    /* color:brown; */
+    /* padding: 0.5rem; */
+    /* padding:0.25rem; */
 }
