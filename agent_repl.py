@@ -104,12 +104,12 @@ def main():
     startScheduler()
 
     try:
-        submitAgent(
+        agent_id = submitAgent(
             agent_name=f"example/{chosen_agent}",
             task_input=task
         )
 
-        awaitAgentExecution()
+        awaitAgentExecution(agent_id)
     except Exception as e:
         print(f"An error occurred: {str(e)}")
     finally:
