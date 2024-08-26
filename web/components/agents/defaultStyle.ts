@@ -1,16 +1,32 @@
 export default {
     control: {
-      backgroundColor: 'transparent',
+      backgroundColor: 'inherit',
       fontSize: 14,
       fontWeight: 'normal',
       width: '100%',
+      flexGrow: 1,
+      // padding: '0.5rem',
+      // borderColor: 'white',
+      // borderRadius: '1rem',
+      // borderWidth:'1px',
+      // borderStyle: 'solid',
+      // display: 'flex',
+      // alignItems: 'center',
+      // justifyContent: 'center',
+      // position: 'relative'
     },
+
+    // input: {
+    //   left: '50%',
+    //   top: '50%',
+    //   transform: 'translate(-50%, -50%)',
+    // },
   
     '&multiLine': {
       control: {
         fontFamily: 'monospace',
         // minHeight: 63,
-        maxHeight: 200
+        maxHeight: 150
       },
       highlighter: {
         padding: 3,
@@ -26,15 +42,16 @@ export default {
   
     suggestions: {
       list: {
-        backgroundColor: 'white',
+        backgroundColor: '#3c3937',
         border: '1px solid rgba(0,0,0,0.15)',
         fontSize: 14,
+        // color: 'white'
       },
       item: {
         padding: '5px 15px',
         borderBottom: '1px solid rgba(0,0,0,0.15)',
         '&focused': {
-          backgroundColor: '#cee4e5',
+          backgroundColor: '#4acb91',
         },
       },
     },

@@ -10,7 +10,9 @@ import openai
 from pyopenagi.utils.chat_template import Response
 import json
 
-class GPTLLM(BaseLLM):
+import os
+
+class GroqLLM(BaseLLM):
 
     def __init__(self, llm_name: str,
                  max_gpu_memory: dict = None,
@@ -24,7 +26,10 @@ class GPTLLM(BaseLLM):
                          log_mode)
 
     def load_llm_and_tokenizer(self) -> None:
-        self.model = OpenAI()
+        self.model = OpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key=os.environ.get("GROQ_API_KEY")
+        )
         self.tokenizer = None
 
     def parse_tool_calls(self, tool_calls):
@@ -36,9 +41,7 @@ class GPTLLM(BaseLLM):
                 parsed_tool_calls.append(
                     {
                         "name": function_name,
-                        "parameters": function_args,
-                        "type": tool_call.type,
-                        "id": tool_call.id
+                        "parameters": function_args
                     }
                 )
             return parsed_tool_calls
@@ -49,7 +52,8 @@ class GPTLLM(BaseLLM):
             temperature=0.0
         ):
         # ensures the model is the current one
-        assert re.search(r'gpt', self.model_name, re.IGNORECASE)
+        
+        # assert re.search(r'gpt', self.model_name, re.IGNORECASE)
 
         """ wrapper around openai api """
         agent_process.set_status("executing")
@@ -60,7 +64,7 @@ class GPTLLM(BaseLLM):
             f"{agent_process.agent_name} is switched to executing.\n",
             level = "executing"
         )
-        # time.sleep(2)
+        time.sleep(2)
         try:
             response = self.model.chat.completions.create(
                 model=self.model_name,
