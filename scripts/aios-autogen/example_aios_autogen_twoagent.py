@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 import warnings
 from dotenv import load_dotenv
-from aios.sdk.autogen.adapater import prepare_autogen
+from aios.sdk.autogen.adapter import prepare_autogen
 from aios.hooks.llm import useKernel, useFIFOScheduler
 from aios.utils.utils import delete_directories
 from aios.utils.utils import (

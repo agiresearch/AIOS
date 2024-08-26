@@ -30,6 +30,7 @@ Documentation
    get_started/installation
    get_started/quickstart
    get_started/llm/llm_index
+   get_started/agent_framework/framework_index
 
 .. toctree::
    :maxdepth: 2
