@@ -52,7 +52,8 @@ class GroqLLM(BaseLLM):
             temperature=0.0
         ):
         # ensures the model is the current one
-        assert re.search(r'gpt', self.model_name, re.IGNORECASE)
+        
+        # assert re.search(r'gpt', self.model_name, re.IGNORECASE)
 
         """ wrapper around openai api """
         agent_process.set_status("executing")
