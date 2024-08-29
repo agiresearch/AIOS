@@ -14,8 +14,8 @@ try:
 
 except ImportError:
     raise ImportError(
-        "Could not import autogen python package. "
-        "Please install it with `pip install pyautogen`."
+        "Could not import interpreter python package. "
+        "Please install it with `open-interpreter`."
     )
 
 logger = SDKLogger("Interpreter Adapter")
@@ -23,12 +23,12 @@ logger = SDKLogger("Interpreter Adapter")
 aios_call = None
 
 
-def prepare_interpreter(agent_process_factory: AgentProcessFactory = None):
+def prepare_interpreter(agent_process_factory: AgentProcessFactory):
     """Prepare the interpreter for running LLM in aios.
 
     Args:
-        agent_process_factory (AgentProcessFactory, optional):
-            Used to create agent processes. Defaults to None.
+        agent_process_factory (AgentProcessFactory):
+            Used to create agent processes.
     """
 
     try:

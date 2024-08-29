@@ -7,12 +7,11 @@ import warnings
 from dotenv import load_dotenv
 from aios.sdk.interpreter.adapter import prepare_interpreter
 from aios.hooks.llm import useKernel, useFIFOScheduler
-from aios.utils.utils import delete_directories
 from aios.utils.utils import (
     parse_global_args,
+    delete_directories
 )
 from pyopenagi.agents.agent_process import AgentProcessFactory
-
 from interpreter import interpreter
 
 
