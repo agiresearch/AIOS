@@ -17,7 +17,7 @@ from aios.sdk.autogen.client_adapter import (
     adapter_client_extract_text_or_completion_object
 )
 
-from aios.utils.logger import AgentLogger
+from aios.utils.logger import SDKLogger
 
 try:
     from autogen import (
@@ -30,7 +30,7 @@ except ImportError:
         "Please install it with `pip install pyautogen`."
     )
 
-logger = AgentLogger("Adapter")
+logger = SDKLogger("Autogen Adapter")
 
 
 def prepare_autogen(agent_process_factory: Optional[AgentProcessFactory] = None):
@@ -59,4 +59,4 @@ def prepare_autogen(agent_process_factory: Optional[AgentProcessFactory] = None)
     ConversableAgent.update_tool_signature = adapter_update_tool_signature
     ConversableAgent.__init__ = adapter_autogen_agent_init
 
-    logger.log("Autogen prepare success", "info")
+    logger.log("Autogen prepare success\n", "info")

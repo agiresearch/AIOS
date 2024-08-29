@@ -28,7 +28,7 @@ class CallCore:
     def __init__(self,
                  agent_name,
                  agent_process_factory,
-                 log_mode: str
+                 log_mode: str = "console"
                  ):
         self.agent_name = agent_name
         self.agent_process_factory = agent_process_factory
