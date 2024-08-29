@@ -4,6 +4,7 @@ from .gpt_llm import GPTLLM
 from .gemini_llm import GeminiLLM
 from .bed_rock import BedrockLLM
 from .claude_llm import ClaudeLLM
+from .groq_llm import GroqLLM
 
 #used for closed LLM model registry
 MODEL_REGISTRY = {
@@ -22,5 +23,10 @@ MODEL_REGISTRY = {
 
     # claude
     'claude-3-5-sonnet-20240620': ClaudeLLM,
-    'bedrock/anthropic.claude-3-haiku-20240307-v1:0': BedrockLLM
+    'bedrock/anthropic.claude-3-haiku-20240307-v1:0': BedrockLLM,
+
+    #Groq
+    'llama3-groq-8b-8192-tool-use-preview': GroqLLM,
+    'llama3-70b-8192': GroqLLM,
+    'mixtral-8x7b-32768' : GroqLLM
 }

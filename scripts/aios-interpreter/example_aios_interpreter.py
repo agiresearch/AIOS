@@ -1,20 +1,18 @@
-# This is a main script that tests the functionality of specific agents.
-# It requires no user input.
 import sys
 import os
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 
 import warnings
 from dotenv import load_dotenv
-from aios.sdk.autogen.adapter import prepare_autogen
+from aios.sdk.interpreter.adapter import prepare_interpreter
 from aios.hooks.llm import useKernel, useFIFOScheduler
-from aios.utils.utils import delete_directories
 from aios.utils.utils import (
     parse_global_args,
+    delete_directories
 )
-from autogen import ConversableAgent
 from pyopenagi.agents.agent_process import AgentProcessFactory
+from interpreter import interpreter
 
 
 def clean_cache(root_directory):
@@ -64,28 +62,16 @@ def main():
 
     process_factory = AgentProcessFactory()
 
-    prepare_autogen(process_factory)
-
-    cathy = ConversableAgent(
-        "cathy",
-        system_message="Your name is Cathy and you are a part of a duo of comedians.",
-        human_input_mode="NEVER",  # Never ask for human input.
-    )
-
-    joe = ConversableAgent(
-        "joe",
-        system_message="Your name is Joe and you are a part of a duo of comedians.",
-        human_input_mode="NEVER",  # Never ask for human input.
-    )
+    prepare_interpreter(process_factory)
 
     startScheduler()
 
-    # Let the assistant start the conversation.  It will end when the user types exit.
-    result = joe.initiate_chat(cathy, message="How can I help you today?", max_turns=2)
+    # interpreter.chat("Calculate 10 * 20 / 2")
+    # interpreter.chat("Plot the sin function")
+    # interpreter.chat("Use the Euclidean algorithm to calculate the greatest common divisor (GCD) of 78782 and 64.")
+    interpreter.chat("In a group of 23 people, the probability of at least two having the same birthday is greater than 50%")
 
     stopScheduler()
-
-    print(result)
 
     clean_cache(root_directory="./")
 

@@ -52,7 +52,7 @@ or if using pip
 ```bash
 cd AIOS
 python -m venv venv
-source venv/bin/activate 
+source venv/bin/activate
 cd ..
 cd ..
 ```
@@ -201,6 +201,10 @@ python exec.py
 which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
 
 Interact with all agents by using the `@` to tag an agent.
+
+### Supported Agent Framework
+- [autogen](https://github.com/microsoft/autogen)
+- [open-interpreter](https://github.com/OpenInterpreter/open-interpreter)
 
 ### Supported LLM Endpoints
 - [OpenAI API](https://platform.openai.com/api-keys)

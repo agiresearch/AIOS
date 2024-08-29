@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 import warnings
 from dotenv import load_dotenv
-from aios.sdk.autogen.adapater import prepare_autogen
+from aios.sdk.autogen.adapter import prepare_autogen
 from aios.hooks.llm import useKernel, useFIFOScheduler
 from aios.utils.utils import delete_directories
 from aios.utils.utils import (
@@ -68,7 +68,7 @@ def main():
     prepare_autogen(process_factory)
 
     # Create the agent that uses the LLM.
-    assistant = ConversableAgent("agent")
+    assistant = ConversableAgent("agent", agent_process_factory=process_factory)
 
     # Create the agent that represents the user in the conversation.
     user_proxy = UserProxyAgent("user", code_execution_config=False)
