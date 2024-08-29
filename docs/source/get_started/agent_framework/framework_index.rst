@@ -10,4 +10,4 @@ Below are the frameworks currently supported
    :caption: Supported Agent Framework
 
    autogen
-
+   open_interpreter
