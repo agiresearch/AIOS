@@ -1,7 +1,7 @@
 import argparse
 from typing import List, Tuple
 
-from aios.utils.utils import delete_directories
+from aios.utils.utils import delete_directories, parse_global_args
 from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
 from dotenv import load_dotenv
 import warnings
@@ -58,21 +58,16 @@ def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
 def get_user_task() -> str:
     return input("Enter the task for the agent: ")
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Interactive Agent Selector")
-    parser.add_argument("--llm_name", type=str, default="ollama/llama3.1:latest", help="Name of the LLM to use")
-    parser.add_argument("--max_gpu_memory", type=str, default=None, help="Maximum GPU memory to use")
-    parser.add_argument("--eval_device", type=str, default=None, help="Device to use for evaluation")
-    parser.add_argument("--max_new_tokens", type=int, default=512, help="Maximum number of new tokens to generate")
-    parser.add_argument("--scheduler_log_mode", type=str, default="console", help="Log mode for the scheduler")
-    parser.add_argument("--agent_log_mode", type=str, default="console", help="Log mode for the agent")
-    parser.add_argument("--llm_kernel_log_mode", type=str, default="console", help="Log mode for the LLM kernel")
-    parser.add_argument("--use_backend", type=str, default=None, help="Backend to use")
-    return parser.parse_args()
-
 def main():
     warnings.filterwarnings("ignore")
-    args = parse_args()
+    parser = parse_global_args()
+    args = parser.parse_args()
+
+    # try to load pyfzf
+    try:
+        import pyfzf
+    except ImportError:
+        print("pyfzf is not installed. Please install it using 'pip install pyfzf'")
 
     load_dotenv()
 
