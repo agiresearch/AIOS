@@ -1,8 +1,10 @@
 import argparse
 from typing import List, Tuple
 
-from aios.utils.utils import delete_directories, parse_global_args
+from aios.utils.utils import delete_directories, humanify_agent, parse_global_args
 from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
+from pyopenagi.agents.interact import Interactor
+
 from dotenv import load_dotenv
 import warnings
 
@@ -14,6 +16,16 @@ def clean_cache(root_directory):
         "context_restoration",
     }
     delete_directories(root_directory, targets)
+
+def get_all_agents() -> dict[str, str]:
+    interactor = Interactor()
+    agents = interactor.list_available_agents()
+    agent_names = {}
+    for a in agents:
+        agent_names[humanify_agent(a["agent"])] = a["agent"]
+
+    return agent_names
+
 
 def get_agent_list() -> List[Tuple[str, str]]:
     return [
@@ -63,11 +75,6 @@ def main():
     parser = parse_global_args()
     args = parser.parse_args()
 
-    # try to load pyfzf
-    try:
-        import pyfzf
-    except ImportError:
-        print("pyfzf is not installed. Please install it using 'pip install pyfzf'")
 
     load_dotenv()
 
@@ -91,16 +98,27 @@ def main():
         max_workers=500
     )
 
-    agents = get_agent_list()
-    display_agents(agents)
-    chosen_agent, _ = get_user_choice(agents)
-    task = get_user_task()
 
+    # try to load pyfzf
+    chosen_agent = ""
+    try:
+        from pyfzf.pyfzf import FzfPrompt
+        fzf = FzfPrompt()
+        agents = get_all_agents()
+        chosen_agent = agents[fzf.prompt(list(agents.keys()))[0]]
+
+    except ImportError:
+        print("pyfzf is not installed. Falling back to default reader.")
+        agents = get_agent_list()
+        display_agents(agents)
+        chosen_agent, _ = "example/" + get_user_choice(agents)
+
+    task = get_user_task()
     startScheduler()
 
     try:
         agent_id = submitAgent(
-            agent_name=f"example/{chosen_agent}",
+            agent_name=chosen_agent,
             task_input=task
         )
 
