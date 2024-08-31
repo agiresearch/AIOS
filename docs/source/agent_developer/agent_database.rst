@@ -10,6 +10,8 @@ Interact with the database to
 
 Source https://github.com/agiresearch/AIOS/blob/main/pyopenagi/agents/interact.py.
 
+If you are creating a PR with an example agent, please upload it as well.
+
 You can download agents with the following command:
 
 .. code-block:: bash
