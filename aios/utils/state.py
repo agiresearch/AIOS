@@ -23,7 +23,7 @@ def useGlobalState():
 
     def getGlobalState():
         return state.attribute
-    
+
     def setCallback(cb: Callable[[Any],Any]):
         state.set_callback(cb)
 
