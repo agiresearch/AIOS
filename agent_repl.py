@@ -27,34 +27,10 @@ def get_all_agents() -> dict[str, str]:
     return agent_names
 
 
-def get_agent_list() -> List[Tuple[str, str]]:
-    return [
-        ("academic_agent", "Research academic topics"),
-        ("travel_planner_agent", "Plan trips and vacations"),
-        ("creation_agent", "Create content for social media"),
-        ("cocktail_mixologist", "Design cocktails"),
-        ("cook_therapist", "Develop recipes and meal plans"),
-        ("fashion_stylist", "Design outfits and styles"),
-        ("festival_card_designer", "Design festival cards"),
-        ("fitness_trainer", "Create workout plans"),
-        ("game_agent", "Recommend games"),
-        ("interior_decorator", "Design interior spaces"),
-        ("language_tutor", "Provide language learning assistance"),
-        ("logo_creator", "Design logos"),
-        ("math_agent", "Solve mathematical problems"),
-        ("meme_creator", "Create memes"),
-        ("music_composer", "Compose music"),
-        ("plant_care_assistant", "Provide plant care advice"),
-        ("rec_agent", "Recommend movies and TV shows"),
-        ("story_teller", "Create short stories"),
-        ("tech_support_agent", "Provide tech support"),
-        ("travel_agent", "Plan travel itineraries")
-    ]
-
-def display_agents(agents: List[Tuple[str, str]]):
+def display_agents(agents: List[str]):
     print("Available Agents:")
-    for i, (name, description) in enumerate(agents, 1):
-        print(f"{i}. {name}: {description}")
+    for i, (name) in enumerate(agents, 1):
+        print(f"{i}. {name}")
 
 def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
     while True:
@@ -98,37 +74,73 @@ def main():
         max_workers=500
     )
 
-
-    # try to load pyfzf
-    chosen_agent = ""
-    try:
-        from pyfzf.pyfzf import FzfPrompt
-        fzf = FzfPrompt()
-        agents = get_all_agents()
-        chosen_agent = agents[fzf.prompt(list(agents.keys()))[0]]
-
-    except ImportError:
-        print("pyfzf is not installed. Falling back to default reader.")
-        agents = get_agent_list()
-        display_agents(agents)
-        chosen_agent, _ = "example/" + get_user_choice(agents)
-
-    task = get_user_task()
     startScheduler()
 
+
+    print("""
+            \033c
+            Welcome to the Agent REPL.
+            Please select an agent by pressing tab.
+            To exit, press Ctrl+C.
+          """)
+
+    # check for getch
+    getch = None
     try:
-        agent_id = submitAgent(
-            agent_name=chosen_agent,
-            task_input=task
-        )
+        from getch import getch
+    except ImportError:
+        print("""
+The terminal will NOT look pretty without getch. Please install it.
+pip install getch
+              """)
+        getch = input
 
-        awaitAgentExecution(agent_id)
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-    finally:
+    # shell loop
+    try: 
+        while True:
+            chosen_agent = ""
+            agents = get_all_agents()
+
+            # shell prompt
+            print(f"[{args.llm_name}]> ", end="")
+
+            # check if the user put in a tab
+            if getch() != "\t":
+                continue
+
+
+
+            try:
+                from pyfzf.pyfzf import FzfPrompt
+                fzf = FzfPrompt()
+
+                selected = fzf.prompt(list(agents.keys()))
+
+                if (len(selected) == 0):
+                    print("No agent selected. Please try again.")
+                    continue
+                
+                chosen_agent = agents[selected[0]]
+
+            except ImportError:
+                print("pyfzf is not installed. Falling back to default reader.")
+                display_agents(list(agents.keys()))
+                chosen_agent, _ = "example/" + get_user_choice(agents)
+
+            task = get_user_task()
+
+            try:
+                agent_id = submitAgent(
+                    agent_name=chosen_agent,
+                    task_input=task
+                )
+
+                awaitAgentExecution(agent_id)
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+    except KeyboardInterrupt:
         stopScheduler()
-
-    clean_cache(root_directory="./")
+        clean_cache(root_directory="./")
 
 if __name__ == "__main__":
     main()
