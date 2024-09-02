@@ -12,7 +12,7 @@ class TranscribeAgent(ReactAgent):
         workflow = [
                 {
                     "message": "figure out what to do with the audio",
-                    "tool_use": [ "transcriber"],
+                    "tool_use": [ "transcriber/transcriber"],
                     },
                 {
                     "message": "organize the information and respond to the user",

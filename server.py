@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
 from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
 
-from aios.hooks.parser import useCompletion, string
+from aios.hooks.parser import string
 from aios.core.schema import CoreSchema
 from aios.hooks.types.parser import ParserQuery
 
@@ -14,7 +14,7 @@ from aios.utils.utils import (
 
 from pyopenagi.agents.interact import Interactor
 
-from state import useGlobalState
+from aios.utils.state import useGlobalState
 from dotenv import load_dotenv
 import atexit
 
@@ -99,17 +99,17 @@ async def set_kernel(req: LLMParams):
 
 @app.post("/add_agent")
 async def add_agent(
-    req: AgentSubmitDeclaration, 
-    factory: dict = Depends(getFactory), 
+    req: AgentSubmitDeclaration,
+    factory: dict = Depends(getFactory),
 ):
     try:
         submit_agent = factory.get('submit')
-        
+
         process_id = submit_agent(
             agent_name=req.agent_name,
             task_input=req.task_input
         )
-        
+
         return {
             'success': True,
             'agent': req.agent_name,
@@ -120,7 +120,7 @@ async def add_agent(
             'success': False,
             'exception': f"{e}"
         }
-    
+
 @app.get("/execute_agent")
 async def execute_agent(
     pid: int = Query(..., description="The process ID"),
@@ -128,7 +128,7 @@ async def execute_agent(
 ):
     try:
         response = factory.get('execute')(pid)
-        
+
         return {
             'success': True,
             'response': response
@@ -139,7 +139,7 @@ async def execute_agent(
             'success': False,
             'exception': f"{e}"
         }
-    
+
 @app.post("/agent_parser")
 async def parse_query(
     req: ParserQuery
@@ -157,7 +157,7 @@ async def get_all_agents(
     def transform_string(input_string: str):
         last_part = input_string.split('/')[-1].replace('_', ' ')
         return ' '.join(word.capitalize() for word in last_part.split())
-    
+
     agents = interactor.list_available_agents()
     agent_names = [transform_string(a.get('agent')) for a in agents]
 
@@ -165,7 +165,7 @@ async def get_all_agents(
         'id': agents[i].get('agent'),
         'display': agent_names[i]
     } for i in range(len(agents))]
-    
+
     return {
         'agents': _
     }
