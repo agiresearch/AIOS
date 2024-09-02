@@ -18,6 +18,7 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
+- **[2024-09-01]** 🛠️ AIOS supports various agent creation frameworks: ReAct, Reflexion, AutoGen, Open Interpreter and more.
 - **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
 - **[2024-07-03]** 🛠️ AIOS Github issue template is now available [template](https://github.com/agiresearch/AIOS/issues/new/choose).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
