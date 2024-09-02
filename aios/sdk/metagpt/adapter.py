@@ -1,4 +1,4 @@
-# Modify BaseLLM method in metagpt
+# Modify BaseLLM method in metagpt, create fake configuration file
 # Adapte metagpt to run LLM in aios
 from typing import Union, Optional
 from aios.utils.logger import SDKLogger
@@ -24,6 +24,16 @@ aios_call = None
 
 
 def prepare_metagpt(agent_process_factory: AgentProcessFactory):
+    """
+    Prepare the metagpt module to run on aios.
+
+    This function does the following:
+    1. Create a fake configuration file with effects similar to `metagpt --init-config`
+    2. Replace the llm used in metagpt with aios_call
+
+    Args:
+        agent_process_factory (AgentProcessFactory): The factory that creates the agent processes
+    """
     # create fake configuration file
     prepare_metagpt_config()
 

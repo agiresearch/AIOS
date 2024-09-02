@@ -12,8 +12,8 @@ from aios.utils.utils import (
     delete_directories
 )
 from pyopenagi.agents.agent_process import AgentProcessFactory
-from metagpt.software_company import generate_repo, ProjectRepo
-
+import asyncio
+from metagpt.roles.di.data_interpreter import DataInterpreter
 
 def clean_cache(root_directory):
     targets = {
@@ -66,8 +66,11 @@ def main():
 
     startScheduler()
 
-    repo: ProjectRepo = generate_repo("Create a 2048 game")  # or ProjectRepo("<path>")
-    print(repo)  # it will print the repo structure with files
+    async def main():
+        di = DataInterpreter()
+        await di.run("Run data analysis on sklearn Iris dataset, include a plot")
+
+    asyncio.run(main())  # or await main() in a jupyter notebook setting
 
     stopScheduler()
 
