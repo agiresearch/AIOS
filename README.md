@@ -203,10 +203,11 @@ which should open up `https://localhost:3000` (if it doesn't, navigate to that o
 
 Interact with all agents by using the `@` to tag an agent.
 
-### Supported Agent Framework
-- [autogen](https://github.com/microsoft/autogen)
-- [open-interpreter](https://github.com/OpenInterpreter/open-interpreter)
-- [metagpt](https://github.com/geekan/MetaGPT?tab=readme-ov-file)
+### Supported Agent Frameworks
+- [OpenAGI](https://github.com/agiresearch/openagi)
+- [AutoGen](https://github.com/microsoft/autogen)
+- [Open-Interpreter](https://github.com/OpenInterpreter/open-interpreter)
+- [MetaGPT](https://github.com/geekan/MetaGPT?tab=readme-ov-file)
 
 ### Supported LLM Endpoints
 - [OpenAI API](https://platform.openai.com/api-keys)
