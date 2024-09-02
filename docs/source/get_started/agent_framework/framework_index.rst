@@ -11,3 +11,4 @@ Below are the frameworks currently supported
 
    autogen
    open_interpreter
+   metagpt

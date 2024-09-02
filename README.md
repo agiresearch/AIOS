@@ -206,6 +206,7 @@ Interact with all agents by using the `@` to tag an agent.
 ### Supported Agent Framework
 - [autogen](https://github.com/microsoft/autogen)
 - [open-interpreter](https://github.com/OpenInterpreter/open-interpreter)
+- [metagpt](https://github.com/geekan/MetaGPT?tab=readme-ov-file)
 
 ### Supported LLM Endpoints
 - [OpenAI API](https://platform.openai.com/api-keys)
