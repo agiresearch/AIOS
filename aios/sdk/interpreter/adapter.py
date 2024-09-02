@@ -15,7 +15,7 @@ try:
 except ImportError:
     raise ImportError(
         "Could not import interpreter python package. "
-        "Please install it with `open-interpreter`."
+        "Please install it with `pip install open-interpreter`."
     )
 
 logger = SDKLogger("Interpreter Adapter")
