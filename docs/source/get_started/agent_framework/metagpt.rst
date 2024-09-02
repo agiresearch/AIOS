@@ -51,6 +51,12 @@ or use Data Interpreter to write code:
 Don't forget to start the scheduler so that AIOS can manage llm call.
 Details and More examples can be found in https://github.com/agiresearch/AIOS/tree/main/scripts/aios-metagpt
 
+MetaGPT requires a longer output context to generate longer code,
+so you may need to use ``--max_new_tokens`` to set a larger output token length.
+
+.. code-block:: shell
+
+    python scripts/aios-metagpt/example_aios_metagpt.py --llm_name gpt-4o-mini --max_new_tokens 4000
 
 prepare_metagpt()
 ---------------------
