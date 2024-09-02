@@ -1,8 +1,10 @@
 import argparse
 from typing import List, Tuple
 
-from aios.utils.utils import delete_directories
+from aios.utils.utils import delete_directories, humanify_agent, parse_global_args
 from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
+from pyopenagi.agents.interact import Interactor
+
 from dotenv import load_dotenv
 import warnings
 
@@ -15,34 +17,20 @@ def clean_cache(root_directory):
     }
     delete_directories(root_directory, targets)
 
-def get_agent_list() -> List[Tuple[str, str]]:
-    return [
-        ("academic_agent", "Research academic topics"),
-        ("travel_planner_agent", "Plan trips and vacations"),
-        ("creation_agent", "Create content for social media"),
-        ("cocktail_mixologist", "Design cocktails"),
-        ("cook_therapist", "Develop recipes and meal plans"),
-        ("fashion_stylist", "Design outfits and styles"),
-        ("festival_card_designer", "Design festival cards"),
-        ("fitness_trainer", "Create workout plans"),
-        ("game_agent", "Recommend games"),
-        ("interior_decorator", "Design interior spaces"),
-        ("language_tutor", "Provide language learning assistance"),
-        ("logo_creator", "Design logos"),
-        ("math_agent", "Solve mathematical problems"),
-        ("meme_creator", "Create memes"),
-        ("music_composer", "Compose music"),
-        ("plant_care_assistant", "Provide plant care advice"),
-        ("rec_agent", "Recommend movies and TV shows"),
-        ("story_teller", "Create short stories"),
-        ("tech_support_agent", "Provide tech support"),
-        ("travel_agent", "Plan travel itineraries")
-    ]
+def get_all_agents() -> dict[str, str]:
+    interactor = Interactor()
+    agents = interactor.list_available_agents()
+    agent_names = {}
+    for a in agents:
+        agent_names[humanify_agent(a["agent"])] = a["agent"]
 
-def display_agents(agents: List[Tuple[str, str]]):
+    return agent_names
+
+
+def display_agents(agents: List[str]):
     print("Available Agents:")
-    for i, (name, description) in enumerate(agents, 1):
-        print(f"{i}. {name}: {description}")
+    for i, (name) in enumerate(agents, 1):
+        print(f"{i}. {name}")
 
 def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
     while True:
@@ -58,21 +46,11 @@ def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
 def get_user_task() -> str:
     return input("Enter the task for the agent: ")
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Interactive Agent Selector")
-    parser.add_argument("--llm_name", type=str, default="ollama/llama3.1:latest", help="Name of the LLM to use")
-    parser.add_argument("--max_gpu_memory", type=str, default=None, help="Maximum GPU memory to use")
-    parser.add_argument("--eval_device", type=str, default=None, help="Device to use for evaluation")
-    parser.add_argument("--max_new_tokens", type=int, default=512, help="Maximum number of new tokens to generate")
-    parser.add_argument("--scheduler_log_mode", type=str, default="console", help="Log mode for the scheduler")
-    parser.add_argument("--agent_log_mode", type=str, default="console", help="Log mode for the agent")
-    parser.add_argument("--llm_kernel_log_mode", type=str, default="console", help="Log mode for the LLM kernel")
-    parser.add_argument("--use_backend", type=str, default=None, help="Backend to use")
-    return parser.parse_args()
-
 def main():
     warnings.filterwarnings("ignore")
-    args = parse_args()
+    parser = parse_global_args()
+    args = parser.parse_args()
+
 
     load_dotenv()
 
@@ -96,26 +74,73 @@ def main():
         max_workers=500
     )
 
-    agents = get_agent_list()
-    display_agents(agents)
-    chosen_agent, _ = get_user_choice(agents)
-    task = get_user_task()
-
     startScheduler()
 
+
+    print("""
+            \033c
+            Welcome to the Agent REPL.
+            Please select an agent by pressing tab.
+            To exit, press Ctrl+C.
+          """)
+
+    # check for getch
+    getch = None
     try:
-        agent_id = submitAgent(
-            agent_name=f"example/{chosen_agent}",
-            task_input=task
-        )
+        from getch import getch
+    except ImportError:
+        print("""
+The terminal will NOT look pretty without getch. Please install it.
+pip install getch
+              """)
+        getch = input
 
-        awaitAgentExecution(agent_id)
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-    finally:
+    # shell loop
+    try: 
+        while True:
+            chosen_agent = ""
+            agents = get_all_agents()
+
+            # shell prompt
+            print(f"[{args.llm_name}]> ", end="")
+
+            # check if the user put in a tab
+            if getch() != "\t":
+                continue
+
+
+
+            try:
+                from pyfzf.pyfzf import FzfPrompt
+                fzf = FzfPrompt()
+
+                selected = fzf.prompt(list(agents.keys()))
+
+                if (len(selected) == 0):
+                    print("No agent selected. Please try again.")
+                    continue
+                
+                chosen_agent = agents[selected[0]]
+
+            except ImportError:
+                print("pyfzf is not installed. Falling back to default reader.")
+                display_agents(list(agents.keys()))
+                chosen_agent, _ = "example/" + get_user_choice(agents)
+
+            task = get_user_task()
+
+            try:
+                agent_id = submitAgent(
+                    agent_name=chosen_agent,
+                    task_input=task
+                )
+
+                awaitAgentExecution(agent_id)
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
+    except KeyboardInterrupt:
         stopScheduler()
-
-    clean_cache(root_directory="./")
+        clean_cache(root_directory="./")
 
 if __name__ == "__main__":
     main()
