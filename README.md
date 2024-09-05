@@ -41,21 +41,18 @@ Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) f
 Git clone AIOS
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-```
-```bash
 cd AIOS
-conda create -n venv python=3.10  # For Python 3.10
-# or
-conda create -n venv python=3.11  # For Python 3.11
-conda activate venv
 ```
-or if using pip
+Create venv environment (recommended)
 ```bash
-cd AIOS
 python -m venv venv
 source venv/bin/activate
-cd ..
-cd ..
+```
+or create conda environment
+```bash
+conda create -n venv python=3.10  # For Python 3.10
+conda create -n venv python=3.11  # For Python 3.11
+conda activate venv
 ```
 
 If you have GPU environments, you can install the dependencies using
