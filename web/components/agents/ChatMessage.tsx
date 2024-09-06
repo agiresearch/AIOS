@@ -134,7 +134,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             {agentName != 'user' && <CardBody className='p-2 flex flex-col gap-y-2'>
                 <div className='flex flex-row gap-x-3 items-center'>
                     {/* {AgentMapping[agentName].icon} */}
-                    <Calculator color={'green'} />
+                    <Calculator color={'white'} />
 
                     {/* <p className='text-2xl font-semibold'>{AgentMapping[agentName].displayName}</p> */}
                     <p className='text-2xl font-semibold'>{agentName}</p>
@@ -147,8 +147,8 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                     {response != '' ? <TypeAnimation
                         sequence={[response]}
                         wrapper="span"
-                        speed={50}
-                        style={{ fontSize: '1.125rem', lineHeight: '1.75rem', display: 'inline-block' }}
+                        speed={99}
+                        style={{ fontSize: '1.125rem', lineHeight: '3.75rem', display: 'inline-block' }}
                         repeat={0}
                         cursor={false}
                     /> :
@@ -157,13 +157,13 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                             stroke="4"
                             speed="3.5"
                             // color={AgentMapping[agentName].color}
-                            color={'green'}
+                            color={'white'}
                         ></l-hatch>}
                 </div>
             </CardBody>}
             {agentName == 'user' && <CardBody className='p-2 flex flex-col gap-y-2'>
                 <div className='flex flex-row gap-x-3 items-center'>
-                    <User2 color={'blue'} />
+                    <User2 color={'white'} />
                     <p className='text-2xl font-semibold'>User</p>
                 </div>
                 <div className='text-base flex flex-col gap-y-2'>

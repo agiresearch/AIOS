@@ -194,7 +194,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 
 Run
 ```
-python exec.py
+python launch.py
 ```
 which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
 

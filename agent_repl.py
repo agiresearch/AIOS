@@ -47,8 +47,8 @@ def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
             print("Please enter a valid number.")
 
 
-def get_user_task() -> str:
-    return input("Enter the task for the agent: ")
+def get_user_task(chosen_agent) -> str:
+    return input(f"Enter the task for the {chosen_agent}: ")
 
 
 def main():
@@ -130,7 +130,7 @@ def main():
                 display_agents(list(agents.keys()))
                 chosen_agent, _ = "example/" + get_user_choice(agents)
 
-            task = get_user_task()
+            task = get_user_task(chosen_agent)
 
             try:
                 agent_id = submitAgent(agent_name=chosen_agent, task_input=task)
