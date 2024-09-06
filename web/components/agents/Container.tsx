@@ -14,7 +14,7 @@ const Container = ({ children }: { children: ReactNode | ReactNode[] }) => {
             } else if (lastChild && lastChild != priorRef.current) {
                 setTimeout(() => {
                     lastChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }, 170); // Delay of 100ms
+                }, 40); // Delay of 100ms
                 priorRef.current = lastChild;
             }
 

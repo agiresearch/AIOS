@@ -1,12 +1,11 @@
-logs/
+logs
 .idea/
 .DS_Store
 .ipynb_checkpoints
 __pycache__
-/venv/
 .idea
-**/context_restoration/**
-**/.pytest_cache/**
+context_restoration
+.pytest_cache
 .env
 temp/
 pyopenagi/environments/
@@ -33,15 +32,16 @@ ipython_config.py
 build/
 develop-eggs/
 dist/
-downloads/
-eggs/
+downloads
+eggs
 .eggs/
-# lib/
-lib64/
+lib
+lib64
+bin
 parts/
-sdist/
+sdist
 var/
-wheels/
+wheels
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -97,9 +97,9 @@ docs/_build/
 # PyBuilder
 .pybuilder/
 
-**/target/**
-**/build/**
-**/output/**
+target
+build
+output
 
 # Jupyter Notebook
 
@@ -118,7 +118,7 @@ docs/_build/
 #Pipfile.lock
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
+__pypackages__
 
 # Celery stuff
 celerybeat-schedule
@@ -165,7 +165,7 @@ cython_debug/
 
 
 # dependencies
-**/node_modules/**
+node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz

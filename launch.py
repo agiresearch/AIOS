@@ -1,3 +1,13 @@
+import subprocess
+import os
+import time
+
+import webbrowser
+
+import sys
+
+sys.path.append(os.getcwd())
+
 import uvicorn
 import threading
 import asyncio
@@ -6,7 +16,6 @@ from server import app
 
 server = None
 
-import sys, os
 sys.path.append((os.path.dirname(os.path.abspath(__file__))))
 
 logging.getLogger("uvicorn.error").disabled = True
@@ -38,13 +47,28 @@ def stop_server():
     else:
         print("Server is not running")
 
+def run_npm(open: bool=False):
+    # Change directory to the 'web' subdirectory
+    os.chdir('web')
+    
+    # Run npm run dev asynchronously
+    if "node_modules" not in os.listdir():
+        install_process = subprocess.Popen(['npm', 'install'])
+        install_process.wait()
+    
+    subprocess.Popen(['npm', 'run', 'dev'])
+
+    if open:
+        time.sleep(5)
+        webbrowser.open_new_tab("http://localhost:3000")
+
+
 if __name__ == "__main__":
     start_server()
+    run_npm(True)
 
-    # Example: Stop the server after 10 seconds
-    import time
     try:
         while True:
             time.sleep(1)
-    except:
+    finally:
         stop_server()

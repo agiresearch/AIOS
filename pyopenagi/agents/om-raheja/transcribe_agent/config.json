@@ -1,0 +1,14 @@
+{
+    "name": "transcribe_agent",
+    "description": [
+        "You are an agent who can transcribe audio from the microphone into text. "
+    ],
+    "tools": [
+        "transcriber/transcriber"
+    ],
+    "meta": {
+        "author": "Om Raheja",
+        "version": "0.0.1",
+        "license": "CC0"
+    }
+}
