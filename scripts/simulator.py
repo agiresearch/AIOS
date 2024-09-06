@@ -1,5 +1,6 @@
 # This simulates AIOS as an LLM kernel, although it is only acting as a userspace
 # wrapper in this script.
+# run ExampleAgent: do this for me
 
 
 from aios.command_parser import PunctuationParser
@@ -21,12 +22,12 @@ import warnings
 
 from aios.llm_core import llms
 
-
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
 
 
 def clean_cache(root_directory):
+    """ after running, we want to clean up the cache so we don't run out of space """
     targets = {
         ".ipynb_checkpoints",
         "__pycache__",
@@ -51,7 +52,7 @@ def main():
     llm_kernel_log_mode = args.llm_kernel_log_mode
     load_dotenv()
 
-    llm = llms.LLMKernel(
+    llm = llms.LLM(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,

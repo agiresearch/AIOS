@@ -64,25 +64,33 @@ def main():
     startScheduler()
 
     # register your agents and submit agent tasks
-    submitAgent(
+    """ submitAgent(
         agent_name="example/academic_agent",
         task_input="Find recent papers on the impact of social media on mental health in adolescents."
     )
+    """
 
+    """
     submitAgent(
+        agent_name="om-raheja/transcribe_agent",
+        task_input="listen to my yap for 5 seconds and write a response to it"
+    )
+    """
+
+    agent_id = submitAgent(
         agent_name="example/academic_agent",
         task_input="Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
     )
-    submitAgent(
-        agent_name="example/cocktail_mixlogist",
-        task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
-    )
-    submitAgent(
-        agent_name="example/cook_therapist",
-        task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
-    )
+    # submitAgent(
+    #     agent_name="example/cocktail_mixlogist",
+    #     task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
+    # )
+    # submitAgent(
+    #     agent_name="example/cook_therapist",
+    #     task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
+    # )
 
-    awaitAgentExecution()
+    awaitAgentExecution(agent_id)
 
     stopScheduler()
 

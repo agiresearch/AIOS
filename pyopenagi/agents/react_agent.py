@@ -124,7 +124,10 @@ class ReactAgent(BaseAgent):
             {"role": "user", "content": "[Thinking]: Follow the workflow to solve the problem step by step. "}
         )
 
-        self.logger.log(f"Generated workflow is: {workflow}\n", level="info")
+        if workflow:
+            self.logger.log(f"Generated workflow is: {workflow}\n", level="info")
+        else:
+            self.logger.log(f"Fail to generate a valid workflow. Invalid JSON?\n", level="info")
 
         try:
             if workflow:

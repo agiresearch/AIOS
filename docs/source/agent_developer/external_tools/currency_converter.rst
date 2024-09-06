@@ -1,8 +1,7 @@
-.. _currentcy_converter:
-
 Currency Converter
 ==================
 
-A tool used to get real-time currency exchanges from Rapid api hub
+Source code at https://github.com/agiresearch/AIOS/blob/main/pyopenagi/tools/currency_converter/currency_converter.py.
 
-.. automodule:: pyopenagi.tools.currency_converter.currency_converter
+.. literalinclude:: ../../../../pyopenagi/tools/currency_converter/currency_converter.py
+    :language: python

@@ -9,6 +9,8 @@ import type { } from 'ldrs'
  
 import { StoryAgent, MathAgent } from '@/agents/build';
 
+import { serverUrl } from "@/lib/env";
+
 // export const agents = [
 //     {
 //         id: 'math',
@@ -94,7 +96,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 
     useEffect(() => {
         const _ = async (s: string, v: string) => {
-            const _submit = await axios.post('http://localhost:8000/add_agent', {
+            const _submit = await axios.post(`${serverUrl}/add_agent`, {
                 agent_name: v,
                 task_input: s    
             });
@@ -103,7 +105,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
 
             await new Promise(resolve => setTimeout(resolve, 1050));
 
-            const response = await axios.get(`http://localhost:8000/execute_agent?pid=${_submit.data.pid}`)
+            const response = await axios.get(`${serverUrl}/execute_agent?pid=${_submit.data.pid}`)
 
             console.log(response.data)
 
@@ -132,7 +134,7 @@ export const ChatMessage: FC<ChatMessageProps> = ({
             {agentName != 'user' && <CardBody className='p-2 flex flex-col gap-y-2'>
                 <div className='flex flex-row gap-x-3 items-center'>
                     {/* {AgentMapping[agentName].icon} */}
-                    <Calculator color={'green'} />
+                    <Calculator color={'white'} />
 
                     {/* <p className='text-2xl font-semibold'>{AgentMapping[agentName].displayName}</p> */}
                     <p className='text-2xl font-semibold'>{agentName}</p>
@@ -145,8 +147,8 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                     {response != '' ? <TypeAnimation
                         sequence={[response]}
                         wrapper="span"
-                        speed={50}
-                        style={{ fontSize: '1.125rem', lineHeight: '1.75rem', display: 'inline-block' }}
+                        speed={99}
+                        style={{ fontSize: '1.125rem', lineHeight: '3.75rem', display: 'inline-block' }}
                         repeat={0}
                         cursor={false}
                     /> :
@@ -155,13 +157,13 @@ export const ChatMessage: FC<ChatMessageProps> = ({
                             stroke="4"
                             speed="3.5"
                             // color={AgentMapping[agentName].color}
-                            color={'green'}
+                            color={'white'}
                         ></l-hatch>}
                 </div>
             </CardBody>}
             {agentName == 'user' && <CardBody className='p-2 flex flex-col gap-y-2'>
                 <div className='flex flex-row gap-x-3 items-center'>
-                    <User2 color={'blue'} />
+                    <User2 color={'white'} />
                     <p className='text-2xl font-semibold'>User</p>
                 </div>
                 <div className='text-base flex flex-col gap-y-2'>
