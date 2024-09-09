@@ -1,6 +1,5 @@
 from aios.core.types import DataType
 
-
 class FieldSchema:
     def __init__(self, key_name: str, data_type: DataType, description: str):
         self.key_name = key_name
