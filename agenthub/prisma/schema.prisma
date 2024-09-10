@@ -10,13 +10,26 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model AgentConfig {
-    id           String @id @default(cuid())
-    author       String
-    name         String
-    version      String
-    license      String
-    code         String
-    config       String
-    dependencies String
+model Agent {
+    id        String   @id @default(cuid())
+    author    String
+    name      String
+    version   String
+    license   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    files AgentFile[]
+
+    @@unique([author, name, version])
+}
+
+model AgentFile {
+    id       String @id @default(cuid())
+    agentId  String
+    path     String
+    content  String @db.Text  // Changed from Bytes to String
+    agent    Agent  @relation(fields: [agentId], references: [id])
+
+    @@unique([agentId, path])
 }
