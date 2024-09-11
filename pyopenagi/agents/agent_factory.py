@@ -44,6 +44,7 @@ class AgentFactory:
 
         # dynamically loads the class
         agent_class = getattr(agent_module, class_name)
+        
         return agent_class
 
     def activate_agent(self, agent_name, task_input):

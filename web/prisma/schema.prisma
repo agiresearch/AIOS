@@ -14,8 +14,6 @@ model AgentConfig {
     id           String @id @default(cuid())
     author       String
     name         String
-    description  String?
-    icon         String?
     version      String
     license      String
     code         String
