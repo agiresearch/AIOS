@@ -16,6 +16,8 @@ model Agent {
     name      String
     version   String
     license   String
+    entry     String
+    module    String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
