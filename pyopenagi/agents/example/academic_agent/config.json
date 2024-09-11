@@ -11,5 +11,9 @@
         "author": "example",
         "version": "0.0.1",
         "license": "CC0"
+    },
+    "build": {
+        "entry": "agent.py",
+        "module": "AcademicAgent"
     }
 }

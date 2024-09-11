@@ -6,7 +6,6 @@ import base64
 import subprocess
 import sys
 from typing import List, Dict
-from platformdirs import user_cache_dir
 import requests
 from pathlib import Path
 
@@ -17,21 +16,24 @@ class AgentManager:
         self.cache_dir = Path('/Users/rama2r/AIOS/agenthub/cache')
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def upload_agent(self, author: str, name: str, version: str, folder_path: str):
+    def upload_agent(self, author: str | None, name: str | None, version: str | None, folder_path: str):
         agent_files = self._get_agent_files(folder_path)
         metadata = self._get_agent_metadata(folder_path)
 
+
         payload = {
-            "author": author,
-            "name": name,
-            "version": version,
+            "author":  metadata.get("meta", {}).get('author', author),
+            "name":  metadata.get('name', name),
+            "version": metadata.get("meta", {}).get('version', version),
             "license": metadata.get("license", "Unknown"),
-            "files": agent_files
+            "files": agent_files,
+            "entry": metadata.get("build", {}).get("entry", "main.py"),
+            "module": metadata.get("build", {}).get("module", "Agent")
         }
 
         response = requests.post(f"{self.base_url}/api/upload", json=payload)
         response.raise_for_status()
-        print(f"Agent {author}/{name} (v{version}) uploaded successfully.")
+        print(f"Agent {payload.get('author')}/{payload.get('name')} (v{payload.get('version')}) uploaded successfully.")
 
     def download_agent(self, author: str, name: str, version: str = "latest") -> str:
         cache_path = self._get_cache_path(author, name, version)
@@ -45,8 +47,6 @@ class AgentManager:
             })
             response.raise_for_status()
             agent_data = response.json()
-
-            print(agent_data.keys())
 
             self._save_agent_to_cache(agent_data, cache_path)
             print(f"Agent {author}/{name} (v{version}) downloaded successfully.")
@@ -126,8 +126,10 @@ class AgentManager:
             print("No meta_requirements.txt found. Skipping dependency installation.")
             return
 
-        log_path = self.cache_dir / "deplogs.txt"
+        log_path = agent_path / "deplogs.txt"
+
         print(f"Installing dependencies for agent. Writing to {log_path}")
+
         with open(log_path, "a") as f:
             subprocess.check_call([
                 sys.executable,
@@ -141,6 +143,6 @@ class AgentManager:
 if __name__ == '__main__':
     manager = AgentManager('http://localhost:3000')
     # manager.upload_agent('Balaji R', 'Cool Agent', '0.0.1', '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
-
-    downloaded_path = manager.download_agent('Balaji R', 'Cool Agent', '0.0.1')
-    print(f"Agent downloaded to: {downloaded_path}")
+    # manager.upload_agent(None, None, None, '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
+    downloaded_path = manager.download_agent('example', 'academic_agent', '0.0.1')
+    # print(f"Agent downloaded to: {downloaded_path}")
