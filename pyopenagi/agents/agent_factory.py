@@ -1,20 +1,19 @@
-import heapq
-from threading import Lock, Event
+from threading import Lock
 from pympler import asizeof
 from .interact import Interactor
 import os
 import importlib
-
+import random
 class AgentFactory:
     def __init__(self,
                 #  agent_process_queue,
                  agent_process_factory,
                  agent_log_mode
         ):
-        self.max_aid = 256
+        # self.max_aid = 256
         # self.llm = llm
-        self.aid_pool = [i for i in range(self.max_aid)]
-        heapq.heapify(self.aid_pool)
+        # self.aid_pool = [i for i in range(self.max_aid)]
+        # heapq.heapify(self.aid_pool)
         # self.agent_process_queue = agent_process_queue
         self.agent_process_factory = agent_process_factory
 
@@ -22,7 +21,7 @@ class AgentFactory:
 
         self.current_agents_lock = Lock()
 
-        self.terminate_signal = Event()
+        # self.terminate_signal = Event()
 
         self.agent_log_mode = agent_log_mode
 
@@ -70,15 +69,15 @@ class AgentFactory:
             log_mode = self.agent_log_mode
         )
 
-
+        aid = random.randint(100000, 999999)
         # set the identifier for the agent
-        aid = heapq.heappop(self.aid_pool)
+        # aid = heapq.heappop(self.aid_pool)
         agent.set_aid(aid)
 
         # use a lock to make sure only one agent can read the values at a time
-        if not self.terminate_signal.is_set():
-            with self.current_agents_lock:
-                self.current_agents[aid] = agent
+        # if not self.terminate_signal.is_set():
+        with self.current_agents_lock:
+            self.current_agents[aid] = agent
 
         return agent
 
@@ -127,4 +126,4 @@ class AgentFactory:
 
     def deactivate_agent(self, aid):
         self.current_agents.pop(aid)
-        heapq.heappush(self.aid_pool, aid)
+        # heapq.heappush(self.aid_pool, aid)
