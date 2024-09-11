@@ -26,7 +26,7 @@ class FIFOScheduler(BaseScheduler):
 
                 agent_process = self.get_queue_message()
                 agent_process.set_status("executing")
-                self.logger.log(f"{agent_process.agent_name} is executing. \n", "execute")
+                self.logger.log(f"{agent_process.agent_name}[PID={agent_process.pid}] is executing. \n", "execute")
                 agent_process.set_start_time(time.time())
                 self.execute_request(agent_process)
             except Empty:

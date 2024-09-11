@@ -1,9 +1,7 @@
-import heapq
-
-from threading import Thread, Lock, Event
+from threading import Thread, Lock
 
 from ..utils.chat_template import Query
-
+import random
 class AgentProcess:
     def __init__(self,
             agent_name: str,
@@ -79,9 +77,9 @@ class LLMRequestProcess(AgentProcess):
 
 class AgentProcessFactory:
     def __init__(self, agent_process_log_mode = None):
-        self.max_pid = 1024
-        self.pid_pool = [i for i in range(self.max_pid)]
-        heapq.heapify(self.pid_pool)
+        # self.max_pid = 1024
+        # self.pid_pool = [i for i in range(self.max_pid)]
+        # heapq.heapify(self.pid_pool)
 
         self.thread = Thread(target=self.deactivate_agent_process)
 
@@ -89,22 +87,23 @@ class AgentProcessFactory:
 
         self.current_agent_processes_lock = Lock()
 
-        self.terminate_signal = Event()
+        # self.terminate_signal = Event()
 
         self.agent_process_log_mode = agent_process_log_mode
 
     def activate_agent_process(self, agent_name, query):
-        if not self.terminate_signal.is_set():
-            with self.current_agent_processes_lock:
-                agent_process = AgentProcess(
-                    agent_name = agent_name,
-                    query = query
-                )
-                pid = heapq.heappop(self.pid_pool)
-                agent_process.set_pid(pid)
-                agent_process.set_status("active")
-                self.current_agent_processes[pid] = agent_process
-                return agent_process
+        # if not self.terminate_signal.is_set():
+        with self.current_agent_processes_lock:
+            agent_process = AgentProcess(
+                agent_name = agent_name,
+                query = query
+            )
+            pid = random.randint(1000000, 9999999)
+            # pid = heapq.heappop(self.pid_pool)
+            agent_process.set_pid(pid)
+            agent_process.set_status("active")
+            self.current_agent_processes[pid] = agent_process
+            return agent_process
 
     def print_agent_process(self):
         headers = ["Agent Process ID", "Agent Name", "Created Time", "Status"]
@@ -141,7 +140,7 @@ class AgentProcessFactory:
 
     def deactivate_agent_process(self, pid):
         self.current_agent_processes.pop(pid)
-        heapq.heappush(self.pid_pool, pid)
+        # heapq.heappush(self.pid_pool, pid)
 
     def start(self):
         """start the factory to check inactive agent"""
