@@ -4,6 +4,7 @@ from .interact import Interactor
 import os
 import importlib
 import random
+import threading
 class AgentFactory:
     def __init__(self,
                 #  agent_process_queue,
@@ -70,15 +71,15 @@ class AgentFactory:
             log_mode = self.agent_log_mode
         )
 
-        aid = random.randint(100000, 999999)
+        # aid = random.randint(100000, 999999)
         # set the identifier for the agent
         # aid = heapq.heappop(self.aid_pool)
-        agent.set_aid(aid)
+        # agent.set_aid(aid)
 
         # use a lock to make sure only one agent can read the values at a time
         # if not self.terminate_signal.is_set():
-        with self.current_agents_lock:
-            self.current_agents[aid] = agent
+        # with self.current_agents_lock:
+        #     self.current_agents[aid] = agent
 
         return agent
 
@@ -87,9 +88,11 @@ class AgentFactory:
             agent_name=agent_name,
             task_input=task_input
         )
+        aid = threading.get_native_id()
+        agent.set_aid(aid)
         # print(task_input)
         output = agent.run()
-        self.deactivate_agent(agent.get_aid())
+        # self.deactivate_agent(agent.get_aid())
         return output
 
     def print_agent(self):
