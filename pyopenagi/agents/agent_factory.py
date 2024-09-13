@@ -2,8 +2,9 @@ import heapq
 from threading import Lock, Event
 from pympler import asizeof
 from .interact import Interactor
+from ..manager.manager import AgentManager
 import os
-import importlib
+
 
 class AgentFactory:
     def __init__(self,
@@ -26,40 +27,40 @@ class AgentFactory:
 
         self.agent_log_mode = agent_log_mode
 
+        self.manager = AgentManager('http://localhost:3000')
+
     def snake_to_camel(self, snake_str):
         components = snake_str.split('_')
         return ''.join(x.title() for x in components)
 
     def list_agents(self):
-        agent_list = Interactor().list_available_agents()
+        agent_list = self.manager.list_available_agents()
+        
         for agent in agent_list:
             print(agent)
 
-    def load_agent_instance(self, agent_name):
-        # dynamically loads the module from the path
-        author, name = agent_name.split("/")
-        module_name = ".".join(["pyopenagi", "agents", author, name, "agent"])
-        class_name = self.snake_to_camel(name)
-
-        agent_module = importlib.import_module(module_name)
-
-        # dynamically loads the class
-        agent_class = getattr(agent_module, class_name)
-        
+    def load_agent_instance(self, compressed_name: str):
+        name_split = compressed_name.split('/')
+        agent_class = self.manager.load_agent(*name_split)
         return agent_class
 
-    def activate_agent(self, agent_name, task_input):
-        script_path = os.path.abspath(__file__)
-        script_dir = os.path.dirname(script_path)
+    def activate_agent(self, agent_name: str, task_input):
+        # script_path = os.path.abspath(__file__)
+        # script_dir = os.path.dirname(script_path)
 
         # downloads the agent if its not installed already
-        interactor = Interactor()
+        # interactor = Interactor()
 
-        if not os.path.exists(os.path.join(script_dir, agent_name)):
-            interactor.download_agent(agent_name)
+        # if not os.path.exists(os.path.join(script_dir, agent_name)):
+        #     interactor.download_agent(agent_name)
 
-        if not interactor.check_reqs_installed(agent_name):
-            interactor.install_agent_reqs(agent_name)
+        # if not interactor.check_reqs_installed(agent_name):
+        #     interactor.install_agent_reqs(agent_name)
+
+        agent_name = '/'.join(
+            self.manager.download_agent(
+            *agent_name.split('/')
+        ))
 
         # we instantiate the agent directly from the class
         agent_class = self.load_agent_instance(agent_name)
