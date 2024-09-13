@@ -5,7 +5,7 @@ import prisma from '../../../lib/prisma'
 
 export async function GET(request: Request): Promise<NextResponse> {
   
-    const result  = await prisma.agentConfig.findMany();
+    const result  = await prisma.agent.findMany();
     
     return NextResponse.json({status : 'success', ...result});
   }
