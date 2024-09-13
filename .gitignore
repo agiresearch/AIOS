@@ -202,3 +202,5 @@ next-env.d.ts
 # metagpt
 metagpt
 workspace
+
+cache

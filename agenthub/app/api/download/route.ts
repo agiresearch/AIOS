@@ -22,6 +22,20 @@ export async function GET(request: Request): Promise<NextResponse> {
     if (result != null) {
       return NextResponse.json({ ...result });
     }
+  } else if (name && author) {
+    const result = await prisma.agent.findFirst({
+      where: {
+        name,
+        author
+      },
+      include: {
+        files: true
+      }
+    });
+
+    if (result != null) {
+      return NextResponse.json({ ...result });
+    }
   }
 
 
