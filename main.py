@@ -76,21 +76,36 @@ def main():
         task_input="listen to my yap for 5 seconds and write a response to it"
     )
     """
-
-    agent_id = submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
+    
+    """
+    submitAgent(
+        agent_name="example/cocktail_mixlogist",
+        task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
     )
-    # submitAgent(
-    #     agent_name="example/cocktail_mixlogist",
-    #     task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
-    # )
-    # submitAgent(
-    #     agent_name="example/cook_therapist",
-    #     task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
-    # )
-
-    awaitAgentExecution(agent_id)
+    """
+    
+    """
+    submitAgent(
+        agent_name="example/cook_therapist",
+        task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
+    )
+    """
+    
+    agent_tasks = [
+        ["example/academic_agent", "Find recent papers on the impact of social media on mental health in adolescents."],
+        ["example/cocktail_mixlogist", "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."]
+    ]
+    
+    agent_ids = []
+    for agent_name, task_input in agent_tasks:
+        agent_id = submitAgent(
+            agent_name=agent_name,
+            task_input=task_input
+        )
+        agent_ids.append(agent_id)
+    
+    for agent_id in agent_ids:
+        awaitAgentExecution(agent_id)
 
     stopScheduler()
 
