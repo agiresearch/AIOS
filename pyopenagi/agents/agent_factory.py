@@ -45,7 +45,7 @@ class AgentFactory:
 
         # dynamically loads the class
         agent_class = getattr(agent_module, class_name)
-        
+
         return agent_class
 
     def activate_agent(self, agent_name, task_input):
@@ -71,11 +71,6 @@ class AgentFactory:
             log_mode = self.agent_log_mode
         )
 
-        # aid = random.randint(100000, 999999)
-        # set the identifier for the agent
-        # aid = heapq.heappop(self.aid_pool)
-        # agent.set_aid(aid)
-
         # use a lock to make sure only one agent can read the values at a time
         # if not self.terminate_signal.is_set():
         # with self.current_agents_lock:
@@ -89,6 +84,7 @@ class AgentFactory:
             task_input=task_input
         )
         aid = threading.get_native_id()
+        # print(f"Agent ID: {aid}")
         agent.set_aid(aid)
         # print(task_input)
         output = agent.run()

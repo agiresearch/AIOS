@@ -60,7 +60,6 @@ class BaseAgent:
 
         self.log_mode = log_mode
         self.logger = self.setup_logger()
-        self.logger.log("Initialized. \n", level="info")
 
         self.set_status("active")
         self.set_created_time(time.time())
@@ -68,7 +67,7 @@ class BaseAgent:
     def run(self):
         """Execute each step to finish the task."""
         # self.set_aid(threading.get_ident())
-        pass
+        self.logger.log(f"{self.agent_name} starts running. Agent ID is {self.get_aid()}\n", level="info")
 
     # can be customization
     def build_system_instruction(self):

@@ -48,7 +48,8 @@ class SchedulerLogger(BaseLogger):
         self.level_color = {
             "execute": "green",
             "suspend": "yellow",
-            "info": "white"
+            "info": "white",
+            "done": "blue"
         }
 
     def load_log_file(self):

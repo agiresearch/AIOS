@@ -5,7 +5,7 @@ import threading
 from ..utils.chat_template import Query
 import random
 import time
-
+import os
 
 class AgentProcess(Thread):
     def __init__(self, agent_name: str, query: Query):
@@ -15,7 +15,7 @@ class AgentProcess(Thread):
             agent_name (str): Name of the agent
             query (Query): Query sent by the agent
         """
-        super().__init__()
+        super().__init__(name=agent_name)
         self.agent_name = agent_name
         self.query = query
         self.pid: int = None
@@ -89,8 +89,7 @@ class AgentProcess(Thread):
         Returns:
             str: LLM response of Agent Process
         """
-        pid = threading.get_native_id()
-        self.set_pid(pid)
+        self.set_pid(self.native_id)
         while self.get_response() is None:
             time.sleep(0.1)
 

@@ -7,8 +7,8 @@ class AcademicAgent(ReactAgent):
         ReactAgent.__init__(
             self, agent_name, task_input, agent_process_factory, log_mode
         )
-        # self.workflow_mode = "manual"
-        self.workflow_mode = "automatic"
+        self.workflow_mode = "manual"
+        # self.workflow_mode = "automatic"
 
     def check_path(self, tool_calls):
         script_path = os.path.abspath(__file__)
@@ -32,13 +32,13 @@ class AcademicAgent(ReactAgent):
 
     def manual_workflow(self):
         workflow = [
-            {"message": "Gather research topic and keywords", "tool_use": []},
+            # {"message": "Gather research topic and keywords", "tool_use": []},
             {"message": "Search for relevant papers on arXiv", "tool_use": ["arxiv"]},
-            {"message": "Summarize key findings of selected papers", "tool_use": []},
-            {
-                "message": "Identify research gaps and generate potential research questions",
-                "tool_use": [],
-            },
+            {"message": "Provide responses based on the user's query", "tool_use": []},
+            # {
+            #     "message": "Identify research gaps and generate potential research questions",
+            #     "tool_use": [],
+            # },
         ]
         return workflow
 
