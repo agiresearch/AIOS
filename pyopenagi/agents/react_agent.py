@@ -99,6 +99,7 @@ class ReactAgent(BaseAgent):
         return actions, observations, success
 
     def run(self):
+        super().run()
         self.build_system_instruction()
 
         task_input = self.task_input
@@ -127,7 +128,7 @@ class ReactAgent(BaseAgent):
         if workflow:
             self.logger.log(f"Generated workflow is: {workflow}\n", level="info")
         else:
-            self.logger.log(f"Fail to generate a valid workflow. Invalid JSON?\n", level="info")
+            self.logger.log("Fail to generate a valid workflow. Invalid JSON?\n", level="info")
 
         try:
             if workflow:
