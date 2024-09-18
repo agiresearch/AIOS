@@ -12,7 +12,7 @@ from aios.utils.utils import (
     parse_global_args,
 )
 
-from pyopenagi.agents.interact import Interactor
+from pyopenagi.manager.manager import AgentManager
 
 from aios.utils.state import useGlobalState
 from dotenv import load_dotenv
@@ -33,25 +33,27 @@ app.add_middleware(
 
 getLLMState, setLLMState, setLLMCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
-getInteractor, setInteracter, setInteracterCallback = useGlobalState()
+getManager, setManager, setManagerCallback = useGlobalState()
 
-setInteracter(Interactor())
+setManager(AgentManager('http://localhost:3001'))
 
-parser = parse_global_args()
-args = parser.parse_args()
+# parser = parse_global_args()
+# args = parser.parse_args()
 
 # check if the llm information was specified in args
 
 setLLMState(
     useKernel(
-        llm_name=args.llm_name,
-        max_gpu_memory=args.max_gpu_memory,
-        eval_device=args.eval_device,
-        max_new_tokens=args.max_new_tokens,
-        log_mode=args.llm_kernel_log_mode,
-        use_backend=args.use_backend,
+        llm_name='gpt-4o-mini',
+        max_gpu_memory=None,
+        eval_device=None,
+        max_new_tokens=256,
+        log_mode='console',
+        use_backend=None
     )
 )
+
+
 
 # deploy specific
 # leave commented
@@ -123,14 +125,16 @@ async def parse_query(req: ParserQuery):
 
 
 @app.get("/get_all_agents")
-async def get_all_agents(
-    interactor: Interactor = Depends(getInteractor),
-):
-    def transform_string(input_string: str):
-        last_part = input_string.split("/")[-1].replace("_", " ")
-        return " ".join(word.capitalize() for word in last_part.split())
+async def get_all_agents():
+    manager: AgentManager = getManager()
 
-    agents = interactor.list_available_agents()
+    def transform_string(input_string: str):
+        return '/'.join(
+            input_string.split("/")[:-1]
+        )
+
+    agents = manager.list_available_agents()
+    print(agents)
     agent_names = [transform_string(a.get("agent")) for a in agents]
 
     _ = [

@@ -7,5 +7,5 @@ export async function GET(request: Request): Promise<NextResponse> {
   
     const result  = await prisma.agent.findMany();
     
-    return NextResponse.json({status : 'success', ...result});
+    return NextResponse.json({...result});
   }

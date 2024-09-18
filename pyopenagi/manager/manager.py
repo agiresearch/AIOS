@@ -121,7 +121,8 @@ class AgentManager:
     def list_available_agents(self) -> List[Dict[str, str]]:
         response = requests.get(f"{self.base_url}/api/get_all_agents")
         response.raise_for_status()
-        response: dict = response.json()['']
+
+        response: dict = response.json()
 
         agent_list = []
 
