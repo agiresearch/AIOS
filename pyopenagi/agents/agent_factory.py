@@ -1,7 +1,7 @@
 from threading import Lock
 from pympler import asizeof
 from .interact import Interactor
-from ..manager.manager import AgentManager
+# from ..manager.manager import AgentManager
 import os
 import random
 import threading
