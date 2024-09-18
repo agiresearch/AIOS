@@ -34,8 +34,8 @@ class AgentFactory:
         return ''.join(x.title() for x in components)
 
     def list_agents(self):
-        agent_list = self.manager.list_available_agents()
-        
+        # agent_list = self.manager.list_available_agents()
+        agent_list = Interactor().list_available_agents()        
         for agent in agent_list:
             print(agent)
 
