@@ -35,7 +35,8 @@ class AgentFactory:
 
     def list_agents(self):
         # agent_list = self.manager.list_available_agents()
-        agent_list = Interactor().list_available_agents()        
+        interactor = Interactor()
+        agent_list = interactor.list_available_agents()        
         for agent in agent_list:
             print(agent)
 
