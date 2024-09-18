@@ -9,3 +9,8 @@ export interface DatasetItem {
   }
   
   export type DatasetsTabItem = 'Tasks' | 'Sizes' | 'Sub-tasks' | 'Languages' | 'Licenses' | 'Other'
+
+
+export interface AgentItem {
+    
+}

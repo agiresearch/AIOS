@@ -32,7 +32,7 @@ export default function NavHeader() {
               <img
                 alt="Hugging Face's logo"
                 className="w-7 md:mr-2"
-                src="/front/assets/huggingface_logo-noborder.svg"
+                src="https://chat.aios.foundation/_next/image?url=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F130198651%3Fv%3D4&w=1080&q=75"
               />
               <span className="hidden whitespace-nowrap text-lg font-bold md:block">Hugging Face</span>
             </a>
