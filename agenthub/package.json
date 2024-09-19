@@ -10,8 +10,9 @@
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
+    "axios": "^1.7.7",
     "classnames": "^2.5.1",
-    "next": "14.2.8",
+    "next": "^14.2.12",
     "prisma": "^5.19.1",
     "react": "^18",
     "react-dom": "^18"

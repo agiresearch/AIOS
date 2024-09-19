@@ -1,4 +1,5 @@
-import { DatasetItem, DatasetsTabItem } from './type'
+import { AgentItem, DatasetItem, DatasetsTabItem } from './type'
+import axios from 'axios';
 
 export const DatasetList: DatasetItem[] = [...Array(30)].map(() => ({
   title: 'fka/awesome-chatgpt-prompts',
@@ -9,6 +10,25 @@ export const DatasetList: DatasetItem[] = [...Array(30)].map(() => ({
   downloads: '2.05k',
   favorites: '2.81k',
 }))
+
+export const AgentList: AgentItem[] = [];
+// export const AgentList = 
+
+export const AgentListGenerator: () => Promise<AgentItem[]> = async () => {
+    const res = await fetch('http://localhost:3000/api/get_all_agents/light');
+    const res_ = await res.json();
+
+    const values: AgentItem[] = Object.values(res_);
+
+    // console.log(res_)
+
+    return values;
+
+    // return values.map((obj, index) => ({
+    //     ...obj,
+    //     createdAt: new Date(obj.createdAt)
+    // }))
+}
 
 export const DatasetsTabList: DatasetsTabItem[] = ['Tasks', 'Sizes', 'Sub-tasks', 'Languages', 'Licenses', 'Other']
 

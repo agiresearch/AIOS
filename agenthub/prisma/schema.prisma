@@ -20,6 +20,7 @@ model Agent {
     module    String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    description String @default("No Description Provided")
 
     files AgentFile[]
 
