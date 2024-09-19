@@ -1,10 +1,11 @@
 from threading import Lock
 from pympler import asizeof
 from .interact import Interactor
-from ..manager.manager import AgentManager
+# from ..manager.manager import AgentManager
 import os
 import random
-
+import threading
+import importlib
 class AgentFactory:
     def __init__(self,
                 #  agent_process_queue,
@@ -26,22 +27,35 @@ class AgentFactory:
 
         self.agent_log_mode = agent_log_mode
 
-        self.manager = AgentManager('http://localhost:3000')
+        # self.manager = AgentManager('http://localhost:3000')
 
     def snake_to_camel(self, snake_str):
         components = snake_str.split('_')
         return ''.join(x.title() for x in components)
 
     def list_agents(self):
-        agent_list = self.manager.list_available_agents()
-        
+        # agent_list = self.manager.list_available_agents()
+        interactor = Interactor()
+        agent_list = interactor.list_available_agents()        
         for agent in agent_list:
             print(agent)
 
-    def load_agent_instance(self, compressed_name: str):
-        name_split = compressed_name.split('/')
-        agent_class = self.manager.load_agent(*name_split)
+    # def load_agent_instance(self, compressed_name: str):
+    #     name_split = compressed_name.split('/')
+    #     agent_class = self.manager.load_agent(*name_split)
   
+    #     return agent_class
+    
+    def load_agent_instance(self, agent_name):
+        author, name = agent_name.split("/")
+        module_name = ".".join(["pyopenagi", "agents", author, name, "agent"])
+        class_name = self.snake_to_camel(name)
+
+        agent_module = importlib.import_module(module_name)
+
+        # dynamically loads the class
+        agent_class = getattr(agent_module, class_name)
+        
         return agent_class
 
     def activate_agent(self, agent_name: str, task_input):
@@ -57,13 +71,15 @@ class AgentFactory:
         # if not interactor.check_reqs_installed(agent_name):
         #     interactor.install_agent_reqs(agent_name)
 
-        agent_name = '/'.join(
-            self.manager.download_agent(
-            *agent_name.split('/')
-        ))
+        # agent_name = '/'.join(
+        #     self.manager.download_agent(
+        #     *agent_name.split('/')
+        # ))
 
-        # we instantiate the agent directly from the class
+        # # we instantiate the agent directly from the class
+        # agent_class = self.load_agent_instance(agent_name)
         agent_class = self.load_agent_instance(agent_name)
+        # folder, name = agent_name.split("/")
 
         agent = agent_class(
             agent_name = agent_name,
