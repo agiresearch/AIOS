@@ -36,6 +36,7 @@
 
 
 import { Metadata } from 'next'
+import { Providers } from './providers'
 
 import NavHeader from "@/components/blocks/NavHeader/index.client"
 
@@ -70,15 +71,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script defer data-domain="huggingface.co" src="/js/script.js"></script>
       </Head> */}
       <body>
-        <main
-          className="HomePage flex min-h-screen flex-col bg-white text-black dark:bg-gray-950"
-          style={{ fontSize: 16 }}
-        >
-          <div className="flex min-h-screen flex-col">
-            <NavHeader />
-            {children}
-          </div>
-        </main>
+        <Providers>
+          <main
+            className="HomePage flex min-h-screen flex-col bg-white text-black dark:bg-gray-950"
+            style={{ fontSize: 16 }}
+          >
+            <div className="flex min-h-screen flex-col">
+              <NavHeader />
+              {children}
+            </div>
+          </main>
+        </Providers>
       </body>
     </html>
   )
