@@ -1,22 +1,33 @@
-import { FilterSVG, InnerDatasetSVG, SortSVG } from '@/ui/svgs'
+'use client'
+
+import { FilterSVG, InnerDatasetSVG, SortSVG, AgentSVG } from '@/ui/svgs'
+import { Input } from '@nextui-org/react'
+import { AgentListGenerator } from '../const';
+
+import { useState, useEffect } from 'react'
 
 export function DatasetsHeader() {
+  useEffect(() => {
+    const _ = async () => {
+      const AgentList = await AgentListGenerator();
+      setAgentNumber(AgentList.length);
+    }
+
+    _();
+
+  }, []);
+
+  const [agentNumber, setAgentNumber] = useState(0);
+  
   return (
     <div className="mb-4 items-center space-y-3 md:flex md:space-y-0 lg:mb-6">
       <div className="flex items-center text-lg">
-        <h1>Datasets</h1>
-        <div className="ml-3 w-16 font-normal text-gray-400">49,419</div>
+        <h1>Agents</h1>
+        <div className="ml-3 w-16 font-normal text-gray-400">{agentNumber}</div>
       </div>
       <div className="flex-1 md:mx-4">
         <div className="relative w-full md:max-w-xs">
-          <InnerDatasetSVG />
-          <input
-            className="w-full rounded-full border border-gray-200 text-sm placeholder-gray-400 shadow-inner outline-none focus:shadow-xl focus:ring-1 focus:ring-inset dark:bg-gray-950 h-7 pl-7"
-            placeholder="Filter by name"
-            type="search"
-            value=""
-            readOnly
-          />
+          <Input />
         </div>
       </div>
       <a href="/search/full-text?type=dataset" className="btn mr-2 rounded-full text-sm opacity-80 hover:opacity-100">

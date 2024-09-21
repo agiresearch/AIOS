@@ -5,10 +5,26 @@ import { DatasetsHeader } from './DatasetsHeader'
 
 
 
-export default async function DatasetsList() {
-    
+export default async function DatasetsList(
+  { searchParams }:
+    { searchParams: { [key: string]: string | string[] | undefined } }) {
 
-    const AgentList = await AgentListGenerator();
+      let page;
+  if (searchParams==undefined) {
+    page = 0;
+  } else {
+    page = parseInt(searchParams.p as string)
+  }
+
+  let AgentList = await AgentListGenerator();
+  let [start, end] = [page*15, page*15+15]
+
+  if (end >= AgentList.length) {
+    end = AgentList.length
+  }
+  console.log(start, end)
+  AgentList = AgentList.slice(start, end)
+  
 
   return (
     <section className="pt-8 border-gray-100 col-span-full lg:col-span-6 xl:col-span-7 pb-12">
@@ -20,7 +36,7 @@ export default async function DatasetsList() {
           })}
         </div>
       </div>
-      <DatasetsPagination />
+      <DatasetsPagination page={page+1} maxPage={AgentList.length/15} />
     </section>
   )
 }

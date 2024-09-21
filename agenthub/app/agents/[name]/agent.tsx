@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardBody, Chip, Avatar, Tooltip } from "@nextui-org/react";
+import { Card, CardBody, Chip, Avatar, Tooltip, Snippet } from "@nextui-org/react";
 import ReactMarkdown from 'react-markdown';
 import { Clock, User, FileText, Info, Package } from 'lucide-react';
 
@@ -22,14 +22,13 @@ export interface Agent {
 
 export default function AgentDetailsPage({ agent }: { agent: Agent }) {
   return (
-    <div className="max-w-7xl mx-auto p-8 bg-gray-50">
-      <div className="mb-8 bg-gradient-to-r from-blue-500 to-purple-500 text-black p-6 rounded-lg shadow-md">
+    <div className="w-full max-w-full m-0 p-8 bg-gray-50">
+      <div className="mb-8 bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg shadow-md">
         <h1 className="text-4xl font-bold flex items-center gap-3 mb-2">
           <Package size={36} />
           {agent.name}
           <Chip size="sm" className="bg-white text-blue-600">{agent.version}</Chip>
         </h1>
-        <p className="text-xl opacity-90">by {agent.author}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -62,7 +61,7 @@ export default function AgentDetailsPage({ agent }: { agent: Agent }) {
                 <div className="flex items-center">
                   <Clock className="mr-3 text-orange-500" size={24} />
                   <div>
-                    <p className="text-sm text-gray-500">Last updated</p>
+                    <p className="text-sm text-gray-500">Last Updated</p>
                     <p className="font-semibold">{new Date(agent.updatedAt).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -105,14 +104,13 @@ export default function AgentDetailsPage({ agent }: { agent: Agent }) {
 
         <div className="space-y-8">
           <Card className="shadow-md">
-            <CardBody className="p-6">
-              <div className="flex items-center mb-4">
-                <Avatar name={agent.author} size="lg" className="mr-4" />
-                <div>
-                  <h3 className="font-semibold text-lg">{agent.author}</h3>
-                  <p className="text-sm text-gray-500">Agent Creator</p>
-                </div>
-              </div>
+            <CardBody className="p-6 flex flex-col gap-y-4">
+              
+              <h2 className="text-2xl font-semibold mb-4 text-gray-800">Use this agent</h2>
+              <Snippet color="secondary" symbol="" variant="flat">
+                <span className=''>from pyopenagi.manager.manager import AgentManager</span>
+                <span className=''>manager.download_agent('example', 'academic_agent')</span>
+              </Snippet>
             </CardBody>
           </Card>
 

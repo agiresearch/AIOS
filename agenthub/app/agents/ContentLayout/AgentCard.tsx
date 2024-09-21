@@ -1,4 +1,4 @@
-import { DatasetSVG, DownloadSVG, FavoriteSVG, TablePreviewSVG, TableViewerSVG } from '@/ui/svgs'
+import { DatasetSVG, DownloadSVG, FavoriteSVG, TablePreviewSVG, TableViewerSVG, AgentSVG } from '@/ui/svgs'
 import { AgentItem } from '../type'
 import { formatDate } from '@/app/utils'
 
@@ -12,10 +12,10 @@ export default function AgentCard({ item }: AgentCardProps) {
 
   return (
     <article className="overview-card-wrapper group  ">
-      <a className="block p-2" href={`/datasets/${item.name}`}>
+      <a className="block p-2" href={`/agents/${item.name}`}>
         <header className="flex items-center mb-0.5" title={item.name}>
-          <DatasetSVG />
-          <h4 className="text-md truncate font-mono text-black dark:group-hover:text-yellow-500 group-hover:text-red-600 text-smd">
+          <AgentSVG />
+          <h4 className="text-md truncate font-mono text-black dark:group-hover:text-yellow-500 group-hover:text-blue-500 text-smd">
             {item.name}
           </h4>
         </header>
@@ -25,7 +25,7 @@ export default function AgentCard({ item }: AgentCardProps) {
           {'Preview'}
           <span className="px-1.5 text-gray-300">• </span>
           <span className="truncate">
-            Updated
+            Updated {' '}
             <time dateTime={date.toISOString()} title={'Time String'}>
               {formatDate(date.toISOString())}
             </time>

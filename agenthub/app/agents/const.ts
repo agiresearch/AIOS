@@ -20,14 +20,7 @@ export const AgentListGenerator: () => Promise<AgentItem[]> = async () => {
 
     const values: AgentItem[] = Object.values(res_);
 
-    // console.log(res_)
-
     return values;
-
-    // return values.map((obj, index) => ({
-    //     ...obj,
-    //     createdAt: new Date(obj.createdAt)
-    // }))
 }
 
 export const DatasetsTabList: DatasetsTabItem[] = ['Tasks', 'Sizes', 'Sub-tasks', 'Languages', 'Licenses', 'Other']

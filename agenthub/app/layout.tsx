@@ -43,6 +43,7 @@ import NavHeader from "@/components/blocks/NavHeader/index.client"
 import '@/styles/global-stylesheet.css'
 import '@/styles/google-font-Source-Sans-Pro.css'
 import '@/styles/google-font-IBM-Plex-Mono.css'
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: 'Hugging Face – The AI community building the future.',
