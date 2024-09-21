@@ -6,9 +6,9 @@ import { Header } from "@/components/chat/header";
 
 const Chat = () => {
     return (
-        <div className="bg-neutral-800 w-full h-full flex flex-col">
+        <div className="bg-neutral-800 w-full h-full flex flex-col items-center">
             <Header />
-            <div className="flex flex-col h-full w-full">
+            <div className="flex flex-col h-[85vh] w-full">
                 <Body />
                 <div className="w-full fixed bottom-0">
                     <Form />
