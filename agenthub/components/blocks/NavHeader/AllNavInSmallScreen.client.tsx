@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+// import { useState } from 'react'
 
 export default function AllNavInSmallScreen() {
-  const [a, setA] = useState(false)
+  // const [a, setA] = useState(false)
   return (
     <div className="fixed inset-0 top-16 z-20 overflow-y-auto overscroll-contain bg-white">
       <nav aria-label="Main">

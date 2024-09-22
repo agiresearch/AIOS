@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import MoreNav from './MoreNav.client'
+// import MoreNav from './MoreNav.client'
 import SearchBar from './SearchBar.client'
 import { AppNavList } from './constant'
 import AllNavInSmallScreen from './AllNavInSmallScreen.client'
 
 export default function NavHeader() {
   const [isSearchBarShow, setIsSearchBarShow] = useState<boolean>(false)
-  const [isMoreNavShow, setIsMoreNavShow] = useState<boolean>(false)
+  // const [isMoreNavShow, setIsMoreNavShow] = useState<boolean>(false)
   const [isAllNavInSmallScreenShow, setIsAllNavInSmallScreenShow] = useState<boolean>(false)
 
   useEffect(() => {

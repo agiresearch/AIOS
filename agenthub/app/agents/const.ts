@@ -1,5 +1,4 @@
 import { AgentItem, DatasetItem, DatasetsTabItem } from './type'
-import axios from 'axios';
 
 export const DatasetList: DatasetItem[] = [...Array(30)].map(() => ({
   title: 'fka/awesome-chatgpt-prompts',

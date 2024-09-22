@@ -1,5 +1,5 @@
 import AgentCard from './AgentCard'
-import { AgentListGenerator, DatasetList } from '../const'
+import { AgentListGenerator } from '../const'
 import { DatasetsPagination } from './DatasetsPagination'
 import { DatasetsHeader } from './DatasetsHeader'
 
@@ -17,7 +17,9 @@ export default async function DatasetsList(
   }
 
   let AgentList = await AgentListGenerator();
-  let [start, end] = [page*15, page*15+15]
+  const start = page*15;
+  let end = page*15+15
+  // let [start, end] = [page*15, page*15+15]
 
   if (end >= AgentList.length) {
     end = AgentList.length

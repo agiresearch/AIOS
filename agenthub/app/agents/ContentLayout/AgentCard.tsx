@@ -1,4 +1,4 @@
-import { DatasetSVG, DownloadSVG, FavoriteSVG, TablePreviewSVG, TableViewerSVG, AgentSVG } from '@/ui/svgs'
+import { DownloadSVG, FavoriteSVG, TableViewerSVG, AgentSVG } from '@/ui/svgs'
 import { AgentItem } from '../type'
 import { formatDate } from '@/app/utils'
 

@@ -17,7 +17,9 @@ import { ApplySVG, ExitSVG } from '@/ui/svgs'
 
 export default function LeftTabsLayout() {
   const [currentTab, setCurrentTab] = useState<DatasetsTabItem>('Tasks')
-  const [isAddFilterModalDisplay, setIsAddFilterModalDisplay] = useState<boolean>(false)
+  //linter
+  // const [isAddFilterModalDisplay, setIsAddFilterModalDisplay] = useState<boolean>(false)
+  const isAddFilterModalDisplay = false;
 
   const onTabClick = (tabName: DatasetsTabItem) => {
     setCurrentTab(tabName)

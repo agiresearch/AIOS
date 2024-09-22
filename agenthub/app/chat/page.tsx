@@ -2,9 +2,9 @@
 
 import { Body } from "@/components/chat/body";
 import { Form } from "@/components/chat/form";
-import { Header } from "@/components/chat/header";
+// import { Header } from "@/components/chat/header";
 
-import { useMounted } from "@/lib/mounted";
+// import { useMounted } from "@/lib/mounted";
 import { useEffect, useState } from "react";
 import { serverUrl } from "@/lib/env";
 import axios from 'axios';
@@ -13,6 +13,7 @@ import { AgentCommand } from "@/components/chat/body/message-box";
 
 const Chat = () => {
     const [isMounted, setIsMounted] = useState(false)
+    //@ts-ignore
     const [messages, setMessages] = useState<any[]>([]);
 
     useEffect(() => {
@@ -23,7 +24,8 @@ const Chat = () => {
         console.log('messages', messages)
     }, [messages])
 
-    const addMessage = async (message: any) => {
+    //@ts-ignore
+    const addMessage = async (message: any) => { 
         // setMessages(prev => [...prev, ...parseAgentCommands(message)])
         setMessages(prev => [...prev, 
             {

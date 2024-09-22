@@ -17,6 +17,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                     license,
                     ...otherData,
                     files: {
+                        //@ts-ignore
                         create: files.map((file: any) => ({
                             path: file.path,
                             content: file.content

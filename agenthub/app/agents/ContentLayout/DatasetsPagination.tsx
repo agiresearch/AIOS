@@ -3,6 +3,9 @@
 import { NextPageSVG, PreviousPageSVG } from '@/ui/svgs'
 
 export function DatasetsPagination({page, maxPage}: {page: number, maxPage: number}) {
+  //linter TODO remove line
+  console.log(maxPage)
+
   return (
     <nav>
       <ul className="flex select-none items-center justify-between space-x-2 text-gray-700 sm:justify-center mt-10 mx-auto">

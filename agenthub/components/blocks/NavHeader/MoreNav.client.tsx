@@ -1,4 +1,4 @@
-import { useState } from 'react'
+// import { useState } from 'react'
 import { AppNavItemType, AppNavList } from './constant'
 
 interface MoreNavInfoItem {
@@ -7,7 +7,7 @@ interface MoreNavInfoItem {
 }
 
 export default function MoreNav() {
-  const [a, setA] = useState(false)
+  // const [a, setA] = useState(false)
   const MoreNavInfoList: MoreNavInfoItem[] = [
     { name: 'Website', titleColor: 'blue' },
     { name: 'Community', titleColor: 'yellow' },
@@ -24,8 +24,8 @@ export default function MoreNav() {
               {navInfo.name}
             </div>
             <ul>
-              {AppNavList.filter((appNav) => appNav.type === navInfo.name).map((appNav) => (
-                <li>
+              {AppNavList.filter((appNav) => appNav.type === navInfo.name).map((appNav, index) => (
+                <li key={`fjdkfdf-${index}`}>
                   <a
                     className="flex cursor-pointer items-center whitespace-nowrap px-3 py-1.5 hover:bg-gray-50 hover:underline  dark:hover:bg-gray-800"
                     href={appNav.href}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardBody, Chip, Avatar, Tooltip, Snippet } from "@nextui-org/react";
+import { Card, CardBody, Chip, Tooltip, Snippet } from "@nextui-org/react";
 import ReactMarkdown from 'react-markdown';
 import { Clock, User, FileText, Info, Package } from 'lucide-react';
 
@@ -109,7 +109,7 @@ export default function AgentDetailsPage({ agent }: { agent: Agent }) {
               <h2 className="text-2xl font-semibold mb-4 text-gray-800">Use this agent</h2>
               <Snippet color="secondary" symbol="" variant="flat">
                 <span className=''>from pyopenagi.manager.manager import AgentManager</span>
-                <span className=''>manager.download_agent('example', 'academic_agent')</span>
+                <span className=''>manager.download_agent(&apos;example&apos;, &apos;academic_agent&apos;)</span>
               </Snippet>
             </CardBody>
           </Card>
