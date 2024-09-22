@@ -20,9 +20,9 @@ export default function Markdown({ content }: IProps) {
         setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
     }
 
-    useEffect(() => {
-        console.log(displayedText)
-    }, [displayedText])
+    // useEffect(() => {
+    //     console.log(displayedText)
+    // }, [displayedText])
 
     useEffect(() => {
         let currentIndex = 0;
