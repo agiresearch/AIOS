@@ -9,7 +9,7 @@ export interface BodyProps {
 }
 
 export const Body: React.FC<BodyProps> = ({
-    messages
+    messages,
 }) => {
 //     const messages = [
 //         {
