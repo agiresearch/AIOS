@@ -1,8 +1,26 @@
 import { Input } from "@/components/chat/ui/input";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import axios from 'axios';
+import { serverUrl } from "@/lib/env";
+import { ChatMessageProps } from "./body/message-box";
 
 
 export const Form = () => {
+    const [agents, setAgents] = useState<any[]>();
+    const target = useRef<HTMLButtonElement>(null);
+    const [value, setValue] = useState('');
+
+    const [chatStarted, setChatStarted] = useState(false);
+    const [messages, setMessages] = useState<Array<ChatMessageProps>>([]);
+
+    useEffect(() => {
+        const _ = async () => {
+            const response = await axios.get(`${serverUrl}/get_all_agents`);
+            setAgents(response.data.agents)
+        }
+        _()
+    }, [])
+
     const sendMessage = (a: any) => console.log(a);
 
     const [message, setMessage] = useState<string>("");

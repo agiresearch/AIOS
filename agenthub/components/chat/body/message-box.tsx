@@ -33,3 +33,13 @@ export const MessageBox = ({
         </div>
     )
 }
+
+export interface ChatMessageProps {
+    agentName: 'math' | 'story' | 'user';
+    query: string | AgentCommand[];
+}
+
+export interface AgentCommand {
+    name: string;
+    content: string;
+}

@@ -1,5 +1,4 @@
 import ReactMarkdown from 'react-markdown';
-import { toast } from 'sonner';
 import copy from "copy-to-clipboard";
 import { Clipboard, Check } from 'lucide-react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
