@@ -47,7 +47,7 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
 
     useEffect(() => {
         axios({
-          url: "http://localhost:8000/get_all_agents",
+          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents",
           method: "get",
         }).then((res) => {
           // console.log('heyy')
