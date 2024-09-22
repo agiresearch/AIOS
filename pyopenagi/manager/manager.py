@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 class AgentManager:
-    def __init__(self, base_url: str, base_path: str = '/Users/rama2r/AIOS'):
+    def __init__(self, base_url: str, base_path: str = '/home/balajirw10/deploy/AIOS'):
         self.base_url = base_url
         self.base_path = base_path
         self.cache_dir = Path(f'{self.base_path}/agenthub/cache')
