@@ -7,12 +7,21 @@ import Text from "@tiptap/extension-text";
 import { EditorContent, ReactRenderer, useEditor } from "@tiptap/react";
 import React, { useEffect, useState } from "react";
 import { MentionList } from "./MentionList";
+// import StarterKit from '@tiptap/starter-kit'
 import dynamic from "next/dynamic";
 
+export interface EditorProps {
+    callback: (s: string) => void
+}
 
-export const Editor = () => {
+export const Editor: React.FC<EditorProps> = ({
+    callback
+}) => {
+    const handleChange = (s: string) => {
+        console.log('handling', s)
+        callback(s);
+    }
 
-    
     const editor = useEditor({
         editorProps: { attributes: { class: "editor" } },
         immediatelyRender: false,
@@ -22,6 +31,7 @@ export const Editor = () => {
                 HTMLAttributes: { class: "paragraph" }
             }),
             Text,
+            // StarterKit,
             Mention.configure({
                 HTMLAttributes: { class: "mentionNode" },
                 suggestion: {
@@ -57,18 +67,22 @@ export const Editor = () => {
                     }
                 }
             })
-        ]
+        ],
+        onUpdate: ({ editor }) => {
+            handleChange(editor.getText());
+        },
     });
 
     const [isMounted, setIsMounted] = useState(false)
-  
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     if (!isMounted) {
         return null // or a loading placeholder
     }
 
     return <EditorContent editor={editor} />;
+    // return <div></div>
 };

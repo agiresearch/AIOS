@@ -23,7 +23,7 @@ export const MentionItem = ({
       ref={ref}
       className={"mentionsItem" + (className ? ` ${className}` : "")}
       style={{
-        backgroundColor: isActive ? "lightgrey" : undefined,
+        backgroundColor: isActive ? "rgba(88, 101, 242, 0.3)" : undefined,
         ...style
       }}
       {...props}

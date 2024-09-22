@@ -46,9 +46,9 @@ import '@/styles/google-font-IBM-Plex-Mono.css'
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Hugging Face – The AI community building the future.',
+  title: 'AIOS - The future of agents',
   openGraph: {
-    title: 'Hugging Face – The AI community building the future.',
+    title: 'AIOS - The future of agents',
     type: 'website',
     url: 'huggingface',
     images: 'https://huggingface.co/front/thumbnails/v2-2.png',

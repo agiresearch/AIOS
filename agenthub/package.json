@@ -13,6 +13,7 @@
     "@prisma/client": "^5.19.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
+    "@tiptap/pm": "^2.2.4",
     "@tiptap/extension-document": "^2.7.2",
     "@tiptap/extension-mention": "^2.7.2",
     "@tiptap/extension-paragraph": "^2.7.2",
@@ -36,8 +37,7 @@
     "react-popper": "^2.3.0",
     "react-quill-patched": "^3.0.4",
     "react-syntax-highlighter": "^15.5.0",
-    "sonner": "^1.5.0",
-    "tippy.js": "^6.3.7"
+    "sonner": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^20",

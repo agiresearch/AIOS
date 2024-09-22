@@ -30,6 +30,10 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
 
     const isMounted = useIsMounted();
     const [people, setPeople] = useState<NamedAgent[]>([]);
+
+    useEffect(() => {
+      console.log(people);
+    }, [people])
     // useEffect(() => {
     //   axios({
     //     url: "http://localhost:3000",
@@ -46,7 +50,9 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
           url: "http://localhost:8000/get_all_agents",
           method: "get",
         }).then((res) => {
-          if (!isMounted.current) return;
+          // console.log('heyy')
+          // if (!isMounted.current) return;
+          // console.log(res.data, 'ress');
           setPeople(res.data.agents ?? []);
         });
       }, [query, isMounted]);
@@ -90,8 +96,18 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
     const [el, setEl] = useState<HTMLDivElement | null>(null);
     //@ts-ignore
     const { styles, attributes } = usePopper(referenceEl, el, {
-      placement: "bottom-start"
+      placement: "top-start"
     });
+
+    const [_isMounted, set_IsMounted] = useState(false)
+
+    useEffect(() => {
+        set_IsMounted(true)
+    }, [])
+
+    if (!_isMounted) {
+        return null // or a loading placeholder
+    }
 
     return createPortal(
       <div
