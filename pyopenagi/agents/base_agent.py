@@ -43,7 +43,7 @@ class BaseAgent:
         ):
 
         self.agent_name = agent_name
-        self.manager = AgentManager('http://localhost:3000')
+        self.manager = AgentManager('https://agenthub-lite.vercel.app/')
 
         author, name, version = self.agent_name.split('/')
 
