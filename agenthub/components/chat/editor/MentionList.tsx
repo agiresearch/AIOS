@@ -51,7 +51,7 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
         method: "POST",
         data: {
           type: 'GET',
-          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
+          url: "http://35.232.56.61:8000/get_all_agents/"
         }
       }).then((res) => {
         // console.log('heyy')
