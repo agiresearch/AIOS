@@ -27,7 +27,7 @@ class AgentFactory:
 
         self.agent_log_mode = agent_log_mode
 
-        self.manager = AgentManager('https://agenthub-lite.vercel.app/')
+        self.manager = AgentManager('https://agenthub.aios.foundation/')
 
     def snake_to_camel(self, snake_str):
         components = snake_str.split('_')

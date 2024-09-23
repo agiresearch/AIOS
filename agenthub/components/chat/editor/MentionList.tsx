@@ -61,7 +61,7 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
       // });
 
       const _ = async () => {
-        const response = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+        const response = await axios.post('https://agenthub.aios.foundation/api/proxy', {
           type: 'GET',
           url: "http://35.232.56.61:8000/get_all_agents"
         });

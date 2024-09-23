@@ -40,7 +40,7 @@ const Chat = () => {
     }
 
     const _ = async (command: AgentCommand) => {
-        const addAgentResponse = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+        const addAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
             type: 'POST',
             url: `${serverUrl}/add_agent`,
             payload: {
@@ -55,7 +55,7 @@ const Chat = () => {
         await new Promise(resolve => setTimeout(resolve, 1050));
 
         // Second request: Execute agent
-        const executeAgentResponse = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+        const executeAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
             type: 'GET',
             url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
         });

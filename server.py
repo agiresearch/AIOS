@@ -35,7 +35,7 @@ getLLMState, setLLMState, setLLMCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
 getManager, setManager, setManagerCallback = useGlobalState()
 
-setManager(AgentManager('https://agenthub-lite.vercel.app/'))
+setManager(AgentManager('https://agenthub.aios.foundation/'))
 
 # parser = parse_global_args()
 # args = parser.parse_args()
