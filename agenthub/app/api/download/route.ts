@@ -36,6 +36,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     if (result != null) {
       return NextResponse.json({ ...result });
     }
+
   }
 
 
