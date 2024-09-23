@@ -121,7 +121,8 @@ class AgentManager:
     def list_available_agents(self) -> List[Dict[str, str]]:
         response = requests.get(f"{self.base_url}/api/get_all_agents")
         response.raise_for_status()
-        response: dict = response.json()['']
+
+        response: dict = response.json()
 
         agent_list = []
 
@@ -205,18 +206,8 @@ class AgentManager:
 if __name__ == '__main__':
     manager = AgentManager('http://localhost:3000')
     # manager.upload_agent('Balaji R', 'Cool Agent', '0.0.1', '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
-    # manager.upload_agent(None, None, None, '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
-    downloaded_path = manager.download_agent('example', 'academic_agent')
+    manager.upload_agent(None, None, None, '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
+    # downloaded_path = manager.download_agent('example', 'academic_agent')
     # print(f"Agent downloaded to: {downloaded_path}")
 
 
-# dynamically loads the module from the path
-    # author, name = agent_name.split("/")
-    # module_name = ".".join(
-    #     ["aios", "cache", author, name, version, "agent"])
-    # class_name = self.snake_to_camel(name)
-
-    # agent_module = importlib.import_module(module_name)
-
-    # # dynamically loads the class
-    # agent_class = getattr(agent_module, class_name)

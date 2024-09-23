@@ -2,6 +2,12 @@ import os
 
 import json
 
+from pyopenagi.manager.manager import AgentManager
+
+from .agent_process import (
+    AgentProcess
+)
+
 import time
 
 from threading import Thread
@@ -36,7 +42,18 @@ class BaseAgent:
     def __init__(self, agent_name, task_input, agent_process_factory, log_mode: str):
         # super().__init__()
         self.agent_name = agent_name
-        self.config = self.load_config()
+        self.manager = AgentManager('https://agenthub-lite.vercel.app/')
+
+        author, name, version = self.agent_name.split('/')
+
+        path_version = self.manager._version_to_path(version)
+
+        self.config = self.manager._get_agent_metadata(
+            f'{self.manager.cache_dir / author / name / path_version}')
+        
+        print(self.config)
+
+        # self.config = self.load_config()
         self.tool_names = self.config["tools"]
 
         self.agent_process_factory = agent_process_factory

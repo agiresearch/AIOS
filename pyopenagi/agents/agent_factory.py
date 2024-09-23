@@ -3,6 +3,7 @@ from pympler import asizeof
 from .interact import Interactor
 # from ..manager.manager import AgentManager
 import os
+
 import random
 import threading
 import importlib
@@ -27,6 +28,7 @@ class AgentFactory:
 
         self.agent_log_mode = agent_log_mode
 
+        self.manager = AgentManager('https://agenthub.aios.foundation/')
         # self.manager = AgentManager('http://localhost:3000')
 
     def snake_to_camel(self, snake_str):
@@ -40,6 +42,9 @@ class AgentFactory:
         for agent in agent_list:
             print(agent)
 
+    def load_agent_instance(self, compressed_name: str):
+        name_split = compressed_name.split('/')
+        agent_class = self.manager.load_agent(*name_split)
     # def load_agent_instance(self, compressed_name: str):
     #     name_split = compressed_name.split('/')
     #     agent_class = self.manager.load_agent(*name_split)
