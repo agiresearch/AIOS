@@ -6,7 +6,7 @@ import { Form } from "@/components/chat/form";
 
 // import { useMounted } from "@/lib/mounted";
 import { useEffect, useState } from "react";
-import { serverUrl } from "@/lib/env";
+import { baseUrl, serverUrl } from "@/lib/env";
 import axios from 'axios';
 
 import { AgentCommand } from "@/components/chat/body/message-box";
@@ -40,7 +40,7 @@ const Chat = () => {
     }
 
     const _ = async (command: AgentCommand) => {
-        const addAgentResponse = await axios.post('http://localhost:3000/api/proxy', {
+        const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
             type: 'POST',
             url: `${serverUrl}/add_agent`,
             payload: {
@@ -58,7 +58,7 @@ const Chat = () => {
 
         try {
              // Second request: Execute agent
-            const executeAgentResponse = await axios.post('http://localhost:3000/api/proxy', {
+            const executeAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
                 type: 'GET',
                 url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
             });
