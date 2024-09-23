@@ -47,8 +47,12 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
 
     useEffect(() => {
         axios({
-          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents",
-          method: "get",
+          url: 'https://agenthub-lite.vercel.app/api/proxy',
+          method: "post",
+          data: {
+            type: 'GET',
+            url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
+          }
         }).then((res) => {
           // console.log('heyy')
           // if (!isMounted.current) return;
