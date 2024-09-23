@@ -15,7 +15,7 @@ import { MentionItem } from "./MentionItem";
 import type { NamedAgent } from "./types";
 import { useIsMounted } from "./useIsMounted";
 
-interface MentionListProps extends SuggestionProps {}
+interface MentionListProps extends SuggestionProps { }
 
 interface MentionListActions {
   onKeyDown: (props: SuggestionKeyDownProps) => void;
@@ -46,20 +46,33 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
     // }, [query, isMounted]);
 
     useEffect(() => {
-        axios({
-          url: 'https://agenthub-lite.vercel.app/api/proxy',
-          method: "post",
-          data: {
-            type: 'GET',
-            url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
-          }
-        }).then((res) => {
-          // console.log('heyy')
-          // if (!isMounted.current) return;
-          // console.log(res.data, 'ress');
-          setPeople(res.data.agents ?? []);
+      axios({
+        url: 'https://agenthub-lite.vercel.app/api/proxy',
+        method: "POST",
+        data: {
+          type: 'GET',
+          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
+        }
+      }).then((res) => {
+        // console.log('heyy')
+        // if (!isMounted.current) return;
+        // console.log(res.data, 'ress');
+        setPeople(res.data.agents ?? []);
+      });
+
+      const _ = async () => {
+        const response = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+          type: 'GET',
+          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
         });
-      }, [query, isMounted]);
+
+        // console.log(response.data, 'response');
+        setPeople(response.data.agents ?? []);
+      }
+
+      _();
+
+    }, [query, isMounted]);
 
     const handleCommand = (index: any) => {
       const selectedPerson = people[index];
@@ -106,11 +119,11 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
     const [_isMounted, set_IsMounted] = useState(false)
 
     useEffect(() => {
-        set_IsMounted(true)
+      set_IsMounted(true)
     }, [])
 
     if (!_isMounted) {
-        return null // or a loading placeholder
+      return null // or a loading placeholder
     }
 
     return createPortal(
