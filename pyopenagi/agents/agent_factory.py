@@ -3,7 +3,7 @@ from pympler import asizeof
 from .interact import Interactor
 from ..manager.manager import AgentManager
 import os
-import random
+
 
 class AgentFactory:
     def __init__(self,
@@ -41,7 +41,6 @@ class AgentFactory:
     def load_agent_instance(self, compressed_name: str):
         name_split = compressed_name.split('/')
         agent_class = self.manager.load_agent(*name_split)
-  
         return agent_class
 
     def activate_agent(self, agent_name: str, task_input):
