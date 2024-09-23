@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import axios from 'axios'
+import { retryOperation } from '@/lib/utils/retry'
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -15,10 +16,14 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     switch (type.toUpperCase()) {
       case 'GET':
-        response = await axios.get(url)
+        response = await retryOperation(async () => {
+            return await axios.get(url);
+          });
         break
       case 'POST':
-        response = await axios.post(url, payload)
+        response = await retryOperation(async () => {
+            return await axios.post(url, payload);
+          });
         break
       case 'PUT':
         response = await axios.put(url, payload)

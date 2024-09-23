@@ -3,7 +3,7 @@
 import { Input } from "@/components/chat/ui/input";
 import { useState, useRef, useEffect, useMemo } from "react";
 import axios from 'axios';
-import { serverUrl } from "@/lib/env";
+import { baseUrl, serverUrl } from "@/lib/env";
 import { ChatMessageProps } from "./body/message-box";
 import { useMounted } from "@/lib/mounted";
 import dynamic from "next/dynamic";
@@ -80,7 +80,7 @@ export const Form: React.FC<FormProps> = ({
 
     useEffect(() => {
         const _ = async () => {
-            const response = await axios.post('https://agenthub.aios.foundation/api/proxy', {
+            const response = await axios.post(`${baseUrl}/api/proxy`, {
                 type: 'GET',
                 url: `${serverUrl}/get_all_agents`,
             });

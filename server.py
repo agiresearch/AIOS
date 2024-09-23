@@ -42,32 +42,32 @@ setManager(AgentManager('https://agenthub.aios.foundation/'))
 
 # check if the llm information was specified in args
 
-# setLLMState(
-#     useKernel(
-#         llm_name='gpt-4o-mini',
-#         max_gpu_memory=None,
-#         eval_device=None,
-#         max_new_tokens=256,
-#         log_mode='console',
-#         use_backend=None
-#     )
-# )
+setLLMState(
+    useKernel(
+        llm_name='gpt-4o-mini',
+        max_gpu_memory=None,
+        eval_device=None,
+        max_new_tokens=256,
+        log_mode='console',
+        use_backend=None
+    )
+)
 
 
 
 # deploy specific
 # leave commented
 # TODO conditional check if in deployment environment
-setLLMState(
-    useKernel(
-        llm_name='mixtral-8x7b-32768',
-        max_gpu_memory=None,
-        eval_device=None,
-        max_new_tokens=512,
-        log_mode='console',
-        use_backend=None
-    )
-)
+# setLLMState(
+#     useKernel(
+#         llm_name='mixtral-8x7b-32768',
+#         max_gpu_memory=None,
+#         eval_device=None,
+#         max_new_tokens=512,
+#         log_mode='console',
+#         use_backend=None
+#     )
+# )
 
 
 startScheduler, stopScheduler = useFIFOScheduler(
