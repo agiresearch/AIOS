@@ -14,6 +14,7 @@ import { usePopper } from "react-popper";
 import { MentionItem } from "./MentionItem";
 import type { NamedAgent } from "./types";
 import { useIsMounted } from "./useIsMounted";
+import { baseUrl } from "@/lib/env";
 
 interface MentionListProps extends SuggestionProps { }
 
@@ -61,7 +62,7 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
       // });
 
       const _ = async () => {
-        const response = await axios.post('https://agenthub.aios.foundation/api/proxy', {
+        const response = await axios.post(`${baseUrl}/api/proxy`, {
           type: 'GET',
           url: "http://35.232.56.61:8000/get_all_agents"
         });
