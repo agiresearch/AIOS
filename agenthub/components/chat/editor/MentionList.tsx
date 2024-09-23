@@ -46,24 +46,24 @@ export const MentionList = forwardRef<MentionListActions, MentionListProps>(
     // }, [query, isMounted]);
 
     useEffect(() => {
-      axios({
-        url: 'https://agenthub-lite.vercel.app/api/proxy',
-        method: "POST",
-        data: {
-          type: 'GET',
-          url: "http://35.232.56.61:8000/get_all_agents/"
-        }
-      }).then((res) => {
-        // console.log('heyy')
-        // if (!isMounted.current) return;
-        // console.log(res.data, 'ress');
-        setPeople(res.data.agents ?? []);
-      });
+      // axios({
+      //   url: 'https://agenthub-lite.vercel.app/api/proxy',
+      //   method: "POST",
+      //   data: {
+      //     type: 'GET',
+      //     url: "http://35.232.56.61:8000/get_all_agents/"
+      //   }
+      // }).then((res) => {
+      //   // console.log('heyy')
+      //   // if (!isMounted.current) return;
+      //   // console.log(res.data, 'ress');
+      //   setPeople(res.data.agents ?? []);
+      // });
 
       const _ = async () => {
         const response = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
           type: 'GET',
-          url: "http://35.232.56.61:8000/get_all_agents/get_all_agents"
+          url: "http://35.232.56.61:8000/get_all_agents"
         });
 
         // console.log(response.data, 'response');
