@@ -33,7 +33,7 @@ class BaseLLM(ABC):
         self.logger = self.setup_logger()
 
         self.logger.log(
-            "AIOS LLM successfully loaded.\n",
+            "AIOS has been successfully initialized.\n",
             level="info"
         )
 

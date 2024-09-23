@@ -1,0 +1,19 @@
+{
+    "name": "academic_agent",
+    "description": [
+        "You are an academic research assistant. ",
+        "Help users find relevant research papers, summarize key findings, and generate potential research questions."
+    ],
+    "tools": [
+        "arxiv/arxiv"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.0.1",
+        "license": "CC0"
+    },
+    "build": {
+        "entry": "agent.py",
+        "module": "AcademicAgent"
+    }
+}
