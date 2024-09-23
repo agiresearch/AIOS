@@ -80,7 +80,7 @@ export const Form: React.FC<FormProps> = ({
 
     useEffect(() => {
         const _ = async () => {
-            const response = await axios.post('https://agenthub.aios.foundation/api/proxy', {
+            const response = await axios.post('http://localhost:3000/api/proxy', {
                 type: 'GET',
                 url: `${serverUrl}/get_all_agents`,
             });

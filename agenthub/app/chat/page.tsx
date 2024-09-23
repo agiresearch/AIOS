@@ -40,7 +40,7 @@ const Chat = () => {
     }
 
     const _ = async (command: AgentCommand) => {
-        const addAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
+        const addAgentResponse = await axios.post('http://localhost:3000/api/proxy', {
             type: 'POST',
             url: `${serverUrl}/add_agent`,
             payload: {
@@ -54,14 +54,25 @@ const Chat = () => {
         // Wait for 1050ms
         await new Promise(resolve => setTimeout(resolve, 1050));
 
-        // Second request: Execute agent
-        const executeAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
-            type: 'GET',
-            url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
-        });
+        let recent_response: any;
 
-        console.log(executeAgentResponse.data);
-        const recent_response = executeAgentResponse.data.response.result.content;
+        try {
+             // Second request: Execute agent
+            const executeAgentResponse = await axios.post('http://localhost:3000/api/proxy', {
+                type: 'GET',
+                url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
+            });
+
+            console.log(executeAgentResponse.data);
+            recent_response = executeAgentResponse.data.response.result.content;
+
+            if (typeof recent_response !== 'string') {
+                recent_response = "Agent Had Difficulty Thinking"
+            }
+        } catch (e) {
+            recent_response = "Agent Had Difficulty Thinking"
+        }
+       
 
         //return recent_response
         return {
