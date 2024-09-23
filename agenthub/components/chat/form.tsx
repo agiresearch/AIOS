@@ -80,7 +80,10 @@ export const Form: React.FC<FormProps> = ({
 
     useEffect(() => {
         const _ = async () => {
-            const response = await axios.get(`${serverUrl}/get_all_agents`);
+            const response = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+                type: 'GET',
+                url: `${serverUrl}/get_all_agents`,
+            });
             setAgents(response.data.agents)
         }
         _()

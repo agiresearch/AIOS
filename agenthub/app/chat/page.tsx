@@ -40,21 +40,30 @@ const Chat = () => {
     }
 
     const _ = async (command: AgentCommand) => {
-        const _submit = await axios.post(`${serverUrl}/add_agent`, {
-            agent_name: command.name,
-            task_input: command.content,
+        const addAgentResponse = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+            type: 'POST',
+            url: `${serverUrl}/add_agent`,
+            payload: {
+                agent_name: command.name,
+                task_input: command.content,
+            }
         });
 
-        console.log(_submit.data)
+        console.log(addAgentResponse.data);
 
+        // Wait for 1050ms
         await new Promise(resolve => setTimeout(resolve, 1050));
 
-        const response = await axios.get(`${serverUrl}/execute_agent?pid=${_submit.data.pid}`)
+        // Second request: Execute agent
+        const executeAgentResponse = await axios.post('https://agenthub-lite.vercel.app/api/proxy', {
+            type: 'GET',
+            url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
+        });
 
-        console.log(response.data)
-        const recent_response = response.data.response.result.content
-        
-        // return recent_response
+        console.log(executeAgentResponse.data);
+        const recent_response = executeAgentResponse.data.response.result.content;
+
+        //return recent_response
         return {
             name: command.name,
             content: recent_response
