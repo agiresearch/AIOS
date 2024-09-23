@@ -105,9 +105,9 @@ const Chat = () => {
             <div className='h-[40px] w-full'></div>
             <div className="flex flex-col h-full w-3/5 items-center relative">
                 <Body messages={messages} />
-                <div className="w-full fixed bottom-0">
+                <div className="w-full fixed bottom-0 bg-neutral-800">
                     <Form callback={addMessage} />
-                    <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px] bg-neutral-800 ">AIOS could make errors. Consider checking important information.</p>
+                    <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px ">AIOS could make errors. Consider checking important information.</p>
                 </div>
             </div>
         </div> : null
