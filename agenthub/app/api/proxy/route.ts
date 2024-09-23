@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import axios from 'axios'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
     const { type, payload, url } = await request.json()
 
