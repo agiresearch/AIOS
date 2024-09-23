@@ -26,7 +26,7 @@ export default function NavHeader() {
   return (
     <div className="SVELTE_HYDRATER contents" data-props='{"isWide":false,"isZh":true}' data-target="MainHeader">
       <header className="border-b border-gray-100 py-3 items-center flex">
-        <div className="container flex h-16 w-full items-center px-4">
+        <div className="container flex h-10 w-full items-center px-4">
           <div className="flex items-center pr-4 flex-1">
             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/">
               <img
