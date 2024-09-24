@@ -2,7 +2,7 @@ class Query:
     def __init__(self,
             messages,
             tools = None,
-            message_return_type = "text"
+            message_return_type = "json"
         ) -> None:
         """Query format
 
