@@ -22,4 +22,6 @@ const SectionContainer = forwardRef(
   )
 )
 
+SectionContainer.displayName = 'SectionContainer'
+
 export default SectionContainer

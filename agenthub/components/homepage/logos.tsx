@@ -124,4 +124,6 @@ const LogosRow: React.FC<{ className?: string }> = ({ className }) => (
   </div>
 )
 
+Logos.displayName = 'Logos'
+
 export default Logos
