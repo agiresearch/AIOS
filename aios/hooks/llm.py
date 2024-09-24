@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, Future
+from contextlib import contextmanager
 
 from typing import Any
 from random import randint
@@ -109,3 +110,17 @@ def useFactory(params: FactoryParams):
             raise ValueError(f"Process with ID '{process_id}' not found.")
 
     return submitAgent, awaitAgentExecution
+
+
+@contextmanager
+@validate(SchedulerParams)
+def fifo_scheduler(params: SchedulerParams):
+    if params.get_queue_message is None:
+        from aios.hooks.stores._global import global_llm_req_queue_get_message
+        params.get_queue_message = global_llm_req_queue_get_message
+
+    scheduler = FIFOScheduler(**params.model_dump())
+
+    scheduler.start()
+    yield
+    scheduler.stop()

@@ -7,7 +7,7 @@ from aios.utils.utils import (
 import os
 import warnings
 
-from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
+from aios.hooks.llm import useFactory, useKernel, fifo_scheduler
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -52,64 +52,55 @@ def main():
 
     # run agents concurrently for maximum efficiency using a scheduler
 
-    startScheduler, stopScheduler = useFIFOScheduler(
-        llm=llm,
-        log_mode=scheduler_log_mode,
-        get_queue_message=None
-    )
-
-    submitAgent, awaitAgentExecution = useFactory(
+    submit_agent, await_agent_execution = useFactory(
         log_mode=agent_log_mode,
         max_workers=64
     )
 
-    startScheduler()
-
-    # register your agents and submit agent tasks
-    """ submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Find recent papers on the impact of social media on mental health in adolescents."
-    )
-    """
-
-    """
-    submitAgent(
-        agent_name="om-raheja/transcribe_agent",
-        task_input="listen to my yap for 5 seconds and write a response to it"
-    )
-    """
-    
-    """
-    submitAgent(
-        agent_name="example/cocktail_mixlogist",
-        task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
-    )
-    """
-    
-    """
-    submitAgent(
-        agent_name="example/cook_therapist",
-        task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
-    )
-    """
-    
-    agent_tasks = [
-        ["example/academic_agent", "Tell me what is the prollm paper mainly about"]
-        # ["example/cocktail_mixlogist", "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."]
-    ]
-    
-    agent_ids = []
-    for agent_name, task_input in agent_tasks:
-        agent_id = submitAgent(
-            agent_name=agent_name,
-            task_input=task_input
+    with fifo_scheduler(llm=llm, log_mode=scheduler_log_mode, get_queue_message=None):
+        # register your agents and submit agent tasks
+        """ submitAgent(
+            agent_name="example/academic_agent",
+            task_input="Find recent papers on the impact of social media on mental health in adolescents."
         )
-        agent_ids.append(agent_id)
-    
-    for agent_id in agent_ids:
-        awaitAgentExecution(agent_id)
+        """
 
-    stopScheduler()
+        """
+        submitAgent(
+            agent_name="om-raheja/transcribe_agent",
+            task_input="listen to my yap for 5 seconds and write a response to it"
+        )
+        """
+
+        """
+        submitAgent(
+            agent_name="example/cocktail_mixlogist",
+            task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
+        )
+        """
+
+        """
+        submitAgent(
+            agent_name="example/cook_therapist",
+            task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
+        )
+        """
+
+        agent_tasks = [
+            ["example/academic_agent", "Tell me what is the prollm paper mainly about"]
+            # ["example/cocktail_mixlogist", "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."]
+        ]
+
+        agent_ids = []
+        for agent_name, task_input in agent_tasks:
+            agent_id = submit_agent(
+                agent_name=agent_name,
+                task_input=task_input
+            )
+            agent_ids.append(agent_id)
+
+        for agent_id in agent_ids:
+            await_agent_execution(agent_id)
 
     clean_cache(root_directory="./")
 
