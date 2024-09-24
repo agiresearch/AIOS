@@ -1,18 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: false,
-    async rewrites() {
-        return [
+
+    images: {
+        remotePatterns: [
           {
-            source: '/agents',
-            destination: '/agents?p=0',
+            protocol: 'https',
+            hostname: 'supabase.com',
+            port: '',
+            pathname: '**',
           },
-          {
-            source: '/',
-            destination: '/chat',
-          },
-          
-        ]
+        ],
       },
 };
 

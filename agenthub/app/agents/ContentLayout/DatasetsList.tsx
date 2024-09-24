@@ -9,8 +9,8 @@ export default async function DatasetsList(
   { searchParams }:
     { searchParams: { [key: string]: string | string[] | undefined } }) {
 
-      let page;
-  if (searchParams==undefined) {
+  let page;
+  if (typeof searchParams.p !== 'string') {
     page = 0;
   } else {
     page = parseInt(searchParams.p as string)

@@ -44,20 +44,21 @@ import '@/styles/global-stylesheet.css'
 import '@/styles/google-font-Source-Sans-Pro.css'
 import '@/styles/google-font-IBM-Plex-Mono.css'
 import "./globals.css";
+import "./ts.css"
 
 export const metadata: Metadata = {
-  title: 'AIOS - The future of agents',
+  title: 'AIOS – The future of AI Agents',
   openGraph: {
-    title: 'AIOS - The future of agents',
+    title: 'AIOS – The future of AI Agents',
     type: 'website',
-    url: 'huggingface',
-    images: 'https://huggingface.co/front/thumbnails/v2-2.png',
+    url: 'aiosfoundation',
+    images: 'https://aiosfoundation.org/assets/images/about/Agent.svg',
   },
   description:
     'We’re on a journey to advance and democratize artificial intelligence through open source and open science.',
   twitter: {
     card: 'summary_large_image',
-    site: '@huggingface',
+    site: '@aiosfoundation',
   },
   appLinks: {},
   // fb: { app_id: '1321688464574422', },
@@ -74,11 +75,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <main
-            className="HomePage flex min-h-screen flex-col bg-white text-black dark:bg-gray-950"
+            className="HomePage flex min-h-screen flex-col text-black bg-white dark:bg-gray-950"
             style={{ fontSize: 16 }}
           >
             <div className="flex min-h-screen flex-col">
               <NavHeader />
+              {/* <div className='w-full bg-inherit opacity-0 h-[24px]'></div> */}
               {children}
             </div>
           </main>
