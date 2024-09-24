@@ -18,7 +18,7 @@ type Props = {
   
     const arrowClass = type === 'primary' ? '' : 'relative -left-1 group-hover:left-0'
   
-    let buttonStyles = {
+    const buttonStyles = {
       textShadow: 'none',
     }
     if (type === 'primary') {
