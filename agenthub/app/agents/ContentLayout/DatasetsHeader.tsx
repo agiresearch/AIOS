@@ -1,6 +1,6 @@
 'use client'
 
-import { FilterSVG, InnerDatasetSVG, SortSVG, AgentSVG } from '@/ui/svgs'
+import { FilterSVG, SortSVG } from '@/ui/svgs'
 import { Input } from '@nextui-org/react'
 import { AgentListGenerator } from '../const';
 
