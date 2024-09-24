@@ -146,7 +146,7 @@ def aios_starter(
     use_backend
 ):
     """
-    A context manager that starts a LLM kernel and a scheduler for running agents,
+    Starts a LLM kernel and a scheduler for running agents,
     returning a submitAgent and awaitAgentExecution function.
 
     Args:
