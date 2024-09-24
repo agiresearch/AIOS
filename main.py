@@ -7,7 +7,7 @@ from aios.utils.utils import (
 import os
 import warnings
 
-from aios.hooks.llm import useFactory, useKernel, fifo_scheduler
+from aios.hooks.llm import aios_starter
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -30,34 +30,10 @@ def main():
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
     args = parser.parse_args()
-
-    llm_name = args.llm_name
-    max_gpu_memory = args.max_gpu_memory
-    eval_device = args.eval_device
-    max_new_tokens = args.max_new_tokens
-    scheduler_log_mode = args.scheduler_log_mode
-    agent_log_mode = args.agent_log_mode
-    llm_kernel_log_mode = args.llm_kernel_log_mode
-    use_backend = args.use_backend
     load_dotenv()
 
-    llm = useKernel(
-        llm_name=llm_name,
-        max_gpu_memory=max_gpu_memory,
-        eval_device=eval_device,
-        max_new_tokens=max_new_tokens,
-        log_mode=llm_kernel_log_mode,
-        use_backend=use_backend
-    )
+    with aios_starter(**vars(args)) as (submit_agent, await_agent_execution):
 
-    # run agents concurrently for maximum efficiency using a scheduler
-
-    submit_agent, await_agent_execution = useFactory(
-        log_mode=agent_log_mode,
-        max_workers=64
-    )
-
-    with fifo_scheduler(llm=llm, log_mode=scheduler_log_mode, get_queue_message=None):
         # register your agents and submit agent tasks
         """ submitAgent(
             agent_name="example/academic_agent",
