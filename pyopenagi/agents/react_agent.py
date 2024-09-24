@@ -36,22 +36,24 @@ class ReactAgent(BaseAgent):
             [
                 f'You are given the available tools from the tool list: {json.dumps(self.tool_info)} to help you solve problems. ',
                 'Generate a plan of steps you need to take. ',
-                'The plan must follow the json format as: ',
+                'The plan must follow the json format as below: ',
                 '[',
                 '{"message": "message_value1","tool_use": [tool_name1, tool_name2,...]}',
                 '{"message": "message_value2", "tool_use": [tool_name1, tool_name2,...]}',
                 '...',
                 ']',
-                'In each step of the planned workflow, you must select the most related tool to use',
-                'Followings are some plan examples:',
+                'In each step of the planned plan, identify tools to use and recognize no tool is necessary. ',
+                'Followings are some plan examples. ',
+                '['
                 '[',
                 '{"message": "gather information from arxiv. ", "tool_use": ["arxiv"]},',
                 '{"message", "write a summarization based on the gathered information. ", "tool_use": []}',
                 '];',
                 '[',
-                '{"message": "identify the tool that you need to call to obtain information. ", "tool_use": ["imdb_top_movies", "imdb_top_series"]},',
-                '{"message", "give recommendations for the user based on the information. ", "tool_use": []}',
-                '];',
+                '{"message": "gather information from arxiv. ", "tool_use": ["arxiv"]},',
+                '{"message", "understand the current methods and propose ideas that can improve ", "tool_use": []}',
+                ']',
+                ']'
             ]
         )
 
@@ -138,7 +140,7 @@ class ReactAgent(BaseAgent):
                     message = step["message"]
                     tool_use = step["tool_use"]
 
-                    prompt = f"At step {i + 1}, you need to: {message}. Outputs should be pure text without json object"
+                    prompt = f"At step {i + 1}, you need to: {message}. Outputs should be pure text without any json object"
                     self.messages.append({
                         "role": "user",
                         "content": prompt
