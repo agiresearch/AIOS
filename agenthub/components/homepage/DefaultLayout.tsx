@@ -25,7 +25,7 @@ const DefaultLayout = (props: Props) => {
   return (
     <>
       {/* <Nav hideNavbar={hideHeader} /> */}
-      <main className={cn('relative min-h-screen', className)}>{children}</main>
+      <main className={cn('relative min-h-[70vh]', className)}>{children}</main>
       {/* <Footer className={footerClassName} hideFooter={hideFooter} /> */}
     </>
   )

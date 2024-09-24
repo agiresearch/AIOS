@@ -103,7 +103,7 @@ const Chat = () => {
         isMounted ? <div className="bg-neutral-800 w-full h-[85vh] flex flex-col items-center">
             {/* <Header /> */}
             <div className='h-[40px] w-full'></div>
-            <div className="flex flex-col h-full w-3/5 items-center relative">
+            <div className="flex flex-col h-full w-4/5 items-center relative">
                 <Body messages={messages} />
                 <div className="w-full fixed bottom-0 bg-neutral-800">
                     <Form callback={addMessage} />

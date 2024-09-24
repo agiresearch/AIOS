@@ -149,7 +149,7 @@ export const Form: React.FC<FormProps> = ({
     }
 
     return (
-        <div className="relative px-2 sm:px-12 md:px-52 2xl:px-96 w-3/5 mx-auto bg-neutral-800">
+        <div className="relative px-2 w-3/4 mx-auto bg-neutral-800">
             {mounted && <Editor callback={handleChange} />}
             {/* <Input
                 placeholder="Message TalkGPT..."

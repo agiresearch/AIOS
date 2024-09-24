@@ -24,17 +24,17 @@ export default function NavHeader() {
   }, [])
 
   return (
-    <div className="SVELTE_HYDRATER contents" data-props='{"isWide":false,"isZh":true}' data-target="MainHeader">
+    <div className="SVELTE_HYDRATER contents z-[999999999999999999999]" data-props='{"isWide":false,"isZh":true}' data-target="MainHeader">
       <header className="border-b border-gray-100 py-3 items-center flex">
         <div className="container flex h-10 w-full items-center px-4">
           <div className="flex items-center pr-4 flex-1">
             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/">
               <img
-                alt="Hugging Face's logo"
+                alt="AIOS's logo"
                 className="w-10 md:mr-2 rounded-full"
                 src="https://chat.aios.foundation/_next/image?url=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F130198651%3Fv%3D4&w=1080&q=75"
               />
-              <span className="hidden whitespace-nowrap text-lg font-bold md:block">Nexus</span>
+              <span className="hidden whitespace-nowrap text-lg font-bold md:block">AIOS</span>
             </a>
             <div className="relative mr-2 flex-1 sm:mr-4 lg:mr-6 lg:max-w-sm">
               <input
