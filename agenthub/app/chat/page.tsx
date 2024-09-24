@@ -6,7 +6,7 @@ import { Form } from "@/components/chat/form";
 
 // import { useMounted } from "@/lib/mounted";
 import { useEffect, useState } from "react";
-import { serverUrl } from "@/lib/env";
+import { baseUrl, serverUrl } from "@/lib/env";
 import axios from 'axios';
 
 import { AgentCommand } from "@/components/chat/body/message-box";
@@ -40,7 +40,7 @@ const Chat = () => {
     }
 
     const _ = async (command: AgentCommand) => {
-        const addAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
+        const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
             type: 'POST',
             url: `${serverUrl}/add_agent`,
             payload: {
@@ -54,14 +54,25 @@ const Chat = () => {
         // Wait for 1050ms
         await new Promise(resolve => setTimeout(resolve, 1050));
 
-        // Second request: Execute agent
-        const executeAgentResponse = await axios.post('https://agenthub.aios.foundation/api/proxy', {
-            type: 'GET',
-            url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
-        });
+        let recent_response: any;
 
-        console.log(executeAgentResponse.data);
-        const recent_response = executeAgentResponse.data.response.result.content;
+        try {
+             // Second request: Execute agent
+            const executeAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
+                type: 'GET',
+                url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
+            });
+
+            console.log(executeAgentResponse.data);
+            recent_response = executeAgentResponse.data.response.result.content;
+
+            if (typeof recent_response !== 'string') {
+                recent_response = "Agent Had Difficulty Thinking"
+            }
+        } catch (e) {
+            recent_response = "Agent Had Difficulty Thinking"
+        }
+       
 
         //return recent_response
         return {
@@ -94,9 +105,9 @@ const Chat = () => {
             <div className='h-[40px] w-full'></div>
             <div className="flex flex-col h-full w-3/5 items-center relative">
                 <Body messages={messages} />
-                <div className="w-full fixed bottom-0">
+                <div className="w-full fixed bottom-0 bg-neutral-800">
                     <Form callback={addMessage} />
-                    <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px] bg-neutral-800 ">AIOS could make errors. Consider checking important information.</p>
+                    <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px ">AIOS could make errors. Consider checking important information.</p>
                 </div>
             </div>
         </div> : null
