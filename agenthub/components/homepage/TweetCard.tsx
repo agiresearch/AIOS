@@ -43,7 +43,7 @@ export function TweetCard(props: TweetCard) {
         </div>
       </div>
 
-      <p className="text-foreground-lighter mt-3 text-base">"{props.quote}"</p>
+      <p className="text-foreground-lighter mt-3 text-base">&quot;{props.quote}&quot;</p>
     </div>
   )
 }
