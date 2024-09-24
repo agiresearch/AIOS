@@ -127,3 +127,38 @@ body {
   border-color: rgb(46, 46, 46);
   border-width: 1px;
 }
+
+@layer base {
+  /* Headings */
+  h1 {
+    @apply text-4xl font-bold mb-4;
+  }
+  h2 {
+    @apply text-3xl font-bold mb-3;
+  }
+  h3 {
+    @apply text-2xl font-bold mb-2;
+  }
+  h4 {
+    @apply text-xl font-bold mb-2;
+  }
+
+  /* Lists */
+  ul, ol {
+    @apply mb-4 pl-8;
+  }
+  ul {
+    @apply list-disc;
+  }
+  ol {
+    @apply list-decimal;
+  }
+  li {
+    @apply mb-1;
+  }
+
+   /* Strong tag */
+   strong {
+    @apply font-bold;
+  }
+}

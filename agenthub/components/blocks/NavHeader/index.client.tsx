@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import SearchBar from './SearchBar.client'
 import { AppNavList } from './constant'
 import AllNavInSmallScreen from './AllNavInSmallScreen.client'
+import { Input } from '@nextui-org/react'
 
 export default function NavHeader() {
   const [isSearchBarShow, setIsSearchBarShow] = useState<boolean>(false)
@@ -25,7 +26,7 @@ export default function NavHeader() {
 
   return (
     <div className="SVELTE_HYDRATER contents z-[999999999999999999999]" data-props='{"isWide":false,"isZh":true}' data-target="MainHeader">
-      <header className="border-b border-gray-100 py-3 items-center flex">
+      <header className="border-b border-gray-600 py-3 items-center flex bg-neutral-800 text-white">
         <div className="container flex h-10 w-full items-center px-4">
           <div className="flex items-center pr-4 flex-1">
             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/">
@@ -37,37 +38,7 @@ export default function NavHeader() {
               <span className="hidden whitespace-nowrap text-lg font-bold md:block">AIOS</span>
             </a>
             <div className="relative mr-2 flex-1 sm:mr-4 lg:mr-6 lg:max-w-sm">
-              <input
-                autoComplete="off"
-                className="form-input-alt h-9 w-full pl-8 pr-3 focus:shadow-xl dark:bg-gray-950"
-                name=""
-                onClick={() => {
-                  setIsSearchBarShow(true)
-                }}
-                onBlur={() => {
-                  setIsSearchBarShow(false)
-                }}
-                placeholder="Search models, datasets, users..."
-                spellCheck="false"
-                type="text"
-              />
-              <svg
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 transform text-gray-400"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
-                aria-hidden="true"
-                focusable="false"
-                role="img"
-                width="1em"
-                height="1em"
-                preserveAspectRatio="xMidYMid meet"
-                viewBox="0 0 32 32"
-              >
-                <path
-                  d="M30 28.59L22.45 21A11 11 0 1 0 21 22.45L28.59 30zM5 14a9 9 0 1 1 9 9a9 9 0 0 1-9-9z"
-                  fill="currentColor"
-                ></path>
-              </svg>
+           
               {isSearchBarShow && <SearchBar />}
             </div>
             <div className="flex flex-none items-center justify-center place-self-stretch p-0.5 lg:hidden">

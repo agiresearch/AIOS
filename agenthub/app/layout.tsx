@@ -80,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             <div className="flex min-h-screen flex-col">
               <NavHeader />
+              {/* <div className='w-full bg-inherit opacity-0 h-[24px]'></div> */}
               {children}
             </div>
           </main>
