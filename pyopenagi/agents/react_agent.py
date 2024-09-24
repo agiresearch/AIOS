@@ -138,7 +138,7 @@ class ReactAgent(BaseAgent):
                     message = step["message"]
                     tool_use = step["tool_use"]
 
-                    prompt = f"At step {i + 1}, you need to: {message}. "
+                    prompt = f"At step {i + 1}, you need to: {message}. Outputs should be pure text without json object"
                     self.messages.append({
                         "role": "user",
                         "content": prompt

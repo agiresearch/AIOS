@@ -67,9 +67,12 @@ class GPTLLM(BaseLLM):
                 messages = messages,
                 tools = agent_process.query.tools,
                 # tool_choice = "required" if agent_process.query.tools else None,
-                max_tokens = self.max_new_tokens
+                max_tokens = self.max_new_tokens,
+                # response_format = {"type": "json_object"}
             )
+            # print(response_message)
             response_message = response.choices[0].message.content
+            # print(response_message)
             tool_calls = self.parse_tool_calls(
                 response.choices[0].message.tool_calls
             )
