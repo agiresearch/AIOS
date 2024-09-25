@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     title: 'AIOS – The future of AI Agents',
     type: 'website',
     url: 'aiosfoundation',
-    images: 'https://aiosfoundation.org/assets/images/about/Agent.svg',
+    images: 'https://my.aios.foundation/Agent.svg',
   },
   description:
     'We’re on a journey to advance and democratize artificial intelligence through open source and open science.',
