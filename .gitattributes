@@ -1,2 +1,2 @@
-agenthub/* linguist-detectable=false
-web/* linguist-detectable=false
+*.css linguist-vendored
+*.html linguist-vendored
