@@ -28,7 +28,7 @@ export default function NavHeader() {
     <div className="SVELTE_HYDRATER contents z-[999999999999999999999]" data-props='{"isWide":false,"isZh":true}' data-target="MainHeader">
       <header className="border-b border-gray-600 py-3 items-center flex bg-neutral-800 text-white">
         <div className="container flex h-10 w-full items-center px-4">
-          <div className="flex items-center pr-4 flex-1">
+          <div className="flex items-center pr-4 flex-0">
             <a className="mr-5 flex flex-none items-center lg:mr-6" href="/">
               <img
                 alt="AIOS's logo"
@@ -95,10 +95,10 @@ export default function NavHeader() {
           
           </div>
           <nav aria-label="Main" className="ml-auto hidden lg:flex flex-1">
-            <ul className="flex items-center space-x-2">
+            <ul className="flex items-center space-x-2 !m-0 !p-0 !list-none">
               {AppNavList.filter((appNav) => appNav.type === 'App').map((appNav, index) => {
                 return (
-                  <li key={index}>
+                  <li key={index} className='m-0'>
                     <a
                       className="group flex items-center px-2 py-0.5 hover:text-indigo-700 dark:hover:text-gray-400"
                       href={appNav.href}

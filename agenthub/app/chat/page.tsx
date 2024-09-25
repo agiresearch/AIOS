@@ -2,7 +2,7 @@
 
 import { Body } from "@/components/chat/body";
 import { Form } from "@/components/chat/form";
-// import { Header } from "@/components/chat/header";
+import { Header } from "@/components/chat/header";
 
 // import { useMounted } from "@/lib/mounted";
 import { useEffect, useState } from "react";
@@ -101,11 +101,11 @@ const Chat = () => {
 
     return (
         isMounted ? <div className="bg-neutral-800 w-full min-h-[85vh] max-h-[85vh] flex flex-col items-center">
-            {/* <Header /> */}
+            <Header />
             <div className='h-[40px] w-full'></div>
-            <div className="flex flex-col h-[calc(85vh-50px)] w-4/5 items-center relative">
+            <div className="flex flex-col h-[calc(85vh-50px)] w-4/5 items-center relative bg-neutral-800">
                 <Body messages={messages} />
-                <div className="w-full fixed bottom-0 bg-neutral-800">
+                <div className="w-4/5 fixed bottom-0 bg-neutral-800">
                     <Form callback={addMessage} />
                     <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px ">AIOS could make errors. Consider checking important information.</p>
                 </div>
