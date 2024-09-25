@@ -163,6 +163,10 @@ body {
   background-color: rgb(36,36,36);
 }
 
+.bg-getstarted {
+  background-color: rgb(64, 150, 219);
+}
+
 .border-strong {
   border-color: rgb(54,54,54);
 }

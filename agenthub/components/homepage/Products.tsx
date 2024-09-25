@@ -10,9 +10,9 @@ const Examples = [
       type: 'example',
       tags: ['Next.js', 'Stripe', 'Vercel'],
       products: [],
-      title: 'Stripe Subscriptions Starter',
+      title: 'Agent Hub',
       description:
-        'The all-in-one subscription starter kit for high-performance SaaS applications, powered by Stripe, Supabase, and Vercel.',
+        'View, download, or upload AIOS agents',
       author: 'Vercel',
       author_url: 'https://github.com/vercel',
       author_img: 'https://avatars.githubusercontent.com/u/14985020',
@@ -26,9 +26,9 @@ const Examples = [
       type: 'example',
       tags: ['Next.js', 'Vercel'],
       products: [],
-      title: 'Next.js Starter',
+      title: 'Agent Chat',
       description:
-        'A Next.js App Router template configured with cookie-based auth using Supabase, TypeScript and Tailwind CSS.',
+        'Use and converse with AIOS agents',
       author: 'Supabase',
       author_url: 'https://github.com/supabase',
       author_img: 'https://avatars.githubusercontent.com/u/54469796',
@@ -190,31 +190,17 @@ const BuiltWithSupabase = () => {
   return (
     <SectionContainer id="examples" className="xl:pt-32">
       <div className="text-center">
-        <h3 className="h2">Start building in seconds</h3>
-        <p className="p">
-          Kickstart your next project with templates built by us and our community.
-        </p>
-        <div className="flex justify-center gap-2 py-4">
-          {/* <Button asChild type="undefined" size="small" className="h-full">
-            <Link href="/docs/guides/examples">View all examples</Link>
-          </Button>
-          <Button
-            asChild
-            type="default"
-            // icon={<IconGitHubSolid size="tiny" className="!w-full !h-full" />}
-            size="small"
-          >
-            <Link href="https://github.com/supabase/supabase/tree/master/examples">
-              Official GitHub library
-            </Link>
-          </Button> */}
+        <div className=" text-5xl">Start building in seconds</div>
+        <div className="text-2xl pt-6">
+          Try out our many features
         </div>
+     
       </div>
       <div className="mt-16 grid grid-cols-12 gap-5">
-        {Examples.slice(0, 6).map((example: any, i: number) => {
+        {Examples.slice(0, 2).map((example: any, i: number) => {
           return (
             <div
-              className={`col-span-12 lg:col-span-6 xl:col-span-4 ${i > 2 && `sm:hidden lg:block`}`}
+              className={`col-span-12 lg:col-span-6 xl:col-span-6 ${i > 2 && `sm:hidden lg:block`}`}
               key={i}
             >
               <ExampleCard {...example} showProducts />
