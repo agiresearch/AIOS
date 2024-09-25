@@ -1,3 +1,2 @@
-*.js linguist-language=ignore
-*.css linguist-language=ignore
-*.html linguist-language=ignore
+agenthub/* linguist-detectable=false
+web/* linguist-detectable=false
