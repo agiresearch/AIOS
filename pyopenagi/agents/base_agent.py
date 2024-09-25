@@ -42,7 +42,7 @@ class BaseAgent:
     def __init__(self, agent_name, task_input, agent_process_factory, log_mode: str):
         # super().__init__()
         self.agent_name = agent_name
-        self.manager = AgentManager('https://agenthub-lite.vercel.app/')
+        self.manager = AgentManager('https://my.aios.foundation/')
 
         author, name, version = self.agent_name.split('/')
 

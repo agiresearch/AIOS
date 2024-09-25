@@ -12,7 +12,7 @@ export default function AgentCard({ item }: AgentCardProps) {
 
   return (
     <article className="overview-card-wrapper group  ">
-      <a className="block p-2" href={`/agents/${item.name}`}>
+      <a className="block p-2" href={`/agents/${item.name}+${item.version}`}>
         <header className="flex items-center mb-0.5" title={item.name}>
           <AgentSVG />
           <h4 className="text-md truncate font-mono text-black dark:group-hover:text-yellow-500 group-hover:text-blue-500 text-smd">

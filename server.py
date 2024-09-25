@@ -35,7 +35,7 @@ getLLMState, setLLMState, setLLMCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
 getManager, setManager, setManagerCallback = useGlobalState()
 
-setManager(AgentManager('https://agenthub.aios.foundation/'))
+setManager(AgentManager('https://my.aios.foundation'))
 
 # parser = parse_global_args()
 # args = parser.parse_args()
@@ -133,7 +133,7 @@ async def get_all_agents():
             input_string.split("/")[:-1]
         )
 
-    agents = manager.list_available_agents()
+    agents = list(set(manager.list_available_agents()))
     print(agents)
     agent_names = [transform_string(a.get("agent")) for a in agents]
 
