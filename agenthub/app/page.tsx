@@ -19,10 +19,10 @@ const Index = () => {
   return (
     <div className='w-full h-full flex flex-col pt-12 bg-black text-white'>
        <Hero />
-      <Logos />
+      {/* <Logos /> */}
       <Products />
      
-      <TwitterSocialSection />
+      {/* <TwitterSocialSection /> */}
     </div>
    
     

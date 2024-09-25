@@ -106,7 +106,7 @@ function ExampleCard(props: any) {
                 //     </div>
                 //   }
                 >
-                  View Template
+                  Go!
                 </Button>
               )}
             </div>
