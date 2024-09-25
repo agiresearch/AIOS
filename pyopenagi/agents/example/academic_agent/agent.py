@@ -1,4 +1,4 @@
-from ...react_agent import ReactAgent
+from pyopenagi.agents.react_agent import ReactAgent
 import os
 
 
