@@ -17,7 +17,7 @@ const Examples = [
       author_url: 'https://github.com/vercel',
       author_img: 'https://avatars.githubusercontent.com/u/14985020',
       repo_name: 'vercel/nextjs-subscription-payments',
-      repo_url: 'https://github.com/vercel/nextjs-subscription-payments',
+      repo_url: 'https://my.aios.foundation/agents',
       vercel_deploy_url:
         'https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments&env=NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,STRIPE_SECRET_KEY&envDescription=Enter%20your%20Stripe%20API%20keys.&envLink=https%3A%2F%2Fdashboard.stripe.com%2Fapikeys&project-name=nextjs-subscription-payments&repository-name=nextjs-subscription-payments&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments%2Ftree%2Fmain',
       demo_url: 'https://subscription-payments.vercel.app/',
@@ -33,7 +33,7 @@ const Examples = [
       author_url: 'https://github.com/supabase',
       author_img: 'https://avatars.githubusercontent.com/u/54469796',
       repo_name: 'vercel/next.js/examples/with-supabase',
-      repo_url: 'https://github.com/vercel/next.js/tree/canary/examples/with-supabase',
+      repo_url: 'https://my.aios.foundation/chat',
       vercel_deploy_url:
         'https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This%20starter%20configures%20Supabase%20Auth%20to%20use%20cookies%2C%20making%20the%20user%27s%20session%20available%20throughout%20the%20entire%20Next.js%20app%20-%20Client%20Components%2C%20Server%20Components%2C%20Route%20Handlers%2C%20Server%20Actions%20and%20Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6',
       demo_url: 'https://demo-nextjs-with-supabase.vercel.app/',
