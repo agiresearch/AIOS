@@ -28,6 +28,9 @@ export async function GET(request: Request): Promise<NextResponse> {
         name,
         author
       },
+      orderBy: {
+        version: 'desc'
+      },
       include: {
         files: true
       }

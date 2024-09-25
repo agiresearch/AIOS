@@ -15,10 +15,12 @@ export const AgentList: AgentItem[] = [];
 // export const AgentList = 
 
 export const AgentListGenerator: () => Promise<AgentItem[]> = async () => {
-    const res = await fetch(`${baseUrl}/api/get_all_agents/light`);
+    const res = await fetch(`${baseUrl}/api/get_all_agents/light`, { cache: 'no-store' });
     const res_ = await res.json();
 
     const values: AgentItem[] = Object.values(res_);
+
+    console.log('length', res_)
 
     return values;
 }
