@@ -1,7 +1,7 @@
-.. _agent_database:
+.. _agenthub_developer:
 
-Web UI
-==============
+For Agenthub Developer
+======================
 
 You can interact with the web UI through the frontend and the command line.
 

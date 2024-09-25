@@ -38,7 +38,7 @@ def modify_files(directory):
                 file.write(modified_content)
             
             # Modify config.json
-            config_path = os.path.join(root, 'config.json')
+            config_path = os.path.join(folder, 'config.json')
             with open(config_path, 'r') as file:
                 config = json.load(file)
             
