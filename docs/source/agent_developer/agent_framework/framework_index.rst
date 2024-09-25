@@ -1,7 +1,7 @@
 .. _framework_index:
 
-Agent Framework
-===============
+Use other agent frameworks
+==========================
 Only a few simple changes are needed to run code developed with other agent development frameworks on AIOS.
 Below are the frameworks currently supported
 
