@@ -1,16 +1,20 @@
 import os
 import json
 import re
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from pyopenagi.manager.manager import AgentManager
 
 def modify_files(directory):
-    manager = AgentManager('http://localhost:3000')
+    manager = AgentManager('localhost:3000')
 
-    for root, dirs, files in os.walk(directory):
+    for folder, dirs, files in os.walk(directory):
+        print(folder)
         if 'agent.py' in files and 'config.json' in files:
-            print(f"Processing folder: {root}")
+            print(f"Processing folder: {folder}")
             # Modify agent.py
-            agent_path = os.path.join(root, 'agent.py')
+            agent_path = os.path.join(folder, 'agent.py')
             with open(agent_path, 'r') as file:
                 content = file.read()
             
@@ -50,9 +54,9 @@ def modify_files(directory):
             
             print(f"Modified {agent_path} and {config_path}")
 
-            manager.upload_agent(None, None, None, root)
+            manager.upload_agent(folder)
 
 # Replace this with your actual directory path
-directory_path = '/Users/rama2r/AIOS/pyopenagi/agents/example/'
+directory_path = 'pyopenagi/agents/example/'
 
 modify_files(directory_path)
