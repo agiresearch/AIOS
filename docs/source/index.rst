@@ -23,25 +23,38 @@ for a better ecosystem among agent developers and users.
 Documentation
 -------------
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Get Started
 
-   get_started/installation
-   get_started/quickstart
-   get_started/llm/llm_index
-   get_started/agent_framework/framework_index
+.. toctree::
+   :maxdepth: 2
+   :caption: For AIOS Users
+
+   aios_user/aios_user_index
+   aios_user/installation
+   aios_user/quickstart
+
+.. toctree::
+   :maxdepth: 2
+   :caption: For AIOS Developers
+
+   aios_developer/aios_developer_index
+   aios_developer/llm_core/llm_index
 
 .. toctree::
    :maxdepth: 2
    :caption: For Agent Developers
 
-   agent_developer/agents/agent_index
-   agent_developer/agent_database
-   agent_developer/external_tools/tool_index
+   agent_developer/agent_developer_index
+   agent_developer/agent_framework/framework_index
 
 .. toctree::
    :maxdepth: 2
-   :caption: For WebUI Developers
+   :caption: For Agent Users
 
-   webui_developer/webui_index
+   agent_user/agent_user_index
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: For Agenthub Developers
+
+   agenthub_developer/agenthub_developer_index

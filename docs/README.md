@@ -17,3 +17,6 @@ make html
 python -m http.server -d build/html/
 ```
 Launch your browser and open localhost:8000.
+
+## Guides of how to write the docs
+
