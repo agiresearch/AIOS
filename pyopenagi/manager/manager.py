@@ -24,14 +24,14 @@ class AgentManager:
     def _path_to_version(self, path_version: str) -> str:
         return path_version.replace('-', '.')
 
-    def upload_agent(self, author: str | None, name: str | None, version: str | None, folder_path: str):
+    def upload_agent(self, folder_path: str):
         agent_files = self._get_agent_files(folder_path)
         metadata = self._get_agent_metadata(folder_path)
 
         payload = {
-            "author": metadata.get("meta", {}).get('author', author),
-            "name": metadata.get('name', name),
-            "version": metadata.get("meta", {}).get('version', version),
+            "author": metadata.get("meta").get('author'),
+            "name": metadata.get('name'),
+            "version": metadata.get("meta").get('version'),
             "license": metadata.get("license", "Unknown"),
             "files": agent_files,
             "entry": metadata.get("build", {}).get("entry", "agent.py"),
@@ -204,10 +204,7 @@ class AgentManager:
 
 
 if __name__ == '__main__':
-    manager = AgentManager('http://localhost:3000')
-    # manager.upload_agent('Balaji R', 'Cool Agent', '0.0.1', '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
-    manager.upload_agent(None, None, None, '/Users/rama2r/AIOS/pyopenagi/agents/example/academic_agent')
-    # downloaded_path = manager.download_agent('example', 'academic_agent')
-    # print(f"Agent downloaded to: {downloaded_path}")
+    manager = AgentManager('http://localhost:3000/')
+    manager.upload_agent('pyopenagi/agents/example/academic_agent')
 
 
