@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -133,13 +134,20 @@ async def get_all_agents():
             input_string.split("/")[:-1]
         )
 
-    agents = list(set(manager.list_available_agents()))
+    agents = (manager.list_available_agents())
     print(agents)
-    agent_names = [transform_string(a.get("agent")) for a in agents]
+    agent_names = []
+    seen = OrderedDict()
+    for i, a in enumerate(agents):
+        transformed = transform_string(a.get("agent"))
+        if transformed not in seen:
+            seen[transformed] = i
+        agent_names.append(transformed)
 
+    # Create the final list with unique display names but original IDs
     _ = [
-        {"id": agents[i].get("agent"), "display": agent_names[i]}
-        for i in range(len(agents))
+        {"id": agents[i].get("agent"), "display": name}
+        for name, i in seen.items()
     ]
 
     return {"agents": _}
