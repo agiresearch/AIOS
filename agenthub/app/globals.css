@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Headings */
+  h1 {
+    @apply !text-4xl !font-bold mb-4;
+  }
+  h2 {
+    @apply !text-3xl !font-bold mb-3;
+  }
+  h3 {
+    @apply !text-2xl !font-bold mb-2;
+  }
+  h4 {
+    @apply !text-xl !font-bold mb-2;
+  }
+
+  /* Lists */
+  ul, ol {
+    @apply !mb-4 !pl-8;
+  }
+  ul {
+    @apply !list-disc;
+  }
+  ol {
+    @apply !list-decimal;
+  }
+  li {
+    @apply !mb-1;
+  }
+
+   /* Strong tag */
+   strong {
+    @apply !font-bold;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -43,8 +78,25 @@ body {
   max-width: 100%;
 }
 
-.editor[placeholder]:empty:before {
+/* .editor[placeholder]:empty:before {
   content: attr(placeholder);
+  color: #a3a3a3;
+  cursor: text;
+} */
+
+.editor[contenteditable="true"]:empty:not(:focus):before {
+  content: attr(data-placeholder);
+  color: #a3a3a3;
+  cursor: text;
+}
+
+.editor[contenteditable="true"]:focus {
+  outline: none;
+}
+
+/* Handle the case when there's an empty <p> element */
+.editor[contenteditable="true"] p:first-child:last-child:empty:not(:focus):before {
+  content: attr(data-placeholder);
   color: #a3a3a3;
   cursor: text;
 }
@@ -128,37 +180,3 @@ body {
   border-width: 1px;
 }
 
-@layer base {
-  /* Headings */
-  h1 {
-    @apply text-4xl font-bold mb-4;
-  }
-  h2 {
-    @apply text-3xl font-bold mb-3;
-  }
-  h3 {
-    @apply text-2xl font-bold mb-2;
-  }
-  h4 {
-    @apply text-xl font-bold mb-2;
-  }
-
-  /* Lists */
-  ul, ol {
-    @apply mb-4 pl-8;
-  }
-  ul {
-    @apply list-disc;
-  }
-  ol {
-    @apply list-decimal;
-  }
-  li {
-    @apply mb-1;
-  }
-
-   /* Strong tag */
-   strong {
-    @apply font-bold;
-  }
-}
