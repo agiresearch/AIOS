@@ -138,7 +138,7 @@ async def get_all_agents():
     print(agents)
     agent_names = []
     seen = OrderedDict()
-    for i, a in enumerate(agents):
+    for i, a in enumerate(reversed(agents)):
         transformed = transform_string(a.get("agent"))
         if transformed not in seen:
             seen[transformed] = i
