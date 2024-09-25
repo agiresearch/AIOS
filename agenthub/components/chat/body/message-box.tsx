@@ -14,7 +14,7 @@ export const MessageBox = ({
     const nameString = message.name === "user" ? "You" : "AIOS";
     // const imageUrl = message.role === "user" ? userImageUrl : "";
     const imageUrl = message.name == 'user' 
-            ? 'https://aiosfoundation.org/assets/images/team/default-2.jpeg'
+            ? 'https://aios.foundation/assets/images/team/default-2.jpeg'
             : 'https://chat.aios.foundation/_next/image?url=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F130198651%3Fv%3D4&w=1080&q=75'
 
     // const imageUrl = userImageUrl;
