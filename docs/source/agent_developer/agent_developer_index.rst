@@ -28,17 +28,32 @@ Your local folder will be like the following:
             │── config.json
             └── meta_requirements.txt
 
-Configurations in the config.json
----------------------------------
+Configurations and dependencies
+-------------------------------
 
 You are required to include a JSON file with the following attributes:
 
-1. ``name``: Name, spaces separated with _
-2. ``description``: An array with one string that contains a description
-3. ``tools``: A list of tools used
-4. ``meta``: A dictionary with the following keys: ``author``, ``version``, ``license``
+.. code-block:: json
+   
+   {
+      "name": "name of the agent",
+      "description": [
+         "description of the agent functionality"
+      ],
+      "tools": [
+         "tool names to be registered"
+      ],
+      "meta": {
+         "author": "",
+         "version": "",
+         "license": ""
+      },
+      "build": {
+         "entry": "entry file to start the agent",
+         "module": "the module name of the agent"
+      }
+   }
 
-
-Dependencies in the meta_requirements.txt
------------------------------------------
+If your agent requires extra libraries (in addition to the AIOS dependent libraries) to run,
+you need to put them in the meta_requirements.txt. 
 

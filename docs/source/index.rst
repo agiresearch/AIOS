@@ -57,4 +57,4 @@ Documentation
    :maxdepth: 2
    :caption: For Agenthub Developers
 
-   agenthub_developer/agenthub_developer_index
+   agenthub_developer/quickstart
