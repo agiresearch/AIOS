@@ -1,5 +1,5 @@
 Thank you for your contribution to AIOS!  
-Before submitting the pull request, please **make sure to read and follow requirements below and after that you can delete all the texts**. This helps improve the efficiency of the review process.
+Before submitting the pull request, please **make sure to read and follow requirements below and then you can replace all the texts with your own messages**. This helps improve the efficiency of the review process.
 
 ### Remember to update documentation
 When adding new features or updating existing functions, please review the documentation to determine if any changes are required. If so, ensure that the documentation is updated accordingly. The source code for the documentation is located at: https://github.com/agiresearch/AIOS/tree/main/docs. Instructions for writing documentation can be found here: https://github.com/agiresearch/AIOS/blob/main/docs/README.md.
