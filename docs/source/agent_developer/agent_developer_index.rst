@@ -34,6 +34,7 @@ Configurations and dependencies
 You are required to include a JSON file with the following attributes:
 
 .. code-block:: json
+   
    {
       "name": "name of the agent",
       "description": [
