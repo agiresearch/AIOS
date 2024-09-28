@@ -3,6 +3,7 @@
 import Document from "@tiptap/extension-document";
 import Mention from "@tiptap/extension-mention";
 import Paragraph from "@tiptap/extension-paragraph";
+import Placeholder from "@tiptap/extension-placeholder"
 import Text from "@tiptap/extension-text";
 import { EditorContent, ReactRenderer, useEditor } from "@tiptap/react";
 import React, { useEffect, useState } from "react";
@@ -66,7 +67,19 @@ export const Editor: React.FC<EditorProps> = ({
                         };
                     }
                 }
-            })
+            }),
+            Placeholder.configure({
+                // Use a placeholder:
+                placeholder: '@ an agent to talk to AIOS ...',
+                // Use different placeholders depending on the node type:
+                // placeholder: ({ node }) => {
+                //   if (node.type.name === 'heading') {
+                //     return 'What’s the title?'
+                //   }
+        
+                //   return 'Can you add some further context?'
+                // },
+              }),
         ],
         onUpdate: ({ editor }) => {
             handleChange(editor.getText());
