@@ -1,20 +1,21 @@
-import heapq
-
-from threading import Thread, Lock, Event
+from threading import Thread, Lock
+from typing import Mapping
+import threading
 
 from ..utils.chat_template import Query
+import random
+import time
+import os
 
-class AgentProcess:
-    def __init__(self,
-            agent_name: str,
-            query: Query
-        ):
+class AgentProcess(Thread):
+    def __init__(self, agent_name: str, query: Query):
         """Agent Process
 
         Args:
             agent_name (str): Name of the agent
             query (Query): Query sent by the agent
         """
+        super().__init__(name=agent_name)
         self.agent_name = agent_name
         self.query = query
         self.pid: int = None
@@ -55,6 +56,12 @@ class AgentProcess:
     def get_status(self):
         return self.status
 
+    def set_aid(self, aid):
+        self.aid = aid
+
+    def get_aid(self):
+        return self.pid
+
     def set_pid(self, pid):
         self.pid = pid
 
@@ -73,38 +80,51 @@ class AgentProcess:
     def set_time_limit(self, time_limit):
         self.time_limit = time_limit
 
+    def run(self):
+        """Response Listener for agent
+
+        Args:
+            agent_process (AgentProcess): Listened AgentProcess
+
+        Returns:
+            str: LLM response of Agent Process
+        """
+        self.set_pid(self.native_id)
+        while self.get_response() is None:
+            time.sleep(0.1)
+
+        return self.get_response()
+
 
 class LLMRequestProcess(AgentProcess):
     pass
 
-class AgentProcessFactory:
-    def __init__(self, agent_process_log_mode = None):
-        self.max_pid = 1024
-        self.pid_pool = [i for i in range(self.max_pid)]
-        heapq.heapify(self.pid_pool)
 
-        self.thread = Thread(target=self.deactivate_agent_process)
+class AgentProcessFactory:
+    def __init__(self, agent_process_log_mode=None):
+        # self.max_pid = 1024
+        # self.pid_pool = [i for i in range(self.max_pid)]
+        # heapq.heapify(self.pid_pool)
+
+        # self.thread = Thread(target=self.deactivate_agent_process)
 
         self.current_agent_processes = dict()
 
         self.current_agent_processes_lock = Lock()
 
-        self.terminate_signal = Event()
+        # self.terminate_signal = Event()
 
         self.agent_process_log_mode = agent_process_log_mode
 
     def activate_agent_process(self, agent_name, query):
-        if not self.terminate_signal.is_set():
-            with self.current_agent_processes_lock:
-                agent_process = AgentProcess(
-                    agent_name = agent_name,
-                    query = query
-                )
-                pid = heapq.heappop(self.pid_pool)
-                agent_process.set_pid(pid)
-                agent_process.set_status("active")
-                self.current_agent_processes[pid] = agent_process
-                return agent_process
+        # if not self.terminate_signal.is_set():
+        with self.current_agent_processes_lock:
+            agent_process = AgentProcess(agent_name=agent_name, query=query)
+            # pid = heapq.heappop(self.pid_pool)
+            # agent_process.set_pid(pid)
+            agent_process.set_status("active")
+            # self.current_agent_processes[pid] = agent_process
+            return agent_process
 
     def print_agent_process(self):
         headers = ["Agent Process ID", "Agent Name", "Created Time", "Status"]
@@ -114,34 +134,33 @@ class AgentProcessFactory:
             created_time = agent_process.created_time
             status = agent_process.status
             # memory_usage = f"{asizeof.asizeof(agent)} bytes"
-            data.append(
-                [id, agent_name, created_time, status]
-            )
+            data.append([id, agent_name, created_time, status])
         self.print(headers=headers, data=data)
-
 
     def print(self, headers, data):
         # align output
         column_widths = [
-            max(len(str(row[i])) for row in [headers] + data) for i in range(len(headers))
+            max(len(str(row[i])) for row in [headers] + data)
+            for i in range(len(headers))
         ]
-        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3 ) + "+")
+        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3) + "+")
         print(self.format_row(headers, column_widths))
         print("=" * (sum(column_widths) + len(headers) * 3 - 1))
         for i, row in enumerate(data):
             print(self.format_row(row, column_widths))
             if i < len(data):
                 print("-" * (sum(column_widths) + len(headers) * 3 - 1))
-        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3 ) + "+")
-
+        print("+" + "-" * (sum(column_widths) + len(headers) * 3 - 3) + "+")
 
     def format_row(self, row, widths, align="<"):
-        row_str = " | ".join(f"{str(item):{align}{widths[i]}}" for i, item in enumerate(row))
+        row_str = " | ".join(
+            f"{str(item):{align}{widths[i]}}" for i, item in enumerate(row)
+        )
         return row_str
 
     def deactivate_agent_process(self, pid):
         self.current_agent_processes.pop(pid)
-        heapq.heappush(self.pid_pool, pid)
+        # heapq.heappush(self.pid_pool, pid)
 
     def start(self):
         """start the factory to check inactive agent"""

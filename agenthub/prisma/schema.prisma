@@ -1,0 +1,38 @@
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Agent {
+    id        String   @id @default(cuid())
+    author    String
+    name      String
+    version   String
+    license   String
+    entry     String
+    module    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    description String @default("No Description Provided")
+
+    files AgentFile[]
+
+    @@unique([author, name, version])
+}
+
+model AgentFile {
+    id       String @id @default(cuid())
+    agentId  String
+    path     String
+    content  String @db.Text  // Changed from Bytes to String
+    agent    Agent  @relation(fields: [agentId], references: [id])
+
+    @@unique([agentId, path])
+}

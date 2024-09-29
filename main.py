@@ -4,10 +4,10 @@
 from aios.utils.utils import (
     parse_global_args,
 )
-
+import os
 import warnings
 
-from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
+from aios.hooks.llm import aios_starter
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -25,74 +25,58 @@ def clean_cache(root_directory):
 
 def main():
     # parse arguments and set configuration for this run accordingly
+    main_id = os.getpid()
+    print(f"Main ID is: {main_id}")
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
     args = parser.parse_args()
-
-    llm_name = args.llm_name
-    max_gpu_memory = args.max_gpu_memory
-    eval_device = args.eval_device
-    max_new_tokens = args.max_new_tokens
-    scheduler_log_mode = args.scheduler_log_mode
-    agent_log_mode = args.agent_log_mode
-    llm_kernel_log_mode = args.llm_kernel_log_mode
-    use_backend = args.use_backend
     load_dotenv()
 
-    llm = useKernel(
-        llm_name=llm_name,
-        max_gpu_memory=max_gpu_memory,
-        eval_device=eval_device,
-        max_new_tokens=max_new_tokens,
-        log_mode=llm_kernel_log_mode,
-        use_backend=use_backend
-    )
+    with aios_starter(**vars(args)) as (submit_agent, await_agent_execution):
 
-    # run agents concurrently for maximum efficiency using a scheduler
+        # register your agents and submit agent tasks
+        """ submitAgent(
+            agent_name="example/academic_agent",
+            task_input="Find recent papers on the impact of social media on mental health in adolescents."
+        )
+        """
 
-    startScheduler, stopScheduler = useFIFOScheduler(
-        llm=llm,
-        log_mode=scheduler_log_mode,
-        get_queue_message=None
-    )
+        """
+        submitAgent(
+            agent_name="om-raheja/transcribe_agent",
+            task_input="listen to my yap for 5 seconds and write a response to it"
+        )
+        """
 
-    submitAgent, awaitAgentExecution = useFactory(
-        log_mode=agent_log_mode,
-        max_workers=500
-    )
+        """
+        submitAgent(
+            agent_name="example/cocktail_mixlogist",
+            task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
+        )
+        """
 
-    startScheduler()
+        """
+        submitAgent(
+            agent_name="example/cook_therapist",
+            task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
+        )
+        """
 
-    # register your agents and submit agent tasks
-    """ submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Find recent papers on the impact of social media on mental health in adolescents."
-    )
-    """
+        agent_tasks = [
+            ["example/academic_agent", "Tell me what is the prollm paper mainly about"]
+            # ["example/cocktail_mixlogist", "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."]
+        ]
 
-    """
-    submitAgent(
-        agent_name="om-raheja/transcribe_agent",
-        task_input="listen to my yap for 5 seconds and write a response to it"
-    )
-    """
+        agent_ids = []
+        for agent_name, task_input in agent_tasks:
+            agent_id = submit_agent(
+                agent_name=agent_name,
+                task_input=task_input
+            )
+            agent_ids.append(agent_id)
 
-    agent_id = submitAgent(
-        agent_name="example/academic_agent",
-        task_input="Create an Instagram post: Image of a person using a new tech gadget, text highlighting its key features and benefits."
-    )
-    # submitAgent(
-    #     agent_name="example/cocktail_mixlogist",
-    #     task_input="Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices."
-    # )
-    # submitAgent(
-    #     agent_name="example/cook_therapist",
-    #     task_input="Develop a low-carb, keto-friendly dinner that is flavorful and satisfying."
-    # )
-
-    awaitAgentExecution(agent_id)
-
-    stopScheduler()
+        for agent_id in agent_ids:
+            await_agent_execution(agent_id)
 
     clean_cache(root_directory="./")
 

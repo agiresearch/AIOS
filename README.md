@@ -12,15 +12,14 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 
 ## 🏠 Architecture of AIOS
 <p align="center">
-<img src="images/AIOS-Architecture.png">
+<img src="docs/assets/aios-figs/AIOS-Architecture.png">
 </p>
 
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
-- **[2024-09-01]** 🛠️ AIOS supports various agent creation frameworks: ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT and more. Any agent created by these frameworks can directly run on top of AIOS.
+- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios.readthedocs.io/en/latest/get_started/agent_framework/framework_index.html). 
 - **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
-- **[2024-07-03]** 🛠️ AIOS Github issue template is now available [template](https://github.com/agiresearch/AIOS/issues/new/choose).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
@@ -41,21 +40,18 @@ Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) f
 Git clone AIOS
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-```
-```bash
 cd AIOS
-conda create -n venv python=3.10  # For Python 3.10
-# or
-conda create -n venv python=3.11  # For Python 3.11
-conda activate venv
 ```
-or if using pip
+Create venv environment (recommended)
 ```bash
-cd AIOS
 python -m venv venv
 source venv/bin/activate
-cd ..
-cd ..
+```
+or create conda environment
+```bash
+conda create -n venv python=3.10  # For Python 3.10
+conda create -n venv python=3.11  # For Python 3.11
+conda activate venv
 ```
 
 If you have GPU environments, you can install the dependencies using
@@ -73,7 +69,7 @@ pip install -r requirements.txt
 > For the config of LLM endpoints, multiple API keys may be required to set up.
 > Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
 
-Note: `main.py` is deprecated. Please use `exec.py` for the WebUI, or `agent_repl.py` for the TUI.
+Note: Please use `launch.py` for the WebUI, or `agent_repl.py` for the TUI.
 
 #### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
@@ -197,7 +193,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 
 Run
 ```
-python exec.py
+python launch .py
 ```
 which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
 

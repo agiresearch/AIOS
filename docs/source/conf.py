@@ -69,9 +69,9 @@ html_theme = 'sphinx_book_theme'
 
 exclude_patterns = ["**/*.template.rst"]
 
-def setup(app):
-    from docs.source.generate_tools import generate_tools
-    generate_tools()
+# def setup(app):
+#     from docs.source.generate_tools import generate_tools
+#     generate_tools()
 
 # -- Options for EPUB output
 # epub_show_urls = 'footnote'

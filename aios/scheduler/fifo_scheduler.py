@@ -20,8 +20,8 @@ class FIFOScheduler(BaseScheduler):
         while self.active:
             try:
                 """
-                wait 1 second between each iteration at the minimum
-                if there is nothing received in a second, it will raise Empty
+                wait at a fixed time interval
+                if there is nothing received in the time interval, it will raise Empty
                 """
 
                 agent_process = self.get_queue_message()
@@ -29,6 +29,8 @@ class FIFOScheduler(BaseScheduler):
                 self.logger.log(f"{agent_process.agent_name} is executing. \n", "execute")
                 agent_process.set_start_time(time.time())
                 self.execute_request(agent_process)
+                self.logger.log(f"Current request of {agent_process.agent_name} is done. Thread ID is {agent_process.get_pid()}\n", "done")
+
             except Empty:
                 pass
             except Exception:

@@ -14,3 +14,7 @@ accelerate
 anthropic
 python-dotenv
 litellm
+pyfzf
+getch
+npm
+platformdirs

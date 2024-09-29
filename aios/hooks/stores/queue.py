@@ -3,7 +3,7 @@ from aios.hooks.types.llm import LLMRequestQueue
 LLM_REQUEST_QUEUE: dict[str, LLMRequestQueue] = {}
 
 def getMessage(q: LLMRequestQueue):
-    return q.get(block=True, timeout=1)
+    return q.get(block=True, timeout=0.1)
 
 def addMessage(q: LLMRequestQueue, message: str):
     q.put(message)

@@ -8,6 +8,7 @@ from pyopenagi.agents.interact import Interactor
 from dotenv import load_dotenv
 import warnings
 
+
 def clean_cache(root_directory):
     targets = {
         ".ipynb_checkpoints",
@@ -16,6 +17,7 @@ def clean_cache(root_directory):
         "context_restoration",
     }
     delete_directories(root_directory, targets)
+
 
 def get_all_agents() -> dict[str, str]:
     interactor = Interactor()
@@ -32,6 +34,7 @@ def display_agents(agents: List[str]):
     for i, (name) in enumerate(agents, 1):
         print(f"{i}. {name}")
 
+
 def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
     while True:
         try:
@@ -43,14 +46,15 @@ def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
         except ValueError:
             print("Please enter a valid number.")
 
-def get_user_task() -> str:
-    return input("Enter the task for the agent: ")
+
+def get_user_task(chosen_agent) -> str:
+    return input(f"Enter the task for the {chosen_agent}: ")
+
 
 def main():
     warnings.filterwarnings("ignore")
     parser = parse_global_args()
     args = parser.parse_args()
-
 
     load_dotenv()
 
@@ -60,43 +64,43 @@ def main():
         eval_device=args.eval_device,
         max_new_tokens=args.max_new_tokens,
         log_mode=args.llm_kernel_log_mode,
-        use_backend=args.use_backend
+        use_backend=args.use_backend,
     )
 
     startScheduler, stopScheduler = useFIFOScheduler(
-        llm=llm,
-        log_mode=args.scheduler_log_mode,
-        get_queue_message=None
+        llm=llm, log_mode=args.scheduler_log_mode, get_queue_message=None
     )
 
     submitAgent, awaitAgentExecution = useFactory(
-        log_mode=args.agent_log_mode,
-        max_workers=500
+        log_mode=args.agent_log_mode, max_workers=500
     )
 
     startScheduler()
 
-
-    print("""
+    print(
+        """
             \033c
             Welcome to the Agent REPL.
             Please select an agent by pressing tab.
             To exit, press Ctrl+C.
-          """)
+          """
+    )
 
     # check for getch
     getch = None
     try:
         from getch import getch
     except ImportError:
-        print("""
-The terminal will NOT look pretty without getch. Please install it.
-pip install getch
-              """)
+        print(
+            """
+        The terminal will NOT look pretty without getch. Please install it.
+        pip install getch
+              """
+        )
         getch = input
 
     # shell loop
-    try: 
+    try:
         while True:
             chosen_agent = ""
             agents = get_all_agents()
@@ -108,18 +112,17 @@ pip install getch
             if getch() != "\t":
                 continue
 
-
-
             try:
                 from pyfzf.pyfzf import FzfPrompt
+
                 fzf = FzfPrompt()
 
                 selected = fzf.prompt(list(agents.keys()))
 
-                if (len(selected) == 0):
+                if len(selected) == 0:
                     print("No agent selected. Please try again.")
                     continue
-                
+
                 chosen_agent = agents[selected[0]]
 
             except ImportError:
@@ -127,20 +130,19 @@ pip install getch
                 display_agents(list(agents.keys()))
                 chosen_agent, _ = "example/" + get_user_choice(agents)
 
-            task = get_user_task()
+            task = get_user_task(chosen_agent)
 
             try:
-                agent_id = submitAgent(
-                    agent_name=chosen_agent,
-                    task_input=task
-                )
+                agent_id = submitAgent(agent_name=chosen_agent, task_input=task)
 
                 awaitAgentExecution(agent_id)
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
+                
     except KeyboardInterrupt:
         stopScheduler()
         clean_cache(root_directory="./")
+
 
 if __name__ == "__main__":
     main()
