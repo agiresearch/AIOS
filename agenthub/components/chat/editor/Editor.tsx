@@ -70,7 +70,8 @@ export const Editor: React.FC<EditorProps> = ({
             }),
             Placeholder.configure({
                 // Use a placeholder:
-                placeholder: '@ an agent to talk to AIOS ...',
+                placeholder: '@ an agent to talk to AIOS...',
+                
                 // Use different placeholders depending on the node type:
                 // placeholder: ({ node }) => {
                 //   if (node.type.name === 'heading') {

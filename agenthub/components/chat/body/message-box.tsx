@@ -31,7 +31,7 @@ export const MessageBox = ({
             </Avatar>
             <div className="max-w-full w-full">
                 <h3 className="font-bold text-white text-xl">{nameString}</h3>
-                <div className="flex flex-grow flex-col gap-3 gap-y-5 text-white">
+                <div className="message-box flex flex-grow flex-col gap-3 gap-y-5 text-white">
                     <Markdown content={message.content} />
                 </div>
             </div>
