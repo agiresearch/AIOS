@@ -74,13 +74,13 @@ class AgentFactory:
 
 
         # set the identifier for the agent
-        aid = heapq.heappop(self.aid_pool)
-        agent.set_aid(aid)
+        # aid = heapq.heappop(self.aid_pool)
+        # agent.set_aid(aid)
 
-        # use a lock to make sure only one agent can read the values at a time
-        if not self.terminate_signal.is_set():
-            with self.current_agents_lock:
-                self.current_agents[aid] = agent
+        # # use a lock to make sure only one agent can read the values at a time
+        # if not self.terminate_signal.is_set():
+        #     with self.current_agents_lock:
+        #         self.current_agents[aid] = agent
 
         return agent
 

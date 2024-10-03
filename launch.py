@@ -49,7 +49,7 @@ def stop_server():
 
 def run_npm(open: bool=False):
     # Change directory to the 'web' subdirectory
-    os.chdir('web')
+    os.chdir('agenthub')
     
     # Run npm run dev asynchronously
     if "node_modules" not in os.listdir():
