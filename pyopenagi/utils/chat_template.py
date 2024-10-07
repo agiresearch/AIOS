@@ -2,7 +2,8 @@ class Query:
     def __init__(self,
             messages,
             tools = None,
-            message_return_type = "json"
+            action_type: str = "message_llm",
+            message_return_type = "text"
         ) -> None:
         """Query format
 
@@ -15,6 +16,7 @@ class Query:
         """
         self.messages = messages
         self.tools = tools
+        self.action_type = action_type
         self.message_return_type = message_return_type
 
 class Response:

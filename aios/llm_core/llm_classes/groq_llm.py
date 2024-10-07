@@ -48,7 +48,7 @@ class GroqLLM(BaseLLM):
         return None
 
     def process(self,
-            agent_process,
+            agent_request,
             temperature=0.0
         ):
         # ensures the model is the current one
@@ -56,65 +56,57 @@ class GroqLLM(BaseLLM):
         # assert re.search(r'gpt', self.model_name, re.IGNORECASE)
 
         """ wrapper around openai api """
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        messages = agent_process.query.messages
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
+        messages = agent_request.query.messages
         # print(messages)
         self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
+            f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"
         )
-        time.sleep(2)
+        # time.sleep(2)
         try:
             response = self.model.chat.completions.create(
                 model=self.model_name,
                 messages = messages,
-                tools = agent_process.query.tools,
-                # tool_choice = "required" if agent_process.query.tools else None,
+                tools = agent_request.query.tools,
+                # tool_choice = "required" if agent_request.query.tools else None,
                 max_tokens = self.max_new_tokens
             )
             response_message = response.choices[0].message.content
             tool_calls = self.parse_tool_calls(
                 response.choices[0].message.tool_calls
             )
-            # print(tool_calls)
-            # print(response.choices[0].message)
-            agent_process.set_response(
-                Response(
-                    response_message = response_message,
-                    tool_calls = tool_calls
-                )
+            
+            response = Response(
+                response_message = response_message,
+                tool_calls = tool_calls
             )
+            
         except openai.APIConnectionError as e:
-            agent_process.set_response(
-                Response(
-                    response_message = f"Server connection error: {e.__cause__}"
-                )
+            response = Response(
+                response_message = f"Server connection error: {e.__cause__}"
             )
+            
         except openai.RateLimitError as e:
-            agent_process.set_response(
-                Response(
-                    response_message = f"OpenAI RATE LIMIT error {e.status_code}: (e.response)"
-                )
+            response = Response(
+                response_message = f"OpenAI RATE LIMIT error {e.status_code}: (e.response)"
             )
+            
         except openai.APIStatusError as e:
-            agent_process.set_response(
-                Response(
-                    response_message = f"OpenAI STATUS error {e.status_code}: (e.response)"
-                )
+            response = Response(
+                response_message = f"OpenAI STATUS error {e.status_code}: (e.response)"
             )
+            
         except openai.BadRequestError as e:
-            agent_process.set_response(
-                Response(
-                    response_message = f"OpenAI BAD REQUEST error {e.status_code}: (e.response)"
-                )
+            response = Response(
+                response_message = f"OpenAI BAD REQUEST error {e.status_code}: (e.response)"
             )
+            
         except Exception as e:
-            agent_process.set_response(
-                Response(
-                    response_message = f"An unexpected error occurred: {e}"
-                )
+            response = Response(
+                response_message = f"An unexpected error occurred: {e}"
             )
 
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
+        return response
+        
