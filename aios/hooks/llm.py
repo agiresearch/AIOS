@@ -17,7 +17,6 @@ from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 from aios.hooks.utils import generate_random_string
 
 from pyopenagi.agents.agent_factory import AgentFactory
-from pyopenagi.agents.agent_process import AgentProcessFactory
 
 ids = []
 
@@ -65,10 +64,10 @@ def useFIFOScheduler(params: SchedulerParams):
 
 @validate(FactoryParams)
 def useFactory(params: FactoryParams):
-    process_factory = AgentProcessFactory()
+    # process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        agent_process_factory=process_factory,
+        # agent_process_factory=process_factory,
         agent_log_mode=params.log_mode,
     )
 
