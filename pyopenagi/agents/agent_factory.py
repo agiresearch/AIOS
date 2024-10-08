@@ -9,7 +9,7 @@ import os
 class AgentFactory:
     def __init__(self,
                 #  agent_process_queue,
-                 agent_process_factory,
+                #  agent_process_factory,
                  agent_log_mode
         ):
         self.max_aid = 256
@@ -17,7 +17,7 @@ class AgentFactory:
         self.aid_pool = [i for i in range(self.max_aid)]
         heapq.heapify(self.aid_pool)
         # self.agent_process_queue = agent_process_queue
-        self.agent_process_factory = agent_process_factory
+        # self.agent_process_factory = agent_process_factory
 
         self.current_agents = {}
 
@@ -68,7 +68,7 @@ class AgentFactory:
         agent = agent_class(
             agent_name = agent_name,
             task_input = task_input,
-            agent_process_factory = self.agent_process_factory,
+            # agent_process_factory = self.agent_process_factory,
             log_mode = self.agent_log_mode
         )
 

@@ -34,7 +34,7 @@ class BedrockLLM(BaseLLM):
         return
 
     def process(self,
-                agent_process,
+                agent_request,
                 temperature=0.0) -> None:
         # ensure its the right model
         assert self.model_name.startswith("bedrock") and \
@@ -42,9 +42,9 @@ class BedrockLLM(BaseLLM):
 
 
         """ simple wrapper around langchain functions """
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        prompt = agent_process.message.prompt
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
+        prompt = agent_request.message.prompt
         from langchain_core.prompts import ChatPromptTemplate
         chat_template = ChatPromptTemplate.from_messages([
             ("user", f"{prompt}")
@@ -53,13 +53,13 @@ class BedrockLLM(BaseLLM):
         self.model.model_kwargs['temperature'] = temperature
         try:
             response = self.model(messages)
-            agent_process.set_response(
+            agent_request.set_response(
                 Response(
                     response_message=response.content
                 )
             )
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
+        agent_request.set_status("done")
+        agent_request.set_end_time(time.time())
         return

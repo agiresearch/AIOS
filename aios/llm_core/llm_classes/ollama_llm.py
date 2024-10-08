@@ -26,20 +26,20 @@ class OllamaLLM(BaseLLM):
         self.tokenizer = None
 
     def process(self,
-            agent_process,
+            agent_request,
             temperature=0.0
         ):
         # ensures the models are from ollama
         assert re.search(r'ollama', self.model_name, re.IGNORECASE)
 
         """ simple wrapper around ollama functions """
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        messages = agent_process.query.messages
-        tools = agent_process.query.tools
-        message_return_type = agent_process.query.message_return_type
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
+        messages = agent_request.query.messages
+        tools = agent_request.query.tools
+        message_return_type = agent_request.query.message_return_type
         self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
+            f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"
         )
 
@@ -57,20 +57,20 @@ class OllamaLLM(BaseLLM):
                 )
 
                 if tool_calls:
-                    agent_process.set_response(
+                    agent_request.set_response(
                         Response(
                             response_message = None,
                             tool_calls = tool_calls
                         )
                     )
                 else:
-                    agent_process.set_response(
+                    agent_request.set_response(
                         Response(
                             response_message = response['message']['content']
                         )
                     )
             except Exception as e:
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = f"An unexpected error occurred: {e}"
                     )
@@ -92,19 +92,19 @@ class OllamaLLM(BaseLLM):
                 if message_return_type == "json":
                     result = self.parse_json_format(result)
 
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = result
                     )
                 )
 
             except Exception as e:
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = f"An unexpected error occurred: {e}"
                     )
                 )
 
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
+        agent_request.set_status("done")
+        agent_request.set_end_time(time.time())
         return
