@@ -39,23 +39,23 @@ class HfNativeLLM(BaseLLM):
         return matches[-1]
 
     def process(self,
-                agent_process,
+                agent_request,
                 temperature=0.0) -> None:
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
         self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
+            f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"
         )
 
-        messages = agent_process.query.messages
-        tools = agent_process.query.tools
-        message_return_type = agent_process.query.message_return_type
+        messages = agent_request.query.messages
+        tools = agent_request.query.tools
+        message_return_type = agent_request.query.message_return_type
 
         """ context_manager works only with open llms """
-        if self.context_manager.check_restoration(agent_process.get_pid()):
+        if self.context_manager.check_restoration(agent_request.get_pid()):
             restored_context = self.context_manager.gen_recover(
-                agent_process.get_pid()
+                agent_request.get_pid()
             )
             start_idx = restored_context["start_idx"]
             beams = restored_context["beams"]
@@ -70,7 +70,7 @@ class HfNativeLLM(BaseLLM):
                 beam_attention_mask = beam_attention_mask,
                 max_new_tokens = self.max_new_tokens,
                 start_idx = start_idx,
-                timestamp = agent_process.get_time_limit()
+                timestamp = agent_request.get_time_limit()
             )
         else:
             """ use the system prompt otherwise """
@@ -96,7 +96,7 @@ class HfNativeLLM(BaseLLM):
                 beam_size = 1,
                 max_new_tokens=self.max_new_tokens,
                 start_idx = 0,
-                timestamp = agent_process.get_time_limit()
+                timestamp = agent_request.get_time_limit()
             )
             # TODO temporarily
             outputs["result"] = outputs["result"][input_ids.shape[-1]:]
@@ -110,37 +110,37 @@ class HfNativeLLM(BaseLLM):
         if outputs["finished_flag"]: # finished flag is set as True
 
             if self.context_manager.check_restoration(
-                agent_process.get_pid()):
+                agent_request.get_pid()):
                 self.context_manager.clear_restoration(
-                    agent_process.get_pid()
+                    agent_request.get_pid()
                 )
 
             if tools:
                 tool_calls = self.parse_tool_calls(
                     result
                 )
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = None,
                         tool_calls = tool_calls
                     )
                 )
             else:
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = result
                     )
                 )
-            agent_process.set_status("done")
+            agent_request.set_status("done")
 
         else:
             """ the module will automatically suspend if reach the time limit """
             self.logger.log(
-                f"{agent_process.agent_name} is switched to suspending due to the reach of time limit ({agent_process.get_time_limit()}s).\n",
+                f"{agent_request.agent_name} is switched to suspending due to the reach of time limit ({agent_request.get_time_limit()}s).\n",
                 level = "suspending"
             )
             self.context_manager.gen_snapshot(
-                agent_process.get_pid(),
+                agent_request.get_pid(),
                 context = {
                     "start_idx": outputs["start_idx"],
                     "beams": outputs["beams"],
@@ -150,14 +150,14 @@ class HfNativeLLM(BaseLLM):
             )
             if message_return_type == "json":
                 result = self.parse_json_format(result)
-            agent_process.set_response(
+            agent_request.set_response(
                 Response(
                     response_message = result
                 )
             )
-            agent_process.set_status("suspending")
+            agent_request.set_status("suspending")
 
-        agent_process.set_end_time(time.time())
+        agent_request.set_end_time(time.time())
 
     def generate(self,
                  input_ids: torch.Tensor = None,

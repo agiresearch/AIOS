@@ -3,11 +3,9 @@ from typing import Any, TypeAlias, Callable
 
 from queue import Queue
 
-from pyopenagi.agents.agent_process import AgentProcess
+LLMRequestQueue: TypeAlias = Queue
 
-LLMRequestQueue: TypeAlias = Queue[AgentProcess]
-
-QueueGetMessage: TypeAlias = Callable[[], AgentProcess]
+QueueGetMessage: TypeAlias = Callable[[], None]
 QueueAddMessage: TypeAlias = Callable[[str], None]
 QueueCheckEmpty: TypeAlias = Callable[[], bool]
 

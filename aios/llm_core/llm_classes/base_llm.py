@@ -127,14 +127,13 @@ class BaseLLM(ABC):
         return tool_calls
 
     def address_request(self,
-                        agent_process,
+                        agent_request,
                         temperature=0.0
                         ):
-        self.process(agent_process)
-        return
+        return self.process(agent_request)
 
     @abstractmethod
     def process(self,
-                agent_process,
+                agent_request,
                 temperature=0.0) -> None:
         raise NotImplementedError

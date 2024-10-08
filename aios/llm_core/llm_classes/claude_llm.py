@@ -46,12 +46,12 @@ class ClaudeLLM(BaseLLM):
         self.model = anthropic.Anthropic()
         self.tokenizer = None
 
-    def process(self, agent_process: Any, temperature: float = 0.0) -> None:
+    def process(self, agent_request: Any, temperature: float = 0.0) -> None:
         """
         Process a query using the Claude model.
 
         Args:
-            agent_process (Any): The agent process containing the query and tools.
+            agent_request (Any): The agent process containing the query and tools.
             temperature (float, optional): Sampling temperature for generation.
 
         Raises:
@@ -60,13 +60,13 @@ class ClaudeLLM(BaseLLM):
             Exception: For any other unexpected errors.
         """
         assert re.search(r'claude', self.model_name, re.IGNORECASE), "Model name must contain 'claude'"
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        messages = agent_process.query.messages
-        tools = agent_process.query.tools
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
+        messages = agent_request.query.messages
+        tools = agent_request.query.tools
 
         self.logger.log(f"{messages}", level="info")
-        self.logger.log(f"{agent_process.agent_name} is switched to executing.", level="executing")
+        self.logger.log(f"{agent_request.agent_name} is switched to executing.", level="executing")
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -86,33 +86,50 @@ class ClaudeLLM(BaseLLM):
             self.logger.log(f"API Response: {response_message}", level="info")
             tool_calls = self.parse_tool_calls(response_message) if tools else None
 
-            agent_process.set_response(
-                Response(
-                    response_message=response_message,
-                    tool_calls=tool_calls
-                )
+            response = Response(
+                response_message=response_message,
+                tool_calls=tool_calls
             )
+            
+            # agent_request.set_response(
+            #     Response(
+            #         response_message=response_message,
+            #         tool_calls=tool_calls
+            #     )
+            # )
         except anthropic.APIError as e:
             error_message = f"Anthropic API error: {str(e)}"
             self.logger.log(error_message, level="warning")
-            agent_process.set_response(
-                Response(
-                    response_message=f"Error: {str(e)}",
-                    tool_calls=None
-                )
+            
+            response = Response(
+                response_message=f"Error: {str(e)}",
+                tool_calls=None
             )
+            
+            # agent_request.set_response(
+            #     Response(
+            #         response_message=f"Error: {str(e)}",
+            #         tool_calls=None
+            #     )
+            # )
+            
         except Exception as e:
             error_message = f"Unexpected error: {str(e)}"
             self.logger.log(error_message, level="warning")
-            agent_process.set_response(
-                Response(
-                    response_message=f"Unexpected error: {str(e)}",
-                    tool_calls=None
-                )
+            # agent_request.set_response(
+            #     Response(
+            #         response_message=f"Unexpected error: {str(e)}",
+            #         tool_calls=None
+            #     )
+            # )
+            response = Response(
+                response_message=f"Unexpected error: {str(e)}",
+                tool_calls=None
             )
-
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
+        
+        return response
+        # agent_request.set_status("done")
+        # agent_request.set_end_time(time.time())
 
     def _convert_to_anthropic_messages(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
