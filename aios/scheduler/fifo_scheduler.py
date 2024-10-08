@@ -43,9 +43,9 @@ class FIFOScheduler(BaseScheduler):
     def execute_request(self, agent_request):
         action_type = agent_request.query.action_type
 
-        response = self.llm.address_request(agent_request)
-
-        if action_type == "message_llm":
+        if action_type in ["message_llm", "call_tool"]:
+            response = self.llm.address_request(agent_request)
+            # print(response)
             agent_request.set_response(response)
             
             # self.llm.address_request(agent_request)
