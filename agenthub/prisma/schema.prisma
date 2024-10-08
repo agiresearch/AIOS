@@ -36,3 +36,30 @@ model AgentFile {
 
     @@unique([agentId, path])
 }
+
+model CerebrumAgent {
+    id        String   @id @default(cuid())
+    author    String
+    name      String
+    version   String
+    license   String
+    entry     String
+    module    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    description String @default("No Description Provided")
+
+    files CerebrumAgentFile[]
+
+    @@unique([author, name, version])
+}
+
+model CerebrumAgentFile {
+    id       String @id @default(cuid())
+    agentId  String
+    path     String
+    content  String @db.Text  // Changed from Bytes to String
+    agent    CerebrumAgent  @relation(fields: [agentId], references: [id])
+
+    @@unique([agentId, path])
+}
