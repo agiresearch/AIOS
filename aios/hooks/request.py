@@ -1,4 +1,4 @@
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from typing import Mapping
 
 import random
@@ -17,6 +17,7 @@ class AgentRequest(Thread):
         super().__init__(name=agent_name)
         self.agent_name = agent_name
         self.query = query
+        self.event = Event()
         self.pid: int = None
         self.status = None
         self.response = None
@@ -89,11 +90,7 @@ class AgentRequest(Thread):
             str: LLM response of Agent Process
         """
         self.set_pid(self.native_id)
-        while self.get_response() is None:
-            time.sleep(0.1)
-
-        return self.get_response()
-
+        self.event.wait()
 
 class LLMRequest(AgentRequest):
     pass
