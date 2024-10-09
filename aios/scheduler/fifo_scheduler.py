@@ -54,6 +54,6 @@ class FIFOScheduler(BaseScheduler):
         #     api_calls = self.lsfs_parser.parse(agent_request)
         #     response = self.lsfs.execute_calls(api_calls)
         #     agent_request.set_response(response)
-            
+        agent_request.event.set()
         agent_request.set_status("done")
         agent_request.set_end_time(time.time())
