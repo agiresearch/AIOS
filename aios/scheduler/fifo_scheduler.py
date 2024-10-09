@@ -33,9 +33,24 @@ class FIFOScheduler(BaseScheduler):
                 self.logger.log(
                     f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n", "done"
                 )
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+                agent_request = self.get_queue_message()
+
+                agent_request.set_status("executing")
+                self.logger.log(
+                    f"{agent_request.agent_name} is executing. \n", "execute"
+                )
+                agent_request.set_start_time(time.time())
+                
+                self.execute_request(agent_request)
+
+                self.logger.log(
+                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n", "done"
+                )
 
             except Empty:
                 pass
+
 
             except Exception:
                 traceback.print_exc()

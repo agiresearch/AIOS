@@ -187,13 +187,13 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 #### Requirements
 
 ##### Python
-- Supported versions: **Python 3.8 - 3.11**
+- Supported versions: **Python 3.9 - 3.11**
 ##### Node
 - Supported versions: **LTS** support ONLY
 
-Run
+Run the launch.py to start both the frontend and backend
 ```
-python launch .py
+python launch.py
 ```
 which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
 
