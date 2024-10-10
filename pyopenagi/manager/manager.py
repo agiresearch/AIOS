@@ -1,4 +1,6 @@
-# agent_manager.py
+# more advanced agent manager
+# as opposed to the simple interact.py where you could
+# upload or download agents
 
 import importlib
 import os
@@ -206,5 +208,3 @@ class AgentManager:
 if __name__ == '__main__':
     manager = AgentManager('http://localhost:3000/')
     manager.upload_agent('pyopenagi/agents/example/academic_agent')
-
-
