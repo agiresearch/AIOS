@@ -45,6 +45,9 @@ import '@/styles/google-font-Source-Sans-Pro.css'
 import '@/styles/google-font-IBM-Plex-Mono.css'
 import "./globals.css";
 import "./ts.css"
+import '@mantine/core/styles.css';
+
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 
 export const metadata: Metadata = {
   title: 'AIOS – The future of AI Agents',
@@ -72,18 +75,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="alternate" type="application/rss+xml" href="/blog/feed.xml" title="Hugging Face Blog" />
         <script defer data-domain="huggingface.co" src="/js/script.js"></script>
       </Head> */}
+      <head>
+        <ColorSchemeScript />
+      </head>
       <body>
         <Providers>
-          <main
-            className="HomePage flex min-h-screen flex-col text-black bg-white dark:bg-gray-950"
-            style={{ fontSize: 16 }}
-          >
-            <div className="flex min-h-screen flex-col">
-              <NavHeader />
-              {/* <div className='w-full bg-inherit opacity-0 h-[24px]'></div> */}
-              {children}
-            </div>
-          </main>
+          <MantineProvider>
+            <main
+              className="HomePage flex min-h-screen flex-col text-black bg-white dark:bg-gray-950"
+              style={{ fontSize: 16 }}
+            >
+              <div className="flex min-h-screen flex-col">
+                <NavHeader />
+                {/* <div className='w-full bg-inherit opacity-0 h-[24px]'></div> */}
+                {children}
+              </div>
+            </main>
+          </MantineProvider>
         </Providers>
       </body>
     </html>
