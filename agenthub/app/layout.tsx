@@ -86,7 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               style={{ fontSize: 16 }}
             >
               <div className="flex min-h-screen flex-col">
-                <NavHeader />
+                {/* <NavHeader /> */}
                 {/* <div className='w-full bg-inherit opacity-0 h-[24px]'></div> */}
                 {children}
               </div>
