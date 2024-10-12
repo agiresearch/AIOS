@@ -3,50 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TextInput, ActionIcon, Switch, useMantineTheme, Button } from '@mantine/core';
 import { Send, Sun, Moon, Plus, Hash, MessageCircle } from 'lucide-react';
+import { SidebarProps, HeaderProps, MessageBubbleProps, MessageListProps, InputAreaProps, Message, Chat } from '@/interfaces/agentchat';
+import { ChatEditor } from '@/components/chat/editor/Editor';
+import { useMounted } from '@/lib/mounted';
 
-interface Message {
-    id: number;
-    text: string;
-    sender: 'user' | 'bot';
-    timestamp: Date;
-}
-
-interface HeaderProps {
-    darkMode: boolean;
-    setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-interface MessageBubbleProps {
-    message: Message;
-    darkMode: boolean;
-    index: number;
-}
-
-interface MessageListProps {
-    messages: Message[];
-    darkMode: boolean;
-}
-
-interface InputAreaProps {
-    input: string;
-    setInput: React.Dispatch<React.SetStateAction<string>>;
-    handleSend: () => void;
-    darkMode: boolean;
-}
-
-
-interface Chat {
-    id: number;
-    name: string;
-}
-
-interface SidebarProps {
-    chats: Chat[];
-    activeChat: number;
-    setActiveChat: (id: number) => void;
-    addChat: () => void;
-    darkMode: boolean;
-}
 
 const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveChat, addChat, darkMode }) => (
     <div className={`w-60 flex-shrink-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} p-4 flex flex-col`}>
@@ -199,23 +159,38 @@ const ChatInterface: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSend = () => {
-        if (input.trim()) {
-            const newMessage: Message = { id: Date.now(), text: input, sender: 'user', timestamp: new Date() };
-            setMessages([...messages, newMessage]);
-            setInput('');
-            setTimeout(() => {
-                const botMessage: Message = { id: Date.now(), text: 'This is a bot response.', sender: 'bot', timestamp: new Date() };
-                setMessages(prevMessages => [...prevMessages, botMessage]);
-            }, 1000);
+    const handleSend = (content: string, attachments: File[]) => {
+        if (content.trim() || attachments.length > 0) {
+          const newMessage: Message = {
+            id: Date.now(),
+            text: content,
+            sender: 'user',
+            timestamp: new Date(),
+            attachments: attachments.map(file => file.name), // Store file names or URLs
+          };
+          setMessages([...messages, newMessage]);
+          
+          // Handle file uploads here (e.g., to a server)
+          
+          setTimeout(() => {
+            const botMessage: Message = {
+              id: Date.now(),
+              text: 'This is a bot response.',
+              sender: 'bot',
+              timestamp: new Date(),
+            };
+            setMessages(prevMessages => [...prevMessages, botMessage]);
+          }, 1000);
         }
-    };
+      };
 
     const addChat = () => {
         const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}` };
         setChats([...chats, newChat]);
         setActiveChat(newChat.id);
     };
+
+    const mounted = useMounted();
 
     return (
         <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -229,7 +204,8 @@ const ChatInterface: React.FC = () => {
             <div className="flex flex-col flex-grow">
                 <Header darkMode={darkMode} setDarkMode={setDarkMode} />
                 <MessageList messages={messages} darkMode={darkMode} />
-                <InputArea input={input} setInput={setInput} handleSend={handleSend} darkMode={darkMode} />
+                {/* <InputArea input={input} setInput={setInput} handleSend={handleSend} darkMode={darkMode} /> */}
+                {mounted && <ChatEditor onSend={handleSend} darkMode={darkMode} />}
             </div>
         </div>
     );
