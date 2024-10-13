@@ -3,10 +3,10 @@
 import json
 import sys
 
+from aios.hooks.request import send_request
+from aios.sdk.adapter import add_framework_adapter
 from aios.utils.logger import SDKLogger
-from pyopenagi.agents.agent_process import AgentProcessFactory
 from pyopenagi.utils.chat_template import Query
-from pyopenagi.agents.call_core import CallCore
 from dataclasses import dataclass
 
 try:
@@ -20,24 +20,16 @@ except ImportError:
 
 logger = SDKLogger("Interpreter Adapter")
 
-aios_call = None
 
-
-def prepare_interpreter(agent_process_factory: AgentProcessFactory):
+@add_framework_adapter("Open-Interpreter")
+def prepare_interpreter():
     """Prepare the interpreter for running LLM in aios.
-
-    Args:
-        agent_process_factory (AgentProcessFactory):
-            Used to create agent processes.
     """
 
     try:
         # Set the completion function in the interpreter
         interpreter.llm.completions = adapter_aios_completions
 
-        # Initialize the aios_call variable as a CallCore object
-        global aios_call
-        aios_call = CallCore("interpreter", agent_process_factory, "console")
     except Exception as e:
         logger.log("Interpreter prepare failed: " + str(e) + "\n", "error")
 
@@ -64,8 +56,8 @@ def adapter_aios_completions(**params):
 
     if params.get("stream", False) is True:
         # TODO: AIOS not supprt stream mode
-        logger.log('''AIOS does not support stream mode currently. The stream mode has been automatically set to False.
-                   ''', level="warn")
+        logger.log("AIOS does not support stream mode currently."
+                   "The stream mode has been automatically set to False.", level="warn")
         params["stream"] = False
 
     # Run completion
@@ -74,9 +66,8 @@ def adapter_aios_completions(**params):
 
     for attempt in range(attempts):
         try:
-            global aios_call
-            assert isinstance(aios_call, CallCore)
-            response, _, _, _, _ = aios_call.get_response(
+            response, _, _, _, _ = send_request(
+                agent_name="Open-Interpreter",
                 query=Query(
                     messages=params['messages'],
                     tools=(params["tools"] if "tools" in params else None)
