@@ -2,10 +2,10 @@
 # Adapte metagpt to run LLM in aios
 from typing import Union, Optional
 from aios.utils.logger import SDKLogger
-from pyopenagi.agents.agent_process import AgentProcessFactory
-from pyopenagi.agents.call_core import CallCore
 from pyopenagi.utils.chat_template import Query
 from .config_adapter import prepare_metagpt_config
+from ..adapter import add_framework_adapter
+from ...hooks.request import send_request
 
 try:
     from metagpt.provider.base_llm import BaseLLM
@@ -20,27 +20,19 @@ except ImportError:
 
 logger = SDKLogger("MetaGPT Adapter")
 
-aios_call = None
 
-
-def prepare_metagpt(agent_process_factory: AgentProcessFactory):
+@add_framework_adapter("MetaGPT")
+def prepare_metagpt():
     """
     Prepare the metagpt module to run on aios.
 
     This function does the following:
     1. Create a fake configuration file with effects similar to `metagpt --init-config`
     2. Replace the llm used in metagpt with aios_call
-
-    Args:
-        agent_process_factory (AgentProcessFactory): The factory that creates the agent processes
     """
     # create fake configuration file
     prepare_metagpt_config()
 
-    # replace llm in metagpt with aios_call
-    global aios_call
-    if aios_call is None:
-        aios_call = CallCore("metagpt", agent_process_factory, "console")
     BaseLLM.aask = adapter_aask
 
 
@@ -75,14 +67,13 @@ async def adapter_acompletion_text(
 ) -> str:
     """Asynchronous version of completion. Return str. Support stream-print"""
     if stream:
-        logger.log('''AIOS does not support stream mode currently. The stream mode has been automatically set to False.
-                           ''', level="warn")
+        logger.log("AIOS does not support stream mode currently."
+                   "The stream mode has been automatically set to False.", level="warn")
         stream = False
 
     # call aios for response
-    global aios_call
-    assert isinstance(aios_call, CallCore)
-    response, _, _, _, _ = aios_call.get_response(
+    response, _, _, _, _ = send_request(
+        agent_name="MetaGPT",
         query=Query(
             messages=messages,
             tools=None

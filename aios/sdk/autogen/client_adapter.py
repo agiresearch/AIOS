@@ -15,13 +15,12 @@ from autogen.oai.openai_utils import get_key
 from autogen.runtime_logging import logging_enabled, log_new_wrapper, log_chat_completion
 from openai import APITimeoutError, APIError
 
-from pyopenagi.agents.agent_process import AgentProcessFactory
+from aios.hooks.request import send_request
 from pyopenagi.utils.chat_template import Query
-from pyopenagi.agents.call_core import CallCore
 
 try:
     from autogen import (
-        ModelClient, 
+        ModelClient,
         Cache
     )
 except ImportError:
@@ -31,16 +30,14 @@ except ImportError:
     )
 
 logger = logging.getLogger(__name__)
-ERROR = None
 
 
 def adapter_autogen_client_init(self, *,
                                 config_list: Optional[List[Dict[str, Any]]] = None,
-                                agent_process_factory: Optional[AgentProcessFactory] = None,
                                 agent_name: Optional[str],
                                 **base_config: Any):
-    if agent_name and agent_process_factory:
-        self.aios_call = CallCore(agent_name, agent_process_factory, "console")
+    if agent_name:
+        self.agent_name = agent_name
 
     if logging_enabled():
         log_new_wrapper(self, locals())
@@ -66,7 +63,8 @@ def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientRespons
     ]
     if non_activated:
         raise RuntimeError(
-            f"Model client(s) {non_activated} are not activated. Please register the custom model clients using `register_model_client` or filter them out form the config list."
+            f"Model client(s) {non_activated} are not activated. Please register the custom model clients using "
+            f"`register_model_client` or filter them out form the config list."
         )
     for i, client in enumerate([None]):
         # merge the input config with the i-th config in the config list
@@ -89,7 +87,8 @@ def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientRespons
             price = tuple(price)
         elif isinstance(price, float) or isinstance(price, int):
             logger.warning(
-                "Input price is a float/int. Using the same price for prompt and completion tokens. Use a list/tuple if prompt and completion token prices are different."
+                "Input price is a float/int. Using the same price for prompt and completion tokens. Use a list/tuple "
+                "if prompt and completion token prices are different."
             )
 
         cache_client = None
@@ -140,7 +139,8 @@ def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientRespons
                     continue  # filter is not passed; try the next config
         try:
             request_ts = get_current_ts()
-            response, start_times, end_times, waiting_times, turnaround_times = self.aios_call.get_response(
+            response, start_times, end_times, waiting_times, turnaround_times = send_request(
+                agent_name="AutoGen",
                 query=Query(
                     messages=params['messages'],
                     tools=(params["tools"] if "tools" in params else None)
@@ -151,7 +151,9 @@ def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientRespons
             logger.debug(f"config {i} timed out", exc_info=True)
             if i == last:
                 raise TimeoutError(
-                    "OpenAI API call timed out. This could be due to congestion or too small a timeout value. The timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly)."
+                    "OpenAI API call timed out. This could be due to congestion or too small a timeout value. The "
+                    "timeout can be specified by setting the 'timeout' value (in seconds) in the llm_config (if you "
+                    "are using agents) or the OpenAIWrapper constructor (if you are using the OpenAIWrapper directly)."
                 ) from err
         except APIError as err:
             error_code = getattr(err, "code", None)
