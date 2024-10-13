@@ -14,7 +14,8 @@ export interface MessageBubbleProps {
     message: Message;
     darkMode: boolean;
     index: number;
-}
+    isThinking?: boolean;
+  }
 
 export interface MessageListProps {
     messages: Message[];

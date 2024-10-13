@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChatEditor } from '@/components/chat/editor/Editor';
 import { useMounted } from '@/lib/mounted';
 
-import { TextInput, ActionIcon, Switch, useMantineTheme, Button, CopyButton } from '@mantine/core';
+import { TextInput, ActionIcon, Switch, useMantineTheme, Button, CopyButton, Loader } from '@mantine/core';
 import { Send, Sun, Moon, Plus, Hash, MessageCircle, Clipboard, Check } from 'lucide-react';
 import { SidebarProps, HeaderProps, MessageBubbleProps, MessageListProps, InputAreaProps, Message, Chat } from '@/interfaces/agentchat';
 import ReactMarkdown from 'react-markdown';
@@ -74,6 +74,8 @@ interface MarkdownProps {
 }
 
 const Markdown: React.FC<MarkdownProps> = ({ content, darkMode }) => {
+    console.log(typeof content)
+    console.log(content)
     return (
         <ReactMarkdown
             rehypePlugins={[rehypeRaw]}
@@ -127,40 +129,56 @@ const Markdown: React.FC<MarkdownProps> = ({ content, darkMode }) => {
 };
 
 // Updated MessageBubble component
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, darkMode, index }) => (
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, darkMode, index, isThinking = false }) => (
     <div
-        className={`flex items-start space-x-3 py-2 px-6 ${darkMode ? 'hover:bg-gray-600/30' : 'hover:bg-gray-200/50'
-            } transition-colors duration-200 animate-slideIn opacity-0`}
-        style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
+      className={`flex items-start space-x-3 py-2 px-6 ${
+        darkMode ? 'hover:bg-gray-600/30' : 'hover:bg-gray-200/50'
+      } transition-colors duration-200 animate-slideIn opacity-0`}
+      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
     >
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0 ${message.sender === 'user' ? 'bg-blue-500' : 'bg-green-500'}`}>
-            {message.sender === 'user' ? 'U' : 'B'}
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0 ${
+        message.sender === 'user' ? 'bg-blue-500' : 'bg-green-500'
+      }`}>
+        {message.sender === 'user' ? 'U' : 'B'}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline space-x-2">
+          <span className={`font-semibold truncate ${darkMode ? 'text-white' : 'text-black'}`}>
+            {message.sender === 'user' ? 'User' : 'Bot'}
+          </span>
+          <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
         </div>
-        <div className="flex-1 min-w-0">
-            <div className="flex items-baseline space-x-2">
-                <span className={`font-semibold truncate ${darkMode ? 'text-white' : 'text-black'}`}>
-                    {message.sender === 'user' ? 'User' : 'Bot'}
-                </span>
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+        <div className={`mt-1 break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          {isThinking ? (
+            <div className="flex items-center space-x-2 animate-pulse">
+              <Loader size="sm" />
+              <span>Agent is thinking...</span>
             </div>
-            <div className={`mt-1 break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                <Markdown content={message.text} darkMode={darkMode} />
-            </div>
+          ) : (
+            <Markdown content={message.text} darkMode={darkMode} />
+          )}
         </div>
+      </div>
     </div>
-);
+  );
 
-const MessageList: React.FC<MessageListProps> = ({ messages, darkMode }) => (
+  const MessageList: React.FC<MessageListProps> = ({ messages, darkMode }) => (
     <div className={`flex-grow overflow-y-auto ${darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-        <div className="py-4 space-y-1">
-            {messages.map((message, index) => (
-                <MessageBubble key={message.id} message={message} darkMode={darkMode} index={index} />
-            ))}
-        </div>
+      <div className="py-4 space-y-1">
+        {messages.map((message, index) => (
+          <MessageBubble 
+            key={message.id} 
+            message={message} 
+            darkMode={darkMode} 
+            index={index}
+            isThinking={message.sender === 'bot' && message.text === ''}
+          />
+        ))}
+      </div>
     </div>
-);
+  );
 
 const ChatInterface: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -175,45 +193,59 @@ const ChatInterface: React.FC = () => {
 
     const handleSend = (content: string, attachments: File[]) => {
         if (content.trim() || attachments.length > 0) {
-            const newMessage: Message = {
-                id: Date.now(),
-                text: content,
-                sender: 'user',
-                timestamp: new Date(),
-                attachments: attachments.map(file => file.name),
+          const newMessage: Message = {
+            id: Date.now(),
+            text: content,
+            sender: 'user',
+            timestamp: new Date(),
+            attachments: attachments.map(file => file.name),
+          };
+          setMessages([...messages, newMessage]);
+      
+          // Immediately add a "thinking" message for the bot
+        //   const thinkingMessage: Message = {
+        //     id: Date.now() + 1,
+        //     text: '',
+        //     sender: 'bot',
+        //     timestamp: new Date(),
+        //   };
+        //   setMessages(prevMessages => [...prevMessages, thinkingMessage]);
+
+          const noInterpolation = (strings: any, ...values: any) => strings.join('');
+      
+          // Simulate bot response after a delay
+          setTimeout(() => {
+            const botMessage: Message = {
+              id: 1,
+              text: noInterpolation`Here's a sample response with Markdown:
+              
+              # Heading 1
+              ## Heading 2
+              
+              - List item 1
+              - List item 2
+              
+              \`\`\`python
+              def greet(name):
+                  print(f"Hello, {name}!")
+              
+              greet("World")
+              \`\`\`
+              
+              > This is a blockquote.
+              
+              **Bold text** and *italic text*.`,
+              sender: 'bot',
+              timestamp: new Date(),
             };
-            setMessages([...messages, newMessage]);
-
-            // Handle file uploads here (e.g., to a server)
-
-            setTimeout(() => {
-                const botMessage: Message = {
-                    id: Date.now(),
-                    text: `Here's a sample response with Markdown:
-  
-  # Heading 1
-  ## Heading 2
-  
-  - List item 1
-  - List item 2
-  
-  \`\`\`python
-  def greet(name):
-      print(f"Hello, {name}!")
-  
-  greet("World")
-  \`\`\`
-  
-  > This is a blockquote.
-  
-  **Bold text** and *italic text*.`,
-                    sender: 'bot',
-                    timestamp: new Date(),
-                };
-                setMessages(prevMessages => [...prevMessages, botMessage]);
-            }, 1000);
+            // setMessages(prevMessages => 
+            //   prevMessages.map(msg => msg.id === thinkingMessage.id ? botMessage : msg)
+            // );
+            setMessages(prevMessages => [...prevMessages, botMessage]);
+            
+          }, 3000); // Increased delay to 3 seconds to make the loading state more noticeable
         }
-    };
+      };
 
     const addChat = () => {
         const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}` };

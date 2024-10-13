@@ -63,6 +63,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-tooltip": "^5.28.0",
     "recharts": "^2.12.7",
+    "rehype-raw": "^7.0.0",
     "sonner": "^1.5.0",
     "supabase": "^1.192.5",
     "ui": "*"
