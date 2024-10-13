@@ -1,4 +1,5 @@
 export interface Message {
+    thinking: boolean | undefined;
     id: number;
     text: string;
     sender: 'user' | 'bot';
@@ -39,5 +40,6 @@ export interface SidebarProps {
     activeChat: number;
     setActiveChat: (id: number) => void;
     addChat: () => void;
+    updateChatName: (chatId: number, newName: string) => void;
     darkMode: boolean;
 }

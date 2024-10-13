@@ -16892,3 +16892,14 @@ table.inference-table tr th:last-child {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+pre > .relative  > .rounded-b-md {
+  /* Your custom styles */
+  margin-top: 0px !important;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+  margin-bottom: 0.5em !important;
+  border-radius: 0 !important;
+  border-bottom-left-radius: 0.3em !important;
+  border-bottom-right-radius: 0.3em !important;
+}

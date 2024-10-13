@@ -104,7 +104,7 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
 
   return (
     <Paper 
-      className={`p-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg`}
+      className={`p-2 ${darkMode ? '!bg-gray-800' : '!bg-white'} rounded-lg w-[90%]`}
       style={{
         border: `1px solid ${darkMode ? theme.colors.gray[7] : theme.colors.gray[3]}`,
         boxShadow: `0 2px 10px ${darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'}`,
