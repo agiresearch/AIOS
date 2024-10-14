@@ -11,44 +11,35 @@ Quick start
 -----------
 For installation and usage of open-interpreter, please refer to the `official metagpt documentation <https://docs.deepwisdom.ai/main/en/>`_.
 
-If you want to run an application developed with MetaGPT on AIOS, please add ``prepare_metagpt()``
-before you use MetaGPT. ``AgentProcessFactory`` is a required parameter.
-
-.. code-block:: python
-
-    from pyopenagi.agents.agent_process import AgentProcessFactory
-    from aios.sdk.metagpt.adapter import prepare_metagpt
-
-    # example process_factory
-    process_factory = AgentProcessFactory()
-
-    # prepate metagpt for AIOS
-    prepare_metagpt(process_factory)
+If you want to run an application developed with MetaGPT on AIOS, please add ``prepare_framework()``
+before you use MetaGPT, and select a framework type through ``FrameworkType``. When you want to
+use MetaGPT, you should use ``FrameworkType.MetaGPT``.
 
 Then nothing needs to change, use MetaGPT as usual.
 
 .. code-block:: python
 
-    from metagpt.software_company import generate_repo, ProjectRepo
+        with aios_starter(**vars(args)):
+            prepare_framework(FrameworkType.MetaGPT)
 
-    repo: ProjectRepo = generate_repo("Create a 2048 game")  # or ProjectRepo("<path>")
-    print(repo)  # it will print the repo structure with files
+            repo: ProjectRepo = generate_repo("Create a 2048 game")  # or ProjectRepo("<path>")
+            print(repo)
 
 or use Data Interpreter to write code:
 
 .. code-block:: python
 
-    import asyncio
-    from metagpt.roles.di.data_interpreter import DataInterpreter
+        with aios_starter(**vars(args)):
+            prepare_framework(FrameworkType.MetaGPT)
 
-    async def main():
-        di = DataInterpreter()
-        await di.run("Run data analysis on sklearn Iris dataset, include a plot")
+            async def di_main():
+                di = DataInterpreter()
+                await di.run("Run data analysis on sklearn Iris dataset, include a plot")
 
-    asyncio.run(main())
+            asyncio.run(di_main())  # or await main() in a jupyter notebook setting
 
 
-Don't forget to start the scheduler so that AIOS can manage llm call.
+``aios_starter`` will start the scheduler so that AIOS can manage llm call.
 Details and More examples can be found in https://github.com/agiresearch/AIOS/tree/main/scripts/aios-metagpt
 
 MetaGPT requires a longer output context to generate longer code,

@@ -7,8 +7,8 @@ Be sure to complete the :ref:`installation instructions <aios_installation>` bef
 .. tip::
 
     For the config of LLM endpoints, multiple API keys may be required to set up.
-    Here we provide the .env.example for easier configuration of these API keys,
-    you can just copy .env.example as .env and set up the required keys based on your needs.
+    Here we provide the easier way to set up API API keys,
+    you can create the .env file and set up the required keys and add new keys based on your needs.
 
     .. code-block:: python
 
@@ -16,6 +16,8 @@ Be sure to complete the :ref:`installation instructions <aios_installation>` bef
         GEMINI_API_KEY=''
         HF_HOME=''
         HF_AUTH_TOKENS=''
+
+Before starting the AIOS, you also need to set up the configurations in the aios_config.json file
 
 
 Use with OpenAI API

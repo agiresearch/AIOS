@@ -1,7 +1,7 @@
 .. _llm_index:
 
-LLM Classes
-===========
+LLM Cores
+=========
 
 LLM
 ---
@@ -17,7 +17,7 @@ BaseLLM
 
 .. toctree::
    :maxdepth: 2
-   :caption: Supported LLMs
+   :caption: Supported LLMs as AIOS cores
 
    gpt_llm
    gemini_llm
