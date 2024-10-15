@@ -1,5 +1,5 @@
-AutoGen For AIOS
-================
+Use AutoGen
+===========
 
 Introduction
 ------------
@@ -19,7 +19,7 @@ before you create an autogen agent, and select a framework type through ``Framew
 use AutoGen, you should use ``FrameworkType.AutoGen``.
 Then create autogen agent. When running on AIOS, you don't need to supply parameter ``llm_config``,
 this parameter configures the llm model that the agent will use.
-Because AIOS will controll the llm call.
+Because AIOS will deal with the calling of llms in the backend.
 
 .. code-block:: python
 

@@ -1,5 +1,5 @@
-MetaGPT For AIOS
-=========================
+Use MetaGPT
+===========
 
 Introduction
 ------------

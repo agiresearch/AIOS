@@ -4,11 +4,8 @@ Installation
 ============
 Prerequsites
 ------------
-* Anaconda
 * Python: 3.9-3.11
 * Git
-
-.. _build_from_source:
 
 Build from source
 -----------------
