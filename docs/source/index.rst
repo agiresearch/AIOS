@@ -32,18 +32,19 @@ Documentation
    get_started/quickstart
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: For Agent Developers
 
-   agent_developer/agent_developer_index
+   agent_developer/development_rules
+   agent_developer/minimal_example.rst
    agent_developer/agent_framework/framework_index
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: For AIOS Developers
 
-   aios_developer/aios_developer_index
    aios_developer/llm_core/llm_index
+   aios_developer/scheduler/scheduler_index
 
 .. toctree::
    :maxdepth: 1
