@@ -25,36 +25,31 @@ Documentation
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: For AIOS Users
+   :maxdepth: 1
+   :caption: Get Started
 
-   aios_user/aios_user_index
-   aios_user/installation
-   aios_user/quickstart
-
-.. toctree::
-   :maxdepth: 2
-   :caption: For AIOS Developers
-
-   aios_developer/aios_developer_index
-   aios_developer/llm_core/llm_index
+   get_started/installation
+   get_started/quickstart
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: For Agent Developers
 
-   agent_developer/agent_developer_index
+   agent_developer/development_rules
+   agent_developer/minimal_example.rst
    agent_developer/agent_framework/framework_index
 
 .. toctree::
-   :maxdepth: 2
-   :caption: For Agent Users
+   :maxdepth: 1
+   :caption: For AIOS Developers
 
-   agent_user/agent_user_index
-
+   aios_developer/llm_core/llm_index
+   aios_developer/scheduler/scheduler_index
 
 .. toctree::
-   :maxdepth: 2
-   :caption: For Agenthub Developers
+   :maxdepth: 1
+   :caption: API References
+   
+   api_references/index
 
-   agenthub_developer/quickstart
+

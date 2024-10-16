@@ -16,7 +16,6 @@ from autogen._pydantic import model_dump
 from autogen.coding import CodeExecutorFactory
 from autogen.io import IOStream
 
-from pyopenagi.agents.agent_process import AgentProcessFactory
 from termcolor import colored
 
 try:
@@ -57,17 +56,13 @@ def adapter_autogen_agent_init(
         description: Optional[str] = None,
         chat_messages: Optional[Dict[Agent, List[Dict]]] = None,
         silent: Optional[bool] = None,
-        agent_process_factory: Optional[AgentProcessFactory] = None,
 ):
-    if agent_process_factory:
-        self.agent_process_factory = agent_process_factory
     self.agent_name = name
 
     # just save tool/function message in aios
     self.llm_config = {} if llm_config is not False else False
-    self.client = None if (self.llm_config is False or not self.agent_process_factory) else OpenAIWrapper(
+    self.client = None if (self.llm_config is False) else OpenAIWrapper(
         **self.llm_config,
-        agent_process_factory=self.agent_process_factory,
         agent_name=self.agent_name
     )
 
@@ -440,6 +435,5 @@ def adapter_update_tool_signature(self, tool_sig: Union[str, Dict], is_remove: N
 
     self.client = OpenAIWrapper(
         **self.llm_config,
-        agent_process_factory=self.agent_process_factory,
         agent_name=self.agent_name
     )

@@ -1,0 +1,9 @@
+{
+    "llm_cores": [
+        {
+            "llm_name": "gpt-4o-mini",
+            "use_backend": "openai",
+            "max_new_tokens": 1024
+        }
+    ]
+}
