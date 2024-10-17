@@ -12,18 +12,18 @@ class AgentFactory:
                 #  agent_process_factory,
                  agent_log_mode
         ):
-        self.max_aid = 256
+        # self.max_aid = 256
         # self.llm = llm
-        self.aid_pool = [i for i in range(self.max_aid)]
-        heapq.heapify(self.aid_pool)
+        # self.aid_pool = [i for i in range(self.max_aid)]
+        # heapq.heapify(self.aid_pool)
         # self.agent_process_queue = agent_process_queue
         # self.agent_process_factory = agent_process_factory
 
-        self.current_agents = {}
+        # self.current_agents = {}
 
-        self.current_agents_lock = Lock()
+        # self.current_agents_lock = Lock()
 
-        self.terminate_signal = Event()
+        # self.terminate_signal = Event()
 
         self.agent_log_mode = agent_log_mode
 
@@ -91,7 +91,7 @@ class AgentFactory:
         )
         # print(task_input)
         output = agent.run()
-        self.deactivate_agent(agent.get_aid())
+        # self.deactivate_agent(agent.get_aid())
         return output
 
     def print_agent(self):
@@ -128,5 +128,6 @@ class AgentFactory:
         return row_str
 
     def deactivate_agent(self, aid):
-        self.current_agents.pop(aid)
-        heapq.heappush(self.aid_pool, aid)
+        # self.current_agents.pop(aid)
+        # heapq.heappush(self.aid_pool, aid)
+        pass
