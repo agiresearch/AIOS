@@ -58,9 +58,9 @@ class GeminiLLM(BaseLLM):
 
         agent_request.set_status("executing")
         agent_request.set_start_time(time.time())
-        messages = agent_request.query.messages
-        tools = agent_request.query.tools
-        message_return_type = agent_request.query.message_return_type
+        messages = agent_request.request_data.messages
+        tools = agent_request.request_data.tools
+        message_return_type = agent_request.request_data.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)

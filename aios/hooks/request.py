@@ -3,11 +3,14 @@ from typing import Mapping
 
 import random
 import time
-from aios.hooks.stores._global import global_llm_req_queue_add_message
+from aios.hooks.stores._global import (
+    global_llm_req_queue_add_message,
+    global_memory_req_queue_add_message,
+)
 
 
 class AgentRequest(Thread):
-    def __init__(self, agent_name, query):
+    def __init__(self, agent_name, request_data):
         """Agent Process
 
         Args:
@@ -16,9 +19,9 @@ class AgentRequest(Thread):
         """
         super().__init__(name=agent_name)
         self.agent_name = agent_name
-        self.query = query
+        self.request_data = request_data
         self.event = Event()
-        self.pid: int = None
+        self.pid = None
         self.status = None
         self.response = None
         self.time_limit = None
@@ -92,15 +95,33 @@ class AgentRequest(Thread):
         self.set_pid(self.native_id)
         self.event.wait()
 
+
 class LLMRequest(AgentRequest):
     pass
 
 
 def send_request(agent_name, query):
-    agent_request = AgentRequest(
-        agent_name=agent_name, 
-        query=query
-    )
+    if query.action_type == "message_llm":
+        # retrive memory
+        llm_response, _, _, _, _ = call_llm(
+            agent_name=agent_name, request_data=query
+        )  # chat with llm
+        return (llm_response, _, _, _, _)
+        # save memory
+
+    elif query.action_type == "call_tool":
+        # retrive memory
+        llm_response, _, _, _, _ = call_llm(
+            agent_name=agent_name, request_data=query
+        )  # chat with llm
+        return (llm_response, _, _, _, _)
+
+    elif query.action_type == "operate_file":
+        pass
+
+
+def call_llm(agent_name, request_data):
+    agent_request = AgentRequest(agent_name=agent_name, request_data=request_data)
     agent_request.set_status("active")
 
     completed_response, start_times, end_times, waiting_times, turnaround_times = (
@@ -110,6 +131,7 @@ def send_request(agent_name, query):
         [],
         [],
     )
+    # completed_response = ""
 
     while agent_request.get_status() != "done":
         current_time = time.time()
@@ -122,9 +144,10 @@ def send_request(agent_name, query):
         agent_request.join()
 
         completed_response = agent_request.get_response()
-        
+
         if agent_request.get_status() != "done":
             pass
+
         start_time = agent_request.get_start_time()
         end_time = agent_request.get_end_time()
         waiting_time = start_time - agent_request.get_created_time()
@@ -135,6 +158,55 @@ def send_request(agent_name, query):
         waiting_times.append(waiting_time)
         turnaround_times.append(turnaround_time)
 
+    # return completed_response
+    return (
+        completed_response,
+        start_times,
+        end_times,
+        waiting_times,
+        turnaround_times,
+    )
+
+
+def call_memory(agent_name, request_data):
+    agent_request = AgentRequest(agent_name=agent_name, request_data=request_data)
+    agent_request.set_status("active")
+
+    completed_response, start_times, end_times, waiting_times, turnaround_times = (
+        "",
+        [],
+        [],
+        [],
+        [],
+    )
+    # completed_response = ""
+
+    while agent_request.get_status() != "done":
+        current_time = time.time()
+        agent_request.set_created_time(current_time)
+        agent_request.set_response(None)
+
+        global_memory_req_queue_add_message(agent_request)
+
+        agent_request.start()
+        agent_request.join()
+
+        completed_response = agent_request.get_response()
+
+        if agent_request.get_status() != "done":
+            pass
+
+        start_time = agent_request.get_start_time()
+        end_time = agent_request.get_end_time()
+        waiting_time = start_time - agent_request.get_created_time()
+        turnaround_time = end_time - agent_request.get_created_time()
+
+        start_times.append(start_time)
+        end_times.append(end_time)
+        waiting_times.append(waiting_time)
+        turnaround_times.append(turnaround_time)
+
+    # return completed_response
     return (
         completed_response,
         start_times,
