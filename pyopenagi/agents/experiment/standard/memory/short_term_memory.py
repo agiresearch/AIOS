@@ -16,5 +16,8 @@ class ShortTermMemory(BaseModel):
     def recall(self):
         return self.messages
 
+    def last_message(self):
+        return self.messages[-1]
+
     def clear(self) -> None:
         self.messages = []
