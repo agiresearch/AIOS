@@ -1,7 +1,7 @@
 .. _agent_index.rst:
 
-The standard for developing agents
-==================================
+Need to know before building agents
+===================================
 
 To develop a new agent to run on top of the AIOS, you need to follow rules as below.
 
