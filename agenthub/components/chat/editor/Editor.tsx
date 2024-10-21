@@ -7,13 +7,18 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import HardBreak from '@tiptap/extension-hard-break';
 import Placeholder from '@tiptap/extension-placeholder';
+import Mention from '@tiptap/extension-mention'
 import { ActionIcon, Group, Paper, Text as MantineText, useMantineTheme, ScrollArea, Image, Box, Overlay } from '@mantine/core';
 import { Send, Plus, X, FileIcon } from 'lucide-react';
+
+import suggestion from './Suggestion'
 
 export interface ChatEditorProps {
   onSend: (content: string, attachments: File[]) => void;
   darkMode: boolean;
 }
+
+
 
 export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -21,6 +26,33 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useMantineTheme();
+
+  let currentStyleElement: HTMLStyleElement | null = null;
+
+  const loadStyle = async (isDarkMode: boolean) => {
+    // Remove the current style element if it exists
+    if (currentStyleElement && currentStyleElement.parentNode) {
+      currentStyleElement.parentNode.removeChild(currentStyleElement);
+    }
+
+    const fetchStyle = async (isDarkMode: boolean) => {
+      const response = await fetch(isDarkMode ? '/MentionListV2Dark.scss' : '/MentionListV2Light.scss');
+      return await response.text();
+    };
+
+    // Import the new style
+    const style = await fetchStyle(isDarkMode)
+
+    // Create a new style element
+    currentStyleElement = document.createElement('style');
+    currentStyleElement.textContent = style;
+    document.head.appendChild(currentStyleElement);
+  };
+
+  useEffect(() => {
+    loadStyle(darkMode);
+  }, [darkMode])
+  
 
   const editor = useEditor({
     extensions: [
@@ -34,6 +66,12 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
       }),
       Placeholder.configure({
         placeholder: 'Type a message...',
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention',
+        },
+        suggestion,
       }),
     ],
     editorProps: {

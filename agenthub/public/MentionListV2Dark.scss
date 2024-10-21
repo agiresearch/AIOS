@@ -1,0 +1,47 @@
+/* Dropdown menu */
+.dropdown-menu {
+    background: rgb(31, 41, 55);
+    border: 1px solid var(--gray-4);
+    border-radius: 0.7rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    overflow: auto;
+    padding: 0.4rem;
+    position: relative;
+    color: var(--white);
+  
+    button {
+      align-items: center;
+      background-color: transparent;
+      display: flex; 
+      gap: 0.25rem;
+      text-align: left;
+      width: 100%;
+  
+      &:hover,
+      &:hover.is-selected {
+        background-color: #ccc6c631;
+      }
+  
+      &.is-selected {
+        background-color: #ccc6c631;
+      }
+    }
+  }
+
+  .tiptap {
+    :first-child {
+      margin-top: 0;
+    }
+  
+    .mention {
+      background-color: var(--purple-light-dark);
+      border-radius: 0.4rem;
+      box-decoration-break: clone;
+      color: var(--white);
+      // font-weight: 600;
+      padding: 0.1rem 0.3rem;
+    }
+  }

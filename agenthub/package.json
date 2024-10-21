@@ -38,7 +38,7 @@
     "@tiptap/pm": "^2.8.0",
     "@tiptap/react": "^2.8.0",
     "@tiptap/starter-kit": "^2.8.0",
-    "@tiptap/suggestion": "^2.7.2",
+    "@tiptap/suggestion": "^2.8.0",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
@@ -64,8 +64,10 @@
     "react-tooltip": "^5.28.0",
     "recharts": "^2.12.7",
     "rehype-raw": "^7.0.0",
+    "sass": "^1.80.3",
     "sonner": "^1.5.0",
     "supabase": "^1.192.5",
+    "tippy.js": "^6.3.7",
     "ui": "*"
   },
   "devDependencies": {
