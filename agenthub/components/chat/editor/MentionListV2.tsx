@@ -23,6 +23,7 @@ export default forwardRef((props: any, ref: any) => {
   }
 
   const enterHandler = (e: any) => {
+    e.stopImmediatePropagation();
     e.preventDefault();
     e.stopPropagation();
     selectItem(selectedIndex)

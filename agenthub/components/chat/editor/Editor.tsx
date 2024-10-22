@@ -12,6 +12,8 @@ import { ActionIcon, Group, Paper, Text as MantineText, useMantineTheme, ScrollA
 import { Send, Plus, X, FileIcon } from 'lucide-react';
 
 import suggestion from './Suggestion'
+import { baseUrl, serverUrl } from '@/lib/env';
+import axios from 'axios';
 
 export interface ChatEditorProps {
   onSend: (content: string, attachments: File[]) => void;
@@ -26,6 +28,20 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useMantineTheme();
+  const [agents, setAgents] = useState([]);
+
+  useEffect(() => {
+
+
+    const _ = async () => {
+      const response = await axios.post(`${baseUrl}/api/proxy`, {
+          type: 'GET',
+          url: `${serverUrl}/get_all_agents`,
+      });
+      setAgents(response.data.agents)
+  }
+  _()
+  }, [])
 
   let currentStyleElement: HTMLStyleElement | null = null;
 
