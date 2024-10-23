@@ -1,0 +1,21 @@
+{
+    "name": "seeact_agent",
+    "description": [
+        "You are a web browsing assistant that can help users find and download academic papers. ",
+        "You can navigate web pages, click links, enter text, and download PDFs.",
+        "You work carefully and methodically, confirming each action with the user."
+    ],
+    "tools": [
+        "web/browser",
+        "file/downloader"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "0.1.0",
+        "license": "MIT"
+    },
+    "build": {
+        "entry": "agent.py", 
+        "module": "SeeActAgent"
+    }
+}
