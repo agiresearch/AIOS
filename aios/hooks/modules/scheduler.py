@@ -25,7 +25,7 @@ def useFIFOScheduler(
     params: SchedulerParams,
 ) -> Tuple[Callable[[], None], Callable[[], None]]:
     """
-    Initialize and return a First-In-First-Out (FIFO) scheduler with start and stop functions.
+    Initialize and return a scheduler with start and stop functions.
 
     Args:
         params (SchedulerParams): Parameters required for the scheduler.
@@ -34,16 +34,20 @@ def useFIFOScheduler(
         Tuple: A tuple containing the start and stop functions for the scheduler.
     """
     if params.get_llm_request is None:
-        # Import a global message retrieval function if not provided
         from aios.hooks.stores._global import global_llm_req_queue_get_message
-
         params.get_llm_request = global_llm_req_queue_get_message
         
     if params.get_memory_request is None:
-        # Import a global message retrieval function if not provided
         from aios.hooks.stores._global import global_memory_req_queue_get_message
-
         params.get_memory_request = global_memory_req_queue_get_message
+        
+    if params.get_storage_request is None:
+        from aios.hooks.stores._global import global_storage_req_queue_get_message
+        params.get_storage_request = global_storage_req_queue_get_message
+        
+    if params.get_storage is None:
+        from aios.hooks.stores._global import global_tool_req_queue_get_message
+        params.get_tool_request = global_tool_req_queue_get_message
 
     scheduler = FIFOScheduler(**params.model_dump())
 
@@ -74,6 +78,14 @@ def fifo_scheduler(params: SchedulerParams):
     if params.get_memory_request is None:
         from aios.hooks.stores._global import global_memory_req_queue_get_message
         params.get_memory_request = global_memory_req_queue_get_message
+    
+    if params.get_storage_request is None:
+        from aios.hooks.stores._global import global_storage_req_queue_get_message
+        params.get_storage_request = global_storage_req_queue_get_message
+        
+    if params.get_tool_request is None:
+        from aios.hooks.stores._global import global_tool_req_queue_get_message
+        params.get_tool_request = global_tool_req_queue_get_message
     
     scheduler = FIFOScheduler(**params.model_dump())
 
