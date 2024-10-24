@@ -13,6 +13,8 @@ from aios.utils.utils import (
     parse_global_args,
 )
 
+import sys
+
 from pyopenagi.manager.manager import AgentManager
 
 from aios.utils.state import useGlobalState
@@ -73,17 +75,17 @@ except FileNotFoundError:
             max_gpu_memory=args.max_gpu_memory,
             eval_device=args.eval_device,
             max_new_tokens=args.max_new_tokens,
-            log_mode=args.log_mode,
+            log_mode=args.llm_kernel_log_mode,
             use_backend=args.use_backend
         )
     )
 
 startScheduler, stopScheduler = useFIFOScheduler(
-    llm=getLLMState(), log_mode=args.log_mode, get_queue_message=None
+    llm=getLLMState(), log_mode=args.scheduler_log_mode, get_queue_message=None
 )
 
 
-submitAgent, awaitAgentExecution = useFactory(log_mode=args.log_mode, max_workers=500)
+submitAgent, awaitAgentExecution = useFactory(log_mode=args.agent_log_mode, max_workers=500)
 
 setFactory({"submit": submitAgent, "execute": awaitAgentExecution})
 
