@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
                 onClick={addChat} 
                 variant="subtle" 
                 color={darkMode ? "gray" : "dark"}
-                className="hover:bg-gray-600"
+                className="hover:bg-gray-600 pointer-events-none hover:pointer-events-none"
               >
                 <Plus size={16} />
               </ActionIcon>

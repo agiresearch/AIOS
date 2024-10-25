@@ -1,117 +1,207 @@
-"use client";
+'use client'
 
-import { Body } from "@/components/chat/body";
-import { Form } from "@/components/chat/form";
-import { Header } from "@/components/chat/header";
+import React, { useState, useRef, useEffect } from 'react';
+import { ChatEditor } from '@/components/chat/editor/Editor';
+import { useMounted } from '@/lib/mounted';
 
-// import { useMounted } from "@/lib/mounted";
-import { useEffect, useState } from "react";
-import { baseUrl, serverUrl } from "@/lib/env";
+import { Message, Chat } from '@/interfaces/agentchat';
+import { Sidebar } from '@/components/agentchat/Sidebar';
+import { Header } from '@/components/agentchat/Header';
+import { MessageList } from '@/components/agentchat/MessageList';
 import axios from 'axios';
+import { AgentCommand } from '@/components/chat/body/message-box';
+import { baseUrl, serverUrl } from '@/lib/env';
+import { generateSixDigitId } from '@/lib/utils';
 
-import { AgentCommand } from "@/components/chat/body/message-box";
 
-const Chat = () => {
-    const [isMounted, setIsMounted] = useState(false)
-    //@ts-ignore
-    const [messages, setMessages] = useState<any[]>([]);
 
-    useEffect(() => {
-        setIsMounted(true)
-    }, [])
+const updateChatName = (chatId: number, newName: string) => {
+  // setChats(prevChats => 
+  //   prevChats.map(chat => 
+  //     chat.id === chatId ? { ...chat, name: newName } : chat
+  //   )
+  // );
+};
 
-    useEffect(() => {
-        console.log('messages', messages)
-    }, [messages])
 
-    //@ts-ignore
-    const addMessage = async (message: any) => { 
-        // setMessages(prev => [...prev, ...parseAgentCommands(message)])
-        setMessages(prev => [...prev, 
-            {
-                name: 'user',
-                content: message == undefined ? 'No Agent Response' : message
-            }])
 
-        const promises = parseAgentCommands(message).map(command => _(command));
-        const results = await Promise.all(promises);
 
-        setMessages(prev => [...prev, ...results])
+
+
+
+
+const ChatInterface: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General' }]);
+  const [activeChat, setActiveChat] = useState<number>(1);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  function parseText(input: string): string {
+    // Step 1: Replace mention spans with the custom format
+    let parsed = input.replace(/<span class="mention" data-type="mention" data-id="([^"]+)">@[^<]+<\/span>/g, '?>>$1/?>>');
+
+    // Step 2: Convert <br> tags to newlines
+    parsed = parsed.replace(/<br[^>]*>/g, '\n');
+
+    // Step 3: Remove all remaining HTML tags
+    parsed = parsed.replace(/<[^>]+>/g, '');
+
+    // Decode HTML entities (e.g., &quot;, &amp;)
+    parsed = parsed.replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#39;/g, "'");
+
+    return parsed.trim();
+  }
+
+  interface MessageBundle {
+    name: string;
+    content: string;
+  }
+
+
+  function parseNamedContent(inputString: string) {
+    // Regular expression to match the pattern ?>>Name/?>>\s*Content
+    const regex = /\?>>(.*?)\/?>>([^?]*)/g;
+    const results = [];
+
+    // Find all matches
+    let match;
+    while ((match = regex.exec(inputString)) !== null) {
+      // Extract name and content, trim whitespace
+      const name = match[1].trim().slice(0, -2);
+      // Preserve newlines in content but trim surrounding whitespace
+      const content = match[2].replace(/^\s+|\s+$/g, '');
+
+      results.push({
+        name,
+        content
+      });
     }
 
-    const _ = async (command: AgentCommand) => {
-        const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
-            type: 'POST',
-            url: `${serverUrl}/add_agent`,
-            payload: {
-                agent_name: command.name,
-                task_input: command.content,
-            }
-        });
+    return results;
+  }
 
-        console.log(addAgentResponse.data);
+  // Ex
 
-        // Wait for 1050ms
-        await new Promise(resolve => setTimeout(resolve, 1050));
 
-        let recent_response: any;
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-        try {
-             // Second request: Execute agent
-            const executeAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
-                type: 'GET',
-                url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
-            });
+  const handleSend = async (content: string, attachments: File[]) => {
+    if (content.trim() || attachments.length > 0) {
+      const newMessage: Message = {
+        id: generateSixDigitId(),
+        text: content,
+        sender: 'user',
+        timestamp: new Date(),
+        attachments: attachments.map(file => file.name),
+        thinking: false
+      };
+      setMessages([...messages, newMessage]);
 
-            console.log(executeAgentResponse.data);
-            recent_response = executeAgentResponse.data.response.result.content;
+      const messageId = generateSixDigitId();
 
-            if (typeof recent_response !== 'string') {
-                recent_response = "Agent Had Difficulty Thinking"
-            }
-        } catch (e) {
-            recent_response = "Agent Had Difficulty Thinking"
+      // Handle file uploads here (e.g., to a server)
+      const botMessage: Message = {
+        id: messageId,
+        text: ``,
+        sender: 'bot',
+        timestamp: new Date(),
+        thinking: true
+      };
+
+      setMessages(prevMessages => [...prevMessages, botMessage]);
+
+      const res = await _(parseNamedContent(parseText(content))[0] as AgentCommand)
+
+      setMessages(prevMessages => [...prevMessages].map(message => {
+        if (message.id == messageId) {
+          return { ...message, thinking: false, text: res.content };
         }
-       
-
-        //return recent_response
-        return {
-            name: command.name,
-            content: recent_response
-        };
+        // return res.content;
+        return message;
+      }));
     }
 
-    function parseAgentCommands(input: string): AgentCommand[] {
-        console.log('ji')
-        const regex = /@([^\s]+)([^@]+)/g;
-        const matches = input.matchAll(regex);
-        const commands: AgentCommand[] = [];
-    
-        for (const match of matches) {
-            const name = match[1].trim();
-            const content = match[2].trim();
-            if (name && content) {
-                commands.push({ name: `${name}`, content });
-            }
-        }
-        console.log(commands)
-        return commands;
+  };
+
+  const addChat = () => {
+    const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}` };
+    setChats([...chats, newChat]);
+    setActiveChat(newChat.id);
+  };
+
+  const _ = async (command: AgentCommand) => {
+    const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
+      type: 'POST',
+      url: `${serverUrl}/add_agent`,
+      payload: {
+        agent_name: command.name,
+        task_input: command.content,
+      }
+    });
+
+    console.log(addAgentResponse.data);
+
+    // Wait for 1050ms
+    await new Promise(resolve => setTimeout(resolve, 1050));
+
+    let recent_response: any;
+
+    try {
+      // Second request: Execute agent
+      const executeAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
+        type: 'GET',
+        url: `${serverUrl}/execute_agent?pid=${addAgentResponse.data.pid}`,
+      });
+
+      console.log(executeAgentResponse.data);
+      recent_response = executeAgentResponse.data.response.result.content;
+
+      if (typeof recent_response !== 'string') {
+        recent_response = "Agent Had Difficulty Thinking"
+      }
+    } catch (e) {
+      recent_response = "Agent Had Difficulty Thinking"
     }
 
 
-    return (
-        isMounted ? <div className="bg-neutral-800 w-full min-h-[85vh] max-h-[85vh] flex flex-col items-center">
-            <Header />
-            <div className='h-[40px] w-full'></div>
-            <div className="flex flex-col h-[calc(85vh-50px)] w-4/5 items-center relative bg-neutral-800">
-                <Body messages={messages} />
-                <div className="w-4/5 fixed bottom-0 bg-neutral-800">
-                    <Form callback={addMessage} />
-                    <p className="w-full text-center text-xs text-neutral-400 py-2 lg:pr-[300px ">AIOS could make errors. Consider checking important information.</p>
-                </div>
-            </div>
-        </div> : null
-    )
-}
+    //return recent_response
+    return {
+      name: command.name,
+      content: recent_response
+    };
+  }
 
-export default Chat;
+  const mounted = useMounted();
+
+  return (
+    <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Sidebar
+        chats={chats}
+        activeChat={activeChat}
+        setActiveChat={setActiveChat}
+        addChat={addChat}
+        updateChatName={updateChatName}
+        darkMode={darkMode}
+      />
+      <div className="flex flex-col flex-grow pb-4">
+        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+        <MessageList messages={messages} darkMode={darkMode} />
+        <div className='w-full flex h-fit justify-center'>
+          {mounted && <ChatEditor onSend={handleSend} darkMode={darkMode} />}
+        </div>
+
+        <div ref={messagesEndRef} />
+      </div>
+    </div>
+  );
+};
+
+
+export default ChatInterface;
