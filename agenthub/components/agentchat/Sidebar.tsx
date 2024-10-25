@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
     return (
       <div className={`w-60 flex-shrink-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} p-3 flex flex-col`}>
         <div className={`p-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-lg mb-4`}>
-          <h2 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Your Workspace</h2>
+          <h2 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Your AIOS Workspace</h2>
         </div>
         
         <div className="flex-grow overflow-y-auto">

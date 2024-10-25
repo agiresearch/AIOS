@@ -32,7 +32,7 @@ const updateChatName = (chatId: number, newName: string) => {
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(true);
   const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General' }]);
   const [activeChat, setActiveChat] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
