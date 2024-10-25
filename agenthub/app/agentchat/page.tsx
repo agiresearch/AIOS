@@ -11,6 +11,7 @@ import { MessageList } from '@/components/agentchat/MessageList';
 import axios from 'axios';
 import { AgentCommand } from '@/components/chat/body/message-box';
 import { baseUrl, serverUrl } from '@/lib/env';
+import { generateSixDigitId } from '@/lib/utils';
 
 
 
@@ -94,7 +95,7 @@ const ChatInterface: React.FC = () => {
   const handleSend = async (content: string, attachments: File[]) => {
     if (content.trim() || attachments.length > 0) {
       const newMessage: Message = {
-        id: Date.now(),
+        id: generateSixDigitId(),
         text: content,
         sender: 'user',
         timestamp: new Date(),
@@ -103,7 +104,7 @@ const ChatInterface: React.FC = () => {
       };
       setMessages([...messages, newMessage]);
 
-      let messageId = Date.now();
+      let messageId = generateSixDigitId();
 
       // Handle file uploads here (e.g., to a server)
       const botMessage: Message = {
@@ -120,11 +121,13 @@ const ChatInterface: React.FC = () => {
 
       setMessages(prevMessages => [...prevMessages].map(message => {
         if (message.id == messageId) {
-          return { ...message, thinking: false };
+          return { ...message, thinking: false, text: res.content };
         }
-        return res.content;
+        // return res.content;
+        return message;
       }));
     }
+
   };
 
   const addChat = () => {

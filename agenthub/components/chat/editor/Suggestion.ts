@@ -2,38 +2,22 @@ import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
 
 import MentionListV2 from './MentionListV2'
+import { baseUrl, serverUrl } from '@/lib/env';
+import axios from 'axios';
+
 
 export default {
-  items: ({ query }: {query: any}) => {
-    return [
-      'Lea Thompson',
-      'Cyndi Lauper',
-      'Tom Cruise',
-      'Madonna',
-      'Jerry Hall',
-      'Joan Collins',
-      'Winona Ryder',
-      'Christina Applegate',
-      'Alyssa Milano',
-      'Molly Ringwald',
-      'Ally Sheedy',
-      'Debbie Harry',
-      'Olivia Newton-John',
-      'Elton John',
-      'Michael J. Fox',
-      'Axl Rose',
-      'Emilio Estevez',
-      'Ralph Macchio',
-      'Rob Lowe',
-      'Jennifer Grey',
-      'Mickey Rourke',
-      'John Cusack',
-      'Matthew Broderick',
-      'Justine Bateman',
-      'Lisa Bonet',
-    ]
-      .filter(item => item.toLowerCase().startsWith(query.toLowerCase()))
-      .slice(0, 5)
+  items: async ({ query }: { query: any }) => {
+    const response = await axios.post(`${baseUrl}/api/proxy`, {
+      type: 'GET',
+      url: `${serverUrl}/get_all_agents`,
+    });
+
+    console.log(response.data.agents)
+
+    return response.data.agents.map((agent: any) => agent.display)
+    // .filter((item: any) => item.toLowerCase().startsWith(query.toLowerCase()))
+      // .slice(0, 5)
   },
 
   render: () => {
