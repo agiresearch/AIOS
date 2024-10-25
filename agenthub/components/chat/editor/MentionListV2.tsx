@@ -1,12 +1,23 @@
 import React, {
-  forwardRef, useEffect, useImperativeHandle,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
   useState,
 } from 'react'
 
-export default forwardRef((props: any, ref: any) => {
+interface DropdownProps {
+  items: string[];
+  command: (arg: { id: string }) => void;
+}
+
+interface DropdownRef {
+  onKeyDown: (arg: { event: KeyboardEvent }) => boolean;
+}
+
+const Dropdown = forwardRef<DropdownRef, DropdownProps>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
-  const selectItem = (index: any) => {
+  const selectItem = (index: number) => {
     const item = props.items[index]
 
     if (item) {
@@ -32,7 +43,7 @@ export default forwardRef((props: any, ref: any) => {
   useEffect(() => setSelectedIndex(0), [props.items])
 
   useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }: {event: any}) => {
+    onKeyDown: ({ event }: { event: any }) => {
       if (event.key === 'ArrowUp') {
         upHandler()
         return true
@@ -55,7 +66,7 @@ export default forwardRef((props: any, ref: any) => {
   return (
     <div className="dropdown-menu">
       {props.items.length
-        ? props.items.map((item: any, index: any) => (
+        ? props.items.map((item, index) => (
           <button
             className={index === selectedIndex ? 'is-selected' : ''}
             key={index}
@@ -69,3 +80,7 @@ export default forwardRef((props: any, ref: any) => {
     </div>
   )
 })
+
+Dropdown.displayName = 'Dropdown'
+
+export default Dropdown
