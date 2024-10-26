@@ -18,3 +18,15 @@ pyfzf
 getch
 npm
 platformdirs
+# Base dependencies
+google-generativeai==0.2.0
+pillow==9.3.0
+seeact==0.0.5
+litellm==1.8.5
+# Dependencies for running seeact
+selenium==4.18.1
+webdriver_manager==4.0.1
+beautifulsoup4==4.12.3
+requests==2.31.0
+nest-asyncio==1.6.0
+aiofiles==23.2.1
