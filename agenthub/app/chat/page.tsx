@@ -117,7 +117,7 @@ const ChatInterface: React.FC = () => {
 
       setMessages(prevMessages => [...prevMessages, botMessage]);
 
-      const res = await _(parseNamedContent(parseText(content))[0] as AgentCommand)
+      const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand)
 
       setMessages(prevMessages => [...prevMessages].map(message => {
         if (message.id == messageId) {
@@ -136,7 +136,15 @@ const ChatInterface: React.FC = () => {
     setActiveChat(newChat.id);
   };
 
-  const _ = async (command: AgentCommand) => {
+  const processAgentCommand = async (command: AgentCommand) => {
+    // Temporary measure to prevent hanging until draft is published
+    if (!command) {
+      return {
+        name: undefined,
+        content: "You must provide a mention to use AIOS. (@example/...)",
+      }
+    }
+
     const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
       type: 'POST',
       url: `${serverUrl}/add_agent`,
