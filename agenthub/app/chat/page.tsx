@@ -40,7 +40,7 @@ const ChatInterface: React.FC = () => {
   function parseText(input: string): string {
     // Step 1: Replace mention spans with the custom format
     let parsed = input.replace(/<span class="mention" data-type="mention" data-id="([^"]+)">@[^<]+<\/span>/g, '?>>$1/?>>');
-    
+
     // Step 2: Convert <br> tags to newlines
     parsed = parsed.replace(/<br[^>]*>/g, '\n');
 
@@ -67,7 +67,7 @@ const ChatInterface: React.FC = () => {
     // Regular expression to match the pattern ?>>Name/?>>\s*Content
     const regex = /\?>>(.*?)\/?>>([^?]*)/g;
     const results = [];
-    
+
     // Find all matches
     let match;
     while ((match = regex.exec(inputString)) !== null) {
@@ -79,15 +79,6 @@ const ChatInterface: React.FC = () => {
       results.push({
         name,
         content
-      });
-    }
-    
-    // Handle cases where there is no agent mentioned
-    if (!(results.length > 0)) {
-      results.push({
-        // Must add base agent here
-        name: "example/academic_agent",
-        content: inputString,
       });
     }
 
@@ -126,7 +117,7 @@ const ChatInterface: React.FC = () => {
 
       setMessages(prevMessages => [...prevMessages, botMessage]);
 
-      const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand)
+      const res = await _(parseNamedContent(parseText(content))[0] as AgentCommand)
 
       setMessages(prevMessages => [...prevMessages].map(message => {
         if (message.id == messageId) {
@@ -145,7 +136,7 @@ const ChatInterface: React.FC = () => {
     setActiveChat(newChat.id);
   };
 
-  const processAgentCommand = async (command: AgentCommand) => {
+  const _ = async (command: AgentCommand) => {
     const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
       type: 'POST',
       url: `${serverUrl}/add_agent`,
