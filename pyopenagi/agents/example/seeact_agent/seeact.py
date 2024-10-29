@@ -11,7 +11,7 @@ try:
     from tqdm.autonotebook import tqdm
 except ImportError:
     from tqdm import tqdm
-    
+        
 class SeeActAgent:
     def __init__(self, agent_name: str, task_input: str, log_mode: str):
         self.agent_name = agent_name
@@ -25,7 +25,7 @@ class SeeActAgent:
         self.tools = []
         self.tool_info = []
 
-        # 修改日志配置
+        # Modify log configuration
         self.log_mode = "console" if log_mode == "info" else log_mode
         self.logger = self.setup_logger()
 
@@ -50,30 +50,30 @@ class SeeActAgent:
         self.set_created_time(time.time())
 
     def setup_logger(self):
-        """设置日志记录器"""
+        """Set up the logger"""
         try:
-            # 直接使用正确的参数创建AgentLogger
-            # AgentLogger期望的参数是 (logger_name, log_mode="console")
+            # Directly create AgentLogger with correct parameters
+            # AgentLogger expects parameters as (logger_name, log_mode="console")
             return AgentLogger(
-                logger_name=self.agent_name,  # 第一个参数是logger_name
-                log_mode=self.log_mode        # 第二个参数是log_mode
+                logger_name=self.agent_name,  # First parameter is logger_name
+                log_mode=self.log_mode        # Second parameter is log_mode
             )
         except Exception as e:
             print(f"Failed to setup logger: {str(e)}")
-            # 返回None而不是抛出异常，这样agent还能继续运行
+            # Return None instead of raising an exception so the agent can continue running
             return None
 
 
-    # 添加一个简单的后备日志记录器
+    # Add a simple fallback logger
     class SimpleLogger:
         def log(self, content, level="info"):
             print(f"[{level.upper()}] {content}")
 
 
     def load_tools(self, tool_names: List[str]) -> None:
-        """加载工具
+        """Load tools
         Args:
-            tool_names: 工具名称列表，格式如 ['web/browser', 'file/downloader']
+            tool_names: List of tool names, e.g., ['web/browser', 'file/downloader']
         """
         if not tool_names:
             self.logger.log("No tools to load", level="warning")
@@ -85,26 +85,26 @@ class SeeActAgent:
                     self.logger.log(f"Invalid tool name format: {tool_name}", level="warning")
                     continue
 
-                # 解析工具名称
+                # Parse tool name
                 org, name = tool_name.split('/')
                 if not org or not name:
                     self.logger.log(f"Invalid tool name: {tool_name}", level="warning")
                     continue
 
-                # 构建模块路径
+                # Construct module path
                 module_name = f"pyopenagi.tools.{org}.{name}"
                 class_name = self.snake_to_camel(name)
 
                 try:
-                    # 导入模块
+                    # Import module
                     tool_module = importlib.import_module(module_name)
                     tool_class = getattr(tool_module, class_name)
 
-                    # 实例化工具
+                    # Instantiate tool
                     tool_instance = tool_class()
                     self.tool_list[name] = tool_instance
 
-                    # 获取工具格式
+                    # Get tool format
                     tool_format = tool_instance.get_tool_call_format()
                     self.tools.append(tool_format)
                     self.tool_info.append({
@@ -123,7 +123,7 @@ class SeeActAgent:
             raise
 
     def check_workflow(self, workflow_str: str) -> Optional[List[Dict]]:
-        """检查工作流格式是否正确"""
+        """Check if the workflow format is correct"""
         try:
             workflow = json.loads(workflow_str)
             if not isinstance(workflow, list):
@@ -206,17 +206,18 @@ class SeeActAgent:
                     "content": f"Fail {i+1} times to generate a valid plan. I need to regenerate a plan"
                 })
         return None
+
     def manual_workflow(self):
         workflow = [
             {
                 "action_type": "message_llm",
                 "action": "Use web browser to search and navigate to the paper page",
-                "tool_use": ["browser"]    # 使用 web browser 来搜索和浏览
+                "tool_use": ["browser"]    # Use web browser to search and browse
             },
             {
                 "action_type": "message_llm",
                 "action": "Once found the paper, download the PDF",
-                "tool_use": ["downloader"]  # 使用 downloader 来下载 PDF
+                "tool_use": ["downloader"]  # Use downloader to download PDF
             }
         ]
         return workflow

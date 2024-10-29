@@ -13,15 +13,15 @@ class SeeActAgent:
         self.log_mode = log_mode
         self.logger = AgentLogger(self.agent_name, self.log_mode)
         
-        # seeact 核心实例
+        # seeact core instance
         self.seeact = SeeActCore(
-            model="gpt-4o",  # 使用 AIOS 的模型
+            model="gpt-4o",  # Use AIOS model
             default_task=task_input,
             default_website="https://www.google.com/",
             headless=True
         )
         
-        # 用于统计
+        # For statistics
         self.start_time = None
         self.end_time = None
         self.created_time = time.time()
@@ -32,10 +32,10 @@ class SeeActAgent:
         try:
             self.start_time = time.time()
             
-            # 启动 seeact
+            # Start seeact
             await self.seeact.start()
             
-            # 执行任务直到完成
+            # Execute task until completion
             while not self.seeact.complete_flag:
                 try:
                     prediction_dict = await self.seeact.predict()
@@ -60,4 +60,4 @@ class SeeActAgent:
                 "status": "error",
                 "error": str(e)
             }
-SeeactAgent=SeeActAgent
+SeeactAgent = SeeActAgent
