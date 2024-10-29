@@ -7,9 +7,10 @@ import { useState, useEffect } from 'react';
 
 interface IProps {
     content: string;
+    animation: boolean;
 }
 
-export default function Markdown({ content }: IProps) {
+export default function Markdown({ content, animation }: IProps) {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const [displayedText, setDisplayedText] = useState('');
 
@@ -25,50 +26,49 @@ export default function Markdown({ content }: IProps) {
     // }, [displayedText])
 
     useEffect(() => {
-        let currentIndex = 0;
-        let timeoutId: any;
-    
-        const streamText = () => {
-          if (currentIndex < content.length) {
-            // Determine a random chunk size between 1 and 3
-            const chunkSize = Math.floor(Math.random() * 3) + 1;
-            const nextChunk = content.slice(currentIndex, currentIndex + chunkSize);
-    
-            setDisplayedText(content.slice(0, currentIndex + chunkSize));
-            currentIndex += chunkSize;
-    
-            // Determine the next timeout
-            let timeout = Math.floor(Math.random() * 50) + 30; // Base timeout between 30ms and 80ms
-    
-            // Add occasional longer pauses
-            if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
-              timeout += Math.floor(Math.random() * 300) + 200; // Add 200-500ms for punctuation
-            } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
-              timeout += Math.floor(Math.random() * 150) + 100; // Add 100-250ms for minor punctuation
-            }
-    
-            // Slightly vary speed based on word complexity (simplified approach)
-            if (nextChunk.length > 5) {
-              timeout += nextChunk.length * 10; // Add 10ms per character for longer words
-            }
-    
-            timeoutId = setTimeout(streamText, timeout);
-          }
-        };
-    
-        streamText();
-    
-        // // Cursor blinking effect
-        // const cursorInterval = setInterval(() => {
-        //   setShowCursor(prev => !prev);
-        // }, 530);
-    
-        // Cleanup function
-        return () => {
-          clearTimeout(timeoutId);
-        //   clearInterval(cursorInterval);
-        };
-      }, [content]);
+        if (animation) {
+            let currentIndex = 0;
+            let timeoutId: any;
+
+            const streamText = () => {
+                if (currentIndex < content.length) {
+                    // Increased chunk size for faster typing
+                    const chunkSize = Math.floor(Math.random() * 4) + 2; // Now 2-5 characters at once
+                    const nextChunk = content.slice(currentIndex, currentIndex + chunkSize);
+
+                    setDisplayedText(content.slice(0, currentIndex + chunkSize));
+                    currentIndex += chunkSize;
+
+                    // Reduced base timeout for faster typing
+                    let timeout = Math.floor(Math.random() * 20) + 10; // Base timeout between 10ms and 30ms
+
+                    // Shorter pauses for punctuation
+                    if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
+                        timeout += Math.floor(Math.random() * 150) + 100; // Add 100-250ms for punctuation
+                    } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
+                        timeout += Math.floor(Math.random() * 75) + 50; // Add 50-125ms for minor punctuation
+                    }
+
+                    // Reduced delay for word complexity
+                    if (nextChunk.length > 5) {
+                        timeout += nextChunk.length * 5; // Add 5ms per character for longer words
+                    }
+
+                    timeoutId = setTimeout(streamText, timeout);
+                }
+            };
+
+            streamText();
+
+            // Cleanup function
+            return () => {
+                clearTimeout(timeoutId);
+            };
+        } else {
+            setDisplayedText(content)
+        }
+
+    }, [content]);
 
     return (
         <ReactMarkdown
@@ -81,7 +81,7 @@ export default function Markdown({ content }: IProps) {
                                 <div className='text-base !text-[#e06c75] '>
                                     {match[1]}
                                 </div>
-                                <CopyButton 
+                                <CopyButton
                                     text={String(children).replace(/\n$/, '')}
                                     index={node!.position?.start.line || 0}
                                     onCopy={handleCopy}
@@ -91,7 +91,7 @@ export default function Markdown({ content }: IProps) {
                             <SyntaxHighlighter
                                 language={match[1]}
                                 style={gruvboxDark}
-                            
+
                             >
                                 {String(children).replace(/\n$/, '')}
                             </SyntaxHighlighter>
@@ -116,7 +116,7 @@ interface CopyButtonProps {
 
 function CopyButton({ text, index, onCopy, isCopied }: CopyButtonProps) {
     return (
-        <button 
+        <button
             onClick={() => onCopy(text, index)}
             className="p-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors duration-200"
         >
