@@ -40,3 +40,16 @@ def useMemoryRequestQueue() -> (
         return QueueStore.isEmpty(_)
 
     return _, getMessage, addMessage, isEmpty
+
+# @validate(MemoryManagerParams)
+def useMemoryManager(params):
+    """
+    Initialize and return a memory instance.
+
+    Args:
+        params (MemoryParams): Parameters required for Memory Manager Initialization.
+
+    Returns:
+        Memory Manager: An instance of the initialized Memory Manager.
+    """
+    return MemoryManager(**params.model_dump())

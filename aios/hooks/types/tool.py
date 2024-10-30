@@ -7,3 +7,7 @@ ToolRequestQueue: TypeAlias = Queue
 ToolRequestQueueGetMessage: TypeAlias = Callable[[], None]
 ToolRequestQueueAddMessage: TypeAlias = Callable[[str], None]
 ToolRequestQueueCheckEmpty: TypeAlias = Callable[[], bool]
+
+class ToolParams(BaseModel):
+    name: str
+    params: dict | None = (None,)

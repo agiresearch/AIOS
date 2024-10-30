@@ -50,5 +50,7 @@ def aios_starter(
         log_mode=scheduler_log_mode,
         get_llm_request=None,
         get_memory_request=None,
+        get_storage_request=None,
+        get_tool_request=None
     ):
         yield submit_agent, await_agent_execution

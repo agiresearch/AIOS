@@ -8,7 +8,7 @@ export interface DatasetItem {
     favorites: string
 }
 
-export type DatasetsTabItem = 'Tasks' | 'Sizes' | 'Sub-tasks' | 'Languages' | 'Licenses' | 'Other'
+export type AgentTabItem = 'Tasks' | 'Sizes' | 'Sub-tasks' | 'Languages' | 'Licenses' | 'Other'
 
 
 export interface AgentItem {
