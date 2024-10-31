@@ -5,8 +5,6 @@ from .interact import Interactor
 from ..manager.manager import AgentManager
 import os
 import importlib
-
-
 class AgentFactory:
     def __init__(self, agent_log_mode):
         self.agent_log_mode = agent_log_mode
@@ -22,7 +20,7 @@ class AgentFactory:
             print(agent)
 
     def load_agent_instance(self, compressed_name: str):
-        # 首先尝试本地加载
+        # First try local loading
         try:
             author, name = compressed_name.split("/")
             module_name = ".".join(["pyopenagi", "agents", author, name, "agent"])
@@ -30,16 +28,16 @@ class AgentFactory:
             agent_module = importlib.import_module(module_name)
             return getattr(agent_module, class_name)
         except (ImportError, AttributeError, ValueError):
-            # 如果本地加载失败，使用原有的远程加载逻辑
+            # If local loading fails, use original remote loading logic
             name_split = compressed_name.split('/')
             return self.manager.load_agent(*name_split)
 
     def activate_agent(self, agent_name: str, task_input):
-        # 首先尝试本地加载
+        # First try local loading
         try:
             agent_class = self.load_agent_instance(agent_name)
         except:
-            # 如果本地加载失败，尝试下载并加载
+            # If local loading fails, try downloading and loading
             try:
                 agent_name = '/'.join(
                     self.manager.download_agent(
@@ -55,7 +53,6 @@ class AgentFactory:
             task_input=task_input,
             log_mode=self.agent_log_mode
         )
-
         return agent
 
     def run_agent(self, agent_name, task_input):
