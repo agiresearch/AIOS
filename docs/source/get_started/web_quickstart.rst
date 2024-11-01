@@ -38,7 +38,7 @@ the front-end and back-end will both be compilled when you call
 
 in the terminal
 
-this should open a window in your default browser, however if it doesnt, navigate to `https://localhost:3000`
+this should open a window in your default browser, however if it doesnt, navigate to https://localhost:3000
 
 .. tip::
 
