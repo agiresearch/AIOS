@@ -1,7 +1,7 @@
 {
     "llm_cores": [
         {
-            "llm_name": "gpt-4o-mini",
+            "llm_name": "gemini-1.5-flash",
             "use_backend": "openai",
             "max_new_tokens": 1024
         }
