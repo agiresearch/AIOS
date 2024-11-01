@@ -13,7 +13,7 @@ class AgentFactory:
                  agent_log_mode
         ):
         # self.max_aid = 256
-        # # self.llm = llm
+        # self.llm = llm
         # self.aid_pool = [i for i in range(self.max_aid)]
         # heapq.heapify(self.aid_pool)
         # self.agent_process_queue = agent_process_queue
