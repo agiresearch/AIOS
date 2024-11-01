@@ -8,8 +8,8 @@ class ToolManager:
         self.log_mode = log_mode
         self.tool_conflict_map = {}
 
-    def address_request(self, agent_request, temperature=0.0) -> None:
-        request_data = agent_request.request_data
+    def tool_run(self, syscall, temperature=0.0) -> None:
+        request_data = syscall.request_data
         tool_org_and_name, tool_params = request_data["name"], request_data["paramemters"]
         org, tool_name = tool_org_and_name.split("/")
         

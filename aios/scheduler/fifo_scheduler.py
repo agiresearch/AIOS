@@ -20,7 +20,9 @@ class FIFOScheduler:
     def __init__(
         self,
         llm,
-        # memory_manager,
+        memory_manager,
+        storage_manager,
+        tool_manager,
         log_mode,
         get_llm_request: LLMRequestQueueGetMessage,
         get_memory_request: MemoryRequestQueueGetMessage,
@@ -35,16 +37,16 @@ class FIFOScheduler:
         self.active = False  # start/stop the scheduler
         self.log_mode = log_mode
         self.logger = self.setup_logger()
-        # self.thread = Thread(target=self.run)
         self.request_processors = {
             "llm_syscall_processor": Thread(target=self.run_llm_request),
             "mem_syscall_processor": Thread(target=self.run_memory_request),
             "sto_syscall_processor": Thread(target=self.run_storage_request),
             "tool_syscall_processor": Thread(target=self.run_tool_request)
-            # "memory_request_processor": Thread(self.run_memory_request)
         }
         self.llm = llm
-        # self.memory_manager = memory_manager
+        self.memory_manager = memory_manager
+        self.storage_manager = storage_manager
+        self.tool_manager = tool_manager
 
     def start(self):
         """start the scheduler"""

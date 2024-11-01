@@ -63,14 +63,14 @@ class InterpreterAgent(ExpirementAgent):
 
 class InterpreterAgentHumanEval(ExpirementAgent):
 
-    SYSTEM_PROMPT = """You will receive a function definition and comments. You need to help me complete this function.
-
+    SYSTEM_PROMPT = """You are an expert good at solving code problems. 
+    You will receive a function definition and comments. You need to help me complete this function.
     Give me final output in the format:
     <FINAL ANSWER>
-        YOUR FINAL ANSWER (YOUR FINAL ANSWER must be a piece of code that you want to add. The final result must remove
-         the function definition and function description provided in the problem statement, as well as any unit test
-         code you added.)
-    </FINAL ANSWER> """
+        YOUR FINAL ANSWER (YOUR FINAL ANSWER must be a piece of code that you want to add. Just
+        contains what you add, don't contains the original definition and comments in your code. )
+    </FINAL ANSWER>
+    """
 
     def __init__(self, on_aios: bool = True):
         if on_aios:
