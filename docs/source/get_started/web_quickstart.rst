@@ -10,9 +10,11 @@ Requirements
 * NPM
 
 check you meet the requirements by running the following commands in your terminal
+
 .. tip::
 
         depending on your machine python might be called as "python" or "python3"
+
 
 .. code-block:: console
 
@@ -20,6 +22,7 @@ check you meet the requirements by running the following commands in your termin
 
 
 and
+
 .. code-block:: console
 
         npm -v
@@ -28,6 +31,7 @@ and
 Starting the Web Interface
 --------------------------
 the front-end and back-end will both be compilled when you call
+
 .. code-block:: console
 
         py launch.py
