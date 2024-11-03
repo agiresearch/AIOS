@@ -3,7 +3,7 @@ import importlib
 import os
 import time
 
-from aios.hooks.request import send_request
+from aios.hooks.syscall import send_request
 
 from pyopenagi.utils.chat_template import Query
 

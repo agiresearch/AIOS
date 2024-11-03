@@ -11,7 +11,6 @@ import { MessageList } from '@/components/agentchat/MessageList';
 import axios from 'axios';
 import { AgentCommand } from '@/components/chat/body/message-box';
 import { baseUrl, serverUrl } from '@/lib/env';
-import { generateSixDigitId } from '@/lib/utils';
 
 
 
@@ -32,7 +31,7 @@ const updateChatName = (chatId: number, newName: string) => {
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General' }]);
   const [activeChat, setActiveChat] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -95,7 +94,7 @@ const ChatInterface: React.FC = () => {
   const handleSend = async (content: string, attachments: File[]) => {
     if (content.trim() || attachments.length > 0) {
       const newMessage: Message = {
-        id: generateSixDigitId(),
+        id: Date.now(),
         text: content,
         sender: 'user',
         timestamp: new Date(),
@@ -104,7 +103,7 @@ const ChatInterface: React.FC = () => {
       };
       setMessages([...messages, newMessage]);
 
-      const messageId = generateSixDigitId();
+      let messageId = Date.now();
 
       // Handle file uploads here (e.g., to a server)
       const botMessage: Message = {
@@ -117,17 +116,15 @@ const ChatInterface: React.FC = () => {
 
       setMessages(prevMessages => [...prevMessages, botMessage]);
 
-      const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand)
+      const res = await _(parseNamedContent(parseText(content))[0] as AgentCommand)
 
       setMessages(prevMessages => [...prevMessages].map(message => {
         if (message.id == messageId) {
-          return { ...message, thinking: false, text: res.content };
+          return { ...message, thinking: false };
         }
-        // return res.content;
-        return message;
+        return res.content;
       }));
     }
-
   };
 
   const addChat = () => {
@@ -136,15 +133,7 @@ const ChatInterface: React.FC = () => {
     setActiveChat(newChat.id);
   };
 
-  const processAgentCommand = async (command: AgentCommand) => {
-    // Temporary measure to prevent hanging until draft is published
-    if (!command) {
-      return {
-        name: undefined,
-        content: "You must provide a mention to use AIOS. (@example/...)",
-      }
-    }
-
+  const _ = async (command: AgentCommand) => {
     const addAgentResponse = await axios.post(`${baseUrl}/api/proxy`, {
       type: 'POST',
       url: `${serverUrl}/add_agent`,

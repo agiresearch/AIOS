@@ -1,6 +1,5 @@
 import uuid
 import logging
-from logging import ERROR
 
 from typing import (
     Optional,
@@ -15,7 +14,7 @@ from autogen.oai.openai_utils import get_key
 from autogen.runtime_logging import logging_enabled, log_new_wrapper, log_chat_completion
 from openai import APITimeoutError, APIError
 
-from aios.hooks.request import send_request
+from aios.hooks.syscall import send_request
 from pyopenagi.utils.chat_template import Query
 
 try:

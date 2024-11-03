@@ -13,6 +13,8 @@ from aios.utils.utils import (
     parse_global_args,
 )
 
+import sys
+
 from pyopenagi.manager.manager import AgentManager
 
 from aios.utils.state import useGlobalState
@@ -40,50 +42,50 @@ getManager, setManager, setManagerCallback = useGlobalState()
 
 setManager(AgentManager("https://my.aios.foundation"))
 
-# parser = parse_global_args()
-# args = parser.parse_args()
+parser = parse_global_args()
+args = parser.parse_args()
 
 # check if the llm information was specified in args
 
-with open("aios_config.json", "r") as f:
-    aios_config = json.load(f)
+try: 
+    with open("aios_config.json", "r") as f:
+        aios_config = json.load(f)
 
-# only support one llm core for now
-llm_cores = aios_config["llm_cores"][0]
+    # print to stderr
+    print("Loaded aios_config.json, ignoring args", file=sys.stderr)
 
-setLLMState(
-    useKernel(
-        llm_name=llm_cores.get("llm_name"), 
-        max_gpu_memory=llm_cores.get("max_gpu_memory", None),
-        eval_device=llm_cores.get("eval_device", None) ,
-        max_new_tokens=llm_cores.get("max_new_tokens", 1024),
-        log_mode="console",
-        use_backend=llm_cores.get("use_backend", None),
+    llm_cores = aios_config["llm_cores"][0]
+    # only check aios_config.json
+    setLLMState(
+        useKernel(
+            llm_name=llm_cores.get("llm_name"), 
+            max_gpu_memory=llm_cores.get("max_gpu_memory"),
+            eval_device=llm_cores.get("eval_device"),
+            max_new_tokens=llm_cores.get("max_new_tokens"),
+            log_mode="console",
+            use_backend=llm_cores.get("use_backend")
+        )
     )
-)
-
-
-# deploy specific
-# leave commented
-# TODO conditional check if in deployment environment
-# setLLMState(
-#     useKernel(
-#         llm_name='mixtral-8x7b-32768',
-#         max_gpu_memory=None,
-#         eval_device=None,
-#         max_new_tokens=512,
-#         log_mode='console',
-#         use_backend=None
-#     )
-# )
-
+except FileNotFoundError:
+    aios_config = {}
+    # only check args
+    setLLMState(
+        useKernel(
+            llm_name=args.llm_name, 
+            max_gpu_memory=args.max_gpu_memory,
+            eval_device=args.eval_device,
+            max_new_tokens=args.max_new_tokens,
+            log_mode=args.llm_kernel_log_mode,
+            use_backend=args.use_backend
+        )
+    )
 
 startScheduler, stopScheduler = useFIFOScheduler(
-    llm=getLLMState(), log_mode="console", get_queue_message=None
+    llm=getLLMState(), log_mode=args.scheduler_log_mode, get_queue_message=None
 )
 
 
-submitAgent, awaitAgentExecution = useFactory(log_mode="console", max_workers=500)
+submitAgent, awaitAgentExecution = useFactory(log_mode=args.agent_log_mode, max_workers=500)
 
 setFactory({"submit": submitAgent, "execute": awaitAgentExecution})
 
