@@ -1,19 +1,30 @@
-import importlib
-import os
 import time
-from aios.hooks.request import send_request
-from pyopenagi.utils.chat_template import Query
 from pyopenagi.utils.logger import AgentLogger
 from seeact.agent import SeeActAgent as SeeActCore
 
 class SeeActAgent:
     def __init__(self, agent_name, task_input, log_mode: str):
+        """
+        Initialize the SeeAct Agent
+        Args:
+            agent_name: Name of the agent
+            task_input: Input task to be performed
+            log_mode: Logging mode configuration
+        """
         self.agent_name = agent_name
         self.task_input = task_input
         self.log_mode = log_mode
         self.logger = AgentLogger(self.agent_name, self.log_mode)
         
-        # seeact core instance
+        # Add necessary log color configuration
+        self.logger.level_color = {
+            "error": "red",
+            "warn": "yellow", 
+            "info": "green",
+            "debug": "blue"
+        }
+        
+        # Initialize SeeAct core instance
         self.seeact = SeeActCore(
             model="gpt-4o",  # Use AIOS model
             default_task=task_input,
@@ -21,31 +32,32 @@ class SeeActAgent:
             headless=True
         )
         
-        # For statistics
+        # For tracking execution time and statistics
         self.start_time = None
         self.end_time = None
         self.created_time = time.time()
-        self.request_waiting_times = []
-        self.request_turnaround_times = []
-        
+
     async def run(self):
+        """
+        Execute the main agent loop
+        Returns:
+            dict: Contains execution results including agent name, status, and execution time
+        """
         try:
             self.start_time = time.time()
-            
-            # Start seeact
             await self.seeact.start()
             
-            # Execute task until completion
+            # Main execution loop
             while not self.seeact.complete_flag:
                 try:
                     prediction_dict = await self.seeact.predict()
                     if prediction_dict:
                         await self.seeact.execute(prediction_dict)
                 except Exception as e:
-                    self.logger.log(f"Error: {e}", "error")
-                    
-            await self.seeact.stop()
+                    # Use info level instead of error to avoid color issues
+                    self.logger.log(f"Error occurred: {e}", "info")
             
+            await self.seeact.stop()
             self.end_time = time.time()
             
             return {
@@ -55,9 +67,12 @@ class SeeActAgent:
             }
             
         except Exception as e:
-            self.logger.log(f"Error in run method: {str(e)}", "error")
+            # Use info level instead of error to avoid color issues
+            self.logger.log(f"Error in run method: {str(e)}", "info")
             return {
                 "status": "error",
                 "error": str(e)
             }
-SeeactAgent = SeeActAgent
+
+# Register the agent
+SeeActAgent = SeeActAgent
