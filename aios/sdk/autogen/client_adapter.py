@@ -1,6 +1,5 @@
 import uuid
 import logging
-from logging import ERROR
 
 from typing import (
     Optional,
@@ -53,8 +52,6 @@ def adapter_autogen_client_init(self, *,
 
 
 def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientResponseProtocol:
-    if ERROR:
-        raise ERROR
     invocation_id = str(uuid.uuid4())
     last = len(self._clients) - 1
     # Check if all configs in config list are activated
