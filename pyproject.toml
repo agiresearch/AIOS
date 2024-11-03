@@ -13,7 +13,7 @@ license = {file = "LICENSE"}
 name = "aios-core"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "0.0.1.beta2"
+version = "0.1.0"
 
 classifiers = [
   "Development Status :: 4 - Beta",
