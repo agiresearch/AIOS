@@ -1,13 +1,65 @@
 import argparse
 from typing import List, Tuple
 
-from aios.utils.utils import delete_directories, humanify_agent, parse_global_args
+from fastapi import Depends
+
 from aios.hooks.llm import useFactory, useKernel, useFIFOScheduler
+from aios.utils.utils import delete_directories, humanify_agent, parse_global_args
+from aios.utils.state import useGlobalState
+
 from pyopenagi.agents.interact import Interactor
+from pyopenagi.manager.manager import AgentManager
 
 from dotenv import load_dotenv
 import warnings
 
+# load the args
+warnings.filterwarnings("ignore")
+parser = parse_global_args()
+parser.add_argument("--no-color")
+parser.add_argument("--manager-url", default="https://my.aios.foundation")
+
+args = parser.parse_args()
+
+load_dotenv()
+
+# start the kernel
+llm = useKernel(
+    llm_name=args.llm_name,
+    max_gpu_memory=args.max_gpu_memory,
+    eval_device=args.eval_device,
+    max_new_tokens=args.max_new_tokens,
+    log_mode=args.log_mode,
+    use_backend=args.use_backend,
+)
+
+# boilerplate from "launch.py"
+# provides an interface for setting state variables
+startScheduler, stopScheduler = useFIFOScheduler(
+    llm=llm, log_mode=args.log_mode, get_queue_message=None
+)
+
+submitAgent, awaitAgentExecution = useFactory(
+    log_mode=args.log_mode, max_workers=500
+)
+
+
+startScheduler()
+
+getLLMState, setLLMState, setLLMCallback = useGlobalState()
+getFactory, setFactory, setFactoryCallback = useGlobalState()
+getManager, setManager, setManagerCallback = useGlobalState()
+
+setFactory({"submit": submitAgent, "execute": awaitAgentExecution})
+
+setManager(AgentManager(args.manager_url))
+
+WHITE='\033[1m'
+GREEN = '\033[32m'
+BLUE = '\033[34m'
+RED = '\033[31m'
+YELLOW = '\033[33m'
+RESET = '\033[0m'
 
 def clean_cache(root_directory):
     targets = {
@@ -19,14 +71,13 @@ def clean_cache(root_directory):
     delete_directories(root_directory, targets)
 
 
-def get_all_agents() -> dict[str, str]:
-    interactor = Interactor()
-    agents = interactor.list_available_agents()
-    agent_names = {}
-    for a in agents:
-        agent_names[humanify_agent(a["agent"])] = a["agent"]
+def get_all_agents() -> List[str]:
+    manager: AgentManager = getManager()
 
-    return agent_names
+    agents = manager.list_available_agents()
+
+    return [agent["agent"] for agent in agents]
+
 
 
 def display_agents(agents: List[str]):
@@ -48,101 +99,112 @@ def get_user_choice(agents: List[Tuple[str, str]]) -> Tuple[str, str]:
 
 
 def get_user_task(chosen_agent) -> str:
-    return input(f"Enter the task for the {chosen_agent}: ")
+    return input(f"{BLUE}{chosen_agent}:{RESET} ")
+
+def add_agent(
+    agent_name: str,
+    task_input: str,
+):
+    try:
+        submit_agent = getFactory()["submit"]
+        process_id = submit_agent(agent_name=agent_name, task_input=task_input)
+        return {"success": True, "agent": agent_name, "pid": process_id}
+    except Exception as e:
+        return {"success": False, "exception": f"{e}"}
 
 
-def main():
-    warnings.filterwarnings("ignore")
-    parser = parse_global_args()
-    args = parser.parse_args()
+def execute_agent(
+    pid: int,
+):
+    print(getFactory()["execute"])
+    response = getFactory()["execute"](pid)
+    print(response)
+    return {"success": True, "response": response}
 
-    load_dotenv()
 
-    llm = useKernel(
-        llm_name=args.llm_name,
-        max_gpu_memory=args.max_gpu_memory,
-        eval_device=args.eval_device,
-        max_new_tokens=args.max_new_tokens,
-        log_mode=args.llm_kernel_log_mode,
-        use_backend=args.use_backend,
-    )
 
-    startScheduler, stopScheduler = useFIFOScheduler(
-        llm=llm, log_mode=args.scheduler_log_mode, get_queue_message=None
-    )
+print(
+    """
+        \033c
+        Welcome to the Agent REPL.
+        Please select an agent by pressing tab.
+        To exit, press Ctrl+C.
+      """
+)
 
-    submitAgent, awaitAgentExecution = useFactory(
-        log_mode=args.agent_log_mode, max_workers=500
-    )
-
-    startScheduler()
-
+# check for getch
+getch = None
+try:
+    from getch import getch
+except ImportError:
     print(
         """
-            \033c
-            Welcome to the Agent REPL.
-            Please select an agent by pressing tab.
-            To exit, press Ctrl+C.
+    The terminal will NOT look pretty without getch. Please install it.
+    pip install getch
           """
     )
+    getch = input
 
-    # check for getch
-    getch = None
-    try:
-        from getch import getch
-    except ImportError:
-        print(
-            """
-        The terminal will NOT look pretty without getch. Please install it.
-        pip install getch
-              """
-        )
-        getch = input
+# shell loop
+try:
+    while True:
+        chosen_agent = ""
+        agents = get_all_agents()
 
-    # shell loop
-    try:
-        while True:
-            chosen_agent = ""
-            agents = get_all_agents()
+        # shell prompt
+        print(f"{WHITE}[{args.llm_name}]>{RESET} ", end="")
 
-            # shell prompt
-            print(f"[{args.llm_name}]> ", end="")
+        # check if the user put in a tab
+        if getch() != "\t":
+            continue
 
-            # check if the user put in a tab
-            if getch() != "\t":
+        try:
+            from pyfzf.pyfzf import FzfPrompt
+
+            fzf = FzfPrompt()
+
+            selected = fzf.prompt(agents)
+
+            if len(selected) == 0:
+                print("No agent selected. Please try again.")
                 continue
 
-            try:
-                from pyfzf.pyfzf import FzfPrompt
+            chosen_agent = selected[0]
 
-                fzf = FzfPrompt()
+        except ImportError:
+            print("pyfzf is not installed. Falling back to default reader.")
+            display_agents(list(agents.keys()))
+            chosen_agent, _ = "example/" + get_user_choice(agents)
 
-                selected = fzf.prompt(list(agents.keys()))
+        task = get_user_task(chosen_agent)
 
-                if len(selected) == 0:
-                    print("No agent selected. Please try again.")
-                    continue
+        try:
+            agent_payload = add_agent(
+                agent_name=chosen_agent,
+                task_input=task,
+            )
 
-                chosen_agent = agents[selected[0]]
+            if not agent_payload["success"]:
+                print(f"An error occurred: {agent_payload['exception']}")
+                continue
 
-            except ImportError:
-                print("pyfzf is not installed. Falling back to default reader.")
-                display_agents(list(agents.keys()))
-                chosen_agent, _ = "example/" + get_user_choice(agents)
+            agent_id = agent_payload["pid"]
 
-            task = get_user_task(chosen_agent)
+            print(f"Agent {chosen_agent} started with PID {agent_id}.")
 
-            try:
-                agent_id = submitAgent(agent_name=chosen_agent, task_input=task)
+            agent_response = execute_agent(agent_id)
 
-                awaitAgentExecution(agent_id)
-            except Exception as e:
-                print(f"An error occurred: {str(e)}")
+            if not agent_response["success"]:
+                print(f"An error occurred: {agent_response['exception']}")
+                continue
+
+            print(agent_response["response"])
+            
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+
+        
                 
-    except KeyboardInterrupt:
-        stopScheduler()
-        clean_cache(root_directory="./")
-
-
-if __name__ == "__main__":
-    main()
+except KeyboardInterrupt:
+    stopScheduler()
+    clean_cache(root_directory="./")

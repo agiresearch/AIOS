@@ -7,7 +7,7 @@ import { baseUrl, serverUrl } from "@/lib/env";
 import { ChatMessageProps } from "./body/message-box";
 import { useMounted } from "@/lib/mounted";
 import dynamic from "next/dynamic";
-import { Editor } from "./editor/Editor";
+// import { Editor } from "./editor/Editor";
 
 import { AgentCommand } from "./body/message-box";
 
@@ -136,9 +136,11 @@ export const Form: React.FC<FormProps> = ({
         setMessage(s);
     }
 
+    // {mounted && <Editor callback={handleChange} />}
+    //goes below at comment #1
     return (
         <div className="relative px-2 w-4/5 mx-auto bg-neutral-800">
-            {mounted && <Editor callback={handleChange} />}
+            {/* comment #1 */}
             {/* <Input
                 placeholder="Message TalkGPT..."
                 className="border-[1px] border-neutral-500 ring-none rounded-xl bg-inherit text-neutral-200 placeholder:text-neutral-400 h-12"

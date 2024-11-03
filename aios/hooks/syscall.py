@@ -6,7 +6,7 @@ import time
 from aios.hooks.stores._global import global_llm_req_queue_add_message
 
 
-class AgentRequest(Thread):
+class Syscall(Thread):
     def __init__(self, agent_name, query):
         """Agent Process
 
@@ -92,16 +92,22 @@ class AgentRequest(Thread):
         self.set_pid(self.native_id)
         self.event.wait()
 
-class LLMRequest(AgentRequest):
+
+class LLMSyscall(Syscall):
+    pass
+
+
+class MemSyscall(Syscall):
+    pass
+
+
+class StorageSyscall(Syscall):
     pass
 
 
 def send_request(agent_name, query):
-    agent_request = AgentRequest(
-        agent_name=agent_name, 
-        query=query
-    )
-    agent_request.set_status("active")
+    syscall = LLMSyscall(agent_name=agent_name, query=query)
+    syscall.set_status("active")
 
     completed_response, start_times, end_times, waiting_times, turnaround_times = (
         "",
@@ -111,24 +117,24 @@ def send_request(agent_name, query):
         [],
     )
 
-    while agent_request.get_status() != "done":
+    while syscall.get_status() != "done":
         current_time = time.time()
-        agent_request.set_created_time(current_time)
-        agent_request.set_response(None)
+        syscall.set_created_time(current_time)
+        syscall.set_response(None)
 
-        global_llm_req_queue_add_message(agent_request)
+        global_llm_req_queue_add_message(syscall)
 
-        agent_request.start()
-        agent_request.join()
+        syscall.start()
+        syscall.join()
 
-        completed_response = agent_request.get_response()
-        
-        if agent_request.get_status() != "done":
+        completed_response = syscall.get_response()
+
+        if syscall.get_status() != "done":
             pass
-        start_time = agent_request.get_start_time()
-        end_time = agent_request.get_end_time()
-        waiting_time = start_time - agent_request.get_created_time()
-        turnaround_time = end_time - agent_request.get_created_time()
+        start_time = syscall.get_start_time()
+        end_time = syscall.get_end_time()
+        waiting_time = start_time - syscall.get_created_time()
+        turnaround_time = end_time - syscall.get_created_time()
 
         start_times.append(start_time)
         end_times.append(end_time)

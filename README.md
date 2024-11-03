@@ -191,6 +191,17 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 ##### Node
 - Supported versions: **LTS** support ONLY
 
+you can check that you meet requirements by running
+```bash
+py -v
+```
+and
+```bash
+npm -v
+```
+in your terminal
+
+
 Run the launch.py to start both the frontend and backend
 ```
 python launch.py
