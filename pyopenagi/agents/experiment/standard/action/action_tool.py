@@ -1,6 +1,6 @@
 import importlib
 from typing import List, Any, Optional
-from pydantic.v1 import BaseModel, root_validator
+from pydantic.v1 import BaseModel
 from pyopenagi.agents.experiment.standard.action.action import Action
 from pyopenagi.agents.experiment.standard.utils.config import Config
 from pyopenagi.agents.experiment.standard.utils.str_utils import snake_to_camel
@@ -12,6 +12,10 @@ class ActionTool(Action, BaseModel):
     tools: Optional[List]
     tools_format: Optional[List]
     type: str = "TOOL"
+
+    def __int__(self, *data):
+        super().__init__(self, *data)
+        self.init_tools()
 
     def __call__(self, tool_call: dict) -> Any:
         if tool_call is None:
@@ -28,7 +32,6 @@ class ActionTool(Action, BaseModel):
 
         return function_response
 
-    @root_validator(pre=True)
     def init_tools(self):
         self._init_tools_from_config()
 
