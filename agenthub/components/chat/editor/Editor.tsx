@@ -81,7 +81,7 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
         },
       }),
       Placeholder.configure({
-        placeholder: 'Type a message...',
+        placeholder: '@ an agent to chat...',
       }),
       Mention.configure({
         HTMLAttributes: {

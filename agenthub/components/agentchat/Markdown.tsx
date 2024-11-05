@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import { ActionIcon, CopyButton } from '@mantine/core';
-import { Clipboard, Check} from 'lucide-react';
+import { Clipboard, Check } from 'lucide-react';
 
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -14,58 +14,67 @@ import rehypeRaw from 'rehype-raw';
 interface MarkdownProps {
     content: string;
     darkMode: boolean;
+    animation: boolean;
 }
 
-export const Markdown: React.FC<MarkdownProps> = ({ content, darkMode }) => {
+export const Markdown: React.FC<MarkdownProps> = ({ content, darkMode, animation }) => {
     const [displayedText, setDisplayedText] = useState('');
     const animationRef = useRef<number | null>(null);
     const currentIndexRef = useRef(0);
 
     useEffect(() => {
-        let lastTimestamp: number | null = null;
-    
-        const streamText = (timestamp: number) => {
-            if (lastTimestamp === null) {
-                lastTimestamp = timestamp;
-            }
-    
-            const elapsed = timestamp - lastTimestamp;
-    
-            if (elapsed >= 30) { // Minimum 30ms between updates
-                if (currentIndexRef.current < content.length) {
-                    const chunkSize = Math.floor(Math.random() * 3) + 1;
-                    const nextChunk = content.slice(currentIndexRef.current, currentIndexRef.current + chunkSize);
-    
-                    setDisplayedText(prevText => prevText + nextChunk);
-                    currentIndexRef.current += chunkSize;
-    
-                    // Determine the next delay
-                    let delay = Math.floor(Math.random() * 50) + 30;
-    
-                    if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
-                        delay += Math.floor(Math.random() * 300) + 200;
-                    } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
-                        delay += Math.floor(Math.random() * 150) + 100;
-                    }
-    
-                    if (nextChunk.length > 5) {
-                        delay += nextChunk.length * 10;
-                    }
-    
-                    lastTimestamp = timestamp + delay;
-                }
-            }
-    
-            animationRef.current = requestAnimationFrame(streamText);
-        };
-    
-        animationRef.current = requestAnimationFrame(streamText);
+        if (animation) {
+            let lastTimestamp: number | null = null;
 
-        return () => {
-            if (animationRef.current !== null) {
-                cancelAnimationFrame(animationRef.current);
-            }
-        };
+            const streamText = (timestamp: number) => {
+                if (lastTimestamp === null) {
+                    lastTimestamp = timestamp;
+                }
+
+                const elapsed = timestamp - lastTimestamp;
+
+                if (elapsed >= 10) { // Reduced minimum delay between updates from 30ms to 10ms
+                    if (currentIndexRef.current < content.length) {
+                        // Increased chunk size for faster typing
+                        const chunkSize = Math.floor(Math.random() * 4) + 2; // Now 2-5 characters at once
+                        const nextChunk = content.slice(currentIndexRef.current, currentIndexRef.current + chunkSize);
+
+                        setDisplayedText(prevText => prevText + nextChunk);
+                        currentIndexRef.current += chunkSize;
+
+                        // Reduced delays for a faster animation
+                        let delay = Math.floor(Math.random() * 20) + 10; // Base delay between 10-30ms
+
+                        // Shorter pauses for punctuation
+                        if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
+                            delay += Math.floor(Math.random() * 100) + 50; // Reduced to 50-150ms for major punctuation
+                        } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
+                            delay += Math.floor(Math.random() * 50) + 25; // Reduced to 25-75ms for minor punctuation
+                        }
+
+                        // Reduced delay for word complexity
+                        if (nextChunk.length > 5) {
+                            delay += nextChunk.length * 3; // Reduced to 3ms per character
+                        }
+
+                        lastTimestamp = timestamp + delay;
+                    }
+                }
+
+                animationRef.current = requestAnimationFrame(streamText);
+            };
+
+            animationRef.current = requestAnimationFrame(streamText);
+
+            return () => {
+                if (animationRef.current !== null) {
+                    cancelAnimationFrame(animationRef.current);
+                }
+            };
+        } else {
+            setDisplayedText(content);
+        }
+
     }, [content]);
 
 
