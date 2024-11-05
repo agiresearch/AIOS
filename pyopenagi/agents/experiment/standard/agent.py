@@ -12,7 +12,7 @@ from pyopenagi.utils.logger import AgentLogger
 
 class StandardAgent:
 
-    def __init__(self, agent_name: str, task_input: str, log_mode: str):
+    def __init__(self, agent_name: str, task_input: str, log_mode: str = "console"):
         # Init module
         self.planning: Planning | None = None
         self.actions = {}
