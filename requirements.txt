@@ -18,3 +18,4 @@ pyfzf
 getch
 npm
 platformdirs
+arxiv
