@@ -2,7 +2,7 @@ from random import randint
 
 from typing import Tuple
 
-from aios.tool.base import ToolManager
+from aios.tool.manager import ToolManager
 from aios.hooks.types.tool import (
     ToolRequestQueue,
     ToolRequestQueueAddMessage,
@@ -13,7 +13,7 @@ from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 # @validate(ToolManagerParams)
-def useToolManager(params) -> ToolManager:
+def useToolManager() -> ToolManager:
     """
     Initialize and return a tool manager instance.
 
@@ -23,7 +23,7 @@ def useToolManager(params) -> ToolManager:
     Returns:
         Tool Manager: An instance of the initialized Tool Manager.
     """
-    return ToolManager(**params.model_dump())
+    return ToolManager()
 
 def useToolRequestQueue() -> (
     Tuple[ToolRequestQueue, ToolRequestQueueGetMessage, ToolRequestQueueAddMessage, ToolRequestQueueCheckEmpty]
@@ -56,16 +56,3 @@ def useToolRequestQueue() -> (
         return QueueStore.isEmpty(_)
 
     return _, getMessage, addMessage, isEmpty
-
-# @validate(MemoryManagerParams)
-# def useMemoryManager(params: MemoryManagerParams) -> MemoryManager:
-#     """
-#     Initialize and return a memory instance.
-
-#     Args:
-#         params (MemoryParams): Parameters required for Memory Manager Initialization.
-
-#     Returns:
-#         Memory Manager: An instance of the initialized Memory Manager.
-#     """
-#     return MemoryManager(**params.model_dump())

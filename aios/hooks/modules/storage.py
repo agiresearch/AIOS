@@ -8,6 +8,9 @@ from aios.hooks.types.storage import (
 )
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore
+from aios.storage.storage import StorageManager
+
+from aios.hooks.types.storage import StorageManagerParams
 
 def useStorageRequestQueue() -> (
     Tuple[StorageRequestQueue, StorageRequestQueueGetMessage, StorageRequestQueueAddMessage, StorageRequestQueueCheckEmpty]
@@ -41,15 +44,6 @@ def useStorageRequestQueue() -> (
 
     return _, getMessage, addMessage, isEmpty
 
-# @validate(MemoryManagerParams)
-# def useMemoryManager(params: MemoryManagerParams) -> MemoryManager:
-#     """
-#     Initialize and return a memory instance.
-
-#     Args:
-#         params (MemoryParams): Parameters required for Memory Manager Initialization.
-
-#     Returns:
-#         Memory Manager: An instance of the initialized Memory Manager.
-#     """
-#     return MemoryManager(**params.model_dump())
+@validate(StorageManagerParams)
+def useStorageManager(params: StorageManagerParams) -> StorageManager:
+    return StorageManager(**params.model_dump())

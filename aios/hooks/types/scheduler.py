@@ -8,8 +8,11 @@ from .tool import ToolRequestQueueGetMessage
 
 class SchedulerParams(BaseModel):
     llm: Any
+    memory_manager: Any
+    storage_manager: Any
+    tool_manager: Any
     log_mode: str
     get_llm_request: LLMRequestQueueGetMessage | None
     get_memory_request: MemoryRequestQueueGetMessage | None
-    get_storage_request: MemoryRequestQueueGetMessage | None
-    get_tool_request: MemoryRequestQueueGetMessage | None
+    get_storage_request: StorageRequestQueueGetMessage | None
+    get_tool_request: ToolRequestQueueGetMessage | None

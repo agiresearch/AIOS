@@ -9,6 +9,10 @@ from aios.hooks.types.memory import (
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore
 
+from aios.hooks.types.memory import MemoryManagerParams
+
+from aios.memory.manager import MemoryManager
+
 def useMemoryRequestQueue() -> (
     Tuple[MemoryRequestQueue, MemoryRequestQueueGetMessage, MemoryRequestQueueAddMessage, MemoryRequestQueueCheckEmpty]
 ):
@@ -41,7 +45,7 @@ def useMemoryRequestQueue() -> (
 
     return _, getMessage, addMessage, isEmpty
 
-# @validate(MemoryManagerParams)
+@validate(MemoryManagerParams)
 def useMemoryManager(params):
     """
     Initialize and return a memory instance.

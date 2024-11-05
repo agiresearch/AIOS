@@ -19,7 +19,7 @@ ids = []  # List to store process IDs
 
 
 @validate(LLMParams)
-def useKernel(params: LLMParams) -> LLM:
+def useCore(params: LLMParams) -> LLM:
     """
     Initialize and return a Language Learning Model (LLM) instance.
 

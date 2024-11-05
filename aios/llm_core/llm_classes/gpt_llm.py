@@ -53,13 +53,13 @@ class GPTLLM(BaseLLM):
         """ wrapper around openai api """
         agent_request.set_status("executing")
         agent_request.set_start_time(time.time())
-        messages = agent_request.request_data.messages
+        messages = agent_request.query.messages
 
         try:
             response = self.model.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
-                tools=agent_request.request_data.tools,
+                tools=agent_request.query.tools,
                 # tool_choice = "required" if agent_request.request_data.tools else None,
                 max_tokens=self.max_new_tokens,
             )

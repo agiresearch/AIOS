@@ -29,7 +29,7 @@ class FIFOScheduler:
         get_storage_request: StorageRequestQueueGetMessage,
         get_tool_request: ToolRequestQueueGetMessage,
     ):
-        self.agent_process_queue = Queue()
+        # self.agent_process_queue = Queue()
         self.get_llm_request = get_llm_request
         self.get_memory_request = get_memory_request
         self.get_storage_request = get_storage_request
@@ -78,8 +78,6 @@ class FIFOScheduler:
 
                 response = self.llm.address_request(agent_request)
                 agent_request.set_response(response)
-
-                # self.llm.address_request(agent_request)
 
                 agent_request.event.set()
                 agent_request.set_status("done")

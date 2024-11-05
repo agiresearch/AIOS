@@ -3,7 +3,12 @@ from typing import Mapping
 
 import random
 import time
-from aios.hooks.stores._global import global_llm_req_queue_add_message
+from aios.hooks.stores._global import (
+    global_llm_req_queue_add_message,
+    global_memory_req_queue_add_message,
+    global_storage_req_queue_add_message,
+    global_tool_req_queue_add_message,
+)
 
 
 class Syscall(Thread):
@@ -14,7 +19,7 @@ class Syscall(Thread):
             agent_name (str): Name of the agent
             query (Query): Query sent by the agent
         """
-        super().__init__(name=agent_name)
+        super().__init__()
         self.agent_name = agent_name
         self.query = query
         self.event = Event()
@@ -81,14 +86,6 @@ class Syscall(Thread):
         self.time_limit = time_limit
 
     def run(self):
-        """Response Listener for agent
-
-        Args:
-            agent_process (AgentProcess): Listened AgentProcess
-
-        Returns:
-            str: LLM response of Agent Process
-        """
         self.set_pid(self.native_id)
         self.event.wait()
 
@@ -105,7 +102,162 @@ class StorageSyscall(Syscall):
     pass
 
 
+class ToolSyscall(Syscall):
+    pass
+
+
 def send_request(agent_name, query):
+    action_type = query.action_type
+
+    if action_type == "chat":
+        return llm_syscall(agent_name, query)
+
+    elif action_type == "tool_use":
+        return tool_syscall(llm_syscall(agent_name, query))
+
+    elif action_type == "operate_file":
+        return storage_syscall(llm_syscall(agent_name, query))
+
+    elif action_type == "memory_use":
+        return mem_syscall(agent_name, query)
+
+    elif action_type == "storage_use":
+        return storage_syscall(agent_name, query)
+
+
+def storage_syscall(agent_name, query):
+    syscall = StorageSyscall(agent_name, query)
+    syscall.set_status("active")
+
+    completed_response, start_times, end_times, waiting_times, turnaround_times = (
+        "",
+        [],
+        [],
+        [],
+        [],
+    )
+    while syscall.get_status() != "done":
+        current_time = time.time()
+        syscall.set_created_time(current_time)
+        syscall.set_response(None)
+
+        global_storage_req_queue_add_message(syscall)
+
+        syscall.start()
+        syscall.join()
+
+        completed_response = syscall.get_response()
+
+        if syscall.get_status() != "done":
+            pass
+        start_time = syscall.get_start_time()
+        end_time = syscall.get_end_time()
+        waiting_time = start_time - syscall.get_created_time()
+        turnaround_time = end_time - syscall.get_created_time()
+
+        start_times.append(start_time)
+        end_times.append(end_time)
+        waiting_times.append(waiting_time)
+        turnaround_times.append(turnaround_time)
+
+    return {
+        "response": completed_response,
+        "start_times": start_times,
+        "end_times": end_times,
+        "waiting_times": waiting_times,
+        "turnaround_times": turnaround_times,
+    }
+
+
+def mem_syscall(agent_name, query):
+    syscall = MemSyscall(agent_name, query)
+    syscall.set_status("active")
+
+    completed_response, start_times, end_times, waiting_times, turnaround_times = (
+        "",
+        [],
+        [],
+        [],
+        [],
+    )
+    while syscall.get_status() != "done":
+        current_time = time.time()
+        syscall.set_created_time(current_time)
+        syscall.set_response(None)
+
+        global_memory_req_queue_add_message(syscall)
+
+        syscall.start()
+        syscall.join()
+
+        completed_response = syscall.get_response()
+
+        if syscall.get_status() != "done":
+            pass
+        start_time = syscall.get_start_time()
+        end_time = syscall.get_end_time()
+        waiting_time = start_time - syscall.get_created_time()
+        turnaround_time = end_time - syscall.get_created_time()
+
+        start_times.append(start_time)
+        end_times.append(end_time)
+        waiting_times.append(waiting_time)
+        turnaround_times.append(turnaround_time)
+
+    return {
+        "response": completed_response,
+        "start_times": start_times,
+        "end_times": end_times,
+        "waiting_times": waiting_times,
+        "turnaround_times": turnaround_times,
+    }
+
+
+def tool_syscall(agent_name, query):
+    syscall = ToolSyscall(agent_name, query)
+    syscall.set_status("active")
+
+    completed_response, start_times, end_times, waiting_times, turnaround_times = (
+        "",
+        [],
+        [],
+        [],
+        [],
+    )
+    while syscall.get_status() != "done":
+        current_time = time.time()
+        syscall.set_created_time(current_time)
+        syscall.set_response(None)
+
+        global_tool_req_queue_add_message(syscall)
+
+        syscall.start()
+        syscall.join()
+
+        completed_response = syscall.get_response()
+
+        if syscall.get_status() != "done":
+            pass
+        start_time = syscall.get_start_time()
+        end_time = syscall.get_end_time()
+        waiting_time = start_time - syscall.get_created_time()
+        turnaround_time = end_time - syscall.get_created_time()
+
+        start_times.append(start_time)
+        end_times.append(end_time)
+        waiting_times.append(waiting_time)
+        turnaround_times.append(turnaround_time)
+
+    return {
+        "response": completed_response,
+        "start_times": start_times,
+        "end_times": end_times,
+        "waiting_times": waiting_times,
+        "turnaround_times": turnaround_times,
+    }
+
+
+def llm_syscall(agent_name, query):
     syscall = LLMSyscall(agent_name=agent_name, query=query)
     syscall.set_status("active")
 
@@ -141,10 +293,10 @@ def send_request(agent_name, query):
         waiting_times.append(waiting_time)
         turnaround_times.append(turnaround_time)
 
-    return (
-        completed_response,
-        start_times,
-        end_times,
-        waiting_times,
-        turnaround_times,
-    )
+    return {
+        "response": completed_response,
+        "start_times": start_times,
+        "end_times": end_times,
+        "waiting_times": waiting_times,
+        "turnaround_times": turnaround_times,
+    }

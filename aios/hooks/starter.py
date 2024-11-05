@@ -1,6 +1,9 @@
 from contextlib import contextmanager
 from typing import Tuple, Callable, Dict, Any
-from .modules.llm import useKernel
+from .modules.llm import useCore
+from .modules.memory import useMemoryManager
+from .modules.storage import useStorageManager
+from .modules.tool import useToolManager
 from .modules.agent import useFactory
 from .modules.scheduler import fifo_scheduler
 
@@ -32,7 +35,7 @@ def aios_starter(
     Yields:
         Tuple: A tuple containing the submitAgent and awaitAgentExecution functions.
     """
-    llm = useKernel(
+    llm = useCore(
         llm_name=llm_name,
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
@@ -40,6 +43,17 @@ def aios_starter(
         log_mode=llm_kernel_log_mode,
         use_backend=use_backend,
     )
+    storage_manager = useStorageManager(
+        root_dir = "root",
+        use_vector_db = False
+    )
+    
+    memory_manager = useMemoryManager(
+        memory_limit = 100*1024*1024,
+        eviction_k = 10,
+        storage_manager = storage_manager
+    )
+    tool_manager = useToolManager()
 
     submit_agent, await_agent_execution = useFactory(
         log_mode=agent_log_mode, max_workers=64
@@ -47,6 +61,9 @@ def aios_starter(
 
     with fifo_scheduler(
         llm=llm,
+        memory_manager=memory_manager,
+        storage_manager=storage_manager,
+        tool_manager=tool_manager,
         log_mode=scheduler_log_mode,
         get_llm_request=None,
         get_memory_request=None,
