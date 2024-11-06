@@ -21,7 +21,7 @@ platformdirs
 # Base dependencies
 google-generativeai==0.2.0
 pillow==9.3.0
-git+https://github.com/XiangZhang-zx/SeeAct.git
+seeact
 litellm==1.8.5
 # Dependencies for running seeact
 selenium==4.18.1
