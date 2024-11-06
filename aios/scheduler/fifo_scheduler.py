@@ -83,10 +83,10 @@ class FIFOScheduler:
                 agent_request.set_status("done")
                 agent_request.set_end_time(time.time())
 
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
+                # self.logger.log(
+                #     f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                #     "done",
+                # )
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
 
             except Empty:
@@ -116,10 +116,10 @@ class FIFOScheduler:
                 agent_request.set_status("done")
                 agent_request.set_end_time(time.time())
 
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
+                # self.logger.log(
+                #     f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                #     "done",
+                # )
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
 
             except Empty:
@@ -132,7 +132,7 @@ class FIFOScheduler:
         while self.active:
             try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_memory_request()
+                agent_request = self.get_storage_request()
 
                 agent_request.set_status("executing")
                 self.logger.log(
@@ -165,12 +165,12 @@ class FIFOScheduler:
         while self.active:
             try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_memory_request()
+                agent_request = self.get_tool_request()
 
                 agent_request.set_status("executing")
-                self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
-                )
+                # self.logger.log(
+                #     f"{agent_request.agent_name} is executing. \n", "execute"
+                # )
                 agent_request.set_start_time(time.time())
 
                 response = self.tool_manager.address_request(agent_request)
@@ -182,10 +182,10 @@ class FIFOScheduler:
                 agent_request.set_status("done")
                 agent_request.set_end_time(time.time())
 
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
+                # self.logger.log(
+                #     f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                #     "done",
+                # )
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
 
             except Empty:

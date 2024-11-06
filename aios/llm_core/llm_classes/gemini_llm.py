@@ -120,5 +120,4 @@ class GeminiLLM(BaseLLM):
         # agent_request.set_status("done")
         # agent_request.set_end_time(time.time())
         # return
-        print(response)
         return response

@@ -103,29 +103,33 @@ class StorageSyscall(Syscall):
 
 
 class ToolSyscall(Syscall):
-    pass
+    def __init__(self, agent_name, query):
+        super().__init__(agent_name, query)
+        self.tool_calls = query
 
 
 def send_request(agent_name, query):
     action_type = query.action_type
 
     if action_type == "chat":
-        return llm_syscall(agent_name, query)
+        return llm_syscall_exec(agent_name, query)
 
     elif action_type == "tool_use":
-        return tool_syscall(llm_syscall(agent_name, query))
+        response = llm_syscall_exec(agent_name, query)["response"]
+        tool_calls = response.tool_calls
+        return tool_syscall_exec(agent_name, tool_calls)
 
     elif action_type == "operate_file":
-        return storage_syscall(llm_syscall(agent_name, query))
+        return storage_syscall_exec(llm_syscall_exec(agent_name, query))
 
     elif action_type == "memory_use":
         return mem_syscall(agent_name, query)
 
     elif action_type == "storage_use":
-        return storage_syscall(agent_name, query)
+        return storage_syscall_exec(agent_name, query)
 
 
-def storage_syscall(agent_name, query):
+def storage_syscall_exec(agent_name, query):
     syscall = StorageSyscall(agent_name, query)
     syscall.set_status("active")
 
@@ -213,8 +217,8 @@ def mem_syscall(agent_name, query):
     }
 
 
-def tool_syscall(agent_name, query):
-    syscall = ToolSyscall(agent_name, query)
+def tool_syscall_exec(agent_name, tool_calls):
+    syscall = ToolSyscall(agent_name, tool_calls)
     syscall.set_status("active")
 
     completed_response, start_times, end_times, waiting_times, turnaround_times = (
@@ -257,7 +261,7 @@ def tool_syscall(agent_name, query):
     }
 
 
-def llm_syscall(agent_name, query):
+def llm_syscall_exec(agent_name, query):
     syscall = LLMSyscall(agent_name=agent_name, query=query)
     syscall.set_status("active")
 

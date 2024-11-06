@@ -9,6 +9,8 @@ from pyopenagi.utils.chat_template import LLMQuery, MemoryQuery, StorageQuery
 
 from pyopenagi.utils.logger import AgentLogger
 
+from pyopenagi.utils.utils import snake_to_camel
+
 import json
 
 
@@ -43,8 +45,6 @@ class AcademicAgent:
         self.log_mode = log_mode
         self.logger = self.setup_logger()
 
-        self.set_created_time(time.time())
-
 
     def setup_logger(self):
         logger = AgentLogger(self.agent_name, self.log_mode)
@@ -53,10 +53,33 @@ class AcademicAgent:
     def load_config(self):
         script_path = os.path.abspath(__file__)
         script_dir = os.path.dirname(script_path)
-        config_file = os.path.join(script_dir, self.agent_name, "config.json")
+        config_file = os.path.join(script_dir, "config.json")
         with open(config_file, "r") as f:
             config = json.load(f)
             return config
+        
+    def load_tools(self, tool_names):
+        if tool_names == "None":
+            return
+
+        for tool_name in tool_names:
+            org, name = tool_name.split("/")
+            module_name = ".".join(["pyopenagi", "tools", org, name])
+            class_name = snake_to_camel(name)
+
+            tool_module = importlib.import_module(module_name)
+            tool_class = getattr(tool_module, class_name)
+
+            self.tool_list[name] = tool_class()
+            tool_format = tool_class().get_tool_call_format()
+            self.tools.append(tool_format)
+            self.tool_info.append(
+                {
+                    "name": tool_format["function"]["name"],
+                    "description": tool_format["function"]["description"],
+                }
+            )
+
 
     def build_system_instruction(self):
         prefix = "".join(["".join(self.config["description"])])
@@ -121,17 +144,27 @@ class AcademicAgent:
     def manual_workflow(self):
         workflow = [
             {
-                "action_type": "chat",
+                "action_type": "tool_use",
                 "action": "Search for relevant papers",
-                "tool_use": ["arxiv"],
+                "tool_use": ["arxiv/arxiv"],
             },
             {
-                "action_type": "tool_use",
+                "action_type": "chat",
                 "action": "Provide responses based on the user's query",
                 "tool_use": [],
             },
         ]
         return workflow
+    
+    def pre_select_tools(self, tool_names):
+        pre_selected_tools = []
+        for tool_name in tool_names:
+            for tool in self.tools:
+                if tool["function"]["name"] == tool_name:
+                    pre_selected_tools.append(tool)
+                    break
+
+        return pre_selected_tools
 
     def run(self):
         self.build_system_instruction()
@@ -184,20 +217,23 @@ class AcademicAgent:
                             action_type=action_type,
                         ),
                     )["response"]
+                    
+                    self.messages.append({"role": "assistant", "content": response.response_message})
 
                     self.rounds += 1
 
-                self.set_status("done")
-                self.set_end_time(time=time.time())
-
+                # print(final_result)
+                final_result = self.messages[-1]["content"]
+                
+                print(final_result)
                 return {
                     "agent_name": self.agent_name,
                     "result": final_result,
                     "rounds": self.rounds,
-                    "agent_waiting_time": self.start_time - self.created_time,
-                    "agent_turnaround_time": self.end_time - self.created_time,
-                    "request_waiting_times": self.request_waiting_times,
-                    "request_turnaround_times": self.request_turnaround_times,
+                    # "agent_waiting_time": self.start_time - self.created_time,
+                    # "agent_turnaround_time": self.end_time - self.created_time,
+                    # "request_waiting_times": self.request_waiting_times,
+                    # "request_turnaround_times": self.request_turnaround_times,
                 }
 
             else:
@@ -205,10 +241,10 @@ class AcademicAgent:
                     "agent_name": self.agent_name,
                     "result": "Failed to generate a valid workflow in the given times.",
                     "rounds": self.rounds,
-                    "agent_waiting_time": None,
-                    "agent_turnaround_time": None,
-                    "request_waiting_times": self.request_waiting_times,
-                    "request_turnaround_times": self.request_turnaround_times,
+                    # "agent_waiting_time": None,
+                    # "agent_turnaround_time": None,
+                    # "request_waiting_times": self.request_waiting_times,
+                    # "request_turnaround_times": self.request_turnaround_times,
                 }
                 
         except Exception as e:

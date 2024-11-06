@@ -71,3 +71,7 @@ def delete_directories(root_dir, target_dirs):
                 full_path = os.path.join(dirpath, dirname)
                 # print(f"Deleting {full_path}...")
                 shutil.rmtree(full_path, ignore_errors=True)
+
+def snake_to_camel(snake_str):
+    components = snake_str.split("_")
+    return "".join(x.title() for x in components)
