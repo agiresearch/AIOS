@@ -1,6 +1,4 @@
-from pyopenagi.agents.agent_process import AgentProcessFactory
-from typing import Optional
-
+from aios.sdk.adapter import add_framework_adapter
 from aios.sdk.autogen.agent_adapter import (
     adapter_autogen_agent_init,
     _adapter_print_received_message,
@@ -33,24 +31,20 @@ except ImportError:
 logger = SDKLogger("Autogen Adapter")
 
 
-def prepare_autogen(agent_process_factory: Optional[AgentProcessFactory] = None):
+@add_framework_adapter("AutoGen~0.2")
+def prepare_autogen_0_2():
     """
     Replace OpenAIWrapper and ConversableAgent methods with aios's implementation.
 
     This function is used to adapt autogen's API to aios's API, and it is used
     internally by aios.
-
-    Args:
-        agent_process_factory: An optional AgentProcessFactory instance. \
-            If agent_process_factory is set, all autogen agents will have the capability to call LLM models.
     """
     # Replace OpenAIWrapper method
     OpenAIWrapper.__init__ = adapter_autogen_client_init
     OpenAIWrapper.create = adapter_client_create
     OpenAIWrapper.extract_text_or_completion_object = adapter_client_extract_text_or_completion_object
 
-    # Replace agent method  
-    ConversableAgent.agent_process_factory = agent_process_factory
+    # Replace agent method
     ConversableAgent._print_received_message = _adapter_print_received_message
     ConversableAgent._generate_oai_reply_from_client = _adapter_generate_oai_reply_from_client
     ConversableAgent.generate_tool_calls_reply = adapter_generate_tool_calls_reply
@@ -59,4 +53,4 @@ def prepare_autogen(agent_process_factory: Optional[AgentProcessFactory] = None)
     ConversableAgent.update_tool_signature = adapter_update_tool_signature
     ConversableAgent.__init__ = adapter_autogen_agent_init
 
-    logger.log("Autogen prepare success\n", "info")
+    logger.log("AutoGen prepare success\n", "info")

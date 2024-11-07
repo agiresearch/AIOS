@@ -50,17 +50,17 @@ class GeminiLLM(BaseLLM):
         return gemini_messages
 
     def process(self,
-                agent_process,
+                agent_request,
                 temperature=0.0) -> None:
         # ensures the model is the current one
 
         """ wrapper around functions"""
 
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
-        messages = agent_process.query.messages
-        tools = agent_process.query.tools
-        message_return_type = agent_process.query.message_return_type
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
+        messages = agent_request.query.messages
+        tools = agent_request.query.tools
+        message_return_type = agent_request.query.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -71,7 +71,7 @@ class GeminiLLM(BaseLLM):
         )
 
         self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
+            f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"
         )
 
@@ -84,28 +84,40 @@ class GeminiLLM(BaseLLM):
             if tools:
                 tool_calls = self.parse_tool_calls(result)
                 if tool_calls:
-                    agent_process.set_response(
-                        Response(
-                            response_message=None,
-                            tool_calls=tool_calls
-                        )
+                    # agent_request.set_response(
+                    #     Response(
+                    #         response_message=None,
+                    #         tool_calls=tool_calls
+                    #     )
+                    # )
+                    response = Response(
+                        response_message=None,
+                        tool_calls=tool_calls
                     )
                 else:
-                    agent_process.set_response(
-                        Response(
-                            response_message=result,
-                        )
+                    # agent_request.set_response(
+                        
+                    # )
+                    response = Response(
+                        response_message=result,
                     )
             else:
                 if message_return_type == "json":
                     result = self.parse_json_format(result)
-                agent_process.set_response(
-                    Response(
-                        response_message=result,
-                    )
+                    
+                # agent_request.set_response(
+                #     Response(
+                #         response_message=result,
+                #     )
+                # )
+                response = Response(
+                    response_message=result,
                 )
+                
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
-        agent_process.set_status("done")
-        agent_process.set_end_time(time.time())
-        return
+        
+        # agent_request.set_status("done")
+        # agent_request.set_end_time(time.time())
+        # return
+        return response

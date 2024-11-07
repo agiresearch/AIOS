@@ -2,8 +2,14 @@ from collections import OrderedDict
 from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
-from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
+from aios.hooks.modules.scheduler import useFIFOScheduler
+from aios.hooks.modules.agent import useFactory
+from aios.hooks.modules.llm import useCore
+from aios.hooks.modules.memory import useMemoryManager
+from aios.hooks.modules.storage import useStorageManager
+from aios.hooks.modules.tool import useToolManager
+from aios.hooks.types.agent import AgentSubmitDeclaration
+from aios.hooks.types.llm import LLMParams
 
 from aios.hooks.parser import string
 from aios.core.schema import CoreSchema
@@ -13,11 +19,15 @@ from aios.utils.utils import (
     parse_global_args,
 )
 
+import sys
+
 from pyopenagi.manager.manager import AgentManager
 
 from aios.utils.state import useGlobalState
 from dotenv import load_dotenv
 import atexit
+
+import json
 
 load_dotenv()
 
@@ -35,48 +45,77 @@ app.add_middleware(
 getLLMState, setLLMState, setLLMCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
 getManager, setManager, setManagerCallback = useGlobalState()
+getMemoryState, setMemoryState, setMemoryCallback = useGlobalState()
+getStorageState, setStorageState, setStorageCallback = useGlobalState()
+getToolState, setToolState, setToolCallback = useGlobalState()
 
-setManager(AgentManager('https://my.aios.foundation'))
+setManager(AgentManager("https://my.aios.foundation"))
 
-# parser = parse_global_args()
-# args = parser.parse_args()
+parser = parse_global_args()
+args = parser.parse_args()
 
 # check if the llm information was specified in args
 
-setLLMState(
-    useKernel(
-        llm_name='gpt-4o-mini',
-        max_gpu_memory=None,
-        eval_device=None,
-        max_new_tokens=256,
-        log_mode='console',
-        use_backend=None
+try:
+    with open("aios_config.json", "r") as f:
+        aios_config = json.load(f)
+
+    # print to stderr
+    print("Loaded aios_config.json, ignoring args", file=sys.stderr)
+
+    llm_cores = aios_config["llm_cores"][0]
+    # only check aios_config.json
+    setLLMState(
+        useCore(
+            llm_name=llm_cores.get("llm_name"),
+            max_gpu_memory=llm_cores.get("max_gpu_memory"),
+            eval_device=llm_cores.get("eval_device"),
+            max_new_tokens=llm_cores.get("max_new_tokens"),
+            log_mode="console",
+            use_backend=llm_cores.get("use_backend"),
+        )
+    )
+except FileNotFoundError:
+    aios_config = {}
+    # only check args
+    setLLMState(
+        useCore(
+            llm_name=args.llm_name,
+            max_gpu_memory=args.max_gpu_memory,
+            eval_device=args.eval_device,
+            max_new_tokens=args.max_new_tokens,
+            log_mode=args.llm_kernel_log_mode,
+            use_backend=args.use_backend,
+        )
+    )
+
+setStorageState(useStorageManager(root_dir="root"))
+
+setMemoryState(
+    useMemoryManager(
+        memory_limit=100 * 1024 * 1024, eviction_k=3, storage_manager=getStorageState()
     )
 )
 
-
-
-# deploy specific
-# leave commented
-# TODO conditional check if in deployment environment
-# setLLMState(
-#     useKernel(
-#         llm_name='mixtral-8x7b-32768',
-#         max_gpu_memory=None,
-#         eval_device=None,
-#         max_new_tokens=512,
-#         log_mode='console',
-#         use_backend=None
-#     )
-# )
-
+setToolState(useToolManager())
 
 startScheduler, stopScheduler = useFIFOScheduler(
-    llm=getLLMState(), log_mode="console", get_queue_message=None
+    llm=getLLMState(),
+    memory_manager=getMemoryState(),
+    storage_manager=getStorageState(),
+    tool_manager=getToolState(),
+    log_mode=args.scheduler_log_mode,
+    # get_queue_message=None
+    get_llm_request=None,
+    get_memory_request=None,
+    get_storage_request=None,
+    get_tool_request=None,
 )
 
 
-submitAgent, awaitAgentExecution = useFactory(log_mode="console", max_workers=500)
+submitAgent, awaitAgentExecution = useFactory(
+    log_mode=args.agent_log_mode, max_workers=500
+)
 
 setFactory({"submit": submitAgent, "execute": awaitAgentExecution})
 
@@ -85,7 +124,7 @@ startScheduler()
 
 @app.post("/set_kernel")
 async def set_kernel(req: LLMParams):
-    setLLMState(useKernel(**req))
+    setLLMState(useCore(**req))
 
 
 @app.post("/add_agent")
@@ -130,11 +169,9 @@ async def get_all_agents():
     manager: AgentManager = getManager()
 
     def transform_string(input_string: str):
-        return '/'.join(
-            input_string.split("/")[:-1]
-        )
+        return "/".join(input_string.split("/")[:-1])
 
-    agents = (manager.list_available_agents())
+    agents = manager.list_available_agents()
     print(agents)
     agent_names = []
     seen = OrderedDict()
@@ -145,10 +182,7 @@ async def get_all_agents():
         agent_names.append(transformed)
 
     # Create the final list with unique display names but original IDs
-    _ = [
-        {"id": agents[i].get("agent"), "display": name}
-        for name, i in seen.items()
-    ]
+    _ = [{"id": agents[i].get("agent"), "display": name} for name, i in seen.items()]
 
     return {"agents": _}
 

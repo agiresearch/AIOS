@@ -52,18 +52,18 @@ class vLLM(BaseLLM):
         )
 
     def process(self,
-                agent_process,
+                agent_request,
                 temperature=0.0) -> None:
-        agent_process.set_status("executing")
-        agent_process.set_start_time(time.time())
+        agent_request.set_status("executing")
+        agent_request.set_start_time(time.time())
         self.logger.log(
-            f"{agent_process.agent_name} is switched to executing.\n",
+            f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"
         )
 
-        messages = agent_process.query.messages
-        tools = agent_process.query.tools
-        message_return_type = agent_process.query.message_return_type
+        messages = agent_request.request_data.messages
+        tools = agent_request.request_data.tools
+        message_return_type = agent_request.request_data.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -86,14 +86,14 @@ class vLLM(BaseLLM):
                 result
             )
             if tool_calls:
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = None,
                         tool_calls = tool_calls
                     )
                 )
             else:
-                agent_process.set_response(
+                agent_request.set_response(
                     Response(
                         response_message = result
                     )
@@ -114,12 +114,12 @@ class vLLM(BaseLLM):
             if message_return_type == "json":
                 result = self.parse_json_format(result)
 
-            agent_process.set_response(
+            agent_request.set_response(
                 Response(
                     response_message=result
                 )
             )
 
-        agent_process.set_status("done")
+        agent_request.set_status("done")
 
-        agent_process.set_end_time(time.time())
+        agent_request.set_end_time(time.time())

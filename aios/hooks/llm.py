@@ -17,7 +17,6 @@ from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 from aios.hooks.utils import generate_random_string
 
 from pyopenagi.agents.agent_factory import AgentFactory
-from pyopenagi.agents.agent_process import AgentProcessFactory
 
 ids = []
 
@@ -65,10 +64,10 @@ def useFIFOScheduler(params: SchedulerParams):
 
 @validate(FactoryParams)
 def useFactory(params: FactoryParams):
-    process_factory = AgentProcessFactory()
+    # process_factory = AgentProcessFactory()
 
     agent_factory = AgentFactory(
-        agent_process_factory=process_factory,
+        # agent_process_factory=process_factory,
         agent_log_mode=params.log_mode,
     )
 
@@ -140,9 +139,7 @@ def aios_starter(
     max_gpu_memory,
     eval_device,
     max_new_tokens,
-    scheduler_log_mode,
-    agent_log_mode,
-    llm_kernel_log_mode,
+    log_mode,
     use_backend
 ):
     """
@@ -154,9 +151,7 @@ def aios_starter(
         max_gpu_memory (str): The maximum amount of GPU memory to use.
         eval_device (str): The device to evaluate the LLM on.
         max_new_tokens (int): The maximum number of new tokens to generate.
-        scheduler_log_mode (str): The log mode for the scheduler.
-        agent_log_mode (str): The log mode for the agents.
-        llm_kernel_log_mode (str): The log mode for the LLM kernel.
+        log_mode (str): The log mode.
         use_backend (str): The backend to use for running the LLM kernel.
 
     Yields:
@@ -169,15 +164,15 @@ def aios_starter(
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
         max_new_tokens=max_new_tokens,
-        log_mode=llm_kernel_log_mode,
+        log_mode=log_mode,
         use_backend=use_backend
     )
 
     # run agents concurrently for maximum efficiency using a scheduler
     submit_agent, await_agent_execution = useFactory(
-        log_mode=agent_log_mode,
+        log_mode=log_mode,
         max_workers=64
     )
 
-    with fifo_scheduler(llm=llm, log_mode=scheduler_log_mode, get_queue_message=None):
+    with fifo_scheduler(llm=llm, log_mode=log_mode, get_queue_message=None):
         yield submit_agent, await_agent_execution

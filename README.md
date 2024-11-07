@@ -12,14 +12,14 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 
 ## 🏠 Architecture of AIOS
 <p align="center">
-<img src="docs/assets/aios-figs/AIOS-Architecture.png">
+<img src="docs/assets/aios-figs/architecture.png">
 </p>
 
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
-- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios.readthedocs.io/en/latest/get_started/agent_framework/framework_index.html). 
-- **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/en/latest/).
+- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios.readthedocs.io/).
+- **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
@@ -187,13 +187,24 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 #### Requirements
 
 ##### Python
-- Supported versions: **Python 3.8 - 3.11**
+- Supported versions: **Python 3.9 - 3.11**
 ##### Node
 - Supported versions: **LTS** support ONLY
 
-Run
+you can check that you meet requirements by running
+```bash
+py -v
 ```
-python launch .py
+and
+```bash
+npm -v
+```
+in your terminal
+
+
+Run the launch.py to start both the frontend and backend
+```
+python launch.py
 ```
 which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
 

@@ -25,7 +25,8 @@ export const AgentListGenerator: () => Promise<AgentItem[]> = async () => {
     return values;
 }
 
-export const DatasetsTabList: DatasetsTabItem[] = ['Tasks', 'Sizes', 'Sub-tasks', 'Languages', 'Licenses', 'Other']
+// export const DatasetsTabList: DatasetsTabItem[] = ['Tasks', 'Sizes', 'Sub-tasks', 'Languages', 'Licenses', 'Other']
+export const AgentTabList: DatasetsTabItem[] = ['Recommended', 'Writing', 'Entertainment', 'Programming']
 
 export const DatasetOther = [
   'Trained with AutoTrain',

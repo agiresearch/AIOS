@@ -1,0 +1,9 @@
+{
+    "llm_cores": [
+        {
+            "llm_name": "gemini-1.5-flash",
+            "use_backend": "google",
+            "max_new_tokens": 1024
+        }
+    ]
+}
