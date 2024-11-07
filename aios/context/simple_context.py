@@ -21,7 +21,7 @@ class SimpleContextManager(BaseContextManager):
     def gen_snapshot(self, pid, context):
         # file_path = os.path.join(self.context_dir, f"process-{pid}.pt")
         # torch.save(context, file_path)
-        self.context_dic[str(pid)] = context
+        self.context_dict[str(pid)] = context
 
     def gen_recover(self, pid):
         # file_path = os.path.join(self.context_dir, f"process-{pid}.pt")
