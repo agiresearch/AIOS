@@ -14,6 +14,9 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 <p align="center">
 <img src="docs/assets/aios-figs/architecture.jpg">
 </p>
+<p align="center">
+<img src="docs/assets/aios-figs/scheduler.jpg">
+</p>
 
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
