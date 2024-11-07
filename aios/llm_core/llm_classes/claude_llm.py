@@ -48,10 +48,10 @@ class ClaudeLLM(BaseLLM):
 
     def process(self, agent_request: Any, temperature: float = 0.0) -> None:
         """
-        Process a query using the Claude model.
+        Process a request_data using the Claude model.
 
         Args:
-            agent_request (Any): The agent process containing the query and tools.
+            agent_request (Any): The agent process containing the request_data and tools.
             temperature (float, optional): Sampling temperature for generation.
 
         Raises:
@@ -62,8 +62,8 @@ class ClaudeLLM(BaseLLM):
         assert re.search(r'claude', self.model_name, re.IGNORECASE), "Model name must contain 'claude'"
         agent_request.set_status("executing")
         agent_request.set_start_time(time.time())
-        messages = agent_request.query.messages
-        tools = agent_request.query.tools
+        messages = agent_request.request_data.messages
+        tools = agent_request.request_data.tools
 
         self.logger.log(f"{messages}", level="info")
         self.logger.log(f"{agent_request.agent_name} is switched to executing.", level="executing")

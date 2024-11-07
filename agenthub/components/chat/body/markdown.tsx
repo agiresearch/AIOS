@@ -79,6 +79,7 @@ export default function Markdown({ content, animation }: IProps) {
                         <div className='w-full'>
                             <div className='flex w-full justify-between px-6 bg-white/5 p-2 rounded-t-md items-center'>
                                 <div className='text-base !text-[#e06c75] '>
+                                <div className='text-base !text-[#e06c75] '>
                                     {match[1]}
                                 </div>
                                 <CopyButton

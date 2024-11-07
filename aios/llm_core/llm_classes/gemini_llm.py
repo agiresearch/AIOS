@@ -113,6 +113,7 @@ class GeminiLLM(BaseLLM):
                 response = Response(
                     response_message=result,
                 )
+                
         except IndexError:
             raise IndexError(f"{self.model_name} can not generate a valid result, please try again")
         
