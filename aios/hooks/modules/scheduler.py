@@ -45,7 +45,7 @@ def useFIFOScheduler(
         from aios.hooks.stores._global import global_storage_req_queue_get_message
         params.get_storage_request = global_storage_req_queue_get_message
         
-    if params.get_storage is None:
+    if params.get_tool_request is None:
         from aios.hooks.stores._global import global_tool_req_queue_get_message
         params.get_tool_request = global_tool_req_queue_get_message
 
