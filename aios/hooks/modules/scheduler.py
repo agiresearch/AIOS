@@ -1,7 +1,6 @@
-from typing import Any, Tuple, Callable, Dict
-from random import randint
+from contextlib import contextmanager
+from typing import Tuple, Callable
 
-from aios.llm_core.llms import LLM
 from aios.hooks.types.scheduler import (
     # AgentSubmitDeclaration,
     # FactoryParams,
@@ -12,11 +11,7 @@ from aios.hooks.types.scheduler import (
     # QueueAddMessage,
     # QueueCheckEmpty,
 )
-
-from contextlib import contextmanager
-
 from aios.hooks.utils.validate import validate
-from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 
 
@@ -36,16 +31,16 @@ def useFIFOScheduler(
     if params.get_llm_request is None:
         from aios.hooks.stores._global import global_llm_req_queue_get_message
         params.get_llm_request = global_llm_req_queue_get_message
-        
+
     if params.get_memory_request is None:
         from aios.hooks.stores._global import global_memory_req_queue_get_message
         params.get_memory_request = global_memory_req_queue_get_message
-        
+
     if params.get_storage_request is None:
         from aios.hooks.stores._global import global_storage_req_queue_get_message
         params.get_storage_request = global_storage_req_queue_get_message
-        
-    if params.get_tool_request is None:
+
+    if params.get_storage is None:
         from aios.hooks.stores._global import global_tool_req_queue_get_message
         params.get_tool_request = global_tool_req_queue_get_message
 
@@ -78,15 +73,15 @@ def fifo_scheduler(params: SchedulerParams):
     if params.get_memory_request is None:
         from aios.hooks.stores._global import global_memory_req_queue_get_message
         params.get_memory_request = global_memory_req_queue_get_message
-    
+
     if params.get_storage_request is None:
         from aios.hooks.stores._global import global_storage_req_queue_get_message
         params.get_storage_request = global_storage_req_queue_get_message
-        
+
     if params.get_tool_request is None:
         from aios.hooks.stores._global import global_tool_req_queue_get_message
         params.get_tool_request = global_tool_req_queue_get_message
-    
+
     scheduler = FIFOScheduler(**params.model_dump())
 
     scheduler.start()
