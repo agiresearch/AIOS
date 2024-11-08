@@ -36,9 +36,9 @@ def prepare_dataset():
 
 def run_infer(outputfile: str, workers: int, aios_args: dict):
     dataset = prepare_dataset()
+    with aios_starter(**aios_args):
+        with ThreadPoolExecutor(max_workers=workers) as executor:
 
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        with aios_starter(**aios_args):
             futures = []
             for data in dataset:
                 # 提交任务
@@ -47,11 +47,11 @@ def run_infer(outputfile: str, workers: int, aios_args: dict):
                 )
                 break
 
-    results = []
+        results = []
 
-    # Obtain infer result
-    for future in tqdm(as_completed(futures)):
-        results.append(future.result())
+        # Obtain infer result
+        for future in tqdm(as_completed(futures)):
+            results.append(future.result())
 
     # Write result into .jsonl file
     with open(outputfile, "w") as file:
@@ -71,7 +71,9 @@ if __name__ == '__main__':
         "max_gpu_memory": args.max_gpu_memory,
         "eval_device": args.eval_device,
         "max_new_tokens": args.max_new_tokens,
-        "log_mode": "console",
+        "scheduler_log_mode": args.scheduler_log_mode,
+        "agent_log_mode": args.agent_log_mode,
+        "llm_kernel_log_mode": args.llm_kernel_log_mode,
         "use_backend": args.use_backend,
     }
 

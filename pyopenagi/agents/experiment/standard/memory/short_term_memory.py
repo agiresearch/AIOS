@@ -8,10 +8,10 @@ class ShortTermMemory(BaseModel):
     def remember(self, role: str, content: str, tool_call_id: int = None) -> None:
         if tool_call_id:
             message = {"role": role, "content": content, "tool_call_id": tool_call_id}
-            self.messages += message
+            self.messages.append(message)
         else:
             message = {"role": role, "content": content}
-            self.messages += message
+            self.messages.append(message)
 
     def recall(self):
         return self.messages

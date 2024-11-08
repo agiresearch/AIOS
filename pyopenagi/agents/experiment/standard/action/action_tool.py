@@ -1,20 +1,21 @@
 import importlib
-from typing import List, Any, Optional
+from typing import Any
+
 from pydantic.v1 import BaseModel
+
 from pyopenagi.agents.experiment.standard.action.action import Action
 from pyopenagi.agents.experiment.standard.utils.config import Config
 from pyopenagi.agents.experiment.standard.utils.str_utils import snake_to_camel
 
 
 class ActionTool(Action, BaseModel):
-
     config: Config
-    tools: Optional[List]
-    tools_format: Optional[List]
+    tools = {}
+    tools_format = []
     type: str = "TOOL"
 
-    def __int__(self, *data):
-        super().__init__(self, *data)
+    def __init__(self, **data):
+        super().__init__(**data)
         self.init_tools()
 
     def __call__(self, tool_call: dict) -> Any:
@@ -30,7 +31,7 @@ class ActionTool(Action, BaseModel):
         except TypeError:
             function_response = f"Call function {function_name} failed. Parameters {function_param} is invalid."
 
-        return function_response
+        return function_response, tool_call["id"]
 
     def init_tools(self):
         self._init_tools_from_config()

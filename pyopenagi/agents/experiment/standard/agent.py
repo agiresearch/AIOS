@@ -3,7 +3,7 @@ from typing import List
 from aios.hooks.request import send_request
 from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
-from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning
+from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning, PlanningResult
 from pyopenagi.agents.experiment.standard.prompt.framework_prompt import STANDARD_PROMPT
 from pyopenagi.agents.experiment.standard.utils.config import load_config
 from pyopenagi.utils.chat_template import Query, Response
@@ -55,6 +55,7 @@ class StandardAgent:
         pass
 
     def _init_framework_prompt(self):
+        self.init_module()
         # Action
         action_prompt = self._action_prompt()
         planning_prompt = self._planning_prompt()
@@ -62,14 +63,16 @@ class StandardAgent:
         framework_prompt = STANDARD_PROMPT.format(
             action=action_prompt,
             planning=planning_prompt,
+            memory="",
+            communication=""
         )
 
         self.short_term_memory.remember(role="system", content=framework_prompt)
 
     def _action_prompt(self) -> str:
         action_prompt = ""
-        for action in self.actions:
-            if action.disply:
+        for action in self.actions.values():
+            if action.display:
                 name = action.format_prompt()["name"]
                 description = action.format_prompt()["description"]
                 action_prompt += f"- {name}: {description}\n"
@@ -85,10 +88,11 @@ class StandardAgent:
         return planning_prompt
 
     def init_module(self):
-        return
+        self.init_planning()
+        self.init_actions()
 
-    def init_planning(self, planning):
-        self.planning = planning
+    def init_planning(self):
+        self.planning = DefaultPlanning(self.request)
 
     def init_communication(self, communication):
         return
@@ -96,11 +100,11 @@ class StandardAgent:
     def init_memory(self, memory):
         return
 
-    def init_actions(self, actions):
-        action_tool = ActionTool()
+    def init_actions(self):
+        action_tool = ActionTool(config=self.config)
         self.actions[action_tool.type] = action_tool
 
-    def planning(self) -> dict:
+    def run_planning(self) -> PlanningResult:
         # Select suitable messages
         messages = self.short_term_memory.recall()
 
@@ -113,11 +117,13 @@ class StandardAgent:
         # Init system prompt and task
         if custom_prompt := self.custom_prompt():
             self.short_term_memory.remember("system", custom_prompt)
+            self.log_last_message()
         self.short_term_memory.remember("user", self.task_input)
+        self.log_last_message()
 
         while not self._is_terminate():
             # Run planning
-            planning_result = self.planning()
+            planning_result = self.run_planning()
             if action_type := planning_result.action_type:
                 action = self.actions[action_type]
                 action_param = planning_result.action_param
@@ -127,8 +133,10 @@ class StandardAgent:
                 response = planning_result.text_content
                 self.short_term_memory.remember("assistant", response)
 
+            self.log_last_message()
+
     def _is_terminate(self):
-        return True if "TERMINATE" in self.short_term_memory.last_message else False
+        return True if "TERMINATE" in self.short_term_memory.last_message()["content"] else False
 
     def request(self, messages: List, tools: List) -> Response:
         (
@@ -155,3 +163,7 @@ class StandardAgent:
         self.rounds += 1
 
         return response
+
+    def log_last_message(self):
+        log_content = self.short_term_memory.last_message()["content"]
+        self.logger.log(f"\n{log_content}", "info")

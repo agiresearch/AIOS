@@ -30,7 +30,6 @@ class DefaultPlanning(Planning):
 
     def __call__(self, messages: List, tools: List):
         response = self.request_func(messages, tools)
-
         response_message = response.response_message
         tool_calls = response.tool_calls
 
@@ -38,7 +37,9 @@ class DefaultPlanning(Planning):
         result.text_content = response_message
         if tool_calls:
             result.action_type = "TOOL"
-            result.action_param = tool_calls[0]
+            result.action_param = {
+                "tool_call": tool_calls[0]
+            }
 
         return result
 
