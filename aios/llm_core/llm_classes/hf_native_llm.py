@@ -48,9 +48,9 @@ class HfNativeLLM(BaseLLM):
             level = "executing"
         )
 
-        messages = agent_request.query.messages
-        tools = agent_request.query.tools
-        message_return_type = agent_request.query.message_return_type
+        messages = agent_request.request_data.messages
+        tools = agent_request.request_data.tools
+        message_return_type = agent_request.request_data.message_return_type
 
         """ context_manager works only with open llms """
         if self.context_manager.check_restoration(agent_request.get_pid()):

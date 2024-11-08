@@ -3,7 +3,7 @@
 import json
 import sys
 
-from aios.hooks.request import send_request
+from aios.hooks.syscall import send_request
 from aios.sdk.adapter import add_framework_adapter
 from aios.utils.logger import SDKLogger
 from pyopenagi.utils.chat_template import Query

@@ -1,14 +1,14 @@
-from aios.hooks.types.llm import LLMRequestQueue
+from queue import Queue
 
-LLM_REQUEST_QUEUE: dict[str, LLMRequestQueue] = {}
+REQUEST_QUEUE: dict[str, Queue] = {}
 
-def getMessage(q: LLMRequestQueue):
+def getMessage(q: Queue):
     return q.get(block=True, timeout=0.1)
 
-def addMessage(q: LLMRequestQueue, message: str):
+def addMessage(q: Queue, message: str):
     q.put(message)
 
     return None
 
-def isEmpty(q: LLMRequestQueue):
+def isEmpty(q: Queue):
     return q.empty()
