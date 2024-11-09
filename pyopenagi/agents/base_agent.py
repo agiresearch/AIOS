@@ -14,7 +14,7 @@ from ..utils.chat_template import Query
 
 import importlib
 
-from aios.hooks.request import send_request
+from aios.hooks.syscall import send_request
 
 class BaseAgent:
     def __init__(self, agent_name, task_input, log_mode: str):

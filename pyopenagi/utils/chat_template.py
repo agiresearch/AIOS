@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any, Union
 from typing_extensions import Literal  # Import Literal from typing_extensions for stricter typing
 
-class Query(BaseModel):
+class LLMQuery(BaseModel):
     """
     Query class represents the input structure for performing various actions.
     
@@ -17,8 +17,26 @@ class Query(BaseModel):
     """
     messages: List[Dict[str, Union[str, Any]]]  # List of message dictionaries, each containing role and content.
     tools: Optional[List[Dict[str, Any]]] = Field(default_factory=list)  # List of JSON-like objects (dictionaries) representing tools.
-    action_type: Literal["message_llm", "call_tool", "operate_file"] = Field(default="message_llm")  # Restrict the action_type to specific choices.
+    action_type: Literal["chat", "tool_use", "operate_file"] = Field(default="chat")  # Restrict the action_type to specific choices.
     message_return_type: str = Field(default="text")  # Type of the return message, default is "text".
+
+    class Config:
+        arbitrary_types_allowed = True  # Allows the use of arbitrary types such as Any and Dict.
+        
+
+class MemoryQuery(BaseModel):
+    # messages: List[Dict[str, Union[str, Any]]]  # List of message dictionaries, each containing role and content.
+    # message_return_type: str = Field(default="text")  # Type of the return message, default is "text".
+    messages: List[Dict[str, Union[str, Any]]]
+    operation_type: str
+
+    class Config:
+        arbitrary_types_allowed = True  # Allows the use of arbitrary types such as Any and Dict.
+        
+
+class StorageQuery(BaseModel):
+    messages: List[Dict[str, Union[str, Any]]]  # List of message dictionaries, each containing role and content.
+    operation_type: str = Field(default="text")  # Type of the return message, default is "text".
 
     class Config:
         arbitrary_types_allowed = True  # Allows the use of arbitrary types such as Any and Dict.

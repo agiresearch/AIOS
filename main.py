@@ -6,7 +6,9 @@ from aios.utils.utils import (
 )
 import os
 import warnings
-from aios.hooks.llm import aios_starter
+
+from aios.hooks.starter import aios_starter
+
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
 import asyncio

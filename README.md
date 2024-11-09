@@ -12,7 +12,10 @@ The goal of AIOS is to build a large language model (LLM) agent operating system
 
 ## 🏠 Architecture of AIOS
 <p align="center">
-<img src="docs/assets/aios-figs/AIOS-Architecture.png">
+<img src="docs/assets/aios-figs/architecture.jpg">
+</p>
+<p align="center">
+<img src="docs/assets/aios-figs/scheduler.jpg">
 </p>
 
 AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
@@ -190,6 +193,17 @@ CUDA_VISIBLE_DEVICES=0 python main.py --llm_name meta-llama/Meta-Llama-3-8B-Inst
 - Supported versions: **Python 3.9 - 3.11**
 ##### Node
 - Supported versions: **LTS** support ONLY
+
+you can check that you meet requirements by running
+```bash
+py -v
+```
+and
+```bash
+npm -v
+```
+in your terminal
+
 
 Run the launch.py to start both the frontend and backend
 ```
