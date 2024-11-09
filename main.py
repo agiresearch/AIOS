@@ -11,7 +11,7 @@ from aios.hooks.starter import aios_starter
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
-import asyncio
+
 
 def clean_cache(root_directory):
     targets = {
@@ -21,6 +21,7 @@ def clean_cache(root_directory):
         "context_restoration",
     }
     delete_directories(root_directory, targets)
+
 
 def main():
     # parse arguments and set configuration for this run accordingly
@@ -32,18 +33,11 @@ def main():
     load_dotenv()
 
     with aios_starter(**vars(args)) as (submit_agent, await_agent_execution):
+
         # register your agents and submit agent tasks
+
         agent_tasks = [
             ["example/academic_agent", "Tell me what is the prollm paper mainly about"],
-            [
-                "example/seeact_agent",
-                "Find the pdf of the paper \"GPT-4V(ision) is a Generalist Web Agent, if Grounded\"",
-                {
-                    "model": "gpt-4o",  # Using AIOS model
-                    "default_website": "https://www.google.com/",
-                    "headless": True  # Run browser in headless mode
-                }
-            ],
             # [
             #     "example/cocktail_mixlogist",
             #     "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices.",
@@ -85,25 +79,15 @@ def main():
         ]
 
         agent_ids = []
-        for task in agent_tasks:
-            agent_name = task[0]
-            task_input = task[1]
-            config = task[2] if len(task) > 2 else {}
-            
-            agent_id = submit_agent(
-                agent_name=agent_name,
-                task_input=task_input,
-                **config
-            )
+        for agent_name, task_input in agent_tasks:
+            agent_id = submit_agent(agent_name=agent_name, task_input=task_input)
             agent_ids.append(agent_id)
 
         for agent_id in agent_ids:
-            result = await_agent_execution(agent_id)
-            if asyncio.iscoroutine(result):
-                loop = asyncio.get_event_loop()
-                result = loop.run_until_complete(result)
+            await_agent_execution(agent_id)
 
     clean_cache(root_directory="./")
+
 
 if __name__ == "__main__":
     main()
