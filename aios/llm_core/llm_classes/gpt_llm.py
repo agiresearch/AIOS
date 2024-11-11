@@ -60,7 +60,7 @@ class GPTLLM(BaseLLM):
                 model=self.model_name,
                 messages=messages,
                 tools=agent_request.query.tools,
-                # tool_choice = "required" if agent_request.query.tools else None,
+                # tool_choice = "required" if agent_request.request_data.tools else None,
                 max_tokens=self.max_new_tokens,
             )
             response_message = response.choices[0].message.content

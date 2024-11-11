@@ -5,7 +5,7 @@ from aios.utils.logger import SDKLogger
 from pyopenagi.utils.chat_template import Query
 from .config_adapter import prepare_metagpt_config
 from ..adapter import add_framework_adapter
-from ...hooks.request import send_request
+from ...hooks.syscall import send_request
 
 try:
     from metagpt.provider.base_llm import BaseLLM
