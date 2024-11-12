@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from aios.hooks.llm import aios_starter
 from aios.utils.utils import parse_global_args
+from experiment.benchmark.gaia.init_data import REPO_PATH
 from pyopenagi.agents.experiment.standard.agent import StandardAgent
 
 DATA_PATH = os.path.join(
@@ -24,11 +25,23 @@ sign unless specified otherwise.
 If you are asked for a string, don’t use articles, neither abbreviations (e.g. for cities), and write the digits in
 plain text unless specified otherwise.
 If you are asked for a comma separated list, apply the above rules depending of whether the element to be put
-in the list is a number or a string."""
+in the list is a number or a string.
+"""
+
+FILE_PROMPT = """The current task is related to a file, and you may need to read the content of the file first.
+The file path is {path}.
+"""
+
+FILE_FOLDER = os.path.join(REPO_PATH, "2023", "validation")
 
 
 def process_one_func(data):
-    agent = StandardAgent("Standard Agent", data["Question"])
+    question = data["Question"]
+    if data["file_name"]:
+        file_path = FILE_FOLDER + "/" + data["file_name"]
+        absolute_path = os.path.abspath(file_path)
+        question += ("\n" + FILE_PROMPT.format(path=absolute_path))
+    agent = StandardAgent("Standard Agent", question)
     agent.custom_prompt = lambda: SYSTEM_PROMPT
     result = agent.run()
     print(result)
