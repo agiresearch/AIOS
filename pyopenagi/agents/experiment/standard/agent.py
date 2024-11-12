@@ -1,12 +1,13 @@
 import time
 from typing import List
-from aios.hooks.request import send_request
+
+from aios.hooks.syscall import send_request
 from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
-from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning, PlanningResult
+from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning
 from pyopenagi.agents.experiment.standard.prompt.framework_prompt import STANDARD_PROMPT
 from pyopenagi.agents.experiment.standard.utils.config import load_config
-from pyopenagi.utils.chat_template import Query, Response
+from pyopenagi.utils.chat_template import LLMQuery, Response
 from pyopenagi.utils.logger import AgentLogger
 
 
@@ -101,17 +102,8 @@ class StandardAgent:
         return
 
     def init_actions(self):
-        action_tool = ActionTool(config=self.config)
-        self.actions[action_tool.type] = action_tool
-
-    def run_planning(self) -> PlanningResult:
-        # Select suitable messages
-        messages = self.short_term_memory.recall()
-
-        planning = DefaultPlanning(self.request)
-        result = planning(messages, self.tools_format)
-
-        return result
+        tool = ActionTool(config=self.config, request_func=self.request)
+        self.actions[tool.type] = tool
 
     def run(self):
         # Init system prompt and task
@@ -123,12 +115,16 @@ class StandardAgent:
 
         while not self._is_terminate():
             # Run planning
-            planning_result = self.run_planning()
+            messages = self.short_term_memory.recall()
+            planning_result = self.planning(messages, self.tools_format)
+
             if action_type := planning_result.action_type:
                 action = self.actions[action_type]
                 action_param = planning_result.action_param
                 response, tool_call_id = action(**action_param)
+
                 self.short_term_memory.remember("assistant", response, tool_call_id)
+
             else:
                 response = planning_result.text_content
                 self.short_term_memory.remember("assistant", response)
@@ -147,7 +143,7 @@ class StandardAgent:
             turnaround_times
         ) = send_request(
             agent_name=self.agent_name,
-            query=Query(
+            query=LLMQuery(
                 messages=messages,
                 tools=tools,
                 action_type="message_llm",

@@ -18,3 +18,8 @@ pyfzf
 getch
 npm
 platformdirs
+
+# tool
+PyPDF2
+python-pptx
+python-docx
