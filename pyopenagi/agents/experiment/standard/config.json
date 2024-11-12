@@ -4,7 +4,8 @@
 
     ],
     "tools": [
-        "arxiv/arxiv"
+        "arxiv/arxiv",
+        "reader/file_reader"
     ],
     "meta": {
         "author": "example",

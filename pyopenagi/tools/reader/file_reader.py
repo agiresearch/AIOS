@@ -78,7 +78,7 @@ class Reader(ABC):
 def get_reader(path: str) -> Reader:
     filename, file_extension = os.path.splitext(path)
     reader = READER_REGISTER.get(file_extension)
-    return reader
+    return reader()
 
 
 @register_reader(".jpg", ".png")
@@ -92,7 +92,7 @@ class ImageReader(Reader):
             base64_img = base64.b64encode(image_file.read()).decode("utf-8")
 
         response = self.client.chat.completions.create(
-            model="gpt-4-vision-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
@@ -160,7 +160,7 @@ class AudioReader(Reader):
                 model="whisper-1",
                 file=audio_file
             )
-            content += response.texts
+            content += response.text
 
         return content
 
@@ -236,3 +236,15 @@ class CSVReader(Reader):
             data = [row for row in reader]
             content += str(data)
         return content
+
+
+if __name__ == "__main__":
+    param = {
+        "path": "<absolute path>"
+    }
+    reader = FileReader()
+    content = reader.run(param)
+    print(f"File Path: {param['path']}\n"
+          f"<Content>\n "
+          f"{content}\n "
+          f"</Content>")
