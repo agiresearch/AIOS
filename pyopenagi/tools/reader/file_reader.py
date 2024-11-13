@@ -32,7 +32,7 @@ class FileReader(BaseTool):
         tool_call_format = {
             "type": "function",
             "function": {
-                "name": "reader/file_reader",
+                "name": "file_reader",
                 "description": "Read the file content from the specified path.",
                 "parameters": {
                     "type": "object",
@@ -171,7 +171,7 @@ class ExcelReader(Reader):
     def read(self, path: str) -> str:
         content = ""
         data = pd.read_excel(path)
-        content += data
+        content += data.to_string()
         return content
 
 

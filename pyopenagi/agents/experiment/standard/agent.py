@@ -1,6 +1,5 @@
 import time
 from typing import List
-
 from aios.hooks.syscall import send_request
 from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
@@ -52,6 +51,12 @@ class StandardAgent:
         else:
             return None
 
+    def _is_terminate(self):
+        return self.custom_terminate()
+
+    def custom_terminate(self) -> bool:
+        pass
+
     def custom_prompt(self) -> str:
         pass
 
@@ -102,7 +107,7 @@ class StandardAgent:
         return
 
     def init_actions(self):
-        tool = ActionTool(config=self.config, request_func=self.request)
+        tool = ActionTool(config=self.config)
         self.actions[tool.type] = tool
 
     def run(self):
@@ -131,35 +136,31 @@ class StandardAgent:
 
             self.log_last_message()
 
-    def _is_terminate(self):
-        return True if "TERMINATE" in self.short_term_memory.last_message()["content"] else False
+        return {
+            "agent_name": self.agent_name,
+            "result": self.short_term_memory.last_message()["content"],
+            "rounds": self.rounds,
+        }
 
     def request(self, messages: List, tools: List) -> Response:
-        (
-            response,
-            start_times,
-            end_times,
-            waiting_times,
-            turnaround_times
-        ) = send_request(
+        response = send_request(
             agent_name=self.agent_name,
             query=LLMQuery(
                 messages=messages,
                 tools=tools,
-                action_type="message_llm",
             )
         )
 
         # Update AIOS monitor info
         if self.rounds == 0:
-            self.start_time = start_times[0]
+            self.start_time = response["start_times"][0]
 
-        self.request_waiting_times.extend(waiting_times)
-        self.request_turnaround_times.extend(turnaround_times)
+        self.request_waiting_times.extend(response["waiting_times"])
+        self.request_turnaround_times.extend(response["turnaround_times"])
         self.rounds += 1
 
-        return response
+        return response["response"]
 
     def log_last_message(self):
         log_content = self.short_term_memory.last_message()["content"]
-        self.logger.log(f"\n{log_content}", "info")
+        self.logger.log(f"\n{log_content}\n", "info")

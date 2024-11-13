@@ -1,10 +1,11 @@
 import json
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from tqdm import tqdm
 
-from aios.hooks.llm import aios_starter
+from aios.hooks.starter import aios_starter
 from aios.utils.utils import parse_global_args
 from experiment.benchmark.gaia.init_data import REPO_PATH
 from pyopenagi.agents.experiment.standard.agent import StandardAgent
@@ -35,27 +36,50 @@ The file path is {path}.
 FILE_FOLDER = os.path.join(REPO_PATH, "2023", "validation")
 
 
+class GaiaExpAgent(StandardAgent):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def custom_terminate(self) -> bool:
+        return True if "FINAL ANSWER" in self.short_term_memory.last_message()["content"] else False
+
+    def custom_prompt(self) -> str:
+        return SYSTEM_PROMPT
+
+
 def process_one_func(data):
     question = data["Question"]
     if data["file_name"]:
         file_path = FILE_FOLDER + "/" + data["file_name"]
         absolute_path = os.path.abspath(file_path)
         question += ("\n" + FILE_PROMPT.format(path=absolute_path))
-    agent = StandardAgent("Standard Agent", question)
-    agent.custom_prompt = lambda: SYSTEM_PROMPT
+
+    agent = GaiaExpAgent("Standard Agent", question)
     result = agent.run()
-    print(result)
+    print(f"Agent result is: {result}")
+
+    match = re.search(r"FINAL ANSWER:\s*(.*)", result["result"])
+    # Extract the content if a match is found
+    if match:
+        final_answer = match.group(1)
+    else:
+        final_answer = result["result"]
     return {
         "task_id": 1,
-        "result": data["Question"]
+        "result": final_answer
     }
 
 
-def prepare_dataset():
+def prepare_dataset(task_id: str = None):
     input_file = os.path.join(DATA_PATH, "metadata.jsonl")
     with open(input_file, "r") as file:
         dataset = [json.loads(line) for line in file]
 
+    if task_id is not None:
+        for data in dataset:
+            if data["task_id"] == task_id:
+                return data
     return dataset
 
 
@@ -85,10 +109,22 @@ def run_infer(outputfile: str, workers: int, aios_args: dict):
             file.write(json_line + "\n")
 
 
+def run_infer_specify_task(outputfile: str, task_id: str, aios_args: dict):
+    data = prepare_dataset(task_id=task_id)
+    with aios_starter(**aios_args):
+        result = process_one_func(data)
+
+        # Write result into .jsonl file
+        with open(outputfile, "w") as file:
+            json_line = json.dumps(result)
+            file.write(json_line + "\n")
+
+
 if __name__ == '__main__':
     parser = parse_global_args()
     parser.add_argument("--output_file", type=str, default="./experiment/benchmark/gaia/predictions.jsonl")
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--task_id", type=str, default=None)
 
     args = parser.parse_args()
     aios_args = {
@@ -102,8 +138,15 @@ if __name__ == '__main__':
         "use_backend": args.use_backend,
     }
 
-    run_infer(
-        args.output_file,
-        args.workers,
-        aios_args
-    )
+    if args.task_id is not None:
+        run_infer_specify_task(
+            args.output_file,
+            args.task_id,
+            aios_args
+        )
+    else:
+        run_infer(
+            args.output_file,
+            args.workers,
+            aios_args
+        )

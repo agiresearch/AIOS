@@ -30,8 +30,10 @@ class DefaultPlanning(Planning):
 
     def __call__(self, messages: List, tools: List):
         response = self.request_func(messages, tools)
-        response_message = response.response_message
-        tool_calls = response.tool_calls
+        if tool_calls := response.tool_calls:
+            response_message = None
+        else:
+            response_message = response.response_message
 
         result = PlanningResult()
         result.text_content = response_message

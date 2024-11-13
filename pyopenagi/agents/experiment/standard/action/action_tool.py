@@ -1,21 +1,19 @@
 import importlib
 from typing import Any
 
-from pydantic.v1 import BaseModel
-
 from pyopenagi.agents.experiment.standard.action.action import Action
 from pyopenagi.agents.experiment.standard.utils.config import Config
 from pyopenagi.agents.experiment.standard.utils.str_utils import snake_to_camel
 
 
-class ActionTool(Action, BaseModel):
-    config: Config
-    tools = {}
-    tools_format = []
-    type: str = "TOOL"
+class ActionTool(Action):
 
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __init__(self, config: Config):
+        super().__init__()
+        self.tools = {}
+        self.tools_format = []
+        self.type = "TOOL"
+        self.config = config
         self.init_tools()
 
     def __call__(self, tool_call: dict) -> Any:

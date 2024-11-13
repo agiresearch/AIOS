@@ -26,6 +26,4 @@ The following will explain the functions of the modules and how to use them.
 <Communication>
 {communication}
 </Communication>
-
-If you think the task is done, reply TERMINATE.
 """
