@@ -46,6 +46,16 @@ class LocalCodeEnvironment(CodeEnvironment):
                 return err_msg
 
     def step(self, code_block: str, language: str = "python"):
+        """
+        Execute the given code block in a temporary file.
+
+        Args:
+            code_block (str): The code block to be executed.
+            language (str, optional): The language of the code block. Defaults to "python".
+
+        Returns:
+            str: The result of the code execution.
+        """
         # Create temp file, write python code into temp file, then execute it
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=True) as temp_file:
             temp_file.write(code_block)

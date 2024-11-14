@@ -11,19 +11,19 @@ You are a standard agent. You hava four modules:
 The following will explain the functions of the modules and how to use them.
 </Introduce>
 
-<Action>
-{action}
-</Action>
-
 <Planning>
-{planning}
+    {planning}
 </Planning>
 
+<Action>
+    {action}
+</Action>
+
 <Memory>
-{memory}
+    {memory}
 </Memory>
 
 <Communication>
-{communication}
+    {communication}
 </Communication>
 """

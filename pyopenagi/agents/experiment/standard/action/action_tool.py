@@ -7,6 +7,9 @@ from pyopenagi.agents.experiment.standard.utils.str_utils import snake_to_camel
 
 
 class ActionTool(Action):
+    """
+    Action responsible for support tool call.
+    """
 
     def __init__(self, config: Config):
         super().__init__()
@@ -17,6 +20,34 @@ class ActionTool(Action):
         self.init_tools()
 
     def __call__(self, tool_call: dict) -> Any:
+        """
+        Execute a tool call.
+        """
+        return self.execute(tool_call)
+
+    def execute(self, tool_call: dict) -> Any:
+        """
+        Execute the tool call.
+
+        Args:
+            tool_call (dict): A dictionary contain function name and parameters.
+                Example:
+                    {
+                        "name": "function_name",
+                        "parameters": {
+                            "param1": "value1",
+                            "param2": "value2"
+                        }
+                    }
+
+        Returns:
+            tuple: A tuple of two elements. The first element is the response of the function call,
+                the second element is the tool call id.
+
+        Raises:
+            TypeError: If the parameters of the function call is invalid.
+            Exception: If any other exception occurs.
+        """
         if tool_call is None:
             return
 

@@ -22,6 +22,9 @@ pip install numpy
 
 
 class ActionCode(Action):
+    """
+    Action responsible for writing code to solve problem.
+    """
 
     def __init__(self, environment: CodeEnvironment):
         super().__init__()
