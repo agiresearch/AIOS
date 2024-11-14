@@ -29,10 +29,28 @@ class ActionCode(Action):
         self.environment = environment
 
     def __call__(self, code: str, requirements: str):
+        """
+        Execute code with requirements.
+        """
         return self.execute_code(code, requirements)
 
     def execute_code(self, code: str, requirements: str):
-        self.environment.init_environment(requirements)
+        """
+        Execute code with requirements.
+
+        Args:
+            code (str): The code to be executed.
+            requirements (str): The command to install additional dependencies.
+
+        Returns:
+            str: The result of the code execution.
+        """
+
+        init_err = self.environment.init_environment(requirements)
+        if init_err:
+            # If init error, return error msg
+            return init_err
+
         exec_res = self.environment.step(code)
         return exec_res
 
