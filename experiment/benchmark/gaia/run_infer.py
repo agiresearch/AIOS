@@ -42,6 +42,8 @@ class GaiaExpAgent(StandardAgent):
         super().__init__(*args, **kwargs)
 
     def custom_terminate(self) -> bool:
+        if self.rounds > 10:
+            return True
         return True if "FINAL ANSWER" in self.short_term_memory.last_message()["content"] else False
 
     def custom_prompt(self) -> str:
@@ -57,7 +59,6 @@ def process_one_func(data):
 
     agent = GaiaExpAgent("Standard Agent", question)
     result = agent.run()
-    print(f"Agent result is: {result}")
 
     match = re.search(r"FINAL ANSWER:\s*(.*)", result["result"])
     # Extract the content if a match is found
@@ -65,10 +66,14 @@ def process_one_func(data):
         final_answer = match.group(1)
     else:
         final_answer = result["result"]
-    return {
-        "task_id": 1,
+
+    prediction = {
+        "task_id": data["task_id"],
+        "level": data["Level"],
         "result": final_answer
     }
+    print(f"Finished Task: \n{prediction}")
+    return prediction
 
 
 def prepare_dataset(task_id: str = None):
@@ -83,24 +88,26 @@ def prepare_dataset(task_id: str = None):
     return dataset
 
 
-def run_infer(outputfile: str, workers: int, aios_args: dict):
+def run_infer(outputfile: str, workers: int, level: int, aios_args: dict):
     dataset = prepare_dataset()
     with aios_starter(**aios_args):
         with ThreadPoolExecutor(max_workers=workers) as executor:
 
             futures = []
             for data in dataset:
-                # 提交任务
+                # submit task
+                if level and data["Level"] != level:
+                    continue
+
                 futures.append(
                     executor.submit(process_one_func, data)
                 )
-                break
 
-        results = []
+            results = []
 
-        # Obtain infer result
-        for future in tqdm(as_completed(futures)):
-            results.append(future.result())
+            # Obtain infer result
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Finished"):
+                results.append(future.result())
 
     # Write result into .jsonl file
     with open(outputfile, "w") as file:
@@ -115,7 +122,7 @@ def run_infer_specify_task(outputfile: str, task_id: str, aios_args: dict):
         result = process_one_func(data)
 
         # Write result into .jsonl file
-        with open(outputfile, "w") as file:
+        with open(outputfile, "w", encoding="utf-8") as file:
             json_line = json.dumps(result)
             file.write(json_line + "\n")
 
@@ -125,6 +132,7 @@ if __name__ == '__main__':
     parser.add_argument("--output_file", type=str, default="./experiment/benchmark/gaia/predictions.jsonl")
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--task_id", type=str, default=None)
+    parser.add_argument("--level", type=int, default=None)
 
     args = parser.parse_args()
     aios_args = {
@@ -148,5 +156,6 @@ if __name__ == '__main__':
         run_infer(
             args.output_file,
             args.workers,
+            args.level,
             aios_args
         )

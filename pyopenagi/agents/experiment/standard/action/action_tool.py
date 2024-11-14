@@ -28,6 +28,8 @@ class ActionTool(Action):
 
         except TypeError:
             function_response = f"Call function {function_name} failed. Parameters {function_param} is invalid."
+        except Exception as e:
+            function_response = f"Tool error is {e}"
 
         return function_response, tool_call["id"]
 

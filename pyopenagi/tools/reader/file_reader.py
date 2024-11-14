@@ -60,6 +60,18 @@ READER_REGISTER = {}
 
 
 def register_reader(*args):
+    """
+    A decorator to register a reader class into the READER_REGISTER dictionary.
+
+    Usage:
+        @register_reader(".pdf", ".docx")
+        class PDFReader(Reader):
+            # implement the read method
+            pass
+
+    In this example, the PDFReader class is registered to handle files with ".pdf"
+    and ".docx" extensions.
+    """
     def decorator(cls):
         for suffix in args:
             READER_REGISTER[suffix] = cls
@@ -76,6 +88,17 @@ class Reader(ABC):
 
 
 def get_reader(path: str) -> Reader:
+    """
+    Retrieves a reader instance based on the file extension of the given path.
+
+    Args:
+        path (str): The file path for which to get the corresponding reader.
+
+    Returns:
+        Reader: An instance of a reader class that can handle the file extension
+        of the given path. This instance is expected to implement the `read` method
+        to process the file content.
+    """
     filename, file_extension = os.path.splitext(path)
     reader = READER_REGISTER.get(file_extension)
     return reader()
@@ -83,6 +106,9 @@ def get_reader(path: str) -> Reader:
 
 @register_reader(".jpg", ".png")
 class ImageReader(Reader):
+    """
+    Reads image files and recognizes their content using the OpenAI API.
+    """
 
     def __init__(self):
         self.client = OpenAI()
@@ -114,6 +140,9 @@ class ImageReader(Reader):
 
 @register_reader(".pdf")
 class PDFReader(Reader):
+    """
+    Reads PDF files and returns the content of each page as plain text.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -125,6 +154,14 @@ class PDFReader(Reader):
 
 @register_reader(".pptx")
 class PPTReader(Reader):
+    """
+    Reads PowerPoint files (.pptx) and returns the content of each slide as plain text.
+
+    The content of each slide is concatenated and returned as a single string.
+
+    Note: This reader does not support PPT files that contain images or other
+    non-text content.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -137,8 +174,13 @@ class PPTReader(Reader):
         return content
 
 
-@register_reader(".txt")
+@register_reader(".txt", ".pdb")
 class TextReader(Reader):
+    """
+    Reads plain text files (.txt and .pdb) and returns the content as a string.
+
+    The content of the file is read and returned as a single string.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -149,6 +191,14 @@ class TextReader(Reader):
 
 @register_reader(".mp3")
 class AudioReader(Reader):
+    """
+    Reads audio files (.mp3) and transcribes the content using the Whisper API.
+
+    This reader uses the Whisper API to transcribe the audio file and returns the
+    transcription as a string.
+
+    Note: This reader requires an OpenAI API key to be set in the environment.
+    """
 
     def __init__(self):
         self.client = OpenAI()
@@ -167,6 +217,14 @@ class AudioReader(Reader):
 
 @register_reader(".xlsx")
 class ExcelReader(Reader):
+    """
+    Reads Excel files (.xlsx) and returns the content as a string.
+
+    The content of the file is read into a pandas DataFrame and then converted
+    to a string using the `to_string` method.
+
+    Note: This reader requires the `pandas` library to be installed.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -177,6 +235,13 @@ class ExcelReader(Reader):
 
 @register_reader(".json", "jsonl")
 class JsonReader(Reader):
+    """
+    Reads JSON and JSONL files and returns their content as a string.
+
+    For JSON files, the content is loaded as a dictionary and converted to a string.
+    For JSONL files, each line is loaded as a JSON object and the list of these
+    objects is converted to a string.
+    """
 
     def read(self, path):
         content = ""
@@ -190,6 +255,12 @@ class JsonReader(Reader):
 
 @register_reader(".docx")
 class DocxReader(Reader):
+    """
+    Reads DOCX files and returns the content as plain text.
+
+    This reader processes each paragraph in the DOCX file, appending
+    it to the content string with a page indicator.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -201,6 +272,11 @@ class DocxReader(Reader):
 
 @register_reader(".py")
 class PythonReader(Reader):
+    """
+    Reads Python files (.py) and returns their content as a string.
+
+    The content of the file is read and returned as a single string.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -211,6 +287,14 @@ class PythonReader(Reader):
 
 @register_reader(".zip")
 class ZipReader(Reader):
+    """
+    Reads the content of a ZIP file.
+
+    This reader will extract the ZIP file to the same directory and then
+    read the content of each file in the ZIP file. The content of each file
+    is processed by the corresponding reader and the results are concatenated
+    together with each file's name and content separated by a blank line.
+    """
 
     def read(self, path: str) -> str:
         content = ""
@@ -228,6 +312,12 @@ class ZipReader(Reader):
 
 @register_reader(".csv")
 class CSVReader(Reader):
+    """
+    Reads CSV files and returns their content as a string.
+
+    The content of the CSV file is read into a list of rows, where each row is a list of values.
+    The list is then converted to a string and returned.
+    """
 
     def read(self, path: str) -> str:
         content = ""

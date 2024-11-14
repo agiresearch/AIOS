@@ -1,7 +1,9 @@
 import time
 from typing import List
 from aios.hooks.syscall import send_request
+from pyopenagi.agents.experiment.standard.action.action_code import ActionCode
 from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
+from pyopenagi.agents.experiment.standard.environment.code_environment import LocalCodeEnvironment
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
 from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning
 from pyopenagi.agents.experiment.standard.prompt.framework_prompt import STANDARD_PROMPT
@@ -107,8 +109,15 @@ class StandardAgent:
         return
 
     def init_actions(self):
+        # Tool
         tool = ActionTool(config=self.config)
+
+        # Code
+        environment = LocalCodeEnvironment()
+        code = ActionCode(environment=environment)
+
         self.actions[tool.type] = tool
+        self.actions[code.type] = code
 
     def run(self):
         # Init system prompt and task
