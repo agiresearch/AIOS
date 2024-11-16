@@ -4,11 +4,8 @@ import re
 # abc allows to make abstract classes
 from abc import ABC, abstractmethod
 
-
-from cerebrum.utils.chat import Query
-from cerebrum.utils.llm import generator_tool_call_id
 from aios.utils.id_generator import generator_tool_call_id
-from pyopenagi.utils.chat_template import Query
+from pyopenagi.utils.chat_template import LLMQuery as Query
 
 
 class BaseLLM(ABC):
