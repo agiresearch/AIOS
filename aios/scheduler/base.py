@@ -1,35 +1,74 @@
-# base implementation of the scheduler, sets up the threads and init
-# which all sub classes will inherit and wouldn't need to change.
+from aios.hooks.types.llm import LLMRequestQueueGetMessage
+from aios.hooks.types.memory import MemoryRequestQueueGetMessage
+from aios.hooks.types.tool import ToolRequestQueueGetMessage
+from aios.hooks.types.storage import StorageRequestQueueGetMessage
+
+from aios.utils.logger import SchedulerLogger
+
+from abc import ABC, abstractmethod
 
 from threading import Thread
 
-from aios.llm_core.llms import LLM
-
-from aios.utils.logger import SchedulerLogger
-class BaseScheduler:
-    def __init__(self, llm: LLM, log_mode):
-        self.active = False # start/stop the scheduler
+class Scheduler:
+    def __init__(
+        self,
+        llm,
+        memory_manager,
+        storage_manager,
+        tool_manager,
+        log_mode,
+        get_llm_syscall: LLMRequestQueueGetMessage,
+        get_memory_syscall: MemoryRequestQueueGetMessage,
+        get_storage_syscall: StorageRequestQueueGetMessage,
+        get_tool_syscall: ToolRequestQueueGetMessage,
+    ):
+        # self.agent_process_queue = Queue()
+        self.get_llm_syscall = get_llm_syscall
+        self.get_memory_syscall = get_memory_syscall
+        self.get_storage_syscall = get_storage_syscall
+        self.get_tool_syscall = get_tool_syscall
+        self.active = False  # start/stop the scheduler
         self.log_mode = log_mode
         self.logger = self.setup_logger()
-        self.thread = Thread(target=self.run)
+        self.request_processors = {
+            "llm_syscall_processor": Thread(target=self.run_llm_syscall),
+            "mem_syscall_processor": Thread(target=self.run_memory_syscall),
+            "sto_syscall_processor": Thread(target=self.run_storage_syscall),
+            "tool_syscall_processor": Thread(target=self.run_tool_syscall),
+        }
         self.llm = llm
-
-    def run(self):
-        pass
+        self.memory_manager = memory_manager
+        self.storage_manager = storage_manager
+        self.tool_manager = tool_manager
 
     def start(self):
         """start the scheduler"""
         self.active = True
-        self.thread.start()
+        for name, thread_value in self.request_processors.items():
+            thread_value.start()
+
+    def stop(self):
+        """stop the scheduler"""
+        self.active = False
+        for name, thread_value in self.request_processors.items():
+            thread_value.join()
 
     def setup_logger(self):
         logger = SchedulerLogger("Scheduler", self.log_mode)
         return logger
 
-    def stop(self):
-        """stop the scheduler"""
-        self.active = False
-        self.thread.join()
+    @abstractmethod
+    def run_llm_syscall(self):
+        pass
+    
+    @abstractmethod
+    def run_memory_syscall(self):
+        pass
+    
+    @abstractmethod
+    def run_storage_syscall(self):
+        pass
 
-    def execute_request(self, agent_process):
+    @abstractmethod
+    def run_tool_syscall(self):
         pass

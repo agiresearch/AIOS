@@ -2,8 +2,8 @@ import time
 from pyopenagi.utils.logger import AgentLogger
 from seeact.agent import SeeActAgent as SeeActCore
 from seeact.demo_utils.inference_engine import Engine
-from pyopenagi.utils.chat_template import Query
-from aios.hooks.request import send_request
+from pyopenagi.utils.chat_template import LLMQuery
+from aios.hooks.syscall import send_request
 
 class SeeActAgent:
     def __init__(self, agent_name, task_input, log_mode: str):
@@ -59,14 +59,14 @@ class SeeActAgent:
                     ]
 
                 # Use correct message format and return value handling
-                response, start_times, end_times, waiting_times, turnaround_times = send_request(
+                response = send_request(
                     agent_name=agent_name,
-                    query=Query(
+                    query=LLMQuery(
                         messages=prompt_input,
                         tools=None,
                         message_return_type="json"
                     )
-                )
+                )["response"]
 
                 # Update rate limiting time
                 if self_engine.request_interval > 0:

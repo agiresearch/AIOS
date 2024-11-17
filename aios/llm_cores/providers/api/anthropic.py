@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 from cerebrum.llm.base import BaseLLM
 from cerebrum.utils.chat import Query, Response
 
+
 class ClaudeLLM(BaseLLM):
     """
     ClaudeLLM class for interacting with Anthropic's Claude models.
@@ -18,10 +19,13 @@ class ClaudeLLM(BaseLLM):
         tokenizer (None): Placeholder for tokenizer, not used in this implementation.
     """
 
-    def __init__(self, llm_name: str,
-                 max_gpu_memory: Dict[int, str] = None,
-                 eval_device: str = None,
-                 max_new_tokens: int = 256):
+    def __init__(
+        self,
+        llm_name: str,
+        max_gpu_memory: Dict[int, str] = None,
+        eval_device: str = None,
+        max_new_tokens: int = 256,
+    ):
         """
         Initialize the ClaudeLLM instance.
 
@@ -32,10 +36,12 @@ class ClaudeLLM(BaseLLM):
             max_new_tokens (int, optional): Maximum number of new tokens to generate.
             log_mode (str, optional): Logging mode, defaults to "console".
         """
-        super().__init__(llm_name,
-                         max_gpu_memory=max_gpu_memory,
-                         eval_device=eval_device,
-                         max_new_tokens=max_new_tokens,)
+        super().__init__(
+            llm_name,
+            max_gpu_memory=max_gpu_memory,
+            eval_device=eval_device,
+            max_new_tokens=max_new_tokens,
+        )
 
     def load_llm_and_tokenizer(self) -> None:
         """
@@ -57,7 +63,9 @@ class ClaudeLLM(BaseLLM):
             anthropic.APIError: If there's an error with the Anthropic API call.
             Exception: For any other unexpected errors.
         """
-        assert re.search(r'claude', self.model_name, re.IGNORECASE), "Model name must contain 'claude'"
+        assert re.search(
+            r"claude", self.model_name, re.IGNORECASE
+        ), "Model name must contain 'claude'"
         messages = query.messages
         tools = query.tools
 
@@ -73,34 +81,28 @@ class ClaudeLLM(BaseLLM):
                 model=self.model_name,
                 messages=anthropic_messages,
                 max_tokens=self.max_new_tokens,
-                temperature=0.0
+                temperature=0.0,
             )
 
             response_message = response.content[0].text
             # self.logger.log(f"API Response: {response_message}", level="info")
             tool_calls = self.parse_tool_calls(response_message) if tools else None
 
-            return Response(
-                    response_message=response_message,
-                    tool_calls=tool_calls
-                )
+            return Response(response_message=response_message, tool_calls=tool_calls)
         except anthropic.APIError as e:
             error_message = f"Anthropic API error: {str(e)}"
             self.logger.log(error_message, level="warning")
-            return Response(
-                    response_message=f"Error: {str(e)}",
-                    tool_calls=None
-                )
+            return Response(response_message=f"Error: {str(e)}", tool_calls=None)
         except Exception as e:
             error_message = f"Unexpected error: {str(e)}"
             self.logger.log(error_message, level="warning")
             return Response(
-                response_message=f"Unexpected error: {str(e)}",
-                tool_calls=None
+                response_message=f"Unexpected error: {str(e)}", tool_calls=None
             )
 
-
-    def _convert_to_anthropic_messages(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    def _convert_to_anthropic_messages(
+        self, messages: List[Dict[str, str]]
+    ) -> List[Dict[str, str]]:
         """
         Convert messages to the format expected by the Anthropic API.
 
@@ -112,17 +114,28 @@ class ClaudeLLM(BaseLLM):
         """
         anthropic_messages = []
         for message in messages:
-            if message['role'] == 'system':
-                anthropic_messages.append({"role": "user", "content": f"System: {message['content']}"})
-                anthropic_messages.append({"role": "assistant", "content": "Understood. I will follow these instructions."})
+            if message["role"] == "system":
+                anthropic_messages.append(
+                    {"role": "user", "content": f"System: {message['content']}"}
+                )
+                anthropic_messages.append(
+                    {
+                        "role": "assistant",
+                        "content": "Understood. I will follow these instructions.",
+                    }
+                )
             else:
-                anthropic_messages.append({
-                    "role": "user" if message['role'] == 'user' else "assistant",
-                    "content": message['content']
-                })
+                anthropic_messages.append(
+                    {
+                        "role": "user" if message["role"] == "user" else "assistant",
+                        "content": message["content"],
+                    }
+                )
         return anthropic_messages
 
-    def tool_calling_output_format(self, tool_calling_messages: str) -> List[Dict[str, Any]]:
+    def tool_calling_output_format(
+        self, tool_calling_messages: str
+    ) -> List[Dict[str, Any]]:
         """
         Parse the tool calling output from the model's response.
 
@@ -134,7 +147,11 @@ class ClaudeLLM(BaseLLM):
         """
         try:
             json_content = json.loads(tool_calling_messages)
-            if isinstance(json_content, list) and len(json_content) > 0 and 'name' in json_content[0]:
+            if (
+                isinstance(json_content, list)
+                and len(json_content) > 0
+                and "name" in json_content[0]
+            ):
                 return json_content
         except json.JSONDecodeError:
             pass

@@ -13,13 +13,15 @@ from aios.utils.id_generator import generator_tool_call_id
 
 
 class BaseLLM(ABC):
-    def __init__(self,
-                 llm_name: str,
-                 max_gpu_memory: dict = None,
-                 eval_device: str = None,
-                 max_new_tokens: int = 256,
-                 log_mode: str = "console"
-                 ):
+    def __init__(
+        self,
+        llm_name: str,
+        max_gpu_memory: dict = None,
+        eval_device: str = None,
+        max_new_tokens: int = 256,
+        log_mode: str = "console",
+        use_context_manager: bool = False,
+    ):
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
         self.max_new_tokens = max_new_tokens
@@ -27,18 +29,17 @@ class BaseLLM(ABC):
         self.log_mode = log_mode
 
         self.model_name = llm_name
-        self.context_manager = SimpleContextManager()
+        self.use_context_manager = use_context_manager
+        if use_context_manager:
+            self.context_manager = SimpleContextManager()
 
         self.load_llm_and_tokenizer()
         self.logger = self.setup_logger()
 
-        self.logger.log(
-            "AIOS has been successfully initialized.\n",
-            level="info"
-        )
+        self.logger.log("AIOS has been successfully initialized.\n", level="info")
 
     def convert_map(self, map: dict) -> dict:
-        """ helper utility to convert the keys of a map to int """
+        """helper utility to convert the keys of a map to int"""
         new_map = {}
         for k, v in map.items():
             new_map[int(k)] = v
@@ -55,8 +56,7 @@ class BaseLLM(ABC):
     @abstractmethod
     def load_llm_and_tokenizer(self) -> None:  # load model from config
         # raise NotImplementedError
-        """Load model and tokenizers for each type of LLMs
-        """
+        """Load model and tokenizers for each type of LLMs"""
         return
 
     # only use for open-sourced LLM
@@ -67,12 +67,14 @@ class BaseLLM(ABC):
             messages (list): messages with different roles
             tools (list): tool information
         """
-        prefix_prompt = "In and only in current step, you need to call tools. Available tools are: "
+        prefix_prompt = (
+            "In and only in current step, you need to call tools. Available tools are: "
+        )
         tool_prompt = json.dumps(tools)
         suffix_prompt = "".join(
             [
-                'Must call functions that are available. To call a function, respond '
-                'immediately and only with a list of JSON object of the following format:'
+                "Must call functions that are available. To call a function, respond "
+                "immediately and only with a list of JSON object of the following format:"
                 '{[{"name":"function_name_value","parameters":{"parameter_name1":"parameter_value1",'
                 '"parameter_name2":"parameter_value2"}}]}'
             ]
@@ -86,14 +88,16 @@ class BaseLLM(ABC):
                 message["role"] = "user"
                 tool_call_id = message.pop("tool_call_id")
                 content = message.pop("content")
-                message["content"] = f"The result of the execution of function(id :{tool_call_id}) is: {content}. "
+                message["content"] = (
+                    f"The result of the execution of function(id :{tool_call_id}) is: {content}. "
+                )
 
-        messages[-1]["content"] += (prefix_prompt + tool_prompt + suffix_prompt)
+        messages[-1]["content"] += prefix_prompt + tool_prompt + suffix_prompt
         return messages
 
     def parse_json_format(self, message: str) -> str:
-        json_array_pattern = r'\[\s*\{.*?\}\s*\]'
-        json_object_pattern = r'\{\s*.*?\s*\}'
+        json_array_pattern = r"\[\s*\{.*?\}\s*\]"
+        json_object_pattern = r"\{\s*.*?\s*\}"
 
         match_array = re.search(json_array_pattern, message)
 
@@ -116,7 +120,7 @@ class BaseLLM(ABC):
                 return json.dumps(json_object_data)
             except json.JSONDecodeError:
                 pass
-        return '[]'
+        return "[]"
 
     def parse_tool_calls(self, message):
         # add tool call id and type for models don't support tool call
@@ -126,14 +130,11 @@ class BaseLLM(ABC):
             tool_call["type"] = "function"
         return tool_calls
 
-    def address_request(self,
-                        agent_request,
-                        temperature=0.0
-                        ):
-        return self.process(agent_request)
-
     @abstractmethod
-    def process(self,
-                agent_request,
-                temperature=0.0) -> None:
+    def address_syscall(self, llm_syscall, temperature=0.0):
+        # return self.process(llm_syscall)
         raise NotImplementedError
+
+    # @abstractmethod
+    # def process(self, agent_request, temperature=0.0) -> None:
+    #     raise NotImplementedError

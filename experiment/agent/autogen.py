@@ -4,11 +4,11 @@ from typing import Annotated
 from autogen import ConversableAgent
 
 from aios.sdk import prepare_framework, FrameworkType
-from experiment.agent.experiment_agent import ExpirementAgent
+from experiment.agent.experiment_agent import ExperimentAgent
 from pyopenagi.tools.arxiv.arxiv import Arxiv
 
 
-class AutoGenAgent(ExpirementAgent):
+class AutoGenAgent(ExperimentAgent):
     _TERMINATION = "<TERMINATION>"
 
     def __init__(self, on_aios: bool = True):
@@ -40,7 +40,7 @@ class AutoGenAgent(ExpirementAgent):
         return ""
 
 
-class AutoGenAgentGAIA(ExpirementAgent):
+class AutoGenAgentGAIA(ExperimentAgent):
 
     SYSTEM_PROMPT = """You are a general AI assistant. I will ask you a question. Report your thoughts, and finish
     your answer with the following template: FINAL ANSWER: [YOUR FINAL ANSWER].
@@ -93,7 +93,7 @@ class AutoGenAgentGAIA(ExpirementAgent):
         return ""
 
 
-class AutoGenAgentHumanEval(ExpirementAgent):
+class AutoGenAgentHumanEval(ExperimentAgent):
 
     SYSTEM_PROMPT = """You are an AI assistant good at coding. You will receive a function definition and
     comments. You need to help me complete this function. I will help you check your code. If you think it is ok to

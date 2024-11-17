@@ -12,7 +12,7 @@ class SchedulerParams(BaseModel):
     storage_manager: Any
     tool_manager: Any
     log_mode: str
-    get_llm_request: LLMRequestQueueGetMessage | None
-    get_memory_request: MemoryRequestQueueGetMessage | None
-    get_storage_request: StorageRequestQueueGetMessage | None
-    get_tool_request: ToolRequestQueueGetMessage | None
+    get_llm_syscall: LLMRequestQueueGetMessage | None
+    get_memory_syscall: MemoryRequestQueueGetMessage | None
+    get_storage_syscall: StorageRequestQueueGetMessage | None
+    get_tool_syscall: ToolRequestQueueGetMessage | None
