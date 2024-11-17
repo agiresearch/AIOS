@@ -13,27 +13,11 @@ import { AgentCommand } from '@/components/chat/body/message-box';
 import { baseUrl, serverUrl } from '@/lib/env';
 import { generateSixDigitId } from '@/lib/utils';
 
-
-
-const updateChatName = (chatId: number, newName: string) => {
-  // setChats(prevChats => 
-  //   prevChats.map(chat => 
-  //     chat.id === chatId ? { ...chat, name: newName } : chat
-  //   )
-  // );
-};
-
-
-
-
-
-
-
-
 const ChatInterface: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(true);
-  const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General' }]);
+  const [chats, setChats] = useState<Chat[]>([
+    { id: 1, name: 'General', messages: [] }
+  ]);
   const [activeChat, setActiveChat] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +46,6 @@ const ChatInterface: React.FC = () => {
     content: string;
   }
 
-
   function parseNamedContent(inputString: string) {
     // Regular expression to match the pattern ?>>Name/?>>\s*Content
     const regex = /\?>>(.*?)\/?>>([^?]*)/g;
@@ -85,53 +68,65 @@ const ChatInterface: React.FC = () => {
     return results;
   }
 
-  // Ex
-
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [chats]);
 
   const handleSend = async (content: string, attachments: File[]) => {
     if (content.trim() || attachments.length > 0) {
       const newMessage: Message = {
-        id: generateSixDigitId(),
+        id: generateSixDigitId().toString(),
         text: content,
         sender: 'user',
         timestamp: new Date(),
         attachments: attachments.map(file => file.name),
         thinking: false
       };
-      setMessages([...messages, newMessage]);
 
-      const messageId = generateSixDigitId();
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === activeChat
+          ? { ...chat, messages: [...chat.messages, newMessage] }
+          : chat
+      ));
 
-      // Handle file uploads here (e.g., to a server)
+      const messageId = generateSixDigitId().toString();
       const botMessage: Message = {
         id: messageId,
-        text: ``,
+        text: '',
         sender: 'bot',
         timestamp: new Date(),
         thinking: true
       };
 
-      setMessages(prevMessages => [...prevMessages, botMessage]);
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === activeChat
+          ? { ...chat, messages: [...chat.messages, botMessage] }
+          : chat
+      ));
 
-      const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand)
+      const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand);
 
-      setMessages(prevMessages => [...prevMessages].map(message => {
-        if (message.id == messageId) {
-          return { ...message, thinking: false, text: res.content };
-        }
-        // return res.content;
-        return message;
-      }));
+      setChats(prevChats => prevChats.map(chat => 
+        chat.id === activeChat
+          ? {
+              ...chat,
+              messages: chat.messages.map(message => 
+                message.id === messageId
+                  ? { ...message, thinking: false, text: res.content }
+                  : message
+              )
+            }
+          : chat
+      ));
     }
-
   };
 
   const addChat = () => {
-    const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}` };
+    const newChat: Chat = {
+      id: Date.now(),
+      name: `Chat ${chats.length + 1}`,
+      messages: []
+    };
     setChats([...chats, newChat]);
     setActiveChat(newChat.id);
   };
@@ -178,7 +173,6 @@ const ChatInterface: React.FC = () => {
       recent_response = "Agent Had Difficulty Thinking"
     }
 
-
     //return recent_response
     return {
       name: command.name,
@@ -188,6 +182,29 @@ const ChatInterface: React.FC = () => {
 
   const mounted = useMounted();
 
+  const activeMessages = chats.find(chat => chat.id === activeChat)?.messages || [];
+
+  // Add updateChatName function
+  const updateChatName = (chatId: number, newName: string) => {
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.id === chatId ? { ...chat, name: newName } : chat
+      )
+    );
+  };
+
+  // Add deleteChat function
+  const deleteChat = (chatId: number) => {
+    setChats(prevChats => {
+      const filteredChats = prevChats.filter(chat => chat.id !== chatId);
+      // If the deleted chat is the active one, switch to the first chat
+      if (chatId === activeChat && filteredChats.length > 0) {
+        setActiveChat(filteredChats[0].id);
+      }
+      return filteredChats;
+    });
+  };
+
   return (
     <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar
@@ -196,11 +213,16 @@ const ChatInterface: React.FC = () => {
         setActiveChat={setActiveChat}
         addChat={addChat}
         updateChatName={updateChatName}
+        deleteChat={deleteChat}
         darkMode={darkMode}
       />
       <div className="flex flex-col flex-grow pb-4">
-        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
-        <MessageList messages={messages} darkMode={darkMode} />
+        <Header 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode}
+          title={chats.find(chat => chat.id === activeChat)?.name || 'Chat'} 
+        />
+        <MessageList messages={activeMessages} darkMode={darkMode} />
         <div className='w-full flex h-fit justify-center'>
           {mounted && <ChatEditor onSend={handleSend} darkMode={darkMode} />}
         </div>
@@ -210,6 +232,5 @@ const ChatInterface: React.FC = () => {
     </div>
   );
 };
-
 
 export default ChatInterface;
