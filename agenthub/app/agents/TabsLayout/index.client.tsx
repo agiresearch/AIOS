@@ -26,7 +26,7 @@ export default function LeftTabsLayout() {
     setCurrentTab(tabName)
   }
 
-  // 根据当前选中的分类过滤 agents
+  // Filter agents based on current selected category
   const filteredAgents = agents.filter(agent => {
     const name = agent.name.toLowerCase();
     switch(currentTab) {
