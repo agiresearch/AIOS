@@ -8,6 +8,8 @@ export interface DatasetItem {
     favorites: string
 }
 
+export type DatasetsTabItem = 'Recommended' | 'Writing' | 'Entertainment' | 'Programming' | 'Tasks' | 'Sizes' | 'Sub-tasks' | 'Languages' | 'Licenses' | 'Other';
+
 export type AgentTabItem = 'Tasks' | 'Sizes' | 'Sub-tasks' | 'Languages' | 'Licenses' | 'Other'
 
 
