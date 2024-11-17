@@ -15,18 +15,33 @@ export const AgentList: AgentItem[] = [];
 // export const AgentList = 
 
 export const AgentListGenerator: () => Promise<AgentItem[]> = async () => {
-    const res = await fetch(`${baseUrl}/api/get_all_agents/light`, { cache: 'no-store' });
-    const res_ = await res.json();
+    try {
+        const res = await fetch(`${baseUrl}/api/get_all_agents/light`, { cache: 'no-store' });
+        const res_ = await res.json();
 
-    const values: AgentItem[] = Object.values(res_);
+        if (!res_ || typeof res_ !== 'object') {
+            console.error('Invalid response format:', res_);
+            return [];
+        }
 
-    console.log('length', res_)
+        const values: AgentItem[] = Object.values(res_);
+        console.log('Response data:', res_);
+        console.log('Parsed values:', values);
 
-    return values;
+        return values;
+    } catch (error) {
+        console.error('Error fetching agents:', error);
+        return [];
+    }
 }
 
 // export const DatasetsTabList: DatasetsTabItem[] = ['Tasks', 'Sizes', 'Sub-tasks', 'Languages', 'Licenses', 'Other']
-export const AgentTabList: DatasetsTabItem[] = ['Recommended', 'Writing', 'Entertainment', 'Programming']
+export const AgentTabList: DatasetsTabItem[] = [
+  'Academic',
+  'Creative',
+  'Lifestyle',
+  'Entertainment'
+]
 
 export const DatasetOther = [
   'Trained with AutoTrain',
