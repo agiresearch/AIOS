@@ -29,7 +29,6 @@ class RRScheduler:
     def __init__(
         self,
         llm,
-        # memory_manager,
         log_mode,
         get_llm_request: LLMRequestQueueGetMessage,
         get_memory_request: MemoryRequestQueueGetMessage,
@@ -41,21 +40,19 @@ class RRScheduler:
         self.get_memory_request = get_memory_request
         self.get_storage_request = get_storage_request
         self.get_tool_request = get_tool_request
-        self.active = False  # start/stop the scheduler
+        self.active = False
         self.log_mode = log_mode
         self.logger = self.setup_logger()
-        # self.thread = Thread(target=self.run)
         self.request_processors = {
             "llm_syscall_processor": Thread(target=self.run_llm_request),
             "mem_syscall_processor": Thread(target=self.run_memory_request),
             "sto_syscall_processor": Thread(target=self.run_storage_request),
             "tool_syscall_processor": Thread(target=self.run_tool_request)
-            # "memory_request_processor": Thread(self.run_memory_request)
         }
         self.llm = llm
         self.time_limit = 5
         self.simple_context_manager = SimpleContextManager()
-        # self.memory_manager = memory_manager
+        self.shared_memory = SharedMemory()
 
     def start(self):
         """start the scheduler"""
@@ -111,14 +108,28 @@ class RRScheduler:
             try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
                 agent_request = self.get_memory_request()
-
+                
                 agent_request.set_status("executing")
                 self.logger.log(
                     f"{agent_request.agent_name} is executing. \n", "execute"
                 )
                 agent_request.set_start_time(time.time())
 
-                response = self.memory_manager.address_request(agent_request)
+                # Handle different types of memory operations
+                if agent_request.operation == "save":
+                    self.shared_memory.save(
+                        agent_request.key,
+                        agent_request.value,
+                        agent_request.agent_id
+                    )
+                    response = {"status": "success", "operation": "save"}
+                elif agent_request.operation == "load":
+                    value = self.shared_memory.load(
+                        agent_request.key,
+                        agent_request.agent_id
+                    )
+                    response = {"status": "success", "operation": "load", "value": value}
+                
                 agent_request.set_response(response)
 
                 # self.llm.address_request(agent_request)
@@ -129,7 +140,7 @@ class RRScheduler:
 
                 self.logger.log(
                     f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
+                    "done"
                 )
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
 
