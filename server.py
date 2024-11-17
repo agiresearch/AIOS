@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from aios.hooks.modules.scheduler import useFIFOScheduler
 from aios.hooks.modules.agent import useFactory
@@ -15,6 +16,8 @@ from aios.hooks.parser import string
 from aios.core.schema import CoreSchema
 from aios.hooks.types.parser import ParserQuery
 
+from aios.llm_cores.adapter import LLMAdapter
+
 from aios.utils.utils import (
     parse_global_args,
 )
@@ -28,6 +31,8 @@ from dotenv import load_dotenv
 import atexit
 
 import json
+
+from pyopenagi.utils.chat_template import LLMQuery
 
 load_dotenv()
 
@@ -125,6 +130,21 @@ startScheduler()
 @app.post("/set_kernel")
 async def set_kernel(req: LLMParams):
     setLLMState(useCore(**req))
+
+class LLMCoreCallParams(BaseModel):
+    llm_name: str
+    query: LLMQuery
+
+@app.post("/call_llm_core")
+async def call_llm_core(req: LLMCoreCallParams):
+    llm = LLMAdapter(req.llm_name)
+    core = llm.get_model()
+
+    res = core.execute(req.query)
+
+    return {
+        'response': res
+    }
 
 
 @app.post("/add_agent")
