@@ -16,7 +16,7 @@ def aios_starter(
     max_new_tokens: int,
     scheduler_log_mode: str,
     agent_log_mode: str,
-    llm_kernel_log_mode: str,
+    llm_core_log_mode: str,
     use_backend: str,
 ) -> Tuple[Callable[[str, str], int], Callable[[str], Dict[str, Any]]]:
     """
@@ -40,7 +40,7 @@ def aios_starter(
         max_gpu_memory=max_gpu_memory,
         eval_device=eval_device,
         max_new_tokens=max_new_tokens,
-        log_mode=llm_kernel_log_mode,
+        log_mode=llm_core_log_mode,
         use_backend=use_backend,
     )
     storage_manager = useStorageManager(
@@ -65,9 +65,9 @@ def aios_starter(
         storage_manager=storage_manager,
         tool_manager=tool_manager,
         log_mode=scheduler_log_mode,
-        get_llm_request=None,
-        get_memory_request=None,
-        get_storage_request=None,
-        get_tool_request=None
+        get_llm_syscall=None,
+        get_memory_syscall=None,
+        get_storage_syscall=None,
+        get_tool_syscall=None
     ):
         yield submit_agent, await_agent_execution
