@@ -18,3 +18,7 @@ pyfzf
 getch
 npm
 platformdirs
+arxiv
+llama-index-embeddings-huggingface
+watchdog
+chromadb

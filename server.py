@@ -1,13 +1,22 @@
 from collections import OrderedDict
 from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from aios.hooks.llm import useFIFOScheduler, useFactory, useKernel
-from aios.hooks.types.llm import AgentSubmitDeclaration, LLMParams
+from aios.hooks.modules.scheduler import useFIFOScheduler
+from aios.hooks.modules.agent import useFactory
+from aios.hooks.modules.llm import useCore
+from aios.hooks.modules.memory import useMemoryManager
+from aios.hooks.modules.storage import useStorageManager
+from aios.hooks.modules.tool import useToolManager
+from aios.hooks.types.agent import AgentSubmitDeclaration
+from aios.hooks.types.llm import LLMParams
 
 from aios.hooks.parser import string
 from aios.core.schema import CoreSchema
 from aios.hooks.types.parser import ParserQuery
+
+from aios.llm_cores.adapter import LLMAdapter
 
 from aios.utils.utils import (
     parse_global_args,
@@ -22,6 +31,8 @@ from dotenv import load_dotenv
 import atexit
 
 import json
+
+from pyopenagi.utils.chat_template import LLMQuery
 
 load_dotenv()
 
@@ -39,6 +50,9 @@ app.add_middleware(
 getLLMState, setLLMState, setLLMCallback = useGlobalState()
 getFactory, setFactory, setFactoryCallback = useGlobalState()
 getManager, setManager, setManagerCallback = useGlobalState()
+getMemoryState, setMemoryState, setMemoryCallback = useGlobalState()
+getStorageState, setStorageState, setStorageCallback = useGlobalState()
+getToolState, setToolState, setToolCallback = useGlobalState()
 
 setManager(AgentManager("https://my.aios.foundation"))
 
@@ -47,7 +61,7 @@ args = parser.parse_args()
 
 # check if the llm information was specified in args
 
-try: 
+try:
     with open("aios_config.json", "r") as f:
         aios_config = json.load(f)
 
@@ -57,35 +71,56 @@ try:
     llm_cores = aios_config["llm_cores"][0]
     # only check aios_config.json
     setLLMState(
-        useKernel(
-            llm_name=llm_cores.get("llm_name"), 
+        useCore(
+            llm_name=llm_cores.get("llm_name"),
             max_gpu_memory=llm_cores.get("max_gpu_memory"),
             eval_device=llm_cores.get("eval_device"),
             max_new_tokens=llm_cores.get("max_new_tokens"),
             log_mode="console",
-            use_backend=llm_cores.get("use_backend")
+            use_backend=llm_cores.get("use_backend"),
         )
     )
 except FileNotFoundError:
     aios_config = {}
     # only check args
     setLLMState(
-        useKernel(
-            llm_name=args.llm_name, 
+        useCore(
+            llm_name=args.llm_name,
             max_gpu_memory=args.max_gpu_memory,
             eval_device=args.eval_device,
             max_new_tokens=args.max_new_tokens,
             log_mode=args.llm_kernel_log_mode,
-            use_backend=args.use_backend
+            use_backend=args.use_backend,
         )
     )
 
+setStorageState(useStorageManager(root_dir="root"))
+
+setMemoryState(
+    useMemoryManager(
+        memory_limit=100 * 1024 * 1024, eviction_k=3, storage_manager=getStorageState()
+    )
+)
+
+setToolState(useToolManager())
+
 startScheduler, stopScheduler = useFIFOScheduler(
-    llm=getLLMState(), log_mode=args.scheduler_log_mode, get_queue_message=None
+    llm=getLLMState(),
+    memory_manager=getMemoryState(),
+    storage_manager=getStorageState(),
+    tool_manager=getToolState(),
+    log_mode=args.scheduler_log_mode,
+    # get_queue_message=None
+    get_llm_request=None,
+    get_memory_request=None,
+    get_storage_request=None,
+    get_tool_request=None,
 )
 
 
-submitAgent, awaitAgentExecution = useFactory(log_mode=args.agent_log_mode, max_workers=500)
+submitAgent, awaitAgentExecution = useFactory(
+    log_mode=args.agent_log_mode, max_workers=500
+)
 
 setFactory({"submit": submitAgent, "execute": awaitAgentExecution})
 
@@ -94,7 +129,22 @@ startScheduler()
 
 @app.post("/set_kernel")
 async def set_kernel(req: LLMParams):
-    setLLMState(useKernel(**req))
+    setLLMState(useCore(**req))
+
+class LLMCoreCallParams(BaseModel):
+    llm_name: str
+    query: LLMQuery
+
+@app.post("/call_llm_core")
+async def call_llm_core(req: LLMCoreCallParams):
+    llm = LLMAdapter(req.llm_name)
+    core = llm.get_model()
+
+    res = core.execute(req.query)
+
+    return {
+        'response': res
+    }
 
 
 @app.post("/add_agent")

@@ -14,8 +14,8 @@ from autogen.oai.openai_utils import get_key
 from autogen.runtime_logging import logging_enabled, log_new_wrapper, log_chat_completion
 from openai import APITimeoutError, APIError
 
-from aios.hooks.request import send_request
-from pyopenagi.utils.chat_template import Query
+from aios.hooks.syscall import send_request
+from pyopenagi.utils.chat_template import LLMQuery
 
 try:
     from autogen import (
@@ -52,6 +52,8 @@ def adapter_autogen_client_init(self, *,
 
 
 def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientResponseProtocol:
+    # if ERROR:
+    #     raise ERROR
     invocation_id = str(uuid.uuid4())
     last = len(self._clients) - 1
     # Check if all configs in config list are activated
@@ -136,13 +138,13 @@ def adapter_client_create(self, **config: Any) -> ModelClient.ModelClientRespons
                     continue  # filter is not passed; try the next config
         try:
             request_ts = get_current_ts()
-            response, start_times, end_times, waiting_times, turnaround_times = send_request(
+            response = send_request(
                 agent_name="AutoGen",
-                query=Query(
+                query=LLMQuery(
                     messages=params['messages'],
                     tools=(params["tools"] if "tools" in params else None)
                 )
-            )
+            )["response"]
             response = {'content': response.response_message, 'tool_calls': response.tool_calls}
         except APITimeoutError as err:
             logger.debug(f"config {i} timed out", exc_info=True)

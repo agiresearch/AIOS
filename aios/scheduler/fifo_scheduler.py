@@ -2,73 +2,139 @@
 # similar fashion to the round robin scheduler. However, the timeout is 1 second
 # instead of 0.05 seconds.
 
-from .base import BaseScheduler
-from aios.hooks.types.llm import QueueGetMessage
+from aios.hooks.types.llm import LLMRequestQueueGetMessage
+from aios.hooks.types.memory import MemoryRequestQueueGetMessage
+from aios.hooks.types.tool import ToolRequestQueueGetMessage
+from aios.hooks.types.storage import StorageRequestQueueGetMessage
 
-from queue import Queue, Empty
+from .base import Scheduler
+
+from queue import Empty
 
 import traceback
 import time
+class FIFOScheduler(Scheduler):
+    def __init__(
+        self,
+        llm,
+        memory_manager,
+        storage_manager,
+        tool_manager,
+        log_mode,
+        get_llm_syscall: LLMRequestQueueGetMessage,
+        get_memory_syscall: MemoryRequestQueueGetMessage,
+        get_storage_syscall: StorageRequestQueueGetMessage,
+        get_tool_syscall: ToolRequestQueueGetMessage,
+    ):
+        super().__init__(
+            llm,
+            memory_manager,
+            storage_manager,
+            tool_manager,
+            log_mode,
+            get_llm_syscall,
+            get_memory_syscall,
+            get_storage_syscall,
+            get_tool_syscall,
+        )
 
-class FIFOScheduler(BaseScheduler):
-    def __init__(self, llm, log_mode, get_queue_message: QueueGetMessage):
-        super().__init__(llm, log_mode)
-        self.agent_process_queue = Queue()
-        self.get_queue_message = get_queue_message
-
-    def run(self):
+    def run_llm_syscall(self):
         while self.active:
             try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_queue_message()
+                llm_syscall = self.get_llm_syscall()
 
-                agent_request.set_status("executing")
+                llm_syscall.set_status("executing")
                 self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
+                    f"{llm_syscall.agent_name} is executing. \n", "execute"
                 )
-                agent_request.set_start_time(time.time())
-                
-                self.execute_request(agent_request)
+                llm_syscall.set_start_time(time.time())
 
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n", "done"
-                )
+                response = self.llm.address_syscall(llm_syscall)
+                llm_syscall.set_response(response)
+
+                llm_syscall.event.set()
+                llm_syscall.set_status("done")
+                llm_syscall.set_end_time(time.time())
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()
+
+    def run_memory_syscall(self):
+        while self.active:
+            try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_queue_message()
+                memory_syscall = self.get_memory_syscall()
 
-                agent_request.set_status("executing")
+                memory_syscall.set_status("executing")
                 self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
+                    f"{mem_syscall.agent_name} is executing. \n", "execute"
                 )
-                agent_request.set_start_time(time.time())
-                
-                self.execute_request(agent_request)
+                memory_syscall.set_start_time(time.time())
+
+                response = self.memory_manager.address_request(memory_syscall)
+                memory_syscall.set_response(response)
+
+                memory_syscall.event.set()
+                memory_syscall.set_status("done")
+                memory_syscall.set_end_time(time.time())
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()
+
+    def run_storage_syscall(self):
+        while self.active:
+            try:
+                storage_syscall = self.get_storage_syscall()
+
+                storage_syscall.set_status("executing")
+                self.logger.log(
+                    f"{storage_syscall.agent_name} is executing. \n", "execute"
+                )
+                storage_syscall.set_start_time(time.time())
+
+                response = self.storage_manager.address_request(storage_syscall)
+                storage_syscall.set_response(response)
+
+                storage_syscall.event.set()
+                storage_syscall.set_status("done")
+                storage_syscall.set_end_time(time.time())
 
                 self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n", "done"
+                    f"Current request of {storage_syscall.agent_name} is done. Thread ID is {storage_syscall.get_pid()}\n",
+                    "done"
                 )
 
             except Empty:
                 pass
 
-
             except Exception:
                 traceback.print_exc()
 
-    def execute_request(self, agent_request):
-        action_type = agent_request.query.action_type
+    def run_tool_syscall(self):
+        while self.active:
+            try:
+                tool_syscall = self.get_tool_syscall()
 
-        if action_type in ["message_llm", "call_tool"]:
-            response = self.llm.address_request(agent_request)
-            # print(response)
-            agent_request.set_response(response)
-            
-            # self.llm.address_request(agent_request)
+                tool_syscall.set_status("executing")
 
-        # elif action_type == "operate_file":
-        #     api_calls = self.lsfs_parser.parse(agent_request)
-        #     response = self.lsfs.execute_calls(api_calls)
-        #     agent_request.set_response(response)
-        agent_request.event.set()
-        agent_request.set_status("done")
-        agent_request.set_end_time(time.time())
+                tool_syscall.set_start_time(time.time())
+
+                response = self.tool_manager.address_request(tool_syscall)
+                tool_syscall.set_response(response)
+
+                tool_syscall.event.set()
+                tool_syscall.set_status("done")
+                tool_syscall.set_end_time(time.time())
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()

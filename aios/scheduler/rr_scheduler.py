@@ -11,30 +11,177 @@ from queue import Queue, Empty
 
 from ..context.simple_context import SimpleContextManager
 
-class RRScheduler(BaseScheduler):
-    def __init__(self, llm, log_mode):
-        super().__init__(llm, log_mode)
-        self.agent_process_queue = Queue()
-        self.time_limit = 5
+from aios.hooks.types.llm import LLMRequestQueueGetMessage
+from aios.hooks.types.memory import MemoryRequestQueueGetMessage
+from aios.hooks.types.tool import ToolRequestQueueGetMessage
+from aios.hooks.types.storage import StorageRequestQueueGetMessage
+
+from queue import Queue, Empty
+
+import traceback
+import time
+from aios.utils.logger import SchedulerLogger
+
+from threading import Thread
+
+from .base import Scheduler
+
+
+class RRScheduler(Scheduler):
+    def __init__(
+        self,
+        llm,
+        memory_manager,
+        storage_manager,
+        tool_manager,
+        log_mode,
+        get_llm_syscall: LLMRequestQueueGetMessage,
+        get_memory_syscall: MemoryRequestQueueGetMessage,
+        get_storage_syscall: StorageRequestQueueGetMessage,
+        get_tool_syscall: ToolRequestQueueGetMessage,
+    ):
+        super().__init__(
+            llm,
+            memory_manager,
+            storage_manager,
+            tool_manager,
+            log_mode,
+            get_llm_syscall,
+            get_memory_syscall,
+            get_storage_syscall,
+            get_tool_syscall,
+        )
+        self.llm = llm
+        self.time_limit = 0.5
         self.simple_context_manager = SimpleContextManager()
 
-    def run(self):
+    def run_llm_request(self):
         while self.active:
             try:
-                """
-                wait 0.05 seconds between each iteration at the minimum
-                if there is nothing received in a second, it will raise Empty
-                """
-                agent_process = self.agent_process_queue.get(block=True, timeout=0.05)
-                agent_process.set_time_limit(self.time_limit)
+                llm_syscall = self.get_llm_request()
 
-                agent_process.set_status("executing")
-                # self.logger.log(f"{agent_process.agent_name} is switched to executing.\n", level="execute")
-                self.execute_request(agent_process)
+                llm_syscall.set_status("executing")
+                self.logger.log(
+                    f"{llm_syscall.agent_name} is executing. \n", "execute"
+                )
+                llm_syscall.set_start_time(time.time())
+
+                response = self.llm.address_request(llm_syscall)
+                llm_syscall.set_response(response)
+
+                # self.llm.address_request(agent_request)
+
+                llm_syscall.event.set()
+                llm_syscall.set_status("done")
+                llm_syscall.set_end_time(time.time())
+
+                self.logger.log(
+                    f"Current request of {llm_syscall.agent_name} is done. Thread ID is {llm_syscall.get_pid()}\n",
+                    "done",
+                )
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
 
             except Empty:
                 pass
 
-    def execute_request(self, agent_request):
-        """ called in multiple threads """
-        self.llm.address_request(agent_request)
+            except Exception:
+                traceback.print_exc()
+
+    def run_memory_request(self):
+        while self.active:
+            try:
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+                agent_request = self.get_memory_request()
+
+                agent_request.set_status("executing")
+                self.logger.log(
+                    f"{agent_request.agent_name} is executing. \n", "execute"
+                )
+                agent_request.set_start_time(time.time())
+
+                response = self.memory_manager.address_request(agent_request)
+                agent_request.set_response(response)
+
+                # self.llm.address_request(agent_request)
+
+                agent_request.event.set()
+                agent_request.set_status("done")
+                agent_request.set_end_time(time.time())
+
+                self.logger.log(
+                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                    "done",
+                )
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()
+
+    def run_storage_request(self):
+        while self.active:
+            try:
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+                agent_request = self.get_memory_request()
+
+                agent_request.set_status("executing")
+                self.logger.log(
+                    f"{agent_request.agent_name} is executing. \n", "execute"
+                )
+                agent_request.set_start_time(time.time())
+
+                response = self.storage_manager.address_request(agent_request)
+                agent_request.set_response(response)
+
+                # self.llm.address_request(agent_request)
+
+                agent_request.event.set()
+                agent_request.set_status("done")
+                agent_request.set_end_time(time.time())
+
+                self.logger.log(
+                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                    "done",
+                )
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()
+
+    def run_tool_request(self):
+        while self.active:
+            try:
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+                agent_request = self.get_memory_request()
+
+                agent_request.set_status("executing")
+                self.logger.log(
+                    f"{agent_request.agent_name} is executing. \n", "execute"
+                )
+                agent_request.set_start_time(time.time())
+
+                response = self.tool_manager.address_request(agent_request)
+                agent_request.set_response(response)
+
+                # self.llm.address_request(agent_request)
+
+                agent_request.event.set()
+                agent_request.set_status("done")
+                agent_request.set_end_time(time.time())
+
+                self.logger.log(
+                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
+                    "done",
+                )
+                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
+
+            except Empty:
+                pass
+
+            except Exception:
+                traceback.print_exc()

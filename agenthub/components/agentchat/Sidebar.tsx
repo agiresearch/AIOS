@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { TextInput, ActionIcon, Tooltip } from '@mantine/core';
-import { Plus, Hash, Check, Edit2, X } from 'lucide-react';
+import { Plus, Hash, Check, Edit2, X, Trash2 } from 'lucide-react';
 import { Chat } from '@/interfaces/agentchat';
 
 
@@ -11,10 +11,11 @@ export interface SidebarProps {
     setActiveChat: (id: number) => void;
     addChat: () => void;
     updateChatName: (chatId: number, newName: string) => void;
+    deleteChat: (chatId: number) => void;
     darkMode: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveChat, addChat, updateChatName, darkMode }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveChat, addChat, updateChatName, deleteChat, darkMode }) => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState('');
   
@@ -40,10 +41,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
       }
     };
   
+    const handleDelete = (chatId: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (window.confirm('Are you sure you want to delete this channel?')) {
+        deleteChat(chatId);
+      }
+    };
+  
     return (
       <div className={`w-60 flex-shrink-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} p-3 flex flex-col`}>
         <div className={`p-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-lg mb-4`}>
-          <h2 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Your Workspace</h2>
+          <h2 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Your AIOS Workspace</h2>
         </div>
         
         <div className="flex-grow overflow-y-auto">
@@ -54,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
                 onClick={addChat} 
                 variant="subtle" 
                 color={darkMode ? "gray" : "dark"}
-                className="hover:bg-gray-600"
+                className="hover:bg-gray-600 cursor-pointer"
               >
                 <Plus size={16} />
               </ActionIcon>
@@ -63,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
           {chats.map((chat) => (
             <div
               key={chat.id}
-              className={`${channelStyle} ${chat.id === activeChat ? activeChannelStyle : inactiveChannelStyle}`}
+              className={`${channelStyle} group ${chat.id === activeChat ? activeChannelStyle : inactiveChannelStyle}`}
             >
               {editingId === chat.id ? (
                 <div className="flex items-center w-full">
@@ -89,16 +97,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
                     <Hash size={16} className="mr-2 flex-shrink-0" />
                     <span className="truncate">{chat.name}</span>
                   </div>
-                  <Tooltip label="Rename Channel" position="right">
-                    <ActionIcon 
-                      onClick={() => startEditing(chat)} 
-                      variant="subtle" 
-                      color={darkMode ? "gray" : "dark"}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    >
-                      <Edit2 size={14} />
-                    </ActionIcon>
-                  </Tooltip>
+                  <div className="flex items-center">
+                    <Tooltip label="Rename Channel" position="right">
+                      <ActionIcon 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEditing(chat);
+                        }} 
+                        variant="subtle" 
+                        color={darkMode ? "gray" : "dark"}
+                        size="sm"
+                        className="ml-1"
+                      >
+                        <Edit2 
+                          size={14} 
+                          className={darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-500"} 
+                        />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Delete Channel" position="right">
+                      <ActionIcon 
+                        onClick={(e) => handleDelete(chat.id, e)} 
+                        variant="subtle" 
+                        size="sm"
+                        className="ml-1"
+                      >
+                        <Trash2 
+                          size={14} 
+                          className="text-red-400 hover:text-red-300" 
+                        />
+                      </ActionIcon>
+                    </Tooltip>
+                  </div>
                 </>
               )}
             </div>
@@ -107,3 +137,5 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
       </div>
     );
   };
+
+export default Sidebar;

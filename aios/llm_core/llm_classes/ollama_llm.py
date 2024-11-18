@@ -35,9 +35,9 @@ class OllamaLLM(BaseLLM):
         """ simple wrapper around ollama functions """
         agent_request.set_status("executing")
         agent_request.set_start_time(time.time())
-        messages = agent_request.query.messages
-        tools = agent_request.query.tools
-        message_return_type = agent_request.query.message_return_type
+        messages = agent_request.request_data.messages
+        tools = agent_request.request_data.tools
+        message_return_type = agent_request.request_data.message_return_type
         self.logger.log(
             f"{agent_request.agent_name} is switched to executing.\n",
             level = "executing"

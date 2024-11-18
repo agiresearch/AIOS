@@ -27,14 +27,16 @@ class LLM:
                  eval_device: str = None,
                  max_new_tokens: int = 256,
                  log_mode: str = "console",
-                 use_backend: str = None
+                 use_backend: str = None,
+                 use_context_manager: bool = False
         ):
 
         # For API-based LLM
         if llm_name in MODEL_REGISTRY.keys():
             self.model = MODEL_REGISTRY[llm_name](
                 llm_name = llm_name,
-                log_mode = log_mode
+                log_mode = log_mode,
+                use_context_manager = use_context_manager
             )
         # For locally-deployed LLM
         else:
@@ -64,8 +66,8 @@ class LLM:
                     log_mode=log_mode
                 )
 
-    def address_request(self,
-                        agent_request,
+    def address_syscall(self,
+                        llm_syscall,
                         temperature=0.0) -> None:
         """Address request sent from the agent
 
@@ -73,4 +75,4 @@ class LLM:
             agent_request: AgentProcess object that contains request sent from the agent
             temperature (float, optional): Parameter to control the randomness of LLM output. Defaults to 0.0.
         """
-        return self.model.address_request(agent_request, temperature)
+        return self.model.address_syscall(llm_syscall, temperature)

@@ -51,19 +51,19 @@ class vLLM(BaseLLM):
             max_tokens=self.max_new_tokens,
         )
 
-    def process(self,
-                agent_request,
+    def address_syscall(self,
+                llm_syscall,
                 temperature=0.0) -> None:
-        agent_request.set_status("executing")
-        agent_request.set_start_time(time.time())
+        llm_syscall.set_status("executing")
+        llm_syscall.set_start_time(time.time())
         self.logger.log(
-            f"{agent_request.agent_name} is switched to executing.\n",
+            f"{llm_syscall.agent_name} is switched to executing.\n",
             level = "executing"
         )
 
-        messages = agent_request.query.messages
-        tools = agent_request.query.tools
-        message_return_type = agent_request.query.message_return_type
+        messages = llm_syscall.request_data.messages
+        tools = llm_syscall.request_data.tools
+        message_return_type = llm_syscall.request_data.message_return_type
 
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
@@ -86,14 +86,14 @@ class vLLM(BaseLLM):
                 result
             )
             if tool_calls:
-                agent_request.set_response(
+                llm_syscall.set_response(
                     Response(
                         response_message = None,
                         tool_calls = tool_calls
                     )
                 )
             else:
-                agent_request.set_response(
+                llm_syscall.set_response(
                     Response(
                         response_message = result
                     )
@@ -114,12 +114,12 @@ class vLLM(BaseLLM):
             if message_return_type == "json":
                 result = self.parse_json_format(result)
 
-            agent_request.set_response(
+            llm_syscall.set_response(
                 Response(
                     response_message=result
                 )
             )
 
-        agent_request.set_status("done")
+        llm_syscall.set_status("done")
 
-        agent_request.set_end_time(time.time())
+        llm_syscall.set_end_time(time.time())

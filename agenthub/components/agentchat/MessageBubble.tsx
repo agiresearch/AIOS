@@ -36,7 +36,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, darkMode,
           </span>
         </div>
         <div className={`mt-1 text-sm break-words ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-          {isThinking ? <AgentLoader /> : <Markdown content={message.text} darkMode={darkMode} />}
+          {isThinking ? <AgentLoader /> : <Markdown content={message.text} darkMode={darkMode} animation={message.sender === 'user' ? false : true} />}
         </div>
       </div>
     </div>

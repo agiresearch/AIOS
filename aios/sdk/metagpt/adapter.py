@@ -2,10 +2,10 @@
 # Adapte metagpt to run LLM in aios
 from typing import Union, Optional
 from aios.utils.logger import SDKLogger
-from pyopenagi.utils.chat_template import Query
+from pyopenagi.utils.chat_template import LLMQuery
 from .config_adapter import prepare_metagpt_config
 from ..adapter import add_framework_adapter
-from ...hooks.request import send_request
+from ...hooks.syscall import send_request
 
 try:
     from metagpt.provider.base_llm import BaseLLM
@@ -74,7 +74,7 @@ async def adapter_acompletion_text(
     # call aios for response
     response, _, _, _, _ = send_request(
         agent_name="MetaGPT",
-        query=Query(
+        query=LLMQuery(
             messages=messages,
             tools=None
         )

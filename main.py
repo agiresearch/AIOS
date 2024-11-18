@@ -7,7 +7,7 @@ from aios.utils.utils import (
 import os
 import warnings
 
-from aios.hooks.llm import aios_starter
+from aios.hooks.starter import aios_starter
 
 from aios.utils.utils import delete_directories
 from dotenv import load_dotenv
@@ -37,7 +37,7 @@ def main():
         # register your agents and submit agent tasks
 
         agent_tasks = [
-            ["example/academic_agent", "Tell me what is the prollm paper mainly about"],
+            ["example/academic_agent", "Tell me what is the prollm paper mainly about? "],
             # [
             #     "example/cocktail_mixlogist",
             #     "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices.",
