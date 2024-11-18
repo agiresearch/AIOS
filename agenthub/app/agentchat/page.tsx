@@ -95,7 +95,7 @@ const ChatInterface: React.FC = () => {
   const handleSend = async (content: string, attachments: File[]) => {
     if (content.trim() || attachments.length > 0) {
       const newMessage: Message = {
-        id: generateSixDigitId(),
+        id: `${generateSixDigitId()}`,
         text: content,
         sender: 'user',
         timestamp: new Date(),
