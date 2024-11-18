@@ -19,11 +19,11 @@ The goal of AIOS is to build a Large Language Model (LLM) agent operating system
 <img src="docs/assets/aios-figs/scheduler.jpg">
 </p>
 
-AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
+AIOS provides the AIOS kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
-- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios.readthedocs.io/).
-- **[2024-07-10]** 📖 AIOS documentation template is up: [Code](https://github.com/agiresearch/AIOS/tree/main/docs) and [Website](https://aios.readthedocs.io/).
+- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios-3.gitbook.io/aios-docs/aios-agent/how-to-develop-agents).
+- **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://aios-3.gitbook.io/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
@@ -35,9 +35,10 @@ AIOS provides the LLM kernel as an abstraction on top of the OS kernel. The kern
 
 
 ## ✈️ Getting Started
-Please see our ongoing [documentation](https://aios.readthedocs.io/en/latest/) for more information.
-- [Installation](https://aios.readthedocs.io/en/latest/get_started/installation.html)
-- [Quickstart](https://aios.readthedocs.io/en/latest/get_started/quickstart.html)
+Please see our ongoing [documentation](https://aios-3.gitbook.io/) for more information.
+- [Installation](https://aios-3.gitbook.io/aios-docs/getting-started/installation)
+- [Quickstart](https://aios-3.gitbook.io/aios-docs/getting-started/quickstart)
+- [WebUI Quickstart](https://aios-3.gitbook.io/aios-docs/getting-started/webui-quickstart)
 
 ### Installation
 
