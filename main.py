@@ -37,7 +37,7 @@ def main():
         # register your agents and submit agent tasks
 
         agent_tasks = [
-            ["example/academic_agent", "Tell me what is the prollm paper mainly about"],
+            ["example/academic_agent", "Tell me what is the prollm paper mainly about? "],
             # [
             #     "example/cocktail_mixlogist",
             #     "Create a cocktail for a summer garden party. Guests enjoy refreshing, citrusy flavors. Available ingredients include vodka, gin, lime, lemon, mint, and various fruit juices.",

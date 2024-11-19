@@ -18,7 +18,7 @@ const Examples = [
       author_url: 'https://github.com/vercel',
       author_img: 'https://avatars.githubusercontent.com/u/14985020',
       repo_name: 'vercel/nextjs-subscription-payments',
-      repo_url: 'https://my.aios.foundation/agents',
+      repo_url: 'http://localhost:3000/agents',
       vercel_deploy_url:
         'https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments&env=NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,STRIPE_SECRET_KEY&envDescription=Enter%20your%20Stripe%20API%20keys.&envLink=https%3A%2F%2Fdashboard.stripe.com%2Fapikeys&project-name=nextjs-subscription-payments&repository-name=nextjs-subscription-payments&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnextjs-subscription-payments%2Ftree%2Fmain',
       demo_url: 'https://subscription-payments.vercel.app/',
@@ -49,7 +49,7 @@ const BuiltWithSupabase = () => {
         <div className="text-2xl pt-6">
           Try out our many features
         </div>
-     
+
       </div>
       <div className="mt-16 grid grid-cols-12 gap-5">
         {Examples.slice(0, 2).map((example: any, i: number) => {

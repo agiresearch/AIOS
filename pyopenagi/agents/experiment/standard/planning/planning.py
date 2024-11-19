@@ -47,7 +47,8 @@ class DefaultPlanning(Planning):
             }
             return result
 
-        if code_info := extract_code(response_message):
+        code_info = extract_code(response_message)
+        if not all(info is None for info in code_info):
             # action code
             result.action_type = "CODE"
             result.action_param = {

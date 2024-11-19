@@ -20,9 +20,15 @@ class GPTLLM(BaseLLM):
         eval_device: str = None,
         max_new_tokens: int = 1024,
         log_mode: str = "console",
+        use_context_manager: bool = False,
     ):
         super().__init__(
-            llm_name, max_gpu_memory, eval_device, max_new_tokens, log_mode
+            llm_name,
+            max_gpu_memory,
+            eval_device,
+            max_new_tokens,
+            log_mode,
+            use_context_manager,
         )
 
     def load_llm_and_tokenizer(self) -> None:
@@ -46,57 +52,91 @@ class GPTLLM(BaseLLM):
             return parsed_tool_calls
         return None
 
-    def process(self, agent_request, temperature=0.0):
+    def address_syscall(self, llm_syscall, temperature=0.0):
         # ensures the model is the current one
         assert re.search(r"gpt", self.model_name, re.IGNORECASE)
 
         """ wrapper around openai api """
-        agent_request.set_status("executing")
-        agent_request.set_start_time(time.time())
-        messages = agent_request.query.messages
+        llm_syscall.set_status("executing")
+        llm_syscall.set_start_time(time.time())
 
         try:
-            response = self.model.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                tools=agent_request.query.tools,
-                # tool_choice = "required" if agent_request.request_data.tools else None,
-                max_tokens=self.max_new_tokens,
-            )
-            response_message = response.choices[0].message.content
-            # print(f"[Response] {response}")
-            tool_calls = self.parse_tool_calls(response.choices[0].message.tool_calls)
-            # print(tool_calls)
-            # print(response.choices[0].message)
-            response = Response(
-                response_message=response_message, tool_calls=tool_calls
-            )
+            if self.use_context_manager:
+                response = self.llm_generate(llm_syscall)
+            else:
+                query = llm_syscall.query
+                # print(query)
+                response = self.model.chat.completions.create(
+                    model=self.model_name,
+                    messages=query.messages,
+                    tools=query.tools,
+                    # tool_choice = "required" if agent_request.request_data.tools else None,
+                    max_tokens=self.max_new_tokens,
+                )
+
+                response_message = response.choices[0].message.content
+
+                # print(response_message)
+                tool_calls = self.parse_tool_calls(
+                    response.choices[0].message.tool_calls
+                )
+
+                response = Response(
+                    response_message=response_message,
+                    tool_calls=tool_calls,
+                    finished=True,
+                )
+                print(response)
 
         except openai.APIConnectionError as e:
-
             response = Response(
-                response_message=f"Server connection error: {e.__cause__}"
+                response_message=f"Server connection error: {e.__cause__}",
             )
 
         except openai.RateLimitError as e:
-
             response = Response(
-                response_message=f"OpenAI RATE LIMIT error {e.status_code}: (e.response)"
+                response_message=f"OpenAI RATE LIMIT error {e.status_code}: (e.response)",
+                finished=True
             )
 
         except openai.APIStatusError as e:
             response = Response(
-                response_message=f"OpenAI STATUS error {e.status_code}: (e.response)"
+                response_message=f"OpenAI STATUS error {e.status_code}: (e.response)",
+                finished=True
             )
 
         except openai.BadRequestError as e:
-
             response = Response(
-                response_message=f"OpenAI BAD REQUEST error {e.status_code}: (e.response)"
+                response_message=f"OpenAI BAD REQUEST error {e.status_code}: (e.response)",
+                finished=True
             )
 
         except Exception as e:
-            response = Response(response_message=f"An unexpected error occurred: {e}")
+            response = Response(response_message=f"An unexpected error occurred: {e}",finished=True)
 
         return response
-        
+
+    def llm_generate(self, llm_syscall, temperature=0.0):
+        query = llm_syscall.query
+        if self.context_manager.check_restoration(llm_syscall.get_pid()):
+            restored_context = self.context_manager.gen_recover(llm_syscall.get_pid())
+
+        start_time = time.time()
+        stream = self.model.chat.completions.create(
+            model=self.model_name,
+            messages=query.messages
+            + [{"role": "assistant", "content": "" + restored_context}],
+            stream=True,
+            tools=query.tools,
+            max_tokens=self.max_new_tokens,
+        )
+
+        result = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                result += chunk.choices[0].delta.content
+            end_time = time.time()
+            if end_time - start_time >= llm_syscall.get_time_limit():
+                self.context_manager.gen_snapshot(result)
+                response = Response(response_message=result, finished=False)
+                return response

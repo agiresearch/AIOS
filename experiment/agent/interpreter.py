@@ -4,10 +4,10 @@ import re
 from interpreter import interpreter
 
 from aios.sdk import prepare_framework, FrameworkType
-from experiment.agent.experiment_agent import ExpirementAgent
+from experiment.agent.experiment_agent import ExperimentAgent
 
 
-class InterpreterAgent(ExpirementAgent):
+class InterpreterAgent(ExperimentAgent):
 
     SYSTEM_PROMPT_WRITE = """\n You can try writing some code to solve the problem, but please note that you are not in the
     problem repository. Must write your final patch into patch.diff. If code is hard to run, just write the patch you
@@ -61,9 +61,9 @@ class InterpreterAgent(ExpirementAgent):
         return result_content
 
 
-class InterpreterAgentHumanEval(ExpirementAgent):
+class InterpreterAgentHumanEval(ExperimentAgent):
 
-    SYSTEM_PROMPT = """You are an expert good at solving code problems. 
+    SYSTEM_PROMPT = """You are an expert good at solving code problems.
     You will receive a function definition and comments. You need to help me complete this function.
     Give me final output in the format:
     <FINAL ANSWER>

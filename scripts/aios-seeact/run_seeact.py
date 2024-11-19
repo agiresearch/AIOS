@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 import os
 import sys
-# Add AIOS path
-aios_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, aios_root)
+import warnings
+import asyncio
 from aios.utils.utils import (
     parse_global_args,
     delete_directories
 )
-import warnings
-from aios.hooks.llm import aios_starter
+from aios.hooks.starter import aios_starter
 from dotenv import load_dotenv
-import asyncio
+
+# Add AIOS path
+aios_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, aios_root)
+
 
 def clean_cache(root_directory):
     targets = {
@@ -21,6 +23,7 @@ def clean_cache(root_directory):
         "context_restoration",
     }
     delete_directories(root_directory, targets)
+
 
 def main():
     main_id = os.getpid()
@@ -66,6 +69,7 @@ def main():
             print(f"Task result: {result}")
 
     clean_cache(root_directory="./")
+
 
 if __name__ == "__main__":
     main()

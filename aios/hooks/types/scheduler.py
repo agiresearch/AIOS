@@ -1,10 +1,12 @@
+from typing import Any
+
 from pydantic import BaseModel
-from typing import Any, TypeAlias, Callable
 
 from .llm import LLMRequestQueueGetMessage
 from .memory import MemoryRequestQueueGetMessage
 from .storage import StorageRequestQueueGetMessage
 from .tool import ToolRequestQueueGetMessage
+
 
 class SchedulerParams(BaseModel):
     llm: Any
@@ -12,7 +14,7 @@ class SchedulerParams(BaseModel):
     storage_manager: Any
     tool_manager: Any
     log_mode: str
-    get_llm_request: LLMRequestQueueGetMessage | None
-    get_memory_request: MemoryRequestQueueGetMessage | None
-    get_storage_request: StorageRequestQueueGetMessage | None
-    get_tool_request: ToolRequestQueueGetMessage | None
+    get_llm_syscall: LLMRequestQueueGetMessage | None
+    get_memory_syscall: MemoryRequestQueueGetMessage | None
+    get_storage_syscall: StorageRequestQueueGetMessage | None
+    get_tool_syscall: ToolRequestQueueGetMessage | None

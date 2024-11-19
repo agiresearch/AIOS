@@ -26,9 +26,10 @@ class ToolManager:
                 tool_result = tool.run(params=tool_params)
 
                 self.tool_conflict_map.pop(tool_org_and_name)
-                
+
                 return Response(
-                    response_message=tool_result
+                    response_message=tool_result,
+                    finished=True
                 )
 
     def load_tool_instance(self, tool_org_and_name):

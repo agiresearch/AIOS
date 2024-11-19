@@ -1,9 +1,11 @@
 import time
-from pyopenagi.utils.logger import AgentLogger
+
 from seeact.agent import SeeActAgent as SeeActCore
-from seeact.demo_utils.inference_engine import Engine
-from pyopenagi.utils.chat_template import Query
-from aios.hooks.request import send_request
+
+from aios.hooks.syscall import send_request
+from pyopenagi.utils.chat_template import LLMQuery
+from pyopenagi.utils.logger import AgentLogger
+
 
 class SeeActAgent:
     def __init__(self, agent_name, task_input, log_mode: str):
@@ -29,7 +31,7 @@ class SeeActAgent:
         )
 
         # Replace the generate method
-        def custom_generate(self_engine, prompt: list = None, max_new_tokens=4096, temperature=None, 
+        def custom_generate(self_engine, prompt: list = None, max_new_tokens=4096, temperature=None,
                           model=None, image_path=None, ouput_0=None, turn_number=0, **kwargs):
             try:
                 # Keep the original rate limiting logic
@@ -59,14 +61,14 @@ class SeeActAgent:
                     ]
 
                 # Use correct message format and return value handling
-                response, start_times, end_times, waiting_times, turnaround_times = send_request(
+                response = send_request(
                     agent_name=agent_name,
-                    query=Query(
+                    query=LLMQuery(
                         messages=prompt_input,
                         tools=None,
                         message_return_type="json"
                     )
-                )
+                )["response"]
 
                 # Update rate limiting time
                 if self_engine.request_interval > 0:
@@ -76,14 +78,14 @@ class SeeActAgent:
                     )
 
                 return response.response_message
-                
+
             except Exception as e:
                 print(f"Error in generate: {str(e)}")
                 raise
 
         # Replace the engine's generate method
         self.seeact.engine.generate = custom_generate.__get__(self.seeact.engine)
-        
+
         self.start_time = None
         self.end_time = None
         self.created_time = time.time()
@@ -92,7 +94,7 @@ class SeeActAgent:
         try:
             self.start_time = time.time()
             await self.seeact.start()
-            
+
             while not self.seeact.complete_flag:
                 try:
                     prediction_dict = await self.seeact.predict()
@@ -100,16 +102,16 @@ class SeeActAgent:
                         await self.seeact.execute(prediction_dict)
                 except Exception as e:
                     self.logger.log(f"Error occurred: {e}", "info")
-            
+
             await self.seeact.stop()
             self.end_time = time.time()
-            
+
             return {
                 "agent_name": self.agent_name,
                 "result": "Task completed",
                 "turnaround_time": self.end_time - self.start_time
             }
-            
+
         except Exception as e:
             self.logger.log(f"Error in run method: {str(e)}", "info")
             return {

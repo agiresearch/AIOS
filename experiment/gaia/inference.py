@@ -3,9 +3,10 @@ import re
 from typing import List
 
 from datasets import load_dataset
+
 from aios.hooks.starter import aios_starter
-from experiment.agent.experiment_agent import ExpirementAgent
-from experiment.experiment_core import MetaData, run_inference, AGENT_TYPE_MAPPING_AIOS, logger
+from experiment.agent.experiment_agent import ExperimentAgent
+from experiment.experiment_core import MetaData, AGENT_TYPE_MAPPING_AIOS, logger
 from experiment.utils import get_args
 
 
@@ -18,7 +19,7 @@ def write_output_func(result_list: List, output_file: str):
 def process_one_func(data, meta_data: MetaData):
     if meta_data.on_aios:
         with aios_starter(**meta_data.aios_args):
-            agent: ExpirementAgent = AGENT_TYPE_MAPPING_AIOS[meta_data.agent_type](meta_data.on_aios)
+            agent: ExperimentAgent = AGENT_TYPE_MAPPING_AIOS[meta_data.agent_type](meta_data.on_aios)
             result = agent.run(data["Question"])
 
             match = re.search(r'FINAL ANSWER: (.+)', result)
@@ -31,7 +32,7 @@ def process_one_func(data, meta_data: MetaData):
             }
             return prediction
     else:
-        agent: ExpirementAgent = AGENT_TYPE_MAPPING_AIOS[meta_data.agent_type](meta_data.on_aios)
+        agent: ExperimentAgent = AGENT_TYPE_MAPPING_AIOS[meta_data.agent_type](meta_data.on_aios)
         result = agent.run(data["Question"])
 
         match = re.search(r'FINAL ANSWER: (.+)', result)
@@ -51,17 +52,19 @@ if __name__ == '__main__':
     agent_type = "gaia:" + main_args.agent_type
     dataset = load_dataset(main_args.data_name, "2023_all", split=main_args.split)
 
-    meta = MetaData(
-        dataset=dataset,
-        agent_type=agent_type,
-        output_file=main_args.output_file,
-        on_aios=main_args.on_aios,
-        max_num=main_args.max_num,
-        aios_args=vars(global_args),
-    )
+    print(dataset[:1])
 
-    run_inference(
-        meta_data=meta,
-        process_one_func=process_one_func,
-        write_output_func=write_output_func,
-    )
+    # meta = MetaData(
+    #     dataset=dataset,
+    #     agent_type=agent_type,
+    #     output_file=main_args.output_file,
+    #     on_aios=main_args.on_aios,
+    #     max_num=main_args.max_num,
+    #     aios_args=vars(global_args),
+    # )
+
+    # run_inference(
+    #     meta_data=meta,
+    #     process_one_func=process_one_func,
+    #     write_output_func=write_output_func,
+    # )

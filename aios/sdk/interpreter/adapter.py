@@ -6,7 +6,7 @@ import sys
 from aios.hooks.syscall import send_request
 from aios.sdk.adapter import add_framework_adapter
 from aios.utils.logger import SDKLogger
-from pyopenagi.utils.chat_template import Query
+from pyopenagi.utils.chat_template import LLMQuery
 from dataclasses import dataclass
 
 try:
@@ -66,13 +66,13 @@ def adapter_aios_completions(**params):
 
     for attempt in range(attempts):
         try:
-            response, _, _, _, _ = send_request(
+            response = send_request(
                 agent_name="Open-Interpreter",
-                query=Query(
+                query=LLMQuery(
                     messages=params['messages'],
                     tools=(params["tools"] if "tools" in params else None)
                 )
-            )
+            )["response"]
 
             # format similar to completion in interpreter
             comletion = {'choices':

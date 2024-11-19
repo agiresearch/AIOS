@@ -26,7 +26,7 @@ class LocalCodeEnvironment(CodeEnvironment):
             requirement_list (List[str]): The list of requirement commands(Format like `pip install numpy`).
 
         """
-        if len(requirement_list) == 0:
+        if requirement_list is None:
             return
 
         for requirement in requirement_list:
@@ -57,8 +57,9 @@ class LocalCodeEnvironment(CodeEnvironment):
             str: The result of the code execution.
         """
         # Create temp file, write python code into temp file, then execute it
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=True) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=True) as temp_file:
             temp_file.write(code_block)
+            temp_file.flush()
             try:
                 exec_res = subprocess.run(
                     ["python", temp_file.name],

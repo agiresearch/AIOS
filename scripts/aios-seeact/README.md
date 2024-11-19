@@ -64,7 +64,7 @@ DEFAULT_SETTINGS = {
 ```
 
 ## Implementation Notes
-- Uses GPT-4O for web interaction and visual understanding
+- Uses GPT-4o for web interaction and visual understanding
 - Runs in headless mode by default
 - Uses Google as the default starting website
 - Automated web interaction capabilities

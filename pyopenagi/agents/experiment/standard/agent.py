@@ -1,8 +1,8 @@
 import time
 from typing import List
 from aios.hooks.syscall import send_request
-from pyopenagi.agents.experiment.standard.action.action_code import ActionCode
-from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
+from pyopenagi.agents.experiment.standard.action.code import ActionCode
+from pyopenagi.agents.experiment.standard.action.tool import ActionTool
 from pyopenagi.agents.experiment.standard.environment.code_environment import LocalCodeEnvironment
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
 from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning
@@ -137,7 +137,10 @@ class StandardAgent:
                 action_param = planning_result.action_param
                 response, tool_call_id = action(**action_param)
 
-                self.short_term_memory.remember("assistant", response, tool_call_id)
+                if planning_result.text_content:
+                    self.short_term_memory.remember("assistant", planning_result.text_content)
+                    self.log_last_message()
+                self.short_term_memory.remember("user", response, tool_call_id)
 
             else:
                 response = planning_result.text_content
@@ -156,7 +159,7 @@ class StandardAgent:
             agent_name=self.agent_name,
             query=LLMQuery(
                 messages=messages,
-                tools=tools,
+                tools=tools if tools else None,
             )
         )
 

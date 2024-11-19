@@ -1,24 +1,20 @@
-from threading import Thread, Lock, Event
-from typing import Mapping
-
-import random
 import time
+from threading import Thread, Event
+
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
     global_storage_req_queue_add_message,
     global_tool_req_queue_add_message,
 )
+from pyopenagi.utils.chat_template import Request, LLMQuery, MemoryQuery, StorageQuery, ToolQuery
 
+
+class Message(Request):
+    pass
 
 class Syscall(Thread):
-    def __init__(self, agent_name, query):
-        """Agent Process
-
-        Args:
-            agent_name (str): Name of the agent
-            query (Query): Query sent by the agent
-        """
+    def __init__(self, agent_name, query: Request):
         super().__init__()
         self.agent_name = agent_name
         self.query = query
@@ -103,29 +99,33 @@ class StorageSyscall(Syscall):
 
 
 class ToolSyscall(Syscall):
-    def __init__(self, agent_name, query):
-        super().__init__(agent_name, query)
-        self.tool_calls = query
+    def __init__(self, agent_name, request):
+        super().__init__(agent_name, request)
+        self.tool_calls = request
 
 
 def send_request(agent_name, query):
-    action_type = query.action_type
+    if isinstance(query, LLMQuery):
+        action_type = query.action_type
 
-    if action_type == "chat":
-        return llm_syscall_exec(agent_name, query)
+        if action_type == "chat":
+            return llm_syscall_exec(agent_name, query)
 
-    elif action_type == "tool_use":
-        response = llm_syscall_exec(agent_name, query)["response"]
-        tool_calls = response.tool_calls
-        return tool_syscall_exec(agent_name, tool_calls)
+        elif action_type == "tool_use":
+            response = llm_syscall_exec(agent_name, query)["response"]
+            tool_calls = response.tool_calls
+            return tool_syscall_exec(agent_name, tool_calls)
 
-    elif action_type == "operate_file":
-        return storage_syscall_exec(llm_syscall_exec(agent_name, query))
+        elif action_type == "operate_file":
+            return storage_syscall_exec(llm_syscall_exec(agent_name, query))
 
-    elif action_type == "memory_use":
-        return mem_syscall(agent_name, query)
+    elif isinstance(query, ToolQuery):
+        return tool_syscall_exec(agent_name, query)
 
-    elif action_type == "storage_use":
+    elif isinstance(query, MemoryQuery):
+        return mem_syscall_exec(agent_name, query)
+
+    elif isinstance(query, StorageQuery):
         return storage_syscall_exec(agent_name, query)
 
 
@@ -173,7 +173,7 @@ def storage_syscall_exec(agent_name, query):
     }
 
 
-def mem_syscall(agent_name, query):
+def mem_syscall_exec(agent_name, query):
     syscall = MemSyscall(agent_name, query)
     syscall.set_status("active")
 

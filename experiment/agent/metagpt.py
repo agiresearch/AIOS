@@ -1,10 +1,10 @@
 from metagpt.software_company import generate_repo, ProjectRepo
 
 from aios.sdk.metagpt.adapter import prepare_metagpt
-from experiment.agent.experiment_agent import ExpirementAgent
+from experiment.agent.experiment_agent import ExperimentAgent
 
 
-class MetaGPTAgent(ExpirementAgent):
+class MetaGPTAgent(ExperimentAgent):
 
     def __init__(self):
         prepare_metagpt()
