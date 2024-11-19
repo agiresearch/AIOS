@@ -1,19 +1,14 @@
-import argparse
+import warnings
 from typing import List, Tuple
 
-from fastapi import Depends
+from dotenv import load_dotenv
 
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.scheduler import useFIFOScheduler
-from aios.utils.utils import delete_directories, humanify_agent, parse_global_args
 from aios.utils.state import useGlobalState
-
-from pyopenagi.agents.interact import Interactor
+from aios.utils.utils import delete_directories, parse_global_args
 from pyopenagi.manager.manager import AgentManager
-
-from dotenv import load_dotenv
-import warnings
 
 # load the args
 warnings.filterwarnings("ignore")

@@ -1,24 +1,19 @@
-from abc import ABC, abstractmethod
+from pyopenagi.agents.experiment.standard.memory.memory import Memory
 
 
-class Memory(ABC):
+class AIOSMemory(Memory):
 
-    @abstractmethod
     def add(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     def query(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     def update(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     def delete(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     def compress(self, *args, **kwargs):
         pass

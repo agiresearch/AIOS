@@ -23,7 +23,7 @@ class BaseLLM(ABC):
 
         self.load_llm_and_tokenizer()
 
-        
+
 
     def convert_map(self, map: dict) -> dict:
         """ helper utility to convert the keys of a map to int """

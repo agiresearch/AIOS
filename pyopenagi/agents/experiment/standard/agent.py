@@ -1,18 +1,20 @@
 import time
 from typing import List
-from aios.hooks.request import send_request
-from pyopenagi.agents.experiment.standard.action.action_tool import ActionTool
+from aios.hooks.syscall import send_request
+from pyopenagi.agents.experiment.standard.action.code import ActionCode
+from pyopenagi.agents.experiment.standard.action.tool import ActionTool
+from pyopenagi.agents.experiment.standard.environment.code_environment import LocalCodeEnvironment
 from pyopenagi.agents.experiment.standard.memory.short_term_memory import ShortTermMemory
 from pyopenagi.agents.experiment.standard.planning.planning import Planning, DefaultPlanning
 from pyopenagi.agents.experiment.standard.prompt.framework_prompt import STANDARD_PROMPT
 from pyopenagi.agents.experiment.standard.utils.config import load_config
-from pyopenagi.utils.chat_template import Query, Response
+from pyopenagi.utils.chat_template import LLMQuery, Response
 from pyopenagi.utils.logger import AgentLogger
 
 
 class StandardAgent:
 
-    def __init__(self, agent_name: str, task_input: str, log_mode: str):
+    def __init__(self, agent_name: str, task_input: str, log_mode: str = "console"):
         # Init module
         self.planning: Planning | None = None
         self.actions = {}
@@ -51,10 +53,17 @@ class StandardAgent:
         else:
             return None
 
+    def _is_terminate(self):
+        return self.custom_terminate()
+
+    def custom_terminate(self) -> bool:
+        pass
+
     def custom_prompt(self) -> str:
         pass
 
     def _init_framework_prompt(self):
+        self.init_module()
         # Action
         action_prompt = self._action_prompt()
         planning_prompt = self._planning_prompt()
@@ -62,14 +71,16 @@ class StandardAgent:
         framework_prompt = STANDARD_PROMPT.format(
             action=action_prompt,
             planning=planning_prompt,
+            memory="",
+            communication=""
         )
 
         self.short_term_memory.remember(role="system", content=framework_prompt)
 
     def _action_prompt(self) -> str:
         action_prompt = ""
-        for action in self.actions:
-            if action.disply:
+        for action in self.actions.values():
+            if action.display:
                 name = action.format_prompt()["name"]
                 description = action.format_prompt()["description"]
                 action_prompt += f"- {name}: {description}\n"
@@ -85,10 +96,11 @@ class StandardAgent:
         return planning_prompt
 
     def init_module(self):
-        return
+        self.init_planning()
+        self.init_actions()
 
-    def init_planning(self, planning):
-        self.planning = planning
+    def init_planning(self):
+        self.planning = DefaultPlanning(self.request)
 
     def init_communication(self, communication):
         return
@@ -96,62 +108,71 @@ class StandardAgent:
     def init_memory(self, memory):
         return
 
-    def init_actions(self, actions):
-        action_tool = ActionTool()
-        self.actions[action_tool.type] = action_tool
+    def init_actions(self):
+        # Tool
+        tool = ActionTool(config=self.config)
 
-    def planning(self) -> dict:
-        # Select suitable messages
-        messages = self.short_term_memory.recall()
+        # Code
+        environment = LocalCodeEnvironment()
+        code = ActionCode(environment=environment)
 
-        planning = DefaultPlanning(self.request)
-        result = planning(messages, self.tools_format)
-
-        return result
+        self.actions[tool.type] = tool
+        self.actions[code.type] = code
 
     def run(self):
         # Init system prompt and task
         if custom_prompt := self.custom_prompt():
             self.short_term_memory.remember("system", custom_prompt)
+            self.log_last_message()
         self.short_term_memory.remember("user", self.task_input)
+        self.log_last_message()
 
         while not self._is_terminate():
             # Run planning
-            planning_result = self.planning()
+            messages = self.short_term_memory.recall()
+            planning_result = self.planning(messages, self.tools_format)
+
             if action_type := planning_result.action_type:
                 action = self.actions[action_type]
                 action_param = planning_result.action_param
                 response, tool_call_id = action(**action_param)
-                self.short_term_memory.remember("assistant", response, tool_call_id)
+
+                if planning_result.text_content:
+                    self.short_term_memory.remember("assistant", planning_result.text_content)
+                    self.log_last_message()
+                self.short_term_memory.remember("user", response, tool_call_id)
+
             else:
                 response = planning_result.text_content
                 self.short_term_memory.remember("assistant", response)
 
-    def _is_terminate(self):
-        return True if "TERMINATE" in self.short_term_memory.last_message else False
+            self.log_last_message()
+
+        return {
+            "agent_name": self.agent_name,
+            "result": self.short_term_memory.last_message()["content"],
+            "rounds": self.rounds,
+        }
 
     def request(self, messages: List, tools: List) -> Response:
-        (
-            response,
-            start_times,
-            end_times,
-            waiting_times,
-            turnaround_times
-        ) = send_request(
+        response = send_request(
             agent_name=self.agent_name,
-            query=Query(
+            query=LLMQuery(
                 messages=messages,
-                tools=tools,
-                action_type="message_llm",
+                tools=tools if tools else None,
             )
         )
 
         # Update AIOS monitor info
         if self.rounds == 0:
-            self.start_time = start_times[0]
+            self.start_time = response["start_times"][0]
 
-        self.request_waiting_times.extend(waiting_times)
-        self.request_turnaround_times.extend(turnaround_times)
+        self.request_waiting_times.extend(response["waiting_times"])
+        self.request_turnaround_times.extend(response["turnaround_times"])
         self.rounds += 1
 
-        return response
+        return response["response"]
+
+    def log_last_message(self):
+        log_content = self.short_term_memory.last_message()["content"]
+        self.logger.log(f"\n{log_content}\n", "info")

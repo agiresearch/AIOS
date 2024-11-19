@@ -1,14 +1,12 @@
+import json
 import re
-import time
-
-# could be dynamically imported similar to other models
-from openai import OpenAI
 
 from cerebrum.llm.base import BaseLLM
 from cerebrum.utils.chat import Query, Response
 
 import openai
-import json
+# could be dynamically imported similar to other models
+from openai import OpenAI
 
 
 class GPTLLM(BaseLLM):

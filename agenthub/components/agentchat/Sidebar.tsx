@@ -18,49 +18,49 @@ export interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveChat, addChat, updateChatName, deleteChat, darkMode }) => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState('');
-  
+
     const categoryStyle = "text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 mt-4 px-2 flex justify-between items-center";
     const channelStyle = `flex items-center justify-between rounded px-2 py-1.5 text-sm font-medium transition-colors duration-200 ease-in-out cursor-pointer`;
     const activeChannelStyle = darkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-gray-900';
     const inactiveChannelStyle = darkMode ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200' : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900';
-  
+
     const startEditing = (chat: Chat) => {
       setEditingId(chat.id);
       setEditingName(chat.name);
     };
-  
+
     const cancelEditing = () => {
       setEditingId(null);
       setEditingName('');
     };
-  
+
     const saveEditing = () => {
       if (editingId !== null && editingName.trim() !== '') {
         updateChatName(editingId, editingName.trim());
         setEditingId(null);
       }
     };
-  
+
     const handleDelete = (chatId: number, e: React.MouseEvent) => {
       e.stopPropagation();
       if (window.confirm('Are you sure you want to delete this channel?')) {
         deleteChat(chatId);
       }
     };
-  
+
     return (
       <div className={`w-60 flex-shrink-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} p-3 flex flex-col`}>
         <div className={`p-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-lg mb-4`}>
           <h2 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Your AIOS Workspace</h2>
         </div>
-        
+
         <div className="flex-grow overflow-y-auto">
           <div className={categoryStyle}>
             Channels
             <Tooltip label="Add Channel" position="right">
-              <ActionIcon 
-                onClick={addChat} 
-                variant="subtle" 
+              <ActionIcon
+                onClick={addChat}
+                variant="subtle"
                 color={darkMode ? "gray" : "dark"}
                 className="hover:bg-gray-600 cursor-pointer"
               >
@@ -99,32 +99,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ chats, activeChat, setActiveCh
                   </div>
                   <div className="flex items-center">
                     <Tooltip label="Rename Channel" position="right">
-                      <ActionIcon 
+                      <ActionIcon
                         onClick={(e) => {
                           e.stopPropagation();
                           startEditing(chat);
-                        }} 
-                        variant="subtle" 
+                        }}
+                        variant="subtle"
                         color={darkMode ? "gray" : "dark"}
                         size="sm"
                         className="ml-1"
                       >
-                        <Edit2 
-                          size={14} 
-                          className={darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-500"} 
+                        <Edit2
+                          size={14}
+                          className={darkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-500"}
                         />
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Delete Channel" position="right">
-                      <ActionIcon 
-                        onClick={(e) => handleDelete(chat.id, e)} 
-                        variant="subtle" 
+                      <ActionIcon
+                        onClick={(e) => handleDelete(chat.id, e)}
+                        variant="subtle"
                         size="sm"
                         className="ml-1"
                       >
-                        <Trash2 
-                          size={14} 
-                          className="text-red-400 hover:text-red-300" 
+                        <Trash2
+                          size={14}
+                          className="text-red-400 hover:text-red-300"
                         />
                       </ActionIcon>
                     </Tooltip>

@@ -8,11 +8,11 @@ class Request(BaseModel):
 class LLMQuery(Request):
     """
     Query class represents the input structure for performing various actions.
-    
+
     Attributes:
         messages (List[Dict[str, Union[str, Any]]]): A list of dictionaries where each dictionary
             represents a message containing 'role' and 'content' or other key-value pairs.
-        tools (Optional[List[Dict[str, Any]]]): An optional list of JSON-like objects (dictionaries) 
+        tools (Optional[List[Dict[str, Any]]]): An optional list of JSON-like objects (dictionaries)
             representing tools and their parameters. Default is an empty list.
         action_type (Literal): A string that must be one of "message_llm", "call_tool", or "operate_file".
             This restricts the type of action the query performs.
@@ -25,7 +25,7 @@ class LLMQuery(Request):
 
     class Config:
         arbitrary_types_allowed = True  # Allows the use of arbitrary types such as Any and Dict.
-        
+
 
 class MemoryQuery(Request):
     # messages: List[Dict[str, Union[str, Any]]]  # List of message dictionaries, each containing role and content.
@@ -35,7 +35,7 @@ class MemoryQuery(Request):
 
     class Config:
         arbitrary_types_allowed = True  # Allows the use of arbitrary types such as Any and Dict.
-        
+
 
 class StorageQuery(Request):
     messages: List[Dict[str, Union[str, Any]]]  # List of message dictionaries, each containing role and content.
@@ -54,10 +54,10 @@ class ToolQuery(Request):
 class Response(BaseModel):
     """
     Response class represents the output structure after performing actions.
-    
+
     Attributes:
         response_message (Optional[str]): The generated response message. Default is None.
-        tool_calls (Optional[List[Dict[str, Any]]]): An optional list of JSON-like objects (dictionaries) 
+        tool_calls (Optional[List[Dict[str, Any]]]): An optional list of JSON-like objects (dictionaries)
             representing the tool calls made during processing. Default is None.
     """
     response_message: Optional[str] = None  # The generated response message, default is None.

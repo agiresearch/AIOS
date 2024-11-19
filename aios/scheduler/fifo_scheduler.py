@@ -71,7 +71,7 @@ class FIFOScheduler(Scheduler):
 
                 memory_syscall.set_status("executing")
                 self.logger.log(
-                    f"{mem_syscall.agent_name} is executing. \n", "execute"
+                    f"{memory_syscall.agent_name} is executing. \n", "execute"
                 )
                 memory_syscall.set_start_time(time.time())
 

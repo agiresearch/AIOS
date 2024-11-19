@@ -83,7 +83,7 @@ const ChatInterface: React.FC = () => {
         thinking: false
       };
 
-      setChats(prevChats => prevChats.map(chat => 
+      setChats(prevChats => prevChats.map(chat =>
         chat.id === activeChat
           ? { ...chat, messages: [...chat.messages, newMessage] }
           : chat
@@ -98,7 +98,7 @@ const ChatInterface: React.FC = () => {
         thinking: true
       };
 
-      setChats(prevChats => prevChats.map(chat => 
+      setChats(prevChats => prevChats.map(chat =>
         chat.id === activeChat
           ? { ...chat, messages: [...chat.messages, botMessage] }
           : chat
@@ -106,11 +106,11 @@ const ChatInterface: React.FC = () => {
 
       const res = await processAgentCommand(parseNamedContent(parseText(content))[0] as AgentCommand);
 
-      setChats(prevChats => prevChats.map(chat => 
+      setChats(prevChats => prevChats.map(chat =>
         chat.id === activeChat
           ? {
               ...chat,
-              messages: chat.messages.map(message => 
+              messages: chat.messages.map(message =>
                 message.id === messageId
                   ? { ...message, thinking: false, text: res.content }
                   : message
@@ -186,8 +186,8 @@ const ChatInterface: React.FC = () => {
 
   // Add updateChatName function
   const updateChatName = (chatId: number, newName: string) => {
-    setChats(prevChats => 
-      prevChats.map(chat => 
+    setChats(prevChats =>
+      prevChats.map(chat =>
         chat.id === chatId ? { ...chat, name: newName } : chat
       )
     );
@@ -217,10 +217,10 @@ const ChatInterface: React.FC = () => {
         darkMode={darkMode}
       />
       <div className="flex flex-col flex-grow pb-4">
-        <Header 
-          darkMode={darkMode} 
+        <Header
+          darkMode={darkMode}
           setDarkMode={setDarkMode}
-          title={chats.find(chat => chat.id === activeChat)?.name || 'Chat'} 
+          title={chats.find(chat => chat.id === activeChat)?.name || 'Chat'}
         />
         <MessageList messages={activeMessages} darkMode={darkMode} />
         <div className='w-full flex h-fit justify-center'>

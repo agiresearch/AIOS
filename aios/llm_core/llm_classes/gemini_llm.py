@@ -90,7 +90,7 @@ class GeminiLLM(BaseLLM):
                 tool_calls = self.parse_tool_calls(result)
                 if tool_calls:
                     response = Response(
-                        response_message=None, 
+                        response_message=None,
                         tool_calls=tool_calls,
                         finished=True
                     )

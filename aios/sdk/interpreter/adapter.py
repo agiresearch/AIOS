@@ -66,13 +66,13 @@ def adapter_aios_completions(**params):
 
     for attempt in range(attempts):
         try:
-            response, _, _, _, _ = send_request(
+            response = send_request(
                 agent_name="Open-Interpreter",
                 query=LLMQuery(
                     messages=params['messages'],
                     tools=(params["tools"] if "tools" in params else None)
                 )
-            )
+            )["response"]
 
             # format similar to completion in interpreter
             comletion = {'choices':

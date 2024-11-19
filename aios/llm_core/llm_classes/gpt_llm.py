@@ -65,7 +65,7 @@ class GPTLLM(BaseLLM):
                 response = self.llm_generate(llm_syscall)
             else:
                 query = llm_syscall.query
-                print(query)
+                # print(query)
                 response = self.model.chat.completions.create(
                     model=self.model_name,
                     messages=query.messages,
@@ -75,8 +75,8 @@ class GPTLLM(BaseLLM):
                 )
 
                 response_message = response.choices[0].message.content
-                
-                print(response_message)
+
+                # print(response_message)
                 tool_calls = self.parse_tool_calls(
                     response.choices[0].message.tool_calls
                 )

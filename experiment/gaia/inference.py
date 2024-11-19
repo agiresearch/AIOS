@@ -3,9 +3,10 @@ import re
 from typing import List
 
 from datasets import load_dataset
+
 from aios.hooks.starter import aios_starter
 from experiment.agent.experiment_agent import ExperimentAgent
-from experiment.experiment_core import MetaData, run_inference, AGENT_TYPE_MAPPING_AIOS, logger
+from experiment.experiment_core import MetaData, AGENT_TYPE_MAPPING_AIOS, logger
 from experiment.utils import get_args
 
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     agent_type = "gaia:" + main_args.agent_type
     dataset = load_dataset(main_args.data_name, "2023_all", split=main_args.split)
-    
+
     print(dataset[:1])
 
     # meta = MetaData(

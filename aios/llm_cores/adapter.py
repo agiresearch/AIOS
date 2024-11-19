@@ -78,6 +78,3 @@ class LLMAdapter:
 
     def get_model(self) -> BaseLLM | None:
         return self.model
-
-
-    

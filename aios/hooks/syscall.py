@@ -1,16 +1,14 @@
-from threading import Thread, Lock, Event
-from typing import Mapping
-
-import random
 import time
+from threading import Thread, Event
+
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
     global_storage_req_queue_add_message,
     global_tool_req_queue_add_message,
 )
-
 from pyopenagi.utils.chat_template import Request, LLMQuery, MemoryQuery, StorageQuery, ToolQuery
+
 
 class Message(Request):
     pass

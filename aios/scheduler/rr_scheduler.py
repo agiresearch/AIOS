@@ -2,29 +2,20 @@
 # Allows multiple agents to run at the same time, with each getting a fixed
 # chunk of processor time
 
-from .base import BaseScheduler
-
 
 # allows for memory to be shared safely between threads
-from queue import Queue, Empty
 
 
-from ..context.simple_context import SimpleContextManager
+import time
+import traceback
+from queue import Empty
 
 from aios.hooks.types.llm import LLMRequestQueueGetMessage
 from aios.hooks.types.memory import MemoryRequestQueueGetMessage
-from aios.hooks.types.tool import ToolRequestQueueGetMessage
 from aios.hooks.types.storage import StorageRequestQueueGetMessage
-
-from queue import Queue, Empty
-
-import traceback
-import time
-from aios.utils.logger import SchedulerLogger
-
-from threading import Thread
-
+from aios.hooks.types.tool import ToolRequestQueueGetMessage
 from .base import Scheduler
+from ..context.simple_context import SimpleContextManager
 
 
 class RRScheduler(Scheduler):

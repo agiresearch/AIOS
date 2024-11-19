@@ -1,10 +1,12 @@
+from typing import Any
+
 from pydantic import BaseModel
-from typing import Any, TypeAlias, Callable
 
 from .llm import LLMRequestQueueGetMessage
 from .memory import MemoryRequestQueueGetMessage
 from .storage import StorageRequestQueueGetMessage
 from .tool import ToolRequestQueueGetMessage
+
 
 class SchedulerParams(BaseModel):
     llm: Any

@@ -1,19 +1,53 @@
 import importlib
-from typing import List, Any, Optional
-from pydantic.v1 import BaseModel, root_validator
+from typing import Any
+
 from pyopenagi.agents.experiment.standard.action.action import Action
 from pyopenagi.agents.experiment.standard.utils.config import Config
 from pyopenagi.agents.experiment.standard.utils.str_utils import snake_to_camel
 
 
-class ActionTool(Action, BaseModel):
+class ActionTool(Action):
+    """
+    Action responsible for support tool call.
+    """
 
-    config: Config
-    tools: Optional[List]
-    tools_format: Optional[List]
-    type: str = "TOOL"
+    def __init__(self, config: Config):
+        super().__init__()
+        self.tools = {}
+        self.tools_format = []
+        self.type = "TOOL"
+        self.config = config
+        self.init_tools()
 
     def __call__(self, tool_call: dict) -> Any:
+        """
+        Execute a tool call.
+        """
+        return self.execute(tool_call)
+
+    def execute(self, tool_call: dict) -> Any:
+        """
+        Execute the tool call.
+
+        Args:
+            tool_call (dict): A dictionary contain function name and parameters.
+                Example:
+                    {
+                        "name": "function_name",
+                        "parameters": {
+                            "param1": "value1",
+                            "param2": "value2"
+                        }
+                    }
+
+        Returns:
+            tuple: A tuple of two elements. The first element is the response of the function call,
+                the second element is the tool call id.
+
+        Raises:
+            TypeError: If the parameters of the function call is invalid.
+            Exception: If any other exception occurs.
+        """
         if tool_call is None:
             return
 
@@ -25,10 +59,11 @@ class ActionTool(Action, BaseModel):
 
         except TypeError:
             function_response = f"Call function {function_name} failed. Parameters {function_param} is invalid."
+        except Exception as e:
+            function_response = f"Tool error is {e}"
 
-        return function_response
+        return function_response, tool_call["id"]
 
-    @root_validator(pre=True)
     def init_tools(self):
         self._init_tools_from_config()
 

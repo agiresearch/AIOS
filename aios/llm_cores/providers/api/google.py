@@ -1,8 +1,7 @@
 # wrapper around gemini from google for LLMs
 
-import re
-import time
 import json
+import re
 
 from cerebrum.llm.base import BaseLLM
 from cerebrum.utils.chat import Query, Response

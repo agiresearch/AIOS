@@ -47,7 +47,7 @@ def aios_starter(
         root_dir = "root",
         use_vector_db = False
     )
-    
+
     memory_manager = useMemoryManager(
         memory_limit = 100*1024*1024,
         eviction_k = 10,

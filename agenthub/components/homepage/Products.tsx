@@ -49,7 +49,7 @@ const BuiltWithSupabase = () => {
         <div className="text-2xl pt-6">
           Try out our many features
         </div>
-     
+
       </div>
       <div className="mt-16 grid grid-cols-12 gap-5">
         {Examples.slice(0, 2).map((example: any, i: number) => {

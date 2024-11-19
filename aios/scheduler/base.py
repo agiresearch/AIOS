@@ -1,13 +1,12 @@
+from abc import abstractmethod
+from threading import Thread
+
 from aios.hooks.types.llm import LLMRequestQueueGetMessage
 from aios.hooks.types.memory import MemoryRequestQueueGetMessage
-from aios.hooks.types.tool import ToolRequestQueueGetMessage
 from aios.hooks.types.storage import StorageRequestQueueGetMessage
-
+from aios.hooks.types.tool import ToolRequestQueueGetMessage
 from aios.utils.logger import SchedulerLogger
 
-from abc import ABC, abstractmethod
-
-from threading import Thread
 
 class Scheduler:
     def __init__(
@@ -60,11 +59,11 @@ class Scheduler:
     @abstractmethod
     def run_llm_syscall(self):
         pass
-    
+
     @abstractmethod
     def run_memory_syscall(self):
         pass
-    
+
     @abstractmethod
     def run_storage_syscall(self):
         pass

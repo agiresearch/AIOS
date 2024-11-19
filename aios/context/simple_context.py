@@ -3,12 +3,8 @@
 
 from aios.context.base import BaseContextManager
 
-import os
-
-import torch
 
 # import shutil
-from threading import Lock
 
 class SimpleContextManager(BaseContextManager):
     def __init__(self):
@@ -21,7 +17,7 @@ class SimpleContextManager(BaseContextManager):
     def gen_snapshot(self, pid, context):
         # file_path = os.path.join(self.context_dir, f"process-{pid}.pt")
         # torch.save(context, file_path)
-        self.context_dict[str(pid)] = context
+        self.context_dic[str(pid)] = context
 
     def gen_recover(self, pid):
         # file_path = os.path.join(self.context_dir, f"process-{pid}.pt")

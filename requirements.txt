@@ -22,3 +22,8 @@ arxiv
 llama-index-embeddings-huggingface
 watchdog
 chromadb
+
+# tool
+PyPDF2
+python-pptx
+python-docx

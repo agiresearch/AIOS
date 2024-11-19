@@ -63,7 +63,7 @@ class InterpreterAgent(ExperimentAgent):
 
 class InterpreterAgentHumanEval(ExperimentAgent):
 
-    SYSTEM_PROMPT = """You are an expert good at solving code problems. 
+    SYSTEM_PROMPT = """You are an expert good at solving code problems.
     You will receive a function definition and comments. You need to help me complete this function.
     Give me final output in the format:
     <FINAL ANSWER>
