@@ -15,7 +15,7 @@ anthropic
 python-dotenv
 litellm
 pyfzf
-getch
+# getch
 npm
 platformdirs
 arxiv
