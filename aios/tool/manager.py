@@ -33,7 +33,7 @@ class ToolManager:
                 )
 
     def load_tool_instance(self, tool_org_and_name):
-        org, tool_name = tool_org_and_name.split("/")
+        org, tool_name = tool_org_and_name.split("_")
         module_name = ".".join(["pyopenagi", "tools", org, tool_name])
         class_name = snake_to_camel(tool_name)
         tool_module = importlib.import_module(module_name)
