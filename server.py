@@ -89,7 +89,7 @@ except FileNotFoundError:
             max_gpu_memory=args.max_gpu_memory,
             eval_device=args.eval_device,
             max_new_tokens=args.max_new_tokens,
-            log_mode=args.llm_kernel_log_mode,
+            log_mode=args.llm_core_log_mode,
             use_backend=args.use_backend,
         )
     )
