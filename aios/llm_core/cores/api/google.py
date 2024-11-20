@@ -8,7 +8,7 @@ from aios.llm_core.cores.base import BaseLLM
 
 from aios.utils.utils import get_from_env
 
-from pyopenagi.utils.chat_template import Response
+from cerebrum.llm.communication import Response
 
 
 class GeminiLLM(BaseLLM):
