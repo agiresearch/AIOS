@@ -111,10 +111,10 @@ startScheduler, stopScheduler = useFIFOScheduler(
     tool_manager=getToolState(),
     log_mode=args.scheduler_log_mode,
     # get_queue_message=None
-    get_llm_request=None,
-    get_memory_request=None,
-    get_storage_request=None,
-    get_tool_request=None,
+    get_llm_syscall=None,
+    get_memory_syscall=None,
+    get_storage_syscall=None,
+    get_tool_syscall=None,
 )
 
 
