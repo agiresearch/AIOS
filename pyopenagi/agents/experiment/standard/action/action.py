@@ -10,3 +10,7 @@ class Action(ABC):
     @abstractmethod
     def format_prompt(self):
         pass
+
+    @staticmethod
+    def display():
+        pass
