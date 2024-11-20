@@ -23,6 +23,7 @@ from aios.utils.utils import (
 )
 
 import sys
+import os
 
 from pyopenagi.manager.manager import AgentManager
 
@@ -62,24 +63,27 @@ args = parser.parse_args()
 # check if the llm information was specified in args
 
 try:
-    with open("aios_config.json", "r") as f:
+    root_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(root_dir + "/aios_config.json", "r") as f:
         aios_config = json.load(f)
-
-    # print to stderr
-    print("Loaded aios_config.json, ignoring args", file=sys.stderr)
-
-    llm_cores = aios_config["llm_cores"][0]
-    # only check aios_config.json
-    setLLMState(
-        useCore(
-            llm_name=llm_cores.get("llm_name"),
-            max_gpu_memory=llm_cores.get("max_gpu_memory"),
-            eval_device=llm_cores.get("eval_device"),
-            max_new_tokens=llm_cores.get("max_new_tokens"),
-            log_mode="console",
-            use_backend=llm_cores.get("use_backend"),
+    
+        # print to stderr
+        print("Loaded aios_config.json, ignoring args", file=sys.stderr)
+    
+        llm_cores = aios_config["llm_cores"][0]
+        # only check aios_config.json
+        setLLMState(
+            useCore(
+                llm_name=llm_cores.get("llm_name"),
+                max_gpu_memory=llm_cores.get("max_gpu_memory"),
+                eval_device=llm_cores.get("eval_device"),
+                max_new_tokens=llm_cores.get("max_new_tokens"),
+                log_mode="console",
+                use_backend=llm_cores.get("use_backend"),
+            )
         )
-    )
+        
+        f.close()
 except FileNotFoundError:
     aios_config = {}
     # only check args
