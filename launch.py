@@ -65,7 +65,7 @@ def run_npm(open: bool=False):
 
 if __name__ == "__main__":
     start_server()
-    run_npm(True)
+    # run_npm(True)
 
     try:
         while True:
