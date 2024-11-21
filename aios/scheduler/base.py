@@ -9,13 +9,18 @@ from abc import ABC, abstractmethod
 
 from threading import Thread
 
+from aios.memory.manager import MemoryManager
+from aios.storage.storage import StorageManager
+from aios.llm_core.adapter import LLMAdapter
+from aios.tool.manager import ToolManager
+
 class Scheduler:
     def __init__(
         self,
-        llm,
-        memory_manager,
-        storage_manager,
-        tool_manager,
+        llm: LLMAdapter,
+        memory_manager: MemoryManager,
+        storage_manager: StorageManager,
+        tool_manager: ToolManager,
         log_mode,
         get_llm_syscall: LLMRequestQueueGetMessage,
         get_memory_syscall: MemoryRequestQueueGetMessage,

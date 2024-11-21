@@ -195,6 +195,11 @@ def useSysCall():
 
 
     def send_request(agent_name, query):
+        print(isinstance(query, LLMQuery))
+        print(isinstance(query, ToolQuery))
+        print(isinstance(query,StorageQuery))
+        print(isinstance(query, MemoryQuery))
+
         if isinstance(query, LLMQuery):
             action_type = query.action_type
 

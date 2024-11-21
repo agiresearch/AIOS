@@ -2,7 +2,9 @@ from random import randint
 
 from typing import Tuple
 
-from aios.llm_core.llms import LLM
+# from aios.llm_core.llms import LLM
+from aios.llm_core.adapter import LLMAdapter as LLM
+
 from aios.hooks.types.llm import (
     LLMParams,
     LLMRequestQueue,
