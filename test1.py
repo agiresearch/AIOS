@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any, List
 import requests
 from contextlib import contextmanager
 
-
+from cerebrum import config
 from cerebrum.client import Cerebrum
 from cerebrum.llm.layer import LLMLayer
 from cerebrum.memory.layer import MemoryLayer
@@ -16,13 +16,16 @@ from cerebrum.tool.layer import ToolLayer
 if __name__ == "__main__":
    
     client = Cerebrum()
+
+    config.global_client = client
+
     try:
         # Set up components one by one
         client.add_llm_layer(LLMLayer(llm_name="gemini-1.5-flash")) \
               .add_storage_layer(StorageLayer(root_dir="root")) \
               .add_memory_layer(MemoryLayer(memory_limit=500*1024*1024)) \
               .add_tool_layer(ToolLayer()) \
-              .override_scheduler(OverridesLayer(max_works=32))
+              .override_scheduler(OverridesLayer(max_workers=32))
         
         # Check status
         status = client.get_status()
@@ -40,7 +43,7 @@ if __name__ == "__main__":
                 result["execution_id"],
                 timeout=300  # 5 minutes timeout
             )
-            print("Agent completed:", final_result)
+            print(final_result)
         except TimeoutError:
             print("Agent execution timed out")
     finally:

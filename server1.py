@@ -1,3 +1,4 @@
+from typing_extensions import Literal
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -10,6 +11,9 @@ from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
+from aios.hooks.syscall import useSysCall
+
+from cerebrum.llm.communication import LLMQuery
 
 app = FastAPI()
 
@@ -21,6 +25,8 @@ active_components = {
     "tool": None,
     "scheduler": None
 }
+
+send_request, SysCallWrapper = useSysCall()
 
 class LLMConfig(BaseModel):
     llm_name: str
@@ -217,6 +223,7 @@ async def submit_agent(config: AgentSubmit):
             "message": f"Agent {config.agent_id} submitted for execution"
         }
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to submit agent: {str(e)}"
@@ -268,6 +275,25 @@ async def cleanup_components():
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"Failed to cleanup components: {str(e)}")
+
+class QueryRequest(BaseModel):
+    agent_name: str
+    query_type: Literal["llm", "tool", "storage", "memory"]
+    query_data: LLMQuery
+
+@app.post("/query")
+async def handle_query(request: QueryRequest):
+    try:
+        if request.query_type == "llm":
+            query = LLMQuery(
+                messages=request.query_data.messages,
+                tools=request.query_data.tools,
+                action_type=request.query_data.action_type,
+                message_return_type=request.query_data.message_return_type
+            )
+            return send_request(request.agent_name, query)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -2,7 +2,16 @@ from typing import Any, Type
 
 # from cerebrum.agents.base import BaseAgent
 # from cerebrum.llm.base import BaseLLM
+from cerebrum.client import Cerebrum
+from cerebrum.llm.communication import LLMQuery
 from cerebrum.utils.chat import Query
+
+class LLMProcessor:
+    def __init__(self, client: Cerebrum):
+        self.client = client
+
+    def process(self, agent_name: str, query: LLMQuery):
+        return self.client._query_llm(agent_name=agent_name, query=query)
 
 class RunnableAgent:
     def __init__(self, agent_class, config, llm):

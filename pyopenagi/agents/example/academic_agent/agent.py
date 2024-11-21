@@ -4,10 +4,14 @@ import os
 import time
 
 # from aios.hooks.syscall import send_request
-from aios.hooks.syscall import useSysCall
-
+# from aios.hooks.syscall import useSysCall
+from cerebrum.client import Cerebrum
+from cerebrum.interface import AutoLLM
 
 from cerebrum.llm.communication import LLMQuery
+
+from cerebrum import config
+
 from pyopenagi.utils.logger import AgentLogger
 
 from pyopenagi.utils.utils import snake_to_camel
@@ -24,7 +28,9 @@ class AcademicAgent:
         self.plan_max_fail_times = 3
         self.tool_call_max_fail_times = 3
 
-        self.send_request, _ = useSysCall()
+        config.global_client = Cerebrum()
+
+        self.send_request = AutoLLM.from_dynamic().process
 
         # self.agent_process_factory = agent_process_factory
 
