@@ -33,7 +33,7 @@ const updateChatName = (chatId: number, newName: string) => {
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [darkMode, setDarkMode] = useState<boolean>(false);
-  const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General' }]);
+  const [chats, setChats] = useState<Chat[]>([{ id: 1, name: 'General', messages: [] }]);
   const [activeChat, setActiveChat] = useState<number>(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +104,7 @@ const ChatInterface: React.FC = () => {
       };
       setMessages([...messages, newMessage]);
 
-      const messageId = generateSixDigitId();
+      const messageId = `${generateSixDigitId()}`;
 
       // Handle file uploads here (e.g., to a server)
       const botMessage: Message = {
@@ -131,7 +131,7 @@ const ChatInterface: React.FC = () => {
   };
 
   const addChat = () => {
-    const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}` };
+    const newChat: Chat = { id: Date.now(), name: `Chat ${chats.length + 1}`, messages: [] };
     setChats([...chats, newChat]);
     setActiveChat(newChat.id);
   };
@@ -189,9 +189,10 @@ const ChatInterface: React.FC = () => {
         addChat={addChat}
         updateChatName={updateChatName}
         darkMode={darkMode}
+        deleteChat={(id: number) => console.log('d')}
       />
       <div className="flex flex-col flex-grow pb-4">
-        <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+        <Header title={'hi'} darkMode={darkMode} setDarkMode={setDarkMode} />
         <MessageList messages={messages} darkMode={darkMode} />
         <div className='w-full flex h-fit justify-center'>
           {mounted && <ChatEditor onSend={handleSend} darkMode={darkMode} />}
