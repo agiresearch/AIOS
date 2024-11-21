@@ -31,6 +31,7 @@ from dotenv import load_dotenv
 import atexit
 
 import json
+import uvicorn
 
 from pyopenagi.utils.chat_template import LLMQuery
 
@@ -212,3 +213,8 @@ def cleanup():
 
 
 atexit.register(cleanup)
+
+if __name__ == "__main__":
+    config = uvicorn.Config(app, hostname="0.0.0.0", port=8000, log_level="critical")
+    server = uvicorn.Server(config)
+    server.run()
