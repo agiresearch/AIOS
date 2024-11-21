@@ -38,7 +38,6 @@
 import { Metadata } from 'next'
 import { Providers } from './providers'
 
-import NavHeader from "@/components/blocks/NavHeader/index.client"
 
 import '@/styles/global-stylesheet.css'
 import '@/styles/google-font-Source-Sans-Pro.css'
