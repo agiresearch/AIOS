@@ -1,6 +1,7 @@
 from cerebrum.manager.agent import AgentManager
-from cerebrum.llm.adapter import LLMAdapter
-from cerebrum.runtime.process import RunnableAgent
+from cerebrum.runtime.process import LLMProcessor, RunnableAgent
+
+from .. import config
 
 class AutoAgent:
     MANAGER = AgentManager('https://my.aios.foundation')
@@ -21,14 +22,9 @@ class AutoAgent:
 
 
 class AutoLLM:
-
     @classmethod
-    def from_foundational(cls, name: str):
-        _llm_factory = LLMAdapter(name)
-
-        _llm = _llm_factory.get_model()
-
-        return _llm
+    def from_dynamic(cls):
+        return LLMProcessor(config.global_client)
 
 
 class AutoAgentGenerator:

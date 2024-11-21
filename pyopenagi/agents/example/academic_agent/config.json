@@ -9,7 +9,7 @@
     ],
     "meta": {
         "author": "example",
-        "version": "0.0.9",
+        "version": "0.0.11",
         "license": "CC0"
     },
     "build": {

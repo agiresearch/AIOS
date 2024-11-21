@@ -16,4 +16,7 @@ def compare_versions(version1, version2):
     return 0
 
 def get_newest_version(version_list):
+    print(version_list)
+    if version_list == []:
+        return None
     return max(version_list, key=functools.cmp_to_key(compare_versions))

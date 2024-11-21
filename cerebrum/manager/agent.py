@@ -53,9 +53,12 @@ class AgentManager:
             cached_versions = self._get_cached_versions(author, name)
             version = get_newest_version(cached_versions)
 
-        cache_path = self._get_cache_path(author, name, version)
+        try:
+            cache_path = self._get_cache_path(author, name, version)
+        except:
+            cache_path = None
 
-        if cache_path.exists():
+        if cache_path is not None and cache_path.exists():
             print(f"Using cached version of {author}/{name} (v{version})")
             return author, name, version
 
@@ -70,7 +73,7 @@ class AgentManager:
                 "name": name,
                 "version": version
             }
-
+        
         response = requests.get(f"{self.base_url}/cerebrum/download", params=params)
         response.raise_for_status()
         agent_data = response.json()
@@ -98,6 +101,7 @@ class AgentManager:
         return self.cache_dir / author / name / f"{self._version_to_path(version)}.agent"
 
     def _save_agent_to_cache(self, agent_data: Dict, cache_path: Path):
+        print(agent_data)
         agent_package = AgentPackage(cache_path)
         agent_package.metadata = {
             "author": agent_data["author"],
