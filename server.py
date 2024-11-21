@@ -62,6 +62,18 @@ active_components = {
     "tool": None,
     "scheduler": None
 }
+startScheduler, stopScheduler = useFIFOScheduler(
+    llm=getLLMState(),
+    memory_manager=getMemoryState(),
+    storage_manager=getStorageState(),
+    tool_manager=getToolState(),
+    log_mode=args.scheduler_log_mode,
+    # get_queue_message=None
+    get_llm_syscall=None,
+    get_memory_syscall=None,
+    get_storage_syscall=None,
+    get_tool_syscall=None,
+)
 
 class LLMConfig(BaseModel):
     llm_name: str
