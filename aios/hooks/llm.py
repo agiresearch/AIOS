@@ -4,7 +4,8 @@ from contextlib import contextmanager
 from typing import Any
 from random import randint
 
-from aios.llm_core.llms import LLM
+# from aios.llm_core.llms import LLM
+from aios.llm_core.adapter import LLMAdapter as LLM
 
 from aios.scheduler.fifo_scheduler import FIFOScheduler
 

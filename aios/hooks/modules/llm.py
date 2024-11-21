@@ -2,7 +2,9 @@ from random import randint
 
 from typing import Tuple
 
-from aios.llm_core.llms import LLM
+# from aios.llm_core.llms import LLM
+from aios.llm_core.adapter import LLMAdapter as LLM
+
 from aios.hooks.types.llm import (
     LLMParams,
     LLMRequestQueue,
@@ -12,11 +14,8 @@ from aios.hooks.types.llm import (
 )
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
-# from aios.hooks.utils import generate_random_string
-# from pyopenagi.agents.agent_factory import AgentFactory
 
 ids = []  # List to store process IDs
-
 
 @validate(LLMParams)
 def useCore(params: LLMParams) -> LLM:

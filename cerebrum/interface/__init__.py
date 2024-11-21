@@ -1,4 +1,4 @@
-from cerebrum.manager.manager import AgentManager
+from cerebrum.manager.agent import AgentManager
 from cerebrum.llm.adapter import LLMAdapter
 from cerebrum.runtime.process import RunnableAgent
 

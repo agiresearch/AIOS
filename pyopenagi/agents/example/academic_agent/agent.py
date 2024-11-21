@@ -3,10 +3,11 @@ import importlib
 import os
 import time
 
-from aios.hooks.syscall import send_request
+# from aios.hooks.syscall import send_request
+from aios.hooks.syscall import useSysCall
 
-from pyopenagi.utils.chat_template import LLMQuery, MemoryQuery, StorageQuery
 
+from cerebrum.llm.communication import LLMQuery
 from pyopenagi.utils.logger import AgentLogger
 
 from pyopenagi.utils.utils import snake_to_camel
@@ -22,6 +23,8 @@ class AcademicAgent:
 
         self.plan_max_fail_times = 3
         self.tool_call_max_fail_times = 3
+
+        self.send_request, _ = useSysCall()
 
         # self.agent_process_factory = agent_process_factory
 
@@ -118,7 +121,7 @@ class AcademicAgent:
 
     def automatic_workflow(self):
         for i in range(self.plan_max_fail_times):
-            response = send_request(
+            response = self.send_request(
                 agent_name=self.agent_name,
                 query=LLMQuery(
                     messages=self.messages, tools=None, message_return_type="json"
@@ -209,7 +212,7 @@ class AcademicAgent:
                     else:
                         selected_tools = None
 
-                    response = send_request(
+                    response = self.send_request(
                         agent_name=self.agent_name,
                         query=LLMQuery(
                             messages=self.messages,
@@ -230,10 +233,6 @@ class AcademicAgent:
                     "agent_name": self.agent_name,
                     "result": final_result,
                     "rounds": self.rounds,
-                    # "agent_waiting_time": self.start_time - self.created_time,
-                    # "agent_turnaround_time": self.end_time - self.created_time,
-                    # "request_waiting_times": self.request_waiting_times,
-                    # "request_turnaround_times": self.request_turnaround_times,
                 }
 
             else:

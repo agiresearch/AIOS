@@ -1,15 +1,9 @@
-# This file just wraps around the LLM classes in aios/llm_kernel/llm_classes
-# and provides an easy interface for the rest of the code to access
-# All abstractions will be implemented here
 
-from .llm_classes.model_registry import MODEL_REGISTRY
-from .llm_classes.hf_native_llm import HfNativeLLM
+from aios.llm_core.cores.base import BaseLLM
+from aios.llm_core.registry import MODEL_REGISTRY
 
-# standard implementation of LLM methods
-from .llm_classes.ollama_llm import OllamaLLM
-from .llm_classes.vllm import vLLM
 
-class LLM:
+class LLMAdapter:
     """Parameters for LLMs
 
     Args:
@@ -31,6 +25,8 @@ class LLM:
                  use_context_manager: bool = False
         ):
 
+        self.model: BaseLLM = None
+
         # For API-based LLM
         if llm_name in MODEL_REGISTRY.keys():
             self.model = MODEL_REGISTRY[llm_name](
@@ -41,29 +37,25 @@ class LLM:
         # For locally-deployed LLM
         else:
             if use_backend == "ollama" or llm_name.startswith("ollama"):
-                self.model = OllamaLLM(
-                    llm_name=llm_name,
-                    max_gpu_memory=max_gpu_memory,
-                    eval_device=eval_device,
-                    max_new_tokens=max_new_tokens,
-                    log_mode=log_mode
-                )
-
+                pass
+                #ollama here
             elif use_backend == "vllm":
-                self.model = vLLM(
-                    llm_name=llm_name,
-                    max_gpu_memory=max_gpu_memory,
-                    eval_device=eval_device,
-                    max_new_tokens=max_new_tokens,
-                    log_mode=log_mode
-                )
+                # VLLM here
+                pass
             else: # use huggingface LLM without backend
-                self.model = HfNativeLLM(
-                    llm_name=llm_name,
-                    max_gpu_memory=max_gpu_memory,
-                    eval_device=eval_device,
-                    max_new_tokens=max_new_tokens,
-                    log_mode=log_mode
-                )
+                pass
+                
+
+    def address_syscall(self,
+                        llm_syscall,
+                        temperature=0.0) -> None:
+        """Address request sent from the agent
+
+        Args:
+            agent_request: AgentProcess object that contains request sent from the agent
+            temperature (float, optional): Parameter to control the randomness of LLM output. Defaults to 0.0.
+        """
+        return self.model.address_syscall(llm_syscall, temperature)
+
 
     

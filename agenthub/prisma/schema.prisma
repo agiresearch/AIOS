@@ -63,3 +63,30 @@ model CerebrumAgentFile {
 
     @@unique([agentId, path])
 }
+
+model CerebrumTool {
+    id        String   @id @default(cuid())
+    author    String
+    name      String
+    version   String
+    license   String
+    entry     String
+    module    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    description String @default("No Description Provided")
+
+    files CerebrumToolFile[]
+
+    @@unique([author, name, version])
+}
+
+model CerebrumToolFile {
+    id       String @id @default(cuid())
+    toolId  String
+    path     String
+    content  String @db.Text  // Changed from Bytes to String
+    tool    CerebrumTool  @relation(fields: [toolId], references: [id])
+
+    @@unique([toolId, path])
+}

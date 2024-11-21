@@ -29,6 +29,8 @@ class AgentManager:
 
     def package_agent(self, folder_path: str) -> Dict:
         agent_files = self._get_agent_files(folder_path)
+        print(folder_path)
+        print(agent_files)
         metadata = self._get_agent_metadata(folder_path)
 
         return {

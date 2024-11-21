@@ -53,6 +53,8 @@ def useFactory(
 
         ProcessStore.addProcess(_submitted_agent, random_code)
 
+        print(ProcessStore.AGENT_PROCESSES)
+
         return random_code
 
     def awaitAgentExecution(process_id: str) -> Dict[str, Any]:
@@ -68,11 +70,15 @@ def useFactory(
         Raises:
             ValueError: If the process ID is not found.
         """
+
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
+
+        print(future)
 
         if future:
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")
+        
 
     return submitAgent, awaitAgentExecution

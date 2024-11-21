@@ -1,16 +1,12 @@
 import re
-from .base_llm import BaseLLM
 import time
-
-# could be dynamically imported similar to other models
-from openai import OpenAI
-
-import openai
-
-from pyopenagi.utils.chat_template import Response
 import json
 
+from openai import OpenAI, APIConnectionError, RateLimitError, BadRequestError, APIStatusError
 
+from aios.llm_core.cores.base import BaseLLM
+
+from cerebrum.llm.communication import Response
 class GPTLLM(BaseLLM):
 
     def __init__(
@@ -65,27 +61,7 @@ class GPTLLM(BaseLLM):
                 response = self.llm_generate(llm_syscall)
             else:
                 query = llm_syscall.query
-                query.tools = [
-  {
-    "type": "function",
-    "function": {
-      "name": "arxiv_arxiv",
-      "description": "Query articles or topics in arxiv",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Input query that describes what to search in arxiv"
-          }
-        },
-        "required": [
-          "query"
-        ]
-      }
-    }
-  }
-]
+               
                 response = self.model.chat.completions.create(
                     model=self.model_name,
                     messages=query.messages,
@@ -108,24 +84,24 @@ class GPTLLM(BaseLLM):
                 )
                 print(response)
 
-        except openai.APIConnectionError as e:
+        except APIConnectionError as e:
             response = Response(
                 response_message=f"Server connection error: {e.__cause__}",
             )
 
-        except openai.RateLimitError as e:
+        except RateLimitError as e:
             response = Response(
                 response_message=f"OpenAI RATE LIMIT error {e.status_code}: (e.response)",
                 finished=True
             )
 
-        except openai.APIStatusError as e:
+        except APIStatusError as e:
             response = Response(
                 response_message=f"OpenAI STATUS error {e.status_code}: (e.response)",
                 finished=True
             )
 
-        except openai.BadRequestError as e:
+        except BadRequestError as e:
             response = Response(
                 response_message=f"OpenAI BAD REQUEST error {e.status_code}: (e.response)",
                 finished=True
