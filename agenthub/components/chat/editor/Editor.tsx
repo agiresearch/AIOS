@@ -24,11 +24,11 @@ export interface ChatEditorProps {
 
 export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useMantineTheme();
   const [agents, setAgents] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
 
@@ -106,7 +106,6 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
         onSend(content, attachments);
         editor.commands.setContent('');
         setAttachments([]);
-        setPreviews([]);
       }
     }
   }, [editor, attachments, onSend]);
@@ -116,24 +115,11 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
     if (files) {
       const newAttachments = Array.from(files);
       setAttachments(prev => [...prev, ...newAttachments]);
-      
-      newAttachments.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            setPreviews(prev => [...prev, e.target?.result as string]);
-          };
-          reader.readAsDataURL(file);
-        } else {
-          setPreviews(prev => [...prev, '']);
-        }
-      });
     }
   }, []);
 
   const removeAttachment = useCallback((index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
-    setPreviews(prev => prev.filter((_, i) => i !== index));
     setHoverIndex(null); // Reset hover state after removal
   }, []);
 
@@ -156,14 +142,50 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
     fileInputRef.current?.click();
   };
 
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setAttachments(prev => [...prev, ...files]);
+    }
+  }, []);
+
   return (
     <Paper 
-      className={`p-2 ${darkMode ? '!bg-gray-800' : '!bg-white'} rounded-lg w-[90%]`}
+      className={`p-2 ${darkMode ? '!bg-gray-800' : '!bg-white'} rounded-lg w-[90%] relative
+        ${isDragging ? 'border-2 border-dashed border-blue-500' : ''}`}
       style={{
-        border: `1px solid ${darkMode ? theme.colors.gray[7] : theme.colors.gray[3]}`,
+        border: isDragging 
+          ? undefined 
+          : `1px solid ${darkMode ? theme.colors.gray[7] : theme.colors.gray[3]}`,
         boxShadow: `0 2px 10px ${darkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'}`,
       }}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
+      {isDragging && (
+        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center rounded-lg">
+          <div className="text-blue-500 font-medium">
+            Drop files here to upload
+          </div>
+        </div>
+      )}
       {attachments.length > 0 && (
         <ScrollArea className="mb-2 max-h-[150px]">
           <Group gap="xs" className="p-1">
@@ -179,25 +201,14 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
                 onMouseEnter={() => setHoverIndex(index)}
                 onMouseLeave={() => setHoverIndex(null)}
               >
-                {previews[index] ? (
-                  <Image
-                    src={previews[index]}
-                    alt={file.name}
-                    width={80}
-                    height={80}
-                    fit="cover"
-                    style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                  />
-                ) : (
-                  <div className={`flex flex-col items-center justify-center h-full p-2 ${
-                    darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    <FileIcon size={24} className="mb-1" />
-                    <MantineText size="xs" className="text-center truncate w-full">
-                      {file.name}
-                    </MantineText>
-                  </div>
-                )}
+                <div className={`flex flex-col items-center justify-center h-full p-2 ${
+                  darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'
+                }`}>
+                  <FileIcon size={24} className="mb-1" />
+                  <MantineText size="xs" className="text-center truncate w-full">
+                    {file.name}
+                  </MantineText>
+                </div>
                 {hoverIndex === index && (
                   <Overlay opacity={0.6} color="#000" zIndex={5}>
                     <ActionIcon
@@ -206,8 +217,7 @@ export const ChatEditor: React.FC<ChatEditorProps> = ({ onSend, darkMode }) => {
                       color="red"
                       className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                       onClick={(e) => {
-                        console.log('hi')
-                        e.stopPropagation(); // Prevent event bubbling
+                        e.stopPropagation();
                         removeAttachment(index);
                       }}
                     >
