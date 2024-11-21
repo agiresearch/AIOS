@@ -1,4 +1,4 @@
-from cerebrum.manager.manager import AgentManager
+from cerebrum.manager.agent import AgentManager
 
 
 manager = AgentManager('https://my.aios.foundation/')
