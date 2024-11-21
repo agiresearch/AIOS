@@ -1,131 +1,131 @@
-import ReactMarkdown from 'react-markdown';
-import copy from "copy-to-clipboard";
-import { Clipboard, Check } from 'lucide-react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { gruvboxDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
-import { useState, useEffect } from 'react';
+'use client'
 
-interface IProps {
+import React, { useState, useRef, useEffect } from 'react';
+
+// import { ActionIcon, CopyButton } from '@mantine/core';
+import { Clipboard, Check } from 'lucide-react';
+
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+// import rehypeRaw from 'rehype-raw';
+
+// Improved Markdown component
+interface MarkdownProps {
     content: string;
+    darkMode: boolean;
     animation: boolean;
 }
 
-export default function Markdown({ content, animation }: IProps) {
-    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+export const Markdown: React.FC<MarkdownProps> = ({ content, darkMode, animation }) => {
     const [displayedText, setDisplayedText] = useState('');
-
-    const handleCopy = (text: string, index: number) => {
-        console.log('clicked')
-        copy(text);
-        setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
-    }
-
-    // useEffect(() => {
-    //     console.log(displayedText)
-    // }, [displayedText])
+    const animationRef = useRef<number | null>(null);
+    const currentIndexRef = useRef(0);
 
     useEffect(() => {
         if (animation) {
-            let currentIndex = 0;
-            let timeoutId: any;
+            let lastTimestamp: number | null = null;
 
-            const streamText = () => {
-                if (currentIndex < content.length) {
-                    // Increased chunk size for faster typing
-                    const chunkSize = Math.floor(Math.random() * 4) + 2; // Now 2-5 characters at once
-                    const nextChunk = content.slice(currentIndex, currentIndex + chunkSize);
+            const streamText = (timestamp: number) => {
+                if (lastTimestamp === null) {
+                    lastTimestamp = timestamp;
+                }
 
-                    setDisplayedText(content.slice(0, currentIndex + chunkSize));
-                    currentIndex += chunkSize;
+                const elapsed = timestamp - lastTimestamp;
 
-                    // Reduced base timeout for faster typing
-                    let timeout = Math.floor(Math.random() * 20) + 10; // Base timeout between 10ms and 30ms
+                if (elapsed >= 10) { // Reduced minimum delay between updates from 30ms to 10ms
+                    if (currentIndexRef.current < content.length) {
+                        // Increased chunk size for faster typing
+                        const chunkSize = Math.floor(Math.random() * 4) + 2; // Now 2-5 characters at once
+                        const nextChunk = content.slice(currentIndexRef.current, currentIndexRef.current + chunkSize);
 
-                    // Shorter pauses for punctuation
-                    if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
-                        timeout += Math.floor(Math.random() * 150) + 100; // Add 100-250ms for punctuation
-                    } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
-                        timeout += Math.floor(Math.random() * 75) + 50; // Add 50-125ms for minor punctuation
+                        setDisplayedText(prevText => prevText + nextChunk);
+                        currentIndexRef.current += chunkSize;
+
+                        // Reduced delays for a faster animation
+                        let delay = Math.floor(Math.random() * 20) + 10; // Base delay between 10-30ms
+
+                        // Shorter pauses for punctuation
+                        if (nextChunk.includes('.') || nextChunk.includes('!') || nextChunk.includes('?')) {
+                            delay += Math.floor(Math.random() * 100) + 50; // Reduced to 50-150ms for major punctuation
+                        } else if (nextChunk.includes(',') || nextChunk.includes(';')) {
+                            delay += Math.floor(Math.random() * 50) + 25; // Reduced to 25-75ms for minor punctuation
+                        }
+
+                        // Reduced delay for word complexity
+                        if (nextChunk.length > 5) {
+                            delay += nextChunk.length * 3; // Reduced to 3ms per character
+                        }
+
+                        lastTimestamp = timestamp + delay;
                     }
+                }
 
-                    // Reduced delay for word complexity
-                    if (nextChunk.length > 5) {
-                        timeout += nextChunk.length * 5; // Add 5ms per character for longer words
-                    }
+                animationRef.current = requestAnimationFrame(streamText);
+            };
 
-                    timeoutId = setTimeout(streamText, timeout);
+            animationRef.current = requestAnimationFrame(streamText);
+
+            return () => {
+                if (animationRef.current !== null) {
+                    cancelAnimationFrame(animationRef.current);
                 }
             };
-
-            streamText();
-
-            // Cleanup function
-            return () => {
-                clearTimeout(timeoutId);
-            };
         } else {
-            setDisplayedText(content)
+            setDisplayedText(content);
         }
 
     }, [content]);
 
+
     return (
         <ReactMarkdown
+            // rehypePlugins={[rehypeRaw]}
             components={{
                 code({ node, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '');
-                    return match ? (
-                        <div className='w-full'>
-                            <div className='flex w-full justify-between px-6 bg-white/5 p-2 rounded-t-md items-center'>
-                                <div className='text-base !text-[#e06c75] '>
-                                <div className='text-base !text-[#e06c75] '>
-                                    {match[1]}
-                                </div>
-                                <CopyButton
-                                    text={String(children).replace(/\n$/, '')}
-                                    index={node!.position?.start.line || 0}
-                                    onCopy={handleCopy}
-                                    isCopied={copiedIndex === (node!.position?.start.line || 0)}
-                                />
+                    const isInline = !match && (props as any).inline;
+                    return isInline ? (
+                        <code className={`${className} ${darkMode ? '!bg-gray-700' : '!bg-gray-200'} rounded px-1 py-0.5`} {...props}>
+                            {children}
+                        </code>
+                    ) : (
+                        <div className="relative">
+                            <div className="flex justify-between items-center px-4 py-2 bg-gray-800 rounded-t-md">
+                                <span className="text-sm !text-[#e06c75]">{match ? match[1] : 'text'}</span>
+                                {/* <CopyButton value={String(children).replace(/\n$/, '')}>
+                                    {({ copied, copy }) => (
+                                        <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
+                                            {copied ? <Check size={16} /> : <Clipboard size={16} />}
+                                        </ActionIcon>
+                                    )}
+                                </CopyButton> */}
                             </div>
                             <SyntaxHighlighter
-                                language={match[1]}
-                                style={gruvboxDark}
-
+                                language={match ? match[1] : 'text'}
+                                style={atomDark as any}
+                                PreTag="div"
+                                className="rounded-b-md"
                             >
                                 {String(children).replace(/\n$/, '')}
                             </SyntaxHighlighter>
                         </div>
-                    ) : (
-                        <code className={className} {...props}>
-                            {children}
-                        </code>
-                    )
+                    );
                 },
+                p: ({ children, ...props }) => <p className="mb-4 last:mb-0" {...props}>{children}</p>,
+                br: ({ ...props }) => <br {...props} />,
+                ul: ({ children }) => <ul className="list-disc pl-6 mb-4">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-6 mb-4">{children}</ol>,
+                li: ({ children }) => <li className="mb-2">{children}</li>,
+                h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                blockquote: ({ children }) => (
+                    <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4">{children}</blockquote>
+                ),
             }}
-        >{displayedText}</ReactMarkdown>
-    )
-}
-
-interface CopyButtonProps {
-    text: string;
-    index: number;
-    onCopy: (text: string, index: number) => void;
-    isCopied: boolean;
-}
-
-function CopyButton({ text, index, onCopy, isCopied }: CopyButtonProps) {
-    return (
-        <button
-            onClick={() => onCopy(text, index)}
-            className="p-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors duration-200"
         >
-            {isCopied ? (
-                <Check className="w-4 h-4 text-green-500" />
-            ) : (
-                <Clipboard className="w-4 h-4 text-white/60" />
-            )}
-        </button>
+            {displayedText}
+        </ReactMarkdown>
     );
-}
+};

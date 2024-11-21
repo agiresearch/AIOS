@@ -104,7 +104,7 @@ const ChatInterface: React.FC = () => {
       };
       setMessages([...messages, newMessage]);
 
-      let messageId = generateSixDigitId();
+      const messageId = generateSixDigitId();
 
       // Handle file uploads here (e.g., to a server)
       const botMessage: Message = {
