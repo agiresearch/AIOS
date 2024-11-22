@@ -6,7 +6,7 @@ import json
 
 from aios.llm_core.cores.base import BaseLLM
 
-from aios.utils.utils import get_from_env
+from aios.utils import get_from_env
 
 from cerebrum.llm.communication import Response
 

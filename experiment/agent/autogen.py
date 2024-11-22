@@ -3,7 +3,7 @@ from typing import Annotated
 
 from autogen import ConversableAgent
 
-from aios.sdk import prepare_framework, FrameworkType
+from aios.community import prepare_framework, FrameworkType
 from experiment.agent.experiment_agent import ExperimentAgent
 from pyopenagi.tools.arxiv.arxiv import Arxiv
 

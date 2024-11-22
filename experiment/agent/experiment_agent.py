@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from aios.hooks.syscall import send_request
-from pyopenagi.utils.chat_template import LLMQuery, MemoryQuery, StorageQuery
-
+from aios.hooks.syscall import useSysCall
+from cerebrum.llm.communication import LLMQuery, MemoryQuery, StorageQuery
+send_request, _ = useSysCall()
 
 class ExperimentAgent(ABC):
 

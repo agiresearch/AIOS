@@ -1,7 +1,7 @@
 # This is a main script that tests the functionality of specific agents.
 # It requires no user input.
 
-from aios.utils.utils import (
+from aios.utils import (
     parse_global_args,
 )
 import os
@@ -9,7 +9,7 @@ import warnings
 
 from aios.hooks.starter import aios_starter
 
-from aios.utils.utils import delete_directories
+from aios.utils import delete_directories
 from dotenv import load_dotenv
 
 

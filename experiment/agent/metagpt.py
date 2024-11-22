@@ -1,6 +1,6 @@
 from metagpt.software_company import generate_repo, ProjectRepo
 
-from aios.sdk.metagpt.adapter import prepare_metagpt
+from aios.community.metagpt.adapter import prepare_metagpt
 from experiment.agent.experiment_agent import ExperimentAgent
 
 

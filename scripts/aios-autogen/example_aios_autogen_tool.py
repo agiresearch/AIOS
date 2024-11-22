@@ -3,10 +3,10 @@
 import warnings
 from dotenv import load_dotenv
 
-from aios.sdk import prepare_framework, FrameworkType
+from aios.community import prepare_framework, FrameworkType
 from aios.hooks.llm import aios_starter
-from aios.utils.utils import delete_directories
-from aios.utils.utils import (
+from aios.utils import delete_directories
+from aios.utils import (
     parse_global_args,
 )
 from autogen import ConversableAgent

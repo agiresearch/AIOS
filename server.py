@@ -1,3 +1,4 @@
+from typing_extensions import Literal
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -10,6 +11,9 @@ from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
+from aios.hooks.syscall import useSysCall
+
+from cerebrum.llm.communication import LLMQuery
 
 app = FastAPI()
 
@@ -21,6 +25,8 @@ active_components = {
     "tool": None,
     "scheduler": None
 }
+
+send_request, SysCallWrapper = useSysCall()
 
 class LLMConfig(BaseModel):
     llm_name: str
@@ -97,7 +103,7 @@ async def setup_memory(config: MemoryConfig):
     """Set up the memory manager component."""
     if not active_components["storage"]:
         raise HTTPException(status_code=400, detail="Storage manager must be initialized first")
-
+    
     try:
         memory_manager = useMemoryManager(
             memory_limit=config.memory_limit,
@@ -114,7 +120,7 @@ async def setup_tool_manager(config: ToolManagerConfig):
     """Set up the tool manager component."""
     try:
         tool_manager = useToolManager()
-
+        
         active_components["tool"] = tool_manager
         return {"status": "success", "message": "Tool manager initialized"}
     except Exception as e:
@@ -125,19 +131,19 @@ async def setup_agent_factory(config: SchedulerConfig):
     """Set up the agent factory for managing agent execution."""
     required_components = ["llm", "memory", "storage", "tool"]
     missing_components = [comp for comp in required_components if not active_components[comp]]
-
+    
     if missing_components:
         raise HTTPException(
             status_code=400,
             detail=f"Missing required components: {', '.join(missing_components)}"
         )
-
+    
     try:
         submit_agent, await_agent_execution = useFactory(
             log_mode=config.log_mode,
             max_workers=config.max_workers
         )
-
+        
         active_components["factory"] = {
             "submit": submit_agent,
             "await": await_agent_execution
@@ -155,13 +161,13 @@ async def setup_scheduler(config: SchedulerConfig):
     """Set up the FIFO scheduler with all components."""
     required_components = ["llm", "memory", "storage", "tool"]
     missing_components = [comp for comp in required_components if not active_components[comp]]
-
+    
     if missing_components:
         raise HTTPException(
             status_code=400,
             detail=f"Missing required components: {', '.join(missing_components)}"
         )
-
+    
     try:
         # Set up the scheduler with all components
         scheduler = fifo_scheduler(
@@ -176,7 +182,7 @@ async def setup_scheduler(config: SchedulerConfig):
             get_tool_syscall=None
             # **(config.custom_syscalls or {})
         )
-
+        
         active_components["scheduler"] = scheduler
 
         scheduler.start()
@@ -205,18 +211,19 @@ async def submit_agent(config: AgentSubmit):
             status_code=400,
             detail="Agent factory not initialized"
         )
-
+    
     try:
         _submit_agent = active_components["factory"]["submit"]
         execution_id = _submit_agent(agent_name=config.agent_id, task_input=config.agent_config['task'])
         print(execution_id)
-
+        
         return {
             "status": "success",
             "execution_id": execution_id,
             "message": f"Agent {config.agent_id} submitted for execution"
         }
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to submit agent: {str(e)}"
@@ -230,7 +237,7 @@ async def get_agent_status(execution_id: int):
             status_code=400,
             detail="Agent factory not initialized"
         )
-
+    
     try:
         await_execution = active_components["factory"]["await"]
         result = await_execution(int(execution_id))
@@ -260,14 +267,33 @@ async def cleanup_components():
                     active_components[component].cleanup()
                 active_components[component] = None
 
+        
 
 
-
-
+        
         return {"status": "success", "message": "All components cleaned up"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"Failed to cleanup components: {str(e)}")
+
+class QueryRequest(BaseModel):
+    agent_name: str
+    query_type: Literal["llm", "tool", "storage", "memory"]
+    query_data: LLMQuery
+
+@app.post("/query")
+async def handle_query(request: QueryRequest):
+    try:
+        if request.query_type == "llm":
+            query = LLMQuery(
+                messages=request.query_data.messages,
+                tools=request.query_data.tools,
+                action_type=request.query_data.action_type,
+                message_return_type=request.query_data.message_return_type
+            )
+            return send_request(request.agent_name, query)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -214,16 +214,26 @@ class AgentManager:
 
         temp_reqs_path.unlink()  # Remove temporary requirements file
 
-    def load_agent(self, author: str, name: str, version: str | None = None):
-        if version is None:
-            cached_versions = self._get_cached_versions(author, name)
-            version = get_newest_version(cached_versions)
-
-        agent_path = self._get_cache_path(author, name, version)
+    def load_agent(self, 
+                   author: str = '', 
+                   name: str = '', 
+                   version: str | None = None,
+                   local: bool = False, 
+                   path: str | None = None):
         
-        if not agent_path.exists():
-            print(f"Agent {author}/{name} (v{version}) not found in cache. Downloading...")
-            self.download_agent(author, name, version)
+        if not local:
+            if version is None:
+                cached_versions = self._get_cached_versions(author, name)
+                version = get_newest_version(cached_versions)
+
+            agent_path = self._get_cache_path(author, name, version)
+            
+            if not agent_path.exists():
+                print(f"Agent {author}/{name} (v{version}) not found in cache. Downloading...")
+                self.download_agent(author, name, version)
+        else:
+            agent_path = path
+
 
         agent_package = AgentPackage(agent_path)
         agent_package.load()
@@ -254,7 +264,7 @@ class AgentManager:
 
         # Get the agent class
         agent_class = getattr(module, module_name)
-
+ 
         return agent_class, agent_package.get_config()
 
 

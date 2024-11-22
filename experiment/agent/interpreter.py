@@ -3,7 +3,7 @@ import re
 
 from interpreter import interpreter
 
-from aios.sdk import prepare_framework, FrameworkType
+from aios.community import prepare_framework, FrameworkType
 from experiment.agent.experiment_agent import ExperimentAgent
 
 

@@ -1,9 +1,9 @@
 import warnings
 
-from aios.sdk import FrameworkType, prepare_framework
+from aios.community import FrameworkType, prepare_framework
 from dotenv import load_dotenv
 from aios.hooks.llm import aios_starter
-from aios.utils.utils import (
+from aios.utils import (
     parse_global_args,
     delete_directories
 )

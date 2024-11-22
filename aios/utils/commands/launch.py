@@ -1,4 +1,4 @@
-from aios.utils.utils import parse_global_args
+from aios.utils import parse_global_args
 
 
 def main():

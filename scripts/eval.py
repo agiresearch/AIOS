@@ -11,12 +11,12 @@ from aios.llm_core import llms
 
 from concurrent.futures import ThreadPoolExecutor
 
-from aios.utils.utils import delete_directories
+from aios.utils import delete_directories
 from aios.utils.calculator import get_numbers_concurrent, get_numbers_sequential, comparison
 
 from dotenv import load_dotenv
 
-from aios.utils.utils import parse_global_args
+from aios.utils import parse_global_args
 
 # Construct help message and parse argumets using argparse
 def extra_args():

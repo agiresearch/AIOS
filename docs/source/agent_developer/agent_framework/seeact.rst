@@ -35,7 +35,7 @@ Python API Usage
 
 .. code-block:: python
 
-    from aios.utils.utils import parse_global_args
+    from aios.utils import parse_global_args
     from aios.hooks.llm import aios_starter
     import asyncio
 

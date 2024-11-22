@@ -4,7 +4,7 @@ import sys
 # Add AIOS path
 aios_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, aios_root)
-from aios.utils.utils import (
+from aios.utils import (
     parse_global_args,
     delete_directories
 )

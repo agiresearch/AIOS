@@ -6,7 +6,6 @@ from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 # from aios.hooks.utils import generate_random_string
-from pyopenagi.agents.agent_factory import AgentFactory
 from cerebrum.manager.agent import AgentManager
 
 ids = []
@@ -31,13 +30,24 @@ def useFactory(
         """
         print('hi')    
 
-        def run_agent(agent_name, task):
-            author, name, version = manager.download_agent(
-                author=agent_name.split('/')[0],
-                name=agent_name.split('/')[1]
-            )
+        def run_agent(agent_name: str, task):
+            is_local = False
 
-            agent_class, _ = manager.load_agent(author, name, version)
+            if agent_name.count('/') >= 3:
+                is_local = True
+            
+            try:
+                author, name, version = manager.download_agent(
+                    author=agent_name.split('/')[0],
+                    name=agent_name.split('/')[1]
+                )
+            except:
+                is_local = True
+
+            if is_local:
+                agent_class, _ = manager.load_agent(local=True, path=agent_name)
+            else:
+                agent_class, _ = manager.load_agent(author, name, version)
 
             agent = agent_class(agent_name, task)
 
