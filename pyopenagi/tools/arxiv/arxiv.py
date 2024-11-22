@@ -1,6 +1,6 @@
 import re
 
-from pyopenagi.tools.base import BaseTool
+from cerebrum.tool.base import BaseTool
 
 import arxiv
 
