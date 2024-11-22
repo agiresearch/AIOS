@@ -15,7 +15,6 @@ anthropic
 python-dotenv
 litellm
 pyfzf
-npm
 platformdirs
 arxiv
 llama-index-embeddings-huggingface

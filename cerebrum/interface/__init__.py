@@ -1,24 +1,8 @@
 from cerebrum.manager.agent import AgentManager
+from cerebrum.manager.tool import ToolManager
 from cerebrum.runtime.process import LLMProcessor, RunnableAgent
 
 from .. import config
-
-class AutoAgent:
-    MANAGER = AgentManager('https://my.aios.foundation')
-
-    @classmethod
-    def from_pretrained(cls, name: str):
-        _author, _name = name.split('/')
-
-        _author, _name, _version = cls.MANAGER.download_agent(_author, _name)
-
-        agent, config = cls.MANAGER.load_agent(
-            _author,
-            _name,
-            _version
-        )
-
-        return agent, config
 
 
 class AutoLLM:
@@ -27,17 +11,37 @@ class AutoLLM:
         return LLMProcessor(config.global_client)
 
 
-class AutoAgentGenerator:
+class AutoTool:
+    TOOL_MANAGER = ToolManager('https://my.aios.foundation')
+
+    @classmethod
+    def from_preloaded(cls, tool_name: str):
+        author, name, version = cls.TOOL_MANAGER.download_tool(
+            author=tool_name.split('/')[0],
+            name=tool_name.split('/')[1]
+        )
+
+        tool, _ = cls.TOOL_MANAGER.load_tool(author, name, version)
+
+        return tool
     
     @classmethod
-    def build_agent(cls, agent_name: str, llm_name: str):
-        agent, config = AutoAgent.from_pretrained(agent_name)
-        llm = AutoLLM.from_foundational(llm_name)
+    def from_batch_preload(cls, tool_names: list[str]):
+        response = {
+             'tools': [],
+             'tool_info': []
+        }
 
-        _agent = RunnableAgent(agent, config, llm)
+        for tool_name in tool_names:
+             tool = AutoTool.from_preloaded(tool_name)
 
-        print(config)
-        
-        # _agent.llm = llm
+             response['tools'].append(tool.get_tool_call_format())
+             response['tool_info'].append(
+                {
+                    "name": tool.get_tool_call_format()["function"]["name"],
+                    "description": tool.get_tool_call_format()["function"]["description"],
+                }
+             )
 
-        return _agent
+
+        return response

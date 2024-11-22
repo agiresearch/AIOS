@@ -39,7 +39,7 @@ def useFactory(
 
             agent_class, _ = manager.load_agent(author, name, version)
 
-            agent = agent_class(agent_name, task, 'console')
+            agent = agent_class(agent_name, task)
 
             return agent.run()
 

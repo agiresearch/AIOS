@@ -1,6 +1,6 @@
 import re
 
-from ..base import BaseTool
+from pyopenagi.tools.base import BaseTool
 
 import arxiv
 

@@ -3,13 +3,6 @@
 
 from aios.context.base import BaseContextManager
 
-import os
-
-import torch
-
-# import shutil
-from threading import Lock
-
 class SimpleContextManager(BaseContextManager):
     def __init__(self):
         BaseContextManager.__init__(self)

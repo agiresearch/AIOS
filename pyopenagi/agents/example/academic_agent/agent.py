@@ -1,46 +1,20 @@
-import importlib
+
 
 import os
-import time
-
-# from aios.hooks.syscall import send_request
-# from aios.hooks.syscall import useSysCall
+from cerebrum.agents.base import BaseAgent
 from cerebrum.client import Cerebrum
-from cerebrum.interface import AutoLLM
+from cerebrum.interface import AutoLLM, AutoTool
 
 from cerebrum.llm.communication import LLMQuery
 
-from cerebrum import config
-
-from pyopenagi.utils.logger import AgentLogger
-
-from pyopenagi.utils.utils import snake_to_camel
-
 import json
 
-
-class AcademicAgent:
-    def __init__(self, agent_name, task_input, log_mode: str):
-        self.agent_name = agent_name
-        self.config = self.load_config()
-        self.tool_names = self.config["tools"]
+class AcademicAgent(BaseAgent):
+    def __init__(self, agent_name, task_input):
+        super().__init__(agent_name, task_input)
 
         self.plan_max_fail_times = 3
         self.tool_call_max_fail_times = 3
-
-        config.global_client = Cerebrum()
-
-        self.send_request = AutoLLM.from_dynamic().process
-
-        # self.agent_process_factory = agent_process_factory
-
-        self.tool_list = dict()
-        self.tools = []
-        self.tool_info = (
-            []
-        )  # simplified information of the tool: {"name": "xxx", "description": "xxx"}
-
-        self.load_tools(self.tool_names)
 
         self.start_time = None
         self.end_time = None
@@ -50,44 +24,6 @@ class AcademicAgent:
         self.messages = []
         self.workflow_mode = "manual"  # (mannual, automatic)
         self.rounds = 0
-
-        self.log_mode = log_mode
-        self.logger = self.setup_logger()
-
-
-    def setup_logger(self):
-        logger = AgentLogger(self.agent_name, self.log_mode)
-        return logger
-
-    def load_config(self):
-        script_path = os.path.abspath(__file__)
-        script_dir = os.path.dirname(script_path)
-        config_file = os.path.join(script_dir, "config.json")
-        with open(config_file, "r") as f:
-            config = json.load(f)
-            return config
-        
-    def load_tools(self, tool_names):
-        if tool_names == "None":
-            return
-
-        for tool_name in tool_names:
-            org, name = tool_name.split("/")
-            module_name = ".".join(["pyopenagi", "tools", org, name])
-            class_name = snake_to_camel(name)
-
-            tool_module = importlib.import_module(module_name)
-            tool_class = getattr(tool_module, class_name)
-
-            self.tool_list[name] = tool_class()
-            tool_format = tool_class().get_tool_call_format()
-            self.tools.append(tool_format)
-            self.tool_info.append(
-                {
-                    "name": tool_format["function"]["name"],
-                    "description": tool_format["function"]["description"],
-                }
-            )
 
 
     def build_system_instruction(self):
@@ -155,7 +91,7 @@ class AcademicAgent:
             {
                 "action_type": "tool_use",
                 "action": "Search for relevant papers",
-                "tool_use": ["arxiv/arxiv"],
+                "tool_use": ["example/arxiv"],
             },
             {
                 "action_type": "chat",
@@ -164,16 +100,6 @@ class AcademicAgent:
             },
         ]
         return workflow
-    
-    def pre_select_tools(self, tool_names):
-        pre_selected_tools = []
-        for tool_name in tool_names:
-            for tool in self.tools:
-                if tool["function"]["name"] == tool_name:
-                    pre_selected_tools.append(tool)
-                    break
-
-        return pre_selected_tools
 
     def run(self):
         self.build_system_instruction()
@@ -181,7 +107,6 @@ class AcademicAgent:
         task_input = self.task_input
 
         self.messages.append({"role": "user", "content": task_input})
-        self.logger.log(f"{task_input}\n", level="info")
 
         workflow = None
 
@@ -246,12 +171,9 @@ class AcademicAgent:
                     "agent_name": self.agent_name,
                     "result": "Failed to generate a valid workflow in the given times.",
                     "rounds": self.rounds,
-                    # "agent_waiting_time": None,
-                    # "agent_turnaround_time": None,
-                    # "request_waiting_times": self.request_waiting_times,
-                    # "request_turnaround_times": self.request_turnaround_times,
+
                 }
                 
         except Exception as e:
-            print(e)
+
             return {}

@@ -29,13 +29,14 @@ class ToolManager:
         """Package a tool from a folder into a transportable format."""
         tool_files = self._get_tool_files(folder_path)
         metadata = self._get_tool_metadata(folder_path)
+        print(metadata)
         
         # Validate required tool metadata
-        required_fields = ['name', 'version', 'author']
-        missing_fields = [field for field in required_fields 
-                         if not metadata.get("meta", {}).get(field)]
-        if missing_fields:
-            raise ValueError(f"Missing required metadata fields: {missing_fields}")
+        # required_fields = ['name', 'version', 'author']
+        # missing_fields = [field for field in required_fields 
+        #                  if not metadata.get("meta", {}).get(field)]
+        # if missing_fields:
+        #     raise ValueError(f"Missing required metadata fields: {missing_fields}")
 
         return {
             "author": metadata.get("meta", {}).get('author'),
@@ -59,9 +60,12 @@ class ToolManager:
             cached_versions = self._get_cached_versions(author, name)
             version = self._get_newest_version(cached_versions)
 
-        cache_path = self._get_cache_path(author, name, version)
+        try:
+            cache_path = self._get_cache_path(author, name, version)
+        except:
+            cache_path = None
 
-        if cache_path.exists():
+        if cache_path is not None and cache_path.exists():
             print(f"Using cached version of tool {author}/{name} (v{version})")
             return author, name, version
 
