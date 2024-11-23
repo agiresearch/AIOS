@@ -18,6 +18,22 @@ python3 -m venv "$INSTALL_DIR/venv"
 source "$INSTALL_DIR/venv/bin/activate"
 pip install -r "$INSTALL_DIR/src/requirements.txt"
 
+# Remove non-kernel files
+rm -rf experiment
+rm -rf scripts
+rm -rf tests
+rm -rf aios-figs
+
+rm requirements-cuda.txt
+rm requirements-dev.txt
+rm requirements-research.txt
+rm .dockerignore
+rm .env.example
+rm .precommit-config.yaml
+rm README.md
+rm CONTRIBUTE.md
+rm Dockerfile
+
 # Create initial .env if it doesn't exist
 touch "$INSTALL_DIR/.env"
 
