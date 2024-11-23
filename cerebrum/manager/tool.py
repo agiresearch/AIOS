@@ -11,6 +11,7 @@ import platformdirs
 import importlib.util
 
 from cerebrum.manager.package import ToolPackage
+from cerebrum.tool.core.registry import PATHS
 
 class ToolManager:
     def __init__(self, base_url: str):
