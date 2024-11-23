@@ -90,51 +90,64 @@ class ToolManager:
 
         return author, name, actual_version
 
-    def load_tool(self, author: str, name: str, version: str | None = None) -> Tuple[type, dict]:
+    def load_tool(self, 
+                author: str = '', 
+                name: str = '', 
+                version: str | None = None,
+                local: bool = False, module_name: str | None = None, class_name: str | None = None):
         """Load a tool dynamically and return its class and configuration."""
-        if version is None:
-            cached_versions = self._get_cached_versions(author, name)
-            version = self._get_newest_version(cached_versions)
 
-        tool_path = self._get_cache_path(author, name, version)
-        
-        if not tool_path.exists():
-            print(f"Tool {author}/{name} (v{version}) not found in cache. Downloading...")
-            self.download_tool(author, name, version)
+        if not local:
+            if version is None:
+                cached_versions = self._get_cached_versions(author, name)
+                version = self._get_newest_version(cached_versions)
 
-        tool_package = ToolPackage(tool_path)
-        tool_package.load()
-
-        # Get entry point and module name
-        entry_point = tool_package.get_entry_point()
-        module_name = tool_package.get_module_name()
-
-        # Create temporary directory for tool files
-        temp_dir = self.cache_dir / "temp" / f"{author}_{name}_{version}"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-
-        # Extract tool files
-        for filename, content in tool_package.files.items():
-            file_path = temp_dir / filename
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_bytes(content)
-
-        # Add to Python path and load module
-        sys.path.insert(0, str(temp_dir))
-        
-        try:
-            # Load the module
-            spec = importlib.util.spec_from_file_location(module_name, str(temp_dir / entry_point))
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-
-            # Get the tool class
-            tool_class = getattr(module, module_name)
+            tool_path = self._get_cache_path(author, name, version)
             
-            return tool_class, tool_package.get_config()
-        finally:
-            # Clean up
-            sys.path.pop(0)
+            if not tool_path.exists():
+                print(f"Tool {author}/{name} (v{version}) not found in cache. Downloading...")
+                self.download_tool(author, name, version)
+
+            tool_package = ToolPackage(tool_path)
+            tool_package.load()
+
+            # Get entry point and module name
+            entry_point = tool_package.get_entry_point()
+            module_name = tool_package.get_module_name()
+
+            # Create temporary directory for tool files
+            temp_dir = self.cache_dir / "temp" / f"{author}_{name}_{version}"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+
+            # Extract tool files
+            for filename, content in tool_package.files.items():
+                file_path = temp_dir / filename
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                file_path.write_bytes(content)
+
+            # Add to Python path and load module
+            sys.path.insert(0, str(temp_dir))
+            
+            try:
+                # Load the module
+                spec = importlib.util.spec_from_file_location(module_name, str(temp_dir / entry_point))
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+
+                # Get the tool class
+                tool_class = getattr(module, module_name)
+                
+                return tool_class, tool_package.get_config()
+            finally:
+                # Clean up
+                sys.path.pop(0)
+        else:
+            module = importlib.import_module(f'cerebrum.tool.core.{module_name}')
+            tool = getattr(module, class_name)
+
+            return tool, None
+
+
 
     def _get_cached_versions(self, author: str, name: str) -> List[str]:
         """Get list of cached versions for a tool."""
