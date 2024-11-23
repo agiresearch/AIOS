@@ -3,13 +3,15 @@ from cerebrum.manager.tool import ToolManager
 from cerebrum.runtime.process import LLMProcessor, RunnableAgent
 
 from .. import config
-
+ 
 class AutoAgent:
     AGENT_MANAGER = AgentManager('https://my.aios.foundation')
-
+ 
     @classmethod
-    def from_pretrained(cls):
-        cls.AGENT_MANAGER.download_agent()
+    def from_preloaded(cls, agent_name: str):
+        _client = config.global_client
+
+        return RunnableAgent(_client, agent_name)
 
 
 class AutoLLM:
@@ -31,7 +33,7 @@ class AutoTool:
 
             tool, _ = cls.TOOL_MANAGER.load_tool(author, name, version)
         else:
-            tool, _ = cls.TOOL_MANAGER.load_tool(local=True, module_name=tool_name.split('/')[0], name=tool_name.split('/')[1])
+            tool, _ = cls.TOOL_MANAGER.load_tool(local=True, name=tool_name)
         return tool
     
     @classmethod

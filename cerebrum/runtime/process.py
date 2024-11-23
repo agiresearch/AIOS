@@ -14,21 +14,25 @@ class LLMProcessor:
         return self.client._query_llm(agent_name=agent_name, query=query)
 
 class RunnableAgent:
-    def __init__(self, agent_class, config, llm):
-        self.agent = agent_class
-        self.config = config
-        self.llm = llm
+    def __init__(self, client: Cerebrum, name: str):
+        self.name = name
+        self.client = client
 
-    def run(self, query):
-        _runnable = AgentProcessor.make_runnable(
-            self.agent,
-            query,
-            self.config
-        )
+    def execute(self, query: str):
+        result = self.client.execute(self.name, {
+            "task": self.query,
+        })
 
-        _runnable.llm = self.llm
+        # Wait for completion
+        try:
+            final_result = self.client.poll_agent(
+                result["execution_id"],
+                timeout=300  # 5 minutes timeout
+            )
+            return final_result
+        except TimeoutError:
+            return "Agent execution timed out"
 
-        return _runnable.run()
 
 class AgentProcessor:
     @staticmethod

@@ -95,7 +95,7 @@ class ToolManager:
                 author: str = '', 
                 name: str = '', 
                 version: str | None = None,
-                local: bool = False, module_name: str | None = None, class_name: str | None = None):
+                local: bool = False):
         """Load a tool dynamically and return its class and configuration."""
 
         if not local:
@@ -143,8 +143,8 @@ class ToolManager:
                 # Clean up
                 sys.path.pop(0)
         else:
-            module = importlib.import_module(f'cerebrum.tool.core.{module_name}')
-            tool = getattr(module, class_name)
+            module = importlib.import_module(f"cerebrum.tool.core.{PATHS[name].get('module_name')}")
+            tool = getattr(module, PATHS[name].get('class_name'))
 
             return tool, None
 
