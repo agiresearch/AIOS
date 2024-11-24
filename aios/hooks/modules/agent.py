@@ -54,10 +54,6 @@ def useFactory(
 
             agent.send_request = send_request
 
-            print(agent, 'hm,')
-            k = agent.run()
-            print(k)
-
             return agent.run()
 
         _submitted_agent: Future = thread_pool.submit(
@@ -93,10 +89,7 @@ def useFactory(
 
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
 
-        print(future)
-
         if future:
-            print('heredd')
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")

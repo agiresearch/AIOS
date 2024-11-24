@@ -151,6 +151,7 @@ def useSysCall():
 
     def llm_syscall_exec(agent_name, query):
         syscall = LLMSyscall(agent_name=agent_name, query=query)
+
         syscall.set_status("active")
 
         completed_response, start_times, end_times, waiting_times, turnaround_times = (
@@ -195,11 +196,6 @@ def useSysCall():
 
 
     def send_request(agent_name, query):
-        print(isinstance(query, LLMQuery))
-        print(isinstance(query, ToolQuery))
-        print(isinstance(query,StorageQuery))
-        print(isinstance(query, MemoryQuery))
-
         if isinstance(query, LLMQuery):
             action_type = query.action_type
 

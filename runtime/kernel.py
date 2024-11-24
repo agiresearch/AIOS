@@ -292,7 +292,6 @@ async def cleanup_components():
 
 @app.post("/query")
 async def handle_query(request: QueryRequest):
-    print('received')
     try:
         if request.query_type == "llm":
             query = LLMQuery(
