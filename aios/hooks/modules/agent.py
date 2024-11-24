@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, Future
 from random import randint
 from typing import Any, Tuple, Callable, Dict
+from aios.hooks.syscall import useSysCall
 from aios.hooks.types.agent import AgentSubmitDeclaration, FactoryParams
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
@@ -17,6 +18,8 @@ def useFactory(
     thread_pool = ThreadPoolExecutor(max_workers=params.max_workers)
     manager = AgentManager('https://my.aios.foundation')
 
+    send_request, _ = useSysCall()
+
     @validate(AgentSubmitDeclaration)
     def submitAgent(declaration_params: AgentSubmitDeclaration) -> int:
         """
@@ -28,8 +31,6 @@ def useFactory(
         Returns:
             int: A unique process ID for the submitted agent.
         """
-        print('hi')    
-
         def run_agent(agent_name: str, task):
             is_local = False
 
@@ -41,15 +42,21 @@ def useFactory(
                     author=agent_name.split('/')[0],
                     name=agent_name.split('/')[1]
                 )
+
             except:
                 is_local = True
-
             if is_local:
                 agent_class, _ = manager.load_agent(local=True, path=agent_name)
             else:
                 agent_class, _ = manager.load_agent(author, name, version)
 
-            agent = agent_class(agent_name, task)
+            agent = agent_class(agent_name, task, _)
+
+            agent.send_request = send_request
+
+            print(agent, 'hm,')
+            k = agent.run()
+            print(k)
 
             return agent.run()
 
@@ -89,6 +96,7 @@ def useFactory(
         print(future)
 
         if future:
+            print('heredd')
             return future.result()
         else:
             raise ValueError(f"Process with ID '{process_id}' not found.")

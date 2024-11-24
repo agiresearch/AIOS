@@ -49,6 +49,7 @@ def useToolRequestQueue() -> (
 
     # Function to add messages to the queue
     def addMessage(message: str):
+        print(message)
         return QueueStore.addMessage(_, message)
 
     # Function to check if the queue is empty
