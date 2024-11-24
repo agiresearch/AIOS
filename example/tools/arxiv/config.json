@@ -1,0 +1,15 @@
+{
+    "name": "arxiv",
+    "description": [
+        "Helpful tool for Arxiv stuff!"
+    ],
+    "meta": {
+        "author": "example",
+        "version": "1.0.4",
+        "license": "CC0"
+    },
+    "build": {
+        "entry": "tool.py",
+        "module": "Arxiv"
+    }
+}
