@@ -3,15 +3,19 @@
 # Installation directory
 INSTALL_DIR="$HOME/.aios"
 REPO_URL="https://github.com/agiresearch/AIOS"
-BRANCH="v.20"
+TAG="v0.2.0.beta"  # Replace with your specific tag
 
 echo "Installing AIOS..."
 
 # Create installation directory
 mkdir -p "$INSTALL_DIR"
 
-# Clone specific branch
-git clone -b "$BRANCH" "$REPO_URL" "$INSTALL_DIR/src"
+# Clone the repository
+git clone "$REPO_URL" "$INSTALL_DIR/src"
+
+# Checkout the specific tag
+cd "$INSTALL_DIR/src"
+git checkout tags/"$TAG" -b "$TAG-branch"
 
 # Create virtual environment
 python3 -m venv "$INSTALL_DIR/venv"
