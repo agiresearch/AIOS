@@ -1,7 +1,7 @@
 
 from aios.llm_core.cores.base import BaseLLM
 from aios.llm_core.registry import MODEL_REGISTRY
-
+from aios.llm_core.cores.local.ollama import OllamaLLM
 
 class LLMAdapter:
     """Parameters for LLMs
@@ -37,7 +37,11 @@ class LLMAdapter:
         # For locally-deployed LLM
         else:
             if use_backend == "ollama" or llm_name.startswith("ollama"):
-                pass
+                self.model = OllamaLLM(
+                    llm_name = llm_name,
+                    log_mode = log_mode,
+                    use_context_manager = use_context_manager
+                )
                 #ollama here
             elif use_backend == "vllm":
                 # VLLM here
