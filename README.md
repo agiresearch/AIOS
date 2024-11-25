@@ -52,7 +52,7 @@ cd AIOS && git checkout v.20
 ```
 Create venv environment (recommended)
 ```bash
-python -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
 ```
 or create conda environment
