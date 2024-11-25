@@ -2,7 +2,7 @@
 
 import torch
 import time
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModel
 
 from aios.llm_core.cores.base import BaseLLM
 
@@ -21,7 +21,7 @@ class HfNativeLLM(BaseLLM):
         self.auth_token = get_from_env("HF_AUTH_TOKENS")
 
         """ only casual lms for now """
-        self.model = MODEL_CLASS[self.model_type].from_pretrained(
+        self.model = AutoModel.from_pretrained(
             self.model_name,
             device_map="auto",
             max_memory=self.max_gpu_memory,

@@ -2,7 +2,8 @@
 from aios.llm_core.cores.base import BaseLLM
 from aios.llm_core.registry import MODEL_REGISTRY
 from aios.llm_core.cores.local.ollama import OllamaLLM
-
+from aios.llm_core.cores.local.vllm import vLLM
+from aios.llm_core.cores.local.hf import HfNativeLLM
 class LLMAdapter:
     """Parameters for LLMs
 
@@ -45,9 +46,17 @@ class LLMAdapter:
                 #ollama here
             elif use_backend == "vllm":
                 # VLLM here
-                pass
+                self.model = vLLM(
+                    llm_name = llm_name,
+                    log_mode = log_mode,
+                    use_context_manager = use_context_manager
+                )
             else: # use huggingface LLM without backend
-                pass
+                self.model = HfNativeLLM(
+                    llm_name = llm_name,
+                    log_mode = log_mode,
+                    use_context_manager = use_context_manager
+                )
                 
 
     def address_syscall(self,
