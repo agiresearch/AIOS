@@ -141,6 +141,7 @@ async def setup_tool_manager(config: ToolManagerConfig):
     try:
         tool_manager = useToolManager()
 
+
         active_components["tool"] = tool_manager
         return {"status": "success", "message": "Tool manager initialized"}
     except Exception as e:
