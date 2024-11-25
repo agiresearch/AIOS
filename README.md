@@ -48,7 +48,7 @@ Please see our ongoing [documentation](https://aios-3.gitbook.io/) for more info
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS
+cd AIOS && git checkout v.20
 ```
 Create venv environment (recommended)
 ```bash
