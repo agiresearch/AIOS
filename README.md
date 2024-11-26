@@ -44,6 +44,9 @@ Please see our ongoing [documentation](https://aios-3.gitbook.io/) for more info
 - [WebUI Quickstart](https://aios-3.gitbook.io/aios-docs/getting-started/webui-quickstart)
 
 ### Installation
+#### Requirements
+##### Python
+- Supported versions: **Python 3.10 - 3.11**
 
 Git clone AIOS kernel
 ```bash
@@ -52,13 +55,12 @@ cd AIOS && git checkout v.20
 ```
 Create venv environment (recommended)
 ```bash
-python3.11 -m venv venv
+python3.x -m venv venv # Only support for Python 3.10 and 3.11
 source venv/bin/activate
 ```
 or create conda environment
 ```bash
-conda create -n venv python=3.10  # For Python 3.10
-conda create -n venv python=3.11  # For Python 3.11
+conda create -n venv python=3.x  # Only support for Python 3.10 and 3.11
 conda activate venv
 ```
 
@@ -83,8 +85,8 @@ git clone https://github.com/agiresearch/Cerebrum.git
 > Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
 
 <!-- Note: Please use `launch.py` for the WebUI, or `agent_repl.py` for the TUI. -->
-
-#### Use with OpenAI API
+#### Configurations
+##### Use with OpenAI API
 You need to get your OpenAI API key from https://platform.openai.com/api-keys.
 Then set up your OpenAI API key as an environment variable
 
@@ -92,9 +94,7 @@ Then set up your OpenAI API key as an environment variable
 export OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
 ```
 
-Then run main.py with the models provided by OpenAI API
-
-#### Use with Gemini API
+##### Use with Gemini API
 You need to get your Gemini API key from https://ai.google.dev/gemini-api
 
 ```bash
@@ -106,7 +106,7 @@ If you want to use **open-sourced** models provided by huggingface, here we prov
 * Use with native huggingface models
 * Use with vllm
 
-#### Use with ollama
+##### Use with ollama
 You need to download ollama from from https://ollama.com/.
 
 Then you need to start the ollama server either from ollama app
@@ -128,7 +128,7 @@ ollama can support CPU-only environment, so if you do not have CUDA environment
 However, if you have the GPU environment, you can also pass GPU-related parameters to speed up
 using the following command
 
-#### Use with native huggingface llm models
+##### Use with native huggingface llm models
 Some of the huggingface models require authentification, if you want to use all of
 the models you need to set up  your authentification token in https://huggingface.co/settings/tokens
 and set up it as an environment variable using the following command
@@ -140,7 +140,7 @@ If you want to designate the download directory, you can set up it using the fol
 export HF_HOME=<YOUR_HF_HOME>
 ```
 
-#### Use with vllm
+##### Use with vllm
 If you want to speed up the inference of huggingface models, you can use vllm as the backend.
 
 > [!NOTE]
@@ -156,6 +156,7 @@ export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
 
 or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 
+#### Run
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
 First, you need to start the AIOS kernel by running the following commands
@@ -168,10 +169,7 @@ cd Cerebrum && python example/aios_demo.py
 ```
 
 ### Web Quickstart
-#### Requirements
 
-##### Python
-- Supported versions: **Python 3.9 - 3.11**
 ##### Node
 - Supported versions: **LTS** support ONLY
 
@@ -224,7 +222,7 @@ Interact with all agents by using the `@` to tag an agent.
 ```
 
 ## 🚀 Contributions
-For how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) or [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
+For how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/docs/CONTRIBUTE.md). If you would like to contribute to the codebase, [issues](https://github.com/agiresearch/AIOS/issues) or [pull requests](https://github.com/agiresearch/AIOS/pulls) are always welcome!
 
 ## 🌍 AIOS Contributors
 [![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=300)](https://github.com/agiresearch/AIOS/graphs/contributors)
