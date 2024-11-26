@@ -12,17 +12,24 @@
 The goal of AIOS is to build a Large Language Model (LLM) agent operating system, which intends to embed large language model into the operating system as the brain of the OS. AIOS is designed to address problems (e.g., scheduling, context switch, memory management, etc.) during the development and deployment of LLM-based agents, for a better ecosystem among agent developers and users.
 
 ## 🏠 Architecture of AIOS
+### Overview
 <p align="center">
 <img src="docs/assets/aios-figs/architecture.jpg">
 </p>
-<p align="center">
-<img src="docs/assets/aios-figs/scheduler.jpg">
-</p>
-
 The AIOS system is comprised of two key components: the AIOS kernel and the AIOS-Agent SDK.
 The AIOS kernel acts as an abstraction layer over the operating system kernel, managing various resources that agents require, such as LLM, memory, storage and tool. 
 The AIOS-Agent SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
 AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum). 
+
+### Modules and Connections
+Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel. 
+<p align="center">
+<img src="docs/assets/aios-figs/sdk.png">
+</p>
+Below shows how AIOS kernel decomposes agent queries into syscalls and how syscalls are scheduled and processed. 
+<p align="center">
+<img src="docs/assets/aios-figs/scheduler.jpg">
+</p>
 
 ## 📰 News
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios-3.gitbook.io/aios-docs/aios-agent/how-to-develop-agents).
@@ -32,7 +39,7 @@ AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
 - **[2024-04-05]** 🛠️ AIOS currently supports external tool callings (google search, wolframalpha, rapid API, etc).
-- **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats! For how to contribute to AIOS, please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/CONTRIBUTE.md).
+- **[2024-04-02]** 🤝 AIOS [Discord Community](https://discord.gg/B2HFxEgTJX) is up. Welcome to join the community for discussions, brainstorming, development, or just random chats! For how to contribute to AIOS, please see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob/main/docs/CONTRIBUTE.md).
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released!
 - **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
@@ -163,7 +170,7 @@ First, you need to start the AIOS kernel by running the following commands
 ```
 bash runtime/launch_kernel.sh
 ```
-Then you need to open a new terminal and start the client with the [AIOS-Agent SDK](https://github.com/agiresearch/Cerebrum.git) with the following command. 
+Then you need to open a new terminal and start the client using the [AIOS-Agent SDK](https://github.com/agiresearch/Cerebrum.git) with the following command. 
 ```
 cd Cerebrum && python example/aios_demo.py
 ```
