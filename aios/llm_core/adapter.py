@@ -1,9 +1,9 @@
 
+from typing import Dict, Optional
 from aios.llm_core.cores.base import BaseLLM
-from aios.llm_core.registry import MODEL_REGISTRY
-from aios.llm_core.cores.local.ollama import OllamaLLM
-from aios.llm_core.cores.local.vllm import vLLM
+from aios.llm_core.registry import BACKEND_REGISTRY, MODEL_PREFIX_MAP
 from aios.llm_core.cores.local.hf import HfNativeLLM
+
 class LLMAdapter:
     """Parameters for LLMs
 
@@ -16,48 +16,57 @@ class LLMAdapter:
         use_backend (str, optional): Backend to use for speeding up open-source LLMs. Defaults to None. Choices are ["vllm", "ollama"]
     """
 
-    def __init__(self,
-                 llm_name: str,
-                 max_gpu_memory: dict = None,
-                 eval_device: str = None,
-                 max_new_tokens: int = 256,
-                 log_mode: str = "console",
-                 use_backend: str = None,
-                 use_context_manager: bool = False
-        ):
+    def __init__(
+        self,
+        llm_name: str,
+        max_gpu_memory: Optional[Dict] = None,
+        eval_device: Optional[str] = None,
+        max_new_tokens: int = 256,
+        log_mode: str = "console",
+        use_backend: Optional[str] = None,
+        use_context_manager: bool = False
+    ):
+        """Initialize the LLM with the specified configuration.
+        
+        Args:
+            llm_name: Name of the LLM model to use
+            max_gpu_memory: Maximum GPU memory allocation per device
+            eval_device: Device to use for evaluation
+            max_new_tokens: Maximum number of new tokens to generate
+            log_mode: Logging mode ("console" or other options)
+            use_backend: Specific backend to use (if None, inferred from model name)
+            use_context_manager: Whether to use context manager
+        """
+        self.model: Optional[BaseLLM] = None
+        
+        # Common model parameters
+        model_params = {
+            'llm_name': llm_name,
+            'log_mode': log_mode,
+            'use_context_manager': use_context_manager
+        }
+        
+        # If backend is explicitly specified, use it
+        if use_backend and use_backend in BACKEND_REGISTRY:
+            model_class = BACKEND_REGISTRY[use_backend]
+            self.model = model_class(**model_params)
+            return
 
-        self.model: BaseLLM = None
-
-        # For API-based LLM
-        if llm_name in MODEL_REGISTRY.keys():
-            self.model = MODEL_REGISTRY[llm_name](
-                llm_name = llm_name,
-                log_mode = log_mode,
-                use_context_manager = use_context_manager
-            )
-        # For locally-deployed LLM
-        else:
-            if use_backend == "ollama" or llm_name.startswith("ollama"):
-                self.model = OllamaLLM(
-                    llm_name = llm_name,
-                    log_mode = log_mode,
-                    use_context_manager = use_context_manager
-                )
-                #ollama here
-            elif use_backend == "vllm":
-                # VLLM here
-                self.model = vLLM(
-                    llm_name = llm_name,
-                    log_mode = log_mode,
-                    use_context_manager = use_context_manager
-                )
-            else: # use huggingface LLM without backend
-                self.model = HfNativeLLM(
-                    llm_name = llm_name,
-                    log_mode = log_mode,
-                    use_context_manager = use_context_manager
-                )
-                
+        # Try to infer backend from model name prefix
+        model_prefix = next(
+            (prefix for prefix in MODEL_PREFIX_MAP.keys() 
+            if llm_name.lower().startswith(prefix)),
+            None
+        )
+        
+        if model_prefix:
+            inferred_backend = MODEL_PREFIX_MAP[model_prefix]
+            model_class = BACKEND_REGISTRY[inferred_backend]
+            self.model = model_class(**model_params)
+            return
+        
+        # Default to HuggingFace native implementation if no specific backend is found
+        self.model = HfNativeLLM(**model_params)
 
     def address_syscall(self,
                         llm_syscall,
