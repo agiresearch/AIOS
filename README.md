@@ -1,4 +1,4 @@
-# AIOS: LLM Agent Operating System (AgentOS)
+# AIOS: LLM Agent Operating System
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
@@ -26,7 +26,7 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel.
 <p align="center">
 <img src="docs/assets/aios-figs/sdk.png">
 </p>
-Below shows how AIOS kernel decomposes agent queries into syscalls and how syscalls are scheduled and processed. 
+Below shows how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
 <p align="center">
 <img src="docs/assets/aios-figs/scheduler.jpg">
 </p>
