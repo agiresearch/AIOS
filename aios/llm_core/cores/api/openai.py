@@ -36,7 +36,7 @@ class GPTLLM(BaseLLM):
             parsed_tool_calls = []
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                function_name = "/".join(function_name.split("_"))
+                function_name = "/".join(function_name.split("-"))
                 function_args = json.loads(tool_call.function.arguments)
                 parsed_tool_calls.append(
                     {
@@ -49,9 +49,9 @@ class GPTLLM(BaseLLM):
             return parsed_tool_calls
         return None
     
-    def slash_to_underline(self, tools):
+    def convert_tools(self, tools):
         for tool in tools:
-            tool["function"]["name"] = "_".join(tool["function"]["name"].split("/"))
+            tool["function"]["name"] = "-".join(tool["function"]["name"].split("/"))
         return tools
 
     def address_syscall(self, llm_syscall, temperature=0.0):
@@ -68,7 +68,7 @@ class GPTLLM(BaseLLM):
             else:
                 query = llm_syscall.query
                 if query.tools:
-                    query.tools = self.slash_to_underline(query.tools)
+                    query.tools = self.convert_tools(query.tools)
                
                 response = self.model.chat.completions.create(
                     model=self.model_name,
