@@ -163,7 +163,7 @@ First, you need to start the AIOS kernel by running the following commands
 ```
 bash runtime/launch_kernel.sh
 ```
-Then you need to open a new terminal and start the client in AIOS-Agent SDK with the following command. 
+Then you need to open a new terminal and start the client with the [AIOS-Agent SDK](https://github.com/agiresearch/Cerebrum.git) with the following command. 
 ```
 cd Cerebrum && python example/aios_demo.py
 ```
