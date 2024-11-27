@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Installation directory
-INSTALL_DIR="$HOME/.aios"
+INSTALL_DIR="$HOME/.aios-1"
 REPO_URL="https://github.com/agiresearch/AIOS"
 TAG="v0.2.0.beta"  # Replace with your specific tag
 
@@ -45,38 +45,15 @@ touch "$INSTALL_DIR/.env"
 cat > /usr/local/bin/aios << 'EOF'
 #!/bin/bash
 
-INSTALL_DIR="$HOME/.aios"
+INSTALL_DIR="$HOME/.aios-1"
 PID_FILE="$INSTALL_DIR/server.pid"
 ENV_FILE="$INSTALL_DIR/.env"
-ENV_HASH_FILE="$INSTALL_DIR/.env.hash"
-WATCHER_PID_FILE="$INSTALL_DIR/watcher.pid"
 
 # Function to load environment variables
 load_env() {
     if [ -f "$ENV_FILE" ]; then
         export $(cat "$ENV_FILE" | xargs)
     fi
-}
-
-# Function to check if .env has changed
-env_changed() {
-    if [ ! -f "$ENV_FILE" ]; then
-        touch "$ENV_FILE"  # Create empty .env file if it doesn't exist
-    fi
-    
-    if [ ! -f "$ENV_HASH_FILE" ]; then
-        md5 "$ENV_FILE" | awk '{print $4}' > "$ENV_HASH_FILE"
-        return 0
-    fi
-    
-    old_hash=$(cat "$ENV_HASH_FILE")
-    new_hash=$(md5 "$ENV_FILE" | awk '{print $4}')
-    
-    if [ "$old_hash" != "$new_hash" ]; then
-        echo "$new_hash" > "$ENV_HASH_FILE"
-        return 0
-    fi
-    return 1
 }
 
 start() {
@@ -89,11 +66,10 @@ start() {
     cd "$INSTALL_DIR/src"
     nohup uvicorn runtime.kernel:app --reload > "$INSTALL_DIR/server.log" 2>&1 &
     echo $! > "$PID_FILE"
-    echo "Server started with current environment variables"
+    echo "Server started"
 }
 
 stop() {
-    # Stop the server
     if [ -f "$PID_FILE" ]; then
         pid=$(cat "$PID_FILE")
         kill $pid 2>/dev/null || true
@@ -101,14 +77,6 @@ stop() {
         echo "Server stopped"
     else
         echo "Server is not running"
-    fi
-
-    # Stop the watcher
-    if [ -f "$WATCHER_PID_FILE" ]; then
-        watcher_pid=$(cat "$WATCHER_PID_FILE")
-        kill $watcher_pid 2>/dev/null || true
-        rm "$WATCHER_PID_FILE"
-        echo "Environment watcher stopped"
     fi
 }
 
@@ -176,9 +144,6 @@ clean() {
     # First stop everything
     stop
     
-    # Kill any remaining env watchers (belt and suspenders approach)
-    pkill -f "aios.*watch_env" 2>/dev/null || true
-    
     # Deactivate virtual environment if active
     if [ -n "$VIRTUAL_ENV" ]; then
         deactivate
@@ -189,23 +154,76 @@ clean() {
     echo "AIOS installation cleaned up successfully"
 }
 
-watch_env() {
-    # Save watcher PID
-    echo $$ > "$WATCHER_PID_FILE"
+env_add() {
+    echo "Adding new environment variable"
+    echo "Enter variable name (e.g., API_KEY):"
+    read varname
     
-    while true; do
-        if env_changed; then
-            echo "Environment variables changed, restarting server..."
-            restart
+    # Validate variable name
+    if [[ ! $varname =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+        echo "Invalid variable name. Use only letters, numbers, and underscores, and start with a letter or underscore."
+        return 1
+    fi
+    
+    echo "Enter variable value:"
+    read -s varvalue  # -s flag hides the input (good for sensitive values)
+    echo  # Add newline after hidden input
+    
+    # Check if variable already exists
+    if grep -q "^$varname=" "$ENV_FILE" 2>/dev/null; then
+        echo "Variable $varname already exists. Do you want to update it? (y/n)"
+        read answer
+        if [ "$answer" != "y" ]; then
+            echo "Operation cancelled"
+            return
         fi
-        sleep 5
-    done
+        # Remove old value
+        sed -i '' "/^$varname=/d" "$ENV_FILE"
+    fi
+    
+    # Add new value
+    echo "$varname=$varvalue" >> "$ENV_FILE"
+    echo "Environment variable added successfully"
+    echo "Remember to restart the server for changes to take effect"
+}
+
+env_list() {
+    echo "Current environment variables:"
+    if [ -f "$ENV_FILE" ] && [ -s "$ENV_FILE" ]; then
+        cat "$ENV_FILE" | sed 's/=.*$/=****/'  # Show variable names but hide values
+    else
+        echo "No environment variables set"
+    fi
+}
+
+env_remove() {
+    echo "Current environment variables:"
+    if [ -f "$ENV_FILE" ] && [ -s "$ENV_FILE" ]; then
+        cat "$ENV_FILE" | sed 's/=.*$/=****/' | nl  # Show numbered list
+        echo ""
+        echo "Enter the number of the variable to remove:"
+        read varnum
+        
+        if [[ "$varnum" =~ ^[0-9]+$ ]]; then
+            varname=$(sed -n "${varnum}p" "$ENV_FILE" | cut -d= -f1)
+            if [ -n "$varname" ]; then
+                sed -i '' "/^$varname=/d" "$ENV_FILE"
+                echo "Removed $varname"
+                echo "Remember to restart the server for changes to take effect"
+            else
+                echo "Invalid number"
+            fi
+        else
+            echo "Invalid input"
+        fi
+    else
+        echo "No environment variables set"
+    fi
 }
 
 case "$1" in
     "start")
         start
-        watch_env &  # Start env watcher in background
         ;;
     "stop")
         stop
@@ -217,17 +235,27 @@ case "$1" in
         update
         ;;
     "env")
-        if [ -f "$ENV_FILE" ]; then
-            cat "$ENV_FILE"
-        else
-            echo "No environment variables set"
-        fi
+        case "$2" in
+            "add")
+                env_add
+                ;;
+            "list")
+                env_list
+                ;;
+            "remove")
+                env_remove
+                ;;
+            *)
+                echo "Usage: aios env {add|list|remove}"
+                ;;
+        esac
         ;;
     "clean")
         clean
         ;;
     *)
         echo "Usage: aios {start|stop|restart|update|env|clean}"
+        echo "For environment variables: aios env {add|list|remove}"
         exit 1
         ;;
 esac
@@ -242,8 +270,7 @@ echo "  - 'aios start' to start the server"
 echo "  - 'aios stop' to stop the server"
 echo "  - 'aios restart' to restart the server"
 echo "  - 'aios update' to update to the latest version"
-echo "  - 'aios env' to view current environment variables"
+echo "  - 'aios env add' to add new environment variables"
+echo "  - 'aios env list' to view current environment variables"
+echo "  - 'aios env remove' to remove environment variables"
 echo "  - 'aios clean' to remove AIOS installation"
-echo ""
-echo "To modify environment variables, edit: $INSTALL_DIR/.env"
-echo "The server will automatically restart when environment variables change"
