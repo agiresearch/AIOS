@@ -88,6 +88,7 @@ async def setup_llm(config: LLMConfig):
             log_mode=config.log_mode,
             use_backend=config.use_backend,
         )
+        # print(config.llm_name)
         active_components["llm"] = llm
         return {"status": "success", "message": "LLM core initialized"}
     except Exception as e:

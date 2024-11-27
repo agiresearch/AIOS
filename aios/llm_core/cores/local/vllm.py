@@ -30,7 +30,7 @@ class vLLM(BaseLLM):
             eval_device,
             max_new_tokens,
             log_mode,
-            use_context_manager
+            use_context_manager,
         )
 
     def load_llm_and_tokenizer(self) -> None:
@@ -90,15 +90,11 @@ class vLLM(BaseLLM):
 
             tool_calls = self.parse_tool_calls(result)
             if tool_calls:
-                llm_syscall.set_response(
-                    Response(
-                        response_message=None, tool_calls=tool_calls, finished=True
-                    )
+                response = Response(
+                    response_message=None, tool_calls=tool_calls, finished=True
                 )
             else:
-                llm_syscall.set_response(
-                    Response(response_message=result, finished=True)
-                )
+                response = Response(response_message=result, finished=True)
 
         else:
             prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
@@ -110,8 +106,6 @@ class vLLM(BaseLLM):
             if message_return_type == "json":
                 result = self.parse_json_format(result)
 
-            llm_syscall.set_response(Response(response_message=result, finished=True))
+            response = Response(response_message=result, finished=True)
 
-        llm_syscall.set_status("done")
-
-        llm_syscall.set_end_time(time.time())
+        return response

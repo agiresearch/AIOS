@@ -28,7 +28,7 @@ class OllamaLLM(BaseLLM):
             eval_device,
             max_new_tokens,
             log_mode,
-            use_context_manager
+            use_context_manager,
         )
 
     def load_llm_and_tokenizer(self) -> None:
@@ -37,6 +37,7 @@ class OllamaLLM(BaseLLM):
 
     def address_syscall(self, llm_syscall, temperature=0.0):
         # ensures the models are from ollama
+        # print(self.model_name)
         assert re.search(r"ollama", self.model_name, re.IGNORECASE)
 
         """ simple wrapper around ollama functions """
@@ -50,6 +51,8 @@ class OllamaLLM(BaseLLM):
         )
 
         # with and without overhead for tool handling
+        # print(messages)
+        # print(tools)
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
             try:
@@ -57,25 +60,24 @@ class OllamaLLM(BaseLLM):
                     model=self.model_name.split("/")[-1], messages=messages
                 )
 
+                # print(f"***** original response: {response} *****")
+
                 tool_calls = self.parse_tool_calls(response["message"]["content"])
+                # print(tool_calls)
 
                 if tool_calls:
-                    llm_syscall.set_response(
-                        Response(
-                            response_message=None, tool_calls=tool_calls, finished=True
-                        )
+                    response = Response(
+                        response_message=None, tool_calls=tool_calls, finished=True
                     )
+
                 else:
-                    llm_syscall.set_response(
-                        Response(
-                            response_message=response["message"]["content"],
-                            finished=True,
-                        )
+                    response = Response(
+                        response_message=response["message"]["content"], finished=True
                     )
+
             except Exception as e:
-                llm_syscall.set_response(
-                    Response(response_message=f"An unexpected error occurred: {e}"),
-                    finished=True,
+                response = Response(
+                    response_message=response["message"]["content"], finished=True
                 )
 
         else:
@@ -92,18 +94,11 @@ class OllamaLLM(BaseLLM):
                 if message_return_type == "json":
                     result = self.parse_json_format(result)
 
-                llm_syscall.set_response(
-                    Response(response_message=result, finished=True)
-                )
+                response = Response(response_message=result, finished=True)
 
             except Exception as e:
-                llm_syscall.set_response(
-                    Response(
-                        response_message=f"An unexpected error occurred: {e}",
-                        finished=True,
-                    )
+                response = Response(
+                    response_message=f"An unexpected error occurred: {e}", finished=True
                 )
 
-        llm_syscall.set_status("done")
-        llm_syscall.set_end_time(time.time())
-        return
+        return response

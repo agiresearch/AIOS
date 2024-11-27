@@ -198,13 +198,15 @@ def useSysCall():
     def send_request(agent_name, query):
         if isinstance(query, LLMQuery):
             action_type = query.action_type
-
+            # print(action_type)
             if action_type == "chat":
                 return llm_syscall_exec(agent_name, query)
 
             elif action_type == "tool_use":
                 response = llm_syscall_exec(agent_name, query)["response"]
+                # print(response)
                 tool_calls = response.tool_calls
+                # print(tool_calls)
                 return tool_syscall_exec(agent_name, tool_calls)
 
             elif action_type == "operate_file":
