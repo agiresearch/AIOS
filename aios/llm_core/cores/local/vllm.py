@@ -34,9 +34,11 @@ class vLLM(BaseLLM):
         )
 
     def load_llm_and_tokenizer(self) -> None:
-        """fetch the model from huggingface and run it"""
-        self.available_gpus = list(self.max_gpu_memory.keys())
-        self.gpu_nums = len(self.available_gpus)
+        if self.max_gpu_memory:
+            self.available_gpus = list(self.max_gpu_memory.keys())
+            self.gpu_nums = len(self.available_gpus)
+        else:
+            self.gpu_nums = 1
         try:
             import vllm
         except ImportError:
@@ -73,39 +75,42 @@ class vLLM(BaseLLM):
         tools = llm_syscall.query.tools
         message_return_type = llm_syscall.query.message_return_type
 
-        if tools:
-            messages = self.tool_calling_input_format(messages, tools)
-            # print(messages)
-            prompt = self.tokenizer.apply_chat_template(
-                messages,
-                # tools = tools,
-                tokenize=False,
-            )
-            # prompt = self.parse_messages(messages)
-            response = self.model.generate(prompt, self.sampling_params)
-            # print(response)
-            result = response[0].outputs[0].text
-
-            # print(f"***** Result: {result} *****")
-
-            tool_calls = self.parse_tool_calls(result)
-            if tool_calls:
-                response = Response(
-                    response_message=None, tool_calls=tool_calls, finished=True
+        if self.use_context_manager:
+            pass
+        else:
+            if tools:
+                messages = self.tool_calling_input_format(messages, tools)
+                # print(messages)
+                prompt = self.tokenizer.apply_chat_template(
+                    messages,
+                    # tools = tools,
+                    tokenize=False,
                 )
+                # prompt = self.parse_messages(messages)
+                response = self.model.generate(prompt, self.sampling_params)
+                # print(response)
+                result = response[0].outputs[0].text
+
+                # print(f"***** Result: {result} *****")
+
+                tool_calls = self.parse_tool_calls(result)
+                if tool_calls:
+                    response = Response(
+                        response_message=None, tool_calls=tool_calls, finished=True
+                    )
+                else:
+                    response = Response(response_message=result, finished=True)
+
             else:
+                prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
+
+                # prompt = self.parse_messages(messages)
+                response = self.model.generate(prompt, self.sampling_params)
+
+                result = response[0].outputs[0].text
+                if message_return_type == "json":
+                    result = self.parse_json_format(result)
+
                 response = Response(response_message=result, finished=True)
 
-        else:
-            prompt = self.tokenizer.apply_chat_template(messages, tokenize=False)
-
-            # prompt = self.parse_messages(messages)
-            response = self.model.generate(prompt, self.sampling_params)
-
-            result = response[0].outputs[0].text
-            if message_return_type == "json":
-                result = self.parse_json_format(result)
-
-            response = Response(response_message=result, finished=True)
-
-        return response
+            return response

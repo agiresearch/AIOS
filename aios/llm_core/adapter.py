@@ -46,6 +46,8 @@ class LLMAdapter:
             'use_context_manager': use_context_manager
         }
         
+        # print(llm_name)
+        
         # If backend is explicitly specified, use it
         if use_backend and use_backend in BACKEND_REGISTRY:
             model_class = BACKEND_REGISTRY[use_backend]
@@ -65,6 +67,7 @@ class LLMAdapter:
             self.model = model_class(**model_params)
             return
         
+        # print("Here")
         # Default to HuggingFace native implementation if no specific backend is found
         self.model = HfNativeLLM(**model_params)
 
