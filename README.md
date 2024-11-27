@@ -22,13 +22,9 @@ The AIOS-Agent SDK is designed for agent users and developers, enabling them to 
 AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum). 
 
 ### Modules and Connections
-Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel. 
+Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
 <p align="center">
-<img src="docs/assets/aios-figs/sdk.png">
-</p>
-Below shows how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
-<p align="center">
-<img src="docs/assets/aios-figs/scheduler.jpg">
+<img src="docs/assets/aios-figs/details.png">
 </p>
 
 ## 📰 News
