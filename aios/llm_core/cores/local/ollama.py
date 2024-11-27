@@ -56,13 +56,13 @@ class OllamaLLM(BaseLLM):
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
             try:
-                response = ollama.chat(
+                chat_result = ollama.chat(
                     model=self.model_name.split("/")[-1], messages=messages
                 )
 
                 # print(f"***** original response: {response} *****")
 
-                tool_calls = self.parse_tool_calls(response["message"]["content"])
+                tool_calls = self.parse_tool_calls(chat_result["message"]["content"])
                 # print(tool_calls)
 
                 if tool_calls:
@@ -82,12 +82,12 @@ class OllamaLLM(BaseLLM):
 
         else:
             try:
-                response = ollama.chat(
+                chat_result = ollama.chat(
                     model=self.model_name.split("/")[-1],
                     messages=messages,
                     options=ollama.Options(num_predict=self.max_new_tokens),
                 )
-                result = response["message"]["content"]
+                result = chat_result["message"]["content"]
 
                 # print(f"***** original result: {result} *****")
 
