@@ -164,13 +164,21 @@ or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
 First, you need to start the AIOS kernel by running the following commands
+
 ```
 bash runtime/launch_kernel.sh
 ```
+
 Then you need to open a new terminal and start the client using the [AIOS-Agent SDK](https://github.com/agiresearch/Cerebrum.git) with the following command. 
+To run a single agent with
 ```
-cd Cerebrum && python example/aios_demo.py
+aios-basic-demo --llm_name gpt-4o-mini --llm_backend openai # use gpt-4o-mini as the example
 ```
+or run multiple agents with
+```
+aios-basic-demo --llm_name gpt-4o-mini --llm_backend openai # use gpt-4o-mini as the example
+```
+The code for the above two commands can be found at [Cerebrum](https://github.com/agiresearch/Cerebrum/tree/main/cerebrum/example). 
 
 #### Launch Client in the WebUI
 
