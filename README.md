@@ -16,10 +16,11 @@ The goal of AIOS is to build a Large Language Model (LLM) agent operating system
 <p align="center">
 <img src="docs/assets/aios-figs/architecture.jpg">
 </p>
+
 The AIOS system is comprised of two key components: the AIOS kernel and the AIOS-Agent SDK.
 The AIOS kernel acts as an abstraction layer over the operating system kernel, managing various resources that agents require, such as LLM, memory, storage and tool. 
 The AIOS-Agent SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
-AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum). 
+AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](htgithub.com/agiresearch/Cerebrum)
 
 ### Modules and Connections
 Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
@@ -30,7 +31,7 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and h
 ## 📰 News
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios-3.gitbook.io/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://aios-3.gitbook.io/).
-- **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
+- **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
 - **[2024-05-01]** 🛠️ The agent creation in AIOS is refactored, which can be found in our [OpenAGI](https://github.com/agiresearch/OpenAGI) package.
@@ -107,7 +108,7 @@ export GEMINI_API_KEY=<YOUR_GEMINI_API_KEY>
 If you want to use **open-sourced** models provided by huggingface, here we provide three options:
 * Use with ollama
 * Use with native huggingface models
-* Use with vllm
+* Use with vLLM
 
 ##### Use with ollama
 You need to download ollama from from https://ollama.com/.
@@ -143,14 +144,14 @@ If you want to designate the download directory, you can set up it using the fol
 export HF_HOME=<YOUR_HF_HOME>
 ```
 
-##### Use with vllm
-If you want to speed up the inference of huggingface models, you can use vllm as the backend.
+##### Use with vLLM
+If you want to speed up the inference of huggingface models, you can use vLLM as the backend.
 
 > [!NOTE]
 >
-> It is important to note that vllm currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+> It is important to note that vLLM currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
 
-Considering that vllm itself does not support passing designated GPU ids, you need to either
+Considering that vLLM itself does not support passing designated GPU ids, you need to either
 setup the environment variable,
 
 ```bash
@@ -159,7 +160,7 @@ export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
 
 or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 
-#### Run
+#### Launch Client in the Terminal
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
 First, you need to start the AIOS kernel by running the following commands
@@ -171,29 +172,7 @@ Then you need to open a new terminal and start the client using the [AIOS-Agent 
 cd Cerebrum && python example/aios_demo.py
 ```
 
-### Web Quickstart
-
-##### Node
-- Supported versions: **LTS** support ONLY
-
-you can check that you meet requirements by running
-```bash
-py -v
-```
-and
-```bash
-npm -v
-```
-in your terminal
-
-
-Run the launch.py to start both the frontend and backend
-```
-python launch.py
-```
-which should open up `https://localhost:3000` (if it doesn't, navigate to that on your browser)
-
-Interact with all agents by using the `@` to tag an agent.
+#### Launch Client in the WebUI
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
@@ -201,12 +180,56 @@ Interact with all agents by using the `@` to tag an agent.
 - [Open-Interpreter](https://github.com/OpenInterpreter/open-interpreter)
 - [MetaGPT](https://github.com/geekan/MetaGPT?tab=readme-ov-file)
 
-### Supported LLM Endpoints
-- [OpenAI API](https://platform.openai.com/api-keys)
-- [Gemini API](https://ai.google.dev/gemini-api)
-- [ollama](https://ollama.com/)
-- [vllm](https://docs.vllm.ai/en/stable/)
-- [native huggingface models (locally)](https://huggingface.co/)
+### Supported LLM Cores
+| Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ |
+|:------------|:-------------|:---------------|:---------------|:---------------|
+| Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic |
+| Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic |
+| Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic |
+| Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic |
+| Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic |
+| OpenAI | GPT-4 | ❌ | gpt-4 |openai|
+| OpenAI | GPT-4 Turbo | ❌ | gpt-4-turbo |openai|
+| OpenAI | GPT-4o | ❌ | gpt-4o |openai|
+| OpenAI | GPT-4o mini | ❌ | gpt-4o-mini |openai|
+| OpenAI | GPT-3.5 Turbo | ❌ | gpt-3.5-turbo |openai|
+| Google | Gemini 1.5 Flash | ❌ | gemini-1.5-flash |google|
+| Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google|
+| Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google|
+| Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google|
+| Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq|
+| Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq|
+| Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq|
+| Groq | Llama Guard 3 8B | ✅ | llama-guard-3-8b |groq|
+| Groq | Llama 3 70B | ✅ | llama3-70b-8192 |groq|
+| Groq | Llama 3 8B | ✅ | llama3-8b-8192 |groq|
+| Groq | Mixtral 8x7B | ✅ | mixtral-8x7b-32768 |groq|
+| Groq | Gemma 7B | ✅ | gemma-7b-it |groq|
+| Groq | Gemma 2B | ✅ | gemma2-9b-it |groq|
+| Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq|
+| Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq|
+| ollama[^bignote1] | All Models | ✅ | model-name |ollama|
+| vLLM[^bignote2] | All Models | ✅ | model-name |vllm|
+| HuggingFace[^bignote3] | All Models | ✅ | model-name |huggingface|
+
+[^bignote1]: **ollama Model String Format:**
+      - Format: `model-name`. Some examples are `llama2`, `mistral`, or `codellama`.
+      - Ollama allows you to run models locally using their CLI tool and API
+      - See AIOS documentation for setting up ollama
+
+[^bignote2]: **vLLM Model String Format:**
+     - Format: `model-name`. Some examples are `mistral-7b-instruct`, `llama2-70b`, or `mixtral-8x7b`.
+     - vLLM is a high-performance inference engine that can serve any HuggingFace model
+     - You can specify custom model paths: `vllm/path/to/your/model`
+     - Supports quantization parameters: `vllm/mistral-7b-instruct-4bit`
+     - See AIOS documentation for setting up vLLM
+
+[^bignote3]: **HuggingFace Model String Format:**
+     - Format: `owner/model-name`. Some examples are `mistralai/Mistral-7B-v0.1`, `meta-llama/Llama-2-70b-hf`, or `TheBloke/Llama-2-13B-GPTQ`.
+     - Can include specific versions: `owner/model-name@v1.0`
+     - Supports multiple model formats (PyTorch, Safetensors, GGUF, GPTQ)
+     - Can reference private models with auth token: `huggingface/username/private-model`
+     - See AIOS documentation for setting up HuggingFace (if necessary)
 
 ## 🖋️ References
 ```

@@ -160,7 +160,7 @@ class HfNativeLLM(BaseLLM):
                 clean_up_tokenization_spaces=True
             )
             
-            print(result)
+            # print(result)
             tool_calls = self.parse_tool_calls(result)
             if tool_calls:
                 response = Response(

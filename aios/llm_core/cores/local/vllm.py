@@ -13,12 +13,11 @@ from transformers import AutoTokenizer
 
 
 class vLLM(BaseLLM):
-
     def __init__(
         self,
         llm_name: str,
         max_gpu_memory: dict = None,
-        eval_device: str = None,
+        eval_device: str = "cuda:0",
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager=False,
@@ -47,16 +46,18 @@ class vLLM(BaseLLM):
                 "Please install it with `pip install vllm`."
             )
 
-        """ only casual lms for now """
-        self.model = vllm.LLM(
-            model=self.model_name,
-            download_dir=get_from_env("HF_HOME"),
-            tensor_parallel_size=self.gpu_nums,
-        )
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name,
-        )
-        self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        try:
+            self.model = vllm.LLM(
+                model=self.model_name,
+                # download_dir=get_from_env("HF_HOME"),
+                tensor_parallel_size=self.gpu_nums,
+            )
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        
+        except Exception as e:
+            print(f"Error loading vLLM model: {e}")
+        # print("Loading vLLM model")
+        # self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 
         self.sampling_params = vllm.SamplingParams(
             temperature=0.8,
@@ -76,7 +77,7 @@ class vLLM(BaseLLM):
         message_return_type = llm_syscall.query.message_return_type
 
         if self.use_context_manager:
-            pass
+            return Response("Context manager not supported", finished=True)
         else:
             if tools:
                 messages = self.tool_calling_input_format(messages, tools)

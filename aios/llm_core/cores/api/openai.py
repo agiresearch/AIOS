@@ -85,14 +85,12 @@ class GPTLLM(BaseLLM):
                     response.choices[0].message.tool_calls
                 )
                 
-                # print(tool_calls)
-
                 response = Response(
                     response_message=response_message,
                     tool_calls=tool_calls,
                     finished=True,
                 )
-                print(response)
+                # print(response)
 
         except APIConnectionError as e:
             response = Response(
