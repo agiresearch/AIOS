@@ -2,7 +2,7 @@
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
-<a href='https://aios-3.gitbook.io/'><img src='https://img.shields.io/badge/Documentation-AIOS-green'></a>
+<a href='https://docs.aios.foundation/'><img src='https://img.shields.io/badge/Documentation-AIOS-green'></a>
 [![Code License](https://img.shields.io/badge/Code%20License-MIT-orange.svg)](https://github.com/agiresearch/AIOS/blob/main/LICENSE)
 <a href='https://discord.gg/B2HFxEgTJX'><img src='https://img.shields.io/badge/Community-Discord-8A2BE2'></a>
 [![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20AIOS%20Guru-006BFF)](https://gurubase.io/g/aios)
@@ -22,7 +22,7 @@ The goal of AIOS is to build a Large Language Model (LLM) agent operating system
 AIOS provides the AIOS kernel as an abstraction on top of the OS kernel. The kernel facilitates the installation, execution and usage of agents. Furthermore, the AIOS SDK facilitates the development and deployment of agents.
 
 ## 📰 News
-- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://aios-3.gitbook.io/aios-docs/aios-agent/how-to-develop-agents).
+- **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://aios-3.gitbook.io/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vllm, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
@@ -35,10 +35,10 @@ AIOS provides the AIOS kernel as an abstraction on top of the OS kernel. The ker
 
 
 ## ✈️ Getting Started
-Please see our ongoing [documentation](https://aios-3.gitbook.io/) for more information.
-- [Installation](https://aios-3.gitbook.io/aios-docs/getting-started/installation)
-- [Quickstart](https://aios-3.gitbook.io/aios-docs/getting-started/quickstart)
-- [WebUI Quickstart](https://aios-3.gitbook.io/aios-docs/getting-started/webui-quickstart)
+Please see our ongoing [documentation](https://docs.aios.foundation/) for more information.
+- [Installation](https://docs.aios.foundation/aios-docs/getting-started/installation)
+- [Quickstart](https://docs.aios.foundation/aios-docs/getting-started/quickstart)
+- [WebUI Quickstart](https://docs.aios.foundation/aios-docs/getting-started/webui-quickstart)
 
 ### Installation
 
