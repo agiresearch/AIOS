@@ -41,6 +41,16 @@ fi
 
 echo "Using Python at: $PYTHON_PATH"
 
+# Check Python version
+PYTHON_VERSION=$("$PYTHON_PATH" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+if [[ ! "$PYTHON_VERSION" =~ ^3\.(10|11)$ ]]; then
+    echo "Error: Unsupported Python version $PYTHON_VERSION. Only Python 3.10 or 3.11 are supported."
+    # Clean up the cloned repository since we're aborting
+    cd ..
+    rm -rf "$INSTALL_DIR"
+    exit 1
+fi
+
 # Create virtual environment
 "$PYTHON_PATH" -m venv "$INSTALL_DIR/venv"
 source "$INSTALL_DIR/venv/bin/activate"
@@ -54,7 +64,7 @@ pip install -r "$INSTALL_DIR/src/requirements.txt"
 rm -rf "$INSTALL_DIR/src/experiment"
 rm -rf "$INSTALL_DIR/src/scripts"
 rm -rf "$INSTALL_DIR/src/tests"
-rm -rf "$INSTALL_DIR/src/aios-figs"
+rm -rf "$INSTALL_DIR/src/docs"
 
 rm "$INSTALL_DIR/src/requirements-cuda.txt"
 rm "$INSTALL_DIR/src/requirements-dev.txt"
@@ -90,11 +100,19 @@ start() {
         return
     fi
     source "$INSTALL_DIR/venv/bin/activate"
+    
+    # Check Python version before starting
+    PYTHON_VERSION=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+    if [[ ! "$PYTHON_VERSION" =~ ^3\.(10|11)$ ]]; then
+        echo "Error: Unsupported Python version $PYTHON_VERSION. Only Python 3.10 or 3.11 are supported."
+        return 1
+    fi
+    
     load_env
     cd "$INSTALL_DIR/src"
     nohup uvicorn runtime.kernel:app --reload > "$INSTALL_DIR/server.log" 2>&1 &
     echo $! > "$PID_FILE"
-    echo "Server started"
+    echo "Server started... give it up to 60 seconds to fully initialize!"
 }
 
 stop() {
@@ -123,6 +141,14 @@ update() {
         stop
     fi
     
+    # Check Python version before updating
+    source "$INSTALL_DIR/venv/bin/activate"
+    PYTHON_VERSION=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+    if [[ ! "$PYTHON_VERSION" =~ ^3\.(10|11)$ ]]; then
+        echo "Error: Unsupported Python version $PYTHON_VERSION. Only Python 3.10 or 3.11 are supported."
+        return 1
+    fi
+    
     # Store current commit hash
     cd "$INSTALL_DIR/src"
     current_hash=$(git rev-parse HEAD)
@@ -143,7 +169,6 @@ update() {
     git pull
     
     # Activate venv and update dependencies
-    source "$INSTALL_DIR/venv/bin/activate"
     pip install -r requirements.txt
     
     # Remove any new non-kernel files that might have been added
@@ -354,6 +379,7 @@ Notes:
   - Log file location: ~/.aios-1/server.log
   - Configuration directory: ~/.aios-1
   - Environment file: ~/.aios-1/.env
+  - Requires Python 3.10 or 3.11
 
 For more information, visit: https://github.com/agiresearch/AIOS
 HELP
@@ -379,13 +405,15 @@ Quick Start:
    aios start
 
 3. Check the server status:
-   curl http://localhost:8000/health
+   curl http://localhost:8000/core/status
 
 For a full list of commands and options:
    aios --help
 
 Server logs will be available at:
 ~/.aios-1/server.log
+
+Note: AIOS requires Python 3.10 or 3.11
 
 For more information, visit:
 https://github.com/agiresearch/AIOS
