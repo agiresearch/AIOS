@@ -36,7 +36,7 @@ class GPTLLM(BaseLLM):
             parsed_tool_calls = []
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                function_name = "/".join(function_name.split("-"))
+                function_name = "/".join(function_name.split("--"))
                 function_args = json.loads(tool_call.function.arguments)
                 parsed_tool_calls.append(
                     {
@@ -51,7 +51,7 @@ class GPTLLM(BaseLLM):
     
     def convert_tools(self, tools):
         for tool in tools:
-            tool["function"]["name"] = "-".join(tool["function"]["name"].split("/"))
+            tool["function"]["name"] = "--".join(tool["function"]["name"].split("/"))
         return tools
 
     def address_syscall(self, llm_syscall, temperature=0.0):

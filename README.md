@@ -160,7 +160,7 @@ export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
 
 or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 
-#### Launch Client in the Terminal
+#### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
 First, you need to start the AIOS kernel by running the following commands
@@ -169,18 +169,8 @@ First, you need to start the AIOS kernel by running the following commands
 bash runtime/launch_kernel.sh
 ```
 
-Then you need to open a new terminal and start the client using the [AIOS-Agent SDK](https://github.com/agiresearch/Cerebrum.git) with the following command. 
-To run a single agent with
-```
-aios-basic-demo --llm_name gpt-4o-mini --llm_backend openai # use gpt-4o-mini as the example
-```
-or run multiple agents with
-```
-aios-basic-demo --llm_name gpt-4o-mini --llm_backend openai # use gpt-4o-mini as the example
-```
-The code for the above two commands can be found at [Cerebrum](https://github.com/agiresearch/Cerebrum/tree/main/cerebrum/example). 
+Then you can start the client provided by the AIOS-Agent SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
 
-#### Launch Client in the WebUI
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
@@ -216,28 +206,9 @@ The code for the above two commands can be found at [Cerebrum](https://github.co
 | Groq | Gemma 2B | ✅ | gemma2-9b-it |groq|
 | Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq|
 | Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq|
-| ollama[^bignote1] | All Models | ✅ | model-name |ollama|
-| vLLM[^bignote2] | All Models | ✅ | model-name |vllm|
-| HuggingFace[^bignote3] | All Models | ✅ | model-name |huggingface|
-
-[^bignote1]: **ollama Model String Format:**
-      - Format: `model-name`. Some examples are `llama2`, `mistral`, or `codellama`.
-      - Ollama allows you to run models locally using their CLI tool and API
-      - See AIOS documentation for setting up ollama
-
-[^bignote2]: **vLLM Model String Format:**
-     - Format: `model-name`. Some examples are `mistral-7b-instruct`, `llama2-70b`, or `mixtral-8x7b`.
-     - vLLM is a high-performance inference engine that can serve any HuggingFace model
-     - You can specify custom model paths: `vllm/path/to/your/model`
-     - Supports quantization parameters: `vllm/mistral-7b-instruct-4bit`
-     - See AIOS documentation for setting up vLLM
-
-[^bignote3]: **HuggingFace Model String Format:**
-     - Format: `owner/model-name`. Some examples are `mistralai/Mistral-7B-v0.1`, `meta-llama/Llama-2-70b-hf`, or `TheBloke/Llama-2-13B-GPTQ`.
-     - Can include specific versions: `owner/model-name@v1.0`
-     - Supports multiple model formats (PyTorch, Safetensors, GGUF, GPTQ)
-     - Can reference private models with auth token: `huggingface/username/private-model`
-     - See AIOS documentation for setting up HuggingFace (if necessary)
+| ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama|
+| vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm|
+| HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface|
 
 ## 🖋️ References
 ```

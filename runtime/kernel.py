@@ -252,7 +252,7 @@ async def submit_agent(config: AgentSubmit):
         execution_id = _submit_agent(
             agent_name=config.agent_id, task_input=config.agent_config["task"]
         )
-        print(execution_id)
+        # print(execution_id)
 
         return {
             "status": "success",
