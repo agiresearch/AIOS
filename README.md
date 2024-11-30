@@ -53,10 +53,11 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 ##### Python
 - Supported versions: **Python 3.10 - 3.11**
 
+#### Installation from source
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v.20
+cd AIOS && git checkout v0.2.0.beta
 ```
 Create venv environment (recommended)
 ```bash
@@ -76,11 +77,6 @@ pip install -r requirements-cuda.txt
 or else you can install the dependencies using
 ```bash
 pip install -r requirements.txt
-```
-
-Git clone AIOS-Agent SDK
-```bash
-git clone https://github.com/agiresearch/Cerebrum.git
 ```
 
 ### Quickstart
@@ -128,10 +124,7 @@ To use models provided by ollama, you need to pull the available models from htt
 ollama pull llama3:8b # use llama3:8b for example
 ```
 
-ollama can support CPU-only environment, so if you do not have CUDA environment
-
-However, if you have the GPU environment, you can also pass GPU-related parameters to speed up
-using the following command
+ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
 
 ##### Use with native huggingface llm models
 Some of the huggingface models require authentification, if you want to use all of
