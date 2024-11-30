@@ -29,7 +29,7 @@ const Hero = () => {
                   Get Started
                   </Link> */}
                   <a 
-                  href='https://aios-3.gitbook.io/'
+                  href='https://docs.aios.foundation/'
                   target='_blank'
                   className='relative justify-center cursor-pointer inline-flex items-center space-x-2 text-center font-regular ease-out duration-200 rounded-md outline-none transition-all outline-0 focus-visible:outline-4 focus-visible:outline-offset-1 border text-foreground bg-getstarted hover:bg-selection border-strong hover:border-stronger focus-visible:outline-brand-600 data-[state=open]:bg-selection data-[state=open]:outline-brand-600 data-[state=open]:border-button-hover text-sm px-4 py-2 h-[38px]'>
                     Read the Docs
