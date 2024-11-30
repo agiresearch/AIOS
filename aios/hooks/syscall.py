@@ -151,6 +151,7 @@ def useSysCall():
 
     def llm_syscall_exec(agent_name, query):
         syscall = LLMSyscall(agent_name=agent_name, query=query)
+
         syscall.set_status("active")
 
         completed_response, start_times, end_times, waiting_times, turnaround_times = (
@@ -195,20 +196,17 @@ def useSysCall():
 
 
     def send_request(agent_name, query):
-        print(isinstance(query, LLMQuery))
-        print(isinstance(query, ToolQuery))
-        print(isinstance(query,StorageQuery))
-        print(isinstance(query, MemoryQuery))
-
         if isinstance(query, LLMQuery):
             action_type = query.action_type
-
+            # print(action_type)
             if action_type == "chat":
                 return llm_syscall_exec(agent_name, query)
 
             elif action_type == "tool_use":
                 response = llm_syscall_exec(agent_name, query)["response"]
+                # print(response)
                 tool_calls = response.tool_calls
+                # print(tool_calls)
                 return tool_syscall_exec(agent_name, tool_calls)
 
             elif action_type == "operate_file":

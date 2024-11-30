@@ -1,14 +1,9 @@
-from chromadb.config import Settings
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
 import os
 
 import chromadb
 
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader
 
 class ChromaDB:
     def __init__(self, mount_dir) -> None:

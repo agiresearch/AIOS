@@ -1,12 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor, Future
 from random import randint
 from typing import Any, Tuple, Callable, Dict
+from aios.hooks.syscall import useSysCall
 from aios.hooks.types.agent import AgentSubmitDeclaration, FactoryParams
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 # from aios.hooks.utils import generate_random_string
-from pyopenagi.agents.agent_factory import AgentFactory
 from cerebrum.manager.agent import AgentManager
 
 ids = []
@@ -17,6 +17,8 @@ def useFactory(
 ) -> Tuple[Callable[[AgentSubmitDeclaration], int], Callable[[str], Dict[str, Any]]]:
     thread_pool = ThreadPoolExecutor(max_workers=params.max_workers)
     manager = AgentManager('https://my.aios.foundation')
+
+    send_request, _ = useSysCall()
 
     @validate(AgentSubmitDeclaration)
     def submitAgent(declaration_params: AgentSubmitDeclaration) -> int:
@@ -29,17 +31,28 @@ def useFactory(
         Returns:
             int: A unique process ID for the submitted agent.
         """
-        print('hi')    
+        def run_agent(agent_name: str, task):
+            is_local = False
 
-        def run_agent(agent_name, task):
-            author, name, version = manager.download_agent(
-                author=agent_name.split('/')[0],
-                name=agent_name.split('/')[1]
-            )
+            if agent_name.count('/') >= 3:
+                is_local = True
+            
+            try:
+                author, name, version = manager.download_agent(
+                    author=agent_name.split('/')[0],
+                    name=agent_name.split('/')[1]
+                )
 
-            agent_class, _ = manager.load_agent(author, name, version)
+            except:
+                is_local = True
+            if is_local:
+                agent_class, _ = manager.load_agent(local=True, path=agent_name)
+            else:
+                agent_class, _ = manager.load_agent(author, name, version)
 
-            agent = agent_class(agent_name, task, 'console')
+            agent = agent_class(agent_name, task, _)
+
+            agent.send_request = send_request
 
             return agent.run()
 
@@ -75,8 +88,6 @@ def useFactory(
         """
 
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
-
-        print(future)
 
         if future:
             return future.result()

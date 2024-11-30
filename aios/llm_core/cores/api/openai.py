@@ -36,6 +36,7 @@ class GPTLLM(BaseLLM):
             parsed_tool_calls = []
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
+                function_name = "/".join(function_name.split("--"))
                 function_args = json.loads(tool_call.function.arguments)
                 parsed_tool_calls.append(
                     {
@@ -47,6 +48,11 @@ class GPTLLM(BaseLLM):
                 )
             return parsed_tool_calls
         return None
+    
+    def convert_tools(self, tools):
+        for tool in tools:
+            tool["function"]["name"] = "--".join(tool["function"]["name"].split("/"))
+        return tools
 
     def address_syscall(self, llm_syscall, temperature=0.0):
         # ensures the model is the current one
@@ -61,6 +67,8 @@ class GPTLLM(BaseLLM):
                 response = self.llm_generate(llm_syscall)
             else:
                 query = llm_syscall.query
+                if query.tools:
+                    query.tools = self.convert_tools(query.tools)
                
                 response = self.model.chat.completions.create(
                     model=self.model_name,
@@ -72,17 +80,17 @@ class GPTLLM(BaseLLM):
 
                 response_message = response.choices[0].message.content
                 
-                print(response_message)
+                # print(response_message)
                 tool_calls = self.parse_tool_calls(
                     response.choices[0].message.tool_calls
                 )
-
+                
                 response = Response(
                     response_message=response_message,
                     tool_calls=tool_calls,
                     finished=True,
                 )
-                print(response)
+                # print(response)
 
         except APIConnectionError as e:
             response = Response(
