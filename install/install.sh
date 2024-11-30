@@ -4,8 +4,19 @@
 INSTALL_DIR="$HOME/.aios-1"
 REPO_URL="https://github.com/agiresearch/AIOS"
 TAG="v0.2.0.beta"  # Replace with your specific tag
+BIN_DIR="$HOME/.local/bin"  # User-level bin directory
 
 echo "Installing AIOS..."
+
+# Ensure bin directory exists
+mkdir -p "$BIN_DIR"
+
+# Add bin directory to PATH if not already present
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc" 2>/dev/null || true
+    export PATH="$HOME/.local/bin:$PATH"
+fi
 
 # Create installation directory
 mkdir -p "$INSTALL_DIR"
@@ -17,9 +28,26 @@ git clone "$REPO_URL" "$INSTALL_DIR/src"
 cd "$INSTALL_DIR/src"
 git checkout tags/"$TAG" -b "$TAG-branch"
 
+# Find Python executable path
+PYTHON_PATH=$(command -v python3)
+if [ -z "$PYTHON_PATH" ]; then
+    PYTHON_PATH=$(command -v python)
+fi
+
+if [ -z "$PYTHON_PATH" ]; then
+    echo "Error: Could not find Python executable"
+    exit 1
+fi
+
+echo "Using Python at: $PYTHON_PATH"
+
 # Create virtual environment
-python3 -m venv "$INSTALL_DIR/venv"
+"$PYTHON_PATH" -m venv "$INSTALL_DIR/venv"
 source "$INSTALL_DIR/venv/bin/activate"
+
+# Upgrade pip to latest version
+python -m pip install --upgrade pip
+
 pip install -r "$INSTALL_DIR/src/requirements.txt"
 
 # Remove non-kernel files
@@ -42,7 +70,7 @@ rm "$INSTALL_DIR/src/Dockerfile"
 touch "$INSTALL_DIR/.env"
 
 # Create executable script
-cat > /usr/local/bin/aios << 'EOF'
+cat > "$BIN_DIR/aios" << 'EOF'
 #!/bin/bash
 
 INSTALL_DIR="$HOME/.aios-1"
@@ -151,6 +179,10 @@ clean() {
     
     # Remove the installation directory
     rm -rf "$INSTALL_DIR"
+    
+    # Remove the executable
+    rm -f "$HOME/.local/bin/aios"
+    
     echo "AIOS installation cleaned up successfully"
 }
 
@@ -178,7 +210,7 @@ env_add() {
             return
         fi
         # Remove old value
-        sed -i '' "/^$varname=/d" "$ENV_FILE"
+        sed -i.bak "/^$varname=/d" "$ENV_FILE" && rm "$ENV_FILE.bak"
     fi
     
     # Add new value
@@ -207,7 +239,7 @@ env_remove() {
         if [[ "$varnum" =~ ^[0-9]+$ ]]; then
             varname=$(sed -n "${varnum}p" "$ENV_FILE" | cut -d= -f1)
             if [ -n "$varname" ]; then
-                sed -i '' "/^$varname=/d" "$ENV_FILE"
+                sed -i.bak "/^$varname=/d" "$ENV_FILE" && rm "$ENV_FILE.bak"
                 echo "Removed $varname"
                 echo "Remember to restart the server for changes to take effect"
             else
@@ -246,7 +278,28 @@ case "$1" in
                 env_remove
                 ;;
             *)
-                echo "Usage: aios env {add|list|remove}"
+                cat << 'HELP'
+Environment Variable Management
+
+Usage: aios env <subcommand>
+
+Subcommands:
+  add     Add a new environment variable
+          - Interactive prompt for name and value
+          - Values are stored securely in ~/.aios-1/.env
+          - Names must be alphanumeric with underscores
+          - Values are hidden during input
+
+  list    List all configured environment variables
+          - Shows variable names only (values hidden)
+          - Useful for checking configured variables
+
+  remove  Remove an environment variable
+          - Interactive selection from current variables
+          - Immediate removal from configuration
+
+Note: Server restart required for environment changes to take effect
+HELP
                 ;;
         esac
         ;;
@@ -254,23 +307,86 @@ case "$1" in
         clean
         ;;
     *)
-        echo "Usage: aios {start|stop|restart|update|env|clean}"
-        echo "For environment variables: aios env {add|list|remove}"
+        cat << 'HELP'
+AIOS Command Line Interface
+
+Usage: aios <command> [options]
+
+Commands:
+  start         Start the AIOS server
+                The server will run in the background and be available at http://localhost:8000
+                Logs will be written to ~/.aios-1/server.log
+
+  stop          Stop the running AIOS server
+                This will gracefully shutdown any running server instance
+
+  restart       Restart the AIOS server
+                Equivalent to running 'stop' followed by 'start'
+
+  update        Update AIOS to the latest version
+                - Stops the server if running
+                - Pulls latest changes from the repository
+                - Updates dependencies
+                - Restarts the server automatically
+                - Your environment variables and configurations are preserved
+
+  env           Manage environment variables
+                Subcommands:
+                  add     - Add a new environment variable (interactive)
+                  list    - List all configured variables (values hidden)
+                  remove  - Remove a variable (interactive)
+                Environment changes require server restart to take effect
+
+  clean         Uninstall AIOS completely
+                - Stops any running server
+                - Removes all AIOS files and configurations
+                - Deletes the installation directory
+                - Removes the aios command
+                Warning: This action cannot be undone!
+
+Examples:
+  aios start             # Start the server
+  aios env add          # Add a new API key or configuration value
+  aios update           # Update to the latest version
+
+Notes:
+  - Server runs at http://localhost:8000 by default
+  - Log file location: ~/.aios-1/server.log
+  - Configuration directory: ~/.aios-1
+  - Environment file: ~/.aios-1/.env
+
+For more information, visit: https://github.com/agiresearch/AIOS
+HELP
         exit 1
         ;;
 esac
 EOF
 
 # Make it executable
-chmod +x /usr/local/bin/aios
+chmod +x "$BIN_DIR/aios"
 
-echo "AIOS installed successfully!"
-echo "Use:"
-echo "  - 'aios start' to start the server"
-echo "  - 'aios stop' to stop the server"
-echo "  - 'aios restart' to restart the server"
-echo "  - 'aios update' to update to the latest version"
-echo "  - 'aios env add' to add new environment variables"
-echo "  - 'aios env list' to view current environment variables"
-echo "  - 'aios env remove' to remove environment variables"
-echo "  - 'aios clean' to remove AIOS installation"
+cat << 'COMPLETE'
+🎉 AIOS installed successfully!
+
+The 'aios' command is now available in your terminal.
+Installation directory: ~/.aios-1
+
+Quick Start:
+1. Add any required environment variables:
+   aios env add
+
+2. Start the server:
+   aios start
+
+3. Check the server status:
+   curl http://localhost:8000/health
+
+For a full list of commands and options:
+   aios --help
+
+Server logs will be available at:
+~/.aios-1/server.log
+
+For more information, visit:
+https://github.com/agiresearch/AIOS
+COMPLETE
