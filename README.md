@@ -29,8 +29,9 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and h
 </p>
 
 ## 📰 News
+- **[2024-11-30]** 🔥 AIOS v0.2.0 is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
-- **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://aios-3.gitbook.io/).
+- **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
 - **[2024-05-20]** 🚀 More agents with ChatGPT-based tool calling are added (i.e., MathAgent, RecAgent, TravelAgent, AcademicAgent and CreationAgent), their profiles and workflows can be found in [OpenAGI](https://github.com/agiresearch/OpenAGI).
 - **[2024-05-13]** 🛠️ Local models (diffusion models) as tools from HuggingFace are integrated.
