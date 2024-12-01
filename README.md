@@ -58,6 +58,7 @@ Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
 cd AIOS
+git checkout v.20 # don't do this unless you're testing
 ```
 Create venv environment (recommended)
 ```bash
