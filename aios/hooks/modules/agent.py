@@ -16,7 +16,7 @@ def useFactory(
     params: FactoryParams,
 ) -> Tuple[Callable[[AgentSubmitDeclaration], int], Callable[[str], Dict[str, Any]]]:
     thread_pool = ThreadPoolExecutor(max_workers=params.max_workers)
-    manager = AgentManager('https://my.aios.foundation')
+    manager = AgentManager('https://aios.foundation')
 
     send_request, _ = useSysCall()
 
