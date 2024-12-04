@@ -193,10 +193,15 @@ env_add() {
 }
 
 env_list() {
-    echo "Available API keys to configure:"
-    echo "- OPENAI_API_KEY (OpenAI API key)"
-    echo "- GEMINI_API_KEY (Google Gemini API key)"
-    echo "- HF_HOME (HuggingFace API token)"
+    if [ -f "$ENV_FILE" ] && [ -s "$ENV_FILE" ]; then
+        echo "Current environment variables:"
+        cat "$ENV_FILE" | sed 's/=.*$/=****/'  # Show variable names but hide values
+    else
+        echo "Available API keys to configure:"
+        echo "- OPENAI_API_KEY (OpenAI API key)"
+        echo "- GEMINI_API_KEY (Google Gemini API key)"
+        echo "- HF_HOME (HuggingFace API token)"
+    fi
 }
 
 env_remove() {
