@@ -156,7 +156,12 @@ clean() {
 
 env_add() {
     echo "Adding new environment variable"
-    echo "Enter variable name (e.g., API_KEY):"
+    echo "Available API keys to configure:"
+    echo "- OPENAI_API_KEY (OpenAI API key)"
+    echo "- GEMINI_API_KEY (Google Gemini API key)"
+    echo "- HF_HOME (HuggingFace API token)"
+    echo ""
+    echo "Enter variable name (e.g., OPENAI_API_KEY):"
     read varname
     
     # Validate variable name
@@ -188,12 +193,10 @@ env_add() {
 }
 
 env_list() {
-    echo "Current environment variables:"
-    if [ -f "$ENV_FILE" ] && [ -s "$ENV_FILE" ]; then
-        cat "$ENV_FILE" | sed 's/=.*$/=****/'  # Show variable names but hide values
-    else
-        echo "No environment variables set"
-    fi
+    echo "Available API keys to configure:"
+    echo "- OPENAI_API_KEY (OpenAI API key)"
+    echo "- GEMINI_API_KEY (Google Gemini API key)"
+    echo "- HF_HOME (HuggingFace API token)"
 }
 
 env_remove() {
