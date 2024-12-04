@@ -1,1 +1,1 @@
-python -m uvicorn runtime.kernel:app --reload
+python -m uvicorn runtime.kernel:app
