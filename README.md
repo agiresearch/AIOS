@@ -79,6 +79,8 @@ or else you can install the dependencies using
 pip install -r requirements.txt
 ```
 
+**Note:** The machine where the kernel is installed must have the SDK. If you would like to interact with the kernel from other machines remotely, you need to manually install the SDK on those machines following the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum). 
+
 ### Quickstart
 <!-- > [!TIP] -->
 >
