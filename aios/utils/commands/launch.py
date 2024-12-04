@@ -6,6 +6,7 @@ def show_available_api_keys():
     print("Available API keys to configure:")
     print("- OPENAI_API_KEY (OpenAI API key)")
     print("- GEMINI_API_KEY (Google Gemini API key)")
+    print("- GROQ_API_KEY (Groq API key)")
     print("- HF_HOME (HuggingFace API token)")
 
 def handle_env_command(args):

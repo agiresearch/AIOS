@@ -159,6 +159,7 @@ env_add() {
     echo "Available API keys to configure:"
     echo "- OPENAI_API_KEY (OpenAI API key)"
     echo "- GEMINI_API_KEY (Google Gemini API key)"
+    echo "- GROQ_API_KEY (Groq API key)"
     echo "- HF_HOME (HuggingFace API token)"
     echo ""
     echo "Enter variable name (e.g., OPENAI_API_KEY):"
@@ -200,6 +201,7 @@ env_list() {
         echo "Available API keys to configure:"
         echo "- OPENAI_API_KEY (OpenAI API key)"
         echo "- GEMINI_API_KEY (Google Gemini API key)"
+        echo "- GROQ_API_KEY (Groq API key)"
         echo "- HF_HOME (HuggingFace API token)"
     fi
 }
