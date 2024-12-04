@@ -63,13 +63,14 @@ When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
-- `HF_HOME`: Path to store HuggingFace models
+- `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
+- `HF_HOME`: Optional path to store HuggingFace models
 
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys
 2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
 3. Groq API: Visit https://console.groq.com/keys
-4. HuggingFace: Visit https://huggingface.co/settings/tokens
+4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel

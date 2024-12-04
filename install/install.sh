@@ -160,7 +160,8 @@ env_add() {
     echo "- OPENAI_API_KEY (OpenAI API key)"
     echo "- GEMINI_API_KEY (Google Gemini API key)"
     echo "- GROQ_API_KEY (Groq API key)"
-    echo "- HF_HOME (HuggingFace API token)"
+    echo "- HF_AUTH_TOKEN (HuggingFace authentication token)"
+    echo "- HF_HOME (Optional: Path to store HuggingFace models)"
     echo ""
     echo "Enter variable name (e.g., OPENAI_API_KEY):"
     read varname
@@ -202,8 +203,8 @@ env_list() {
         echo "- OPENAI_API_KEY (OpenAI API key)"
         echo "- GEMINI_API_KEY (Google Gemini API key)"
         echo "- GROQ_API_KEY (Groq API key)"
-        echo "- HUGGING_FACE_TOKEN (HuggingFace API token)"
-        echo "- HF_HOME (Path to store HuggingFace models, optional)"
+        echo "- HF_AUTH_TOKEN (HuggingFace authentication token)"
+        echo "- HF_HOME (Optional: Path to store HuggingFace models)"
     fi
 }
 
