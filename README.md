@@ -63,7 +63,7 @@ When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
-- `HF_HOME`: HuggingFace API token for accessing open-source models
+- `HF_HOME`: Path to store HuggingFace models
 
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys

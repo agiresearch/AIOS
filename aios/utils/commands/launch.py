@@ -7,7 +7,7 @@ def show_available_api_keys():
     print("- OPENAI_API_KEY (OpenAI API key)")
     print("- GEMINI_API_KEY (Google Gemini API key)")
     print("- GROQ_API_KEY (Groq API key)")
-    print("- HF_HOME (HuggingFace API token)")
+    print("- HF_HOME (Path to store HuggingFace models, optional)")
 
 def handle_env_command(args):
     env_file = os.path.expanduser("~/.aios-1/.env")

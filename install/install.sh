@@ -202,7 +202,8 @@ env_list() {
         echo "- OPENAI_API_KEY (OpenAI API key)"
         echo "- GEMINI_API_KEY (Google Gemini API key)"
         echo "- GROQ_API_KEY (Groq API key)"
-        echo "- HF_HOME (HuggingFace API token)"
+        echo "- HUGGING_FACE_TOKEN (HuggingFace API token)"
+        echo "- HF_HOME (Path to store HuggingFace models, optional)"
     fi
 }
 
