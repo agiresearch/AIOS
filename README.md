@@ -54,20 +54,22 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 - Supported versions: **Python 3.10 - 3.11**
 
 #### Environment Variables Configuration
-AIOS supports several API integrations that require configuration. You can use the following commands to view available API keys:
+AIOS supports several API integrations that require configuration. You can use the following commands:
 
-- `aios env list`: List available API keys
-- `aios env set`: List available API keys
+- `aios env list`: Show current environment variables, or show available API keys if no variables are set
+- `aios env set`: Show current environment variables, or show available API keys if no variables are set
 
-Available API keys to configure:
+When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
+- `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_HOME`: HuggingFace API token for accessing open-source models
 
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys
 2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. HuggingFace: Visit https://huggingface.co/settings/tokens
+3. Groq API: Visit https://console.groq.com/keys
+4. HuggingFace: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
@@ -207,17 +209,17 @@ Then you can start the client provided by the AIOS-Agent SDK either in the termi
 | Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google| GEMINI_API_KEY |
 | Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google| GEMINI_API_KEY |
 | Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google| GEMINI_API_KEY |
-| Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq| - |
-| Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq| - |
-| Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq| - |
-| Groq | Llama Guard 3 8B | ✅ | llama-guard-3-8b |groq| - |
-| Groq | Llama 3 70B | ✅ | llama3-70b-8192 |groq| - |
-| Groq | Llama 3 8B | ✅ | llama3-8b-8192 |groq| - |
-| Groq | Mixtral 8x7B | ✅ | mixtral-8x7b-32768 |groq| - |
-| Groq | Gemma 7B | ✅ | gemma-7b-it |groq| - |
-| Groq | Gemma 2B | ✅ | gemma2-9b-it |groq| - |
-| Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq| - |
-| Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq| - |
+| Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq| GROQ_API_KEY |
+| Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq| GROQ_API_KEY |
+| Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq| GROQ_API_KEY |
+| Groq | Llama Guard 3 8B | ✅ | llama-guard-3-8b |groq| GROQ_API_KEY |
+| Groq | Llama 3 70B | ✅ | llama3-70b-8192 |groq| GROQ_API_KEY |
+| Groq | Llama 3 8B | ✅ | llama3-8b-8192 |groq| GROQ_API_KEY |
+| Groq | Mixtral 8x7B | ✅ | mixtral-8x7b-32768 |groq| GROQ_API_KEY |
+| Groq | Gemma 7B | ✅ | gemma-7b-it |groq| GROQ_API_KEY |
+| Groq | Gemma 2B | ✅ | gemma2-9b-it |groq| GROQ_API_KEY |
+| Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq| GROQ_API_KEY |
+| Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq| GROQ_API_KEY |
 | ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama| - |
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
 | HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
