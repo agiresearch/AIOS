@@ -196,11 +196,11 @@ Then you can start the client provided by the AIOS-Agent SDK either in the termi
 ### Supported LLM Cores
 | Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
 |:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
-| Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | - |
-| Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | - |
-| Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic | - |
-| Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic | - |
-| Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic | - |
+| Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic | ANTHROPIC_API_KEY |
 | OpenAI | GPT-4 | ❌ | gpt-4 |openai| OPENAI_API_KEY |
 | OpenAI | GPT-4 Turbo | ❌ | gpt-4-turbo |openai| OPENAI_API_KEY |
 | OpenAI | GPT-4o | ❌ | gpt-4o |openai| OPENAI_API_KEY |
