@@ -100,7 +100,9 @@ async def setup_llm(config: LLMConfig):
         active_components["llm"] = llm
         return {"status": "success", "message": "LLM core initialized"}
     except Exception as e:
-        # print(e)
+        print(
+            f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
+        )
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize LLM core: {str(e)}"
         )
@@ -118,6 +120,7 @@ async def setup_storage(config: StorageConfig):
         active_components["storage"] = storage_manager
         return {"status": "success", "message": "Storage manager initialized"}
     except Exception as e:
+        print(f"Storage setup failed: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize storage manager: {str(e)}"
         )
@@ -140,6 +143,7 @@ async def setup_memory(config: MemoryConfig):
         active_components["memory"] = memory_manager
         return {"status": "success", "message": "Memory manager initialized"}
     except Exception as e:
+        print(f"Memory setup failed: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize memory manager: {str(e)}"
         )
@@ -154,6 +158,7 @@ async def setup_tool_manager(config: ToolManagerConfig):
         active_components["tool"] = tool_manager
         return {"status": "success", "message": "Tool manager initialized"}
     except Exception as e:
+        print(f"Tool setup failed: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize tool manager: {str(e)}"
         )
@@ -187,7 +192,7 @@ async def setup_agent_factory(config: SchedulerConfig):
 
         return {"status": "success", "message": "Agent factory initialized"}
     except Exception as e:
-        print(e)
+        print(f"Agent factory setup failed: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize agent factory: {str(e)}"
         )
@@ -227,6 +232,7 @@ async def setup_scheduler(config: SchedulerConfig):
 
         return {"status": "success", "message": "Scheduler initialized"}
     except Exception as e:
+        print(f"Scheduler setup failed: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize scheduler: {str(e)}"
         )
@@ -260,7 +266,8 @@ async def submit_agent(config: AgentSubmit):
             "message": f"Agent {config.agent_id} submitted for execution",
         }
     except Exception as e:
-        print(e)
+        # print(e)
+        print(f"Agent submission failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to submit agent: {str(e)}")
 
 
@@ -276,7 +283,8 @@ async def get_agent_status(execution_id: int):
 
         return {"status": "completed", "result": result}
     except Exception as e:
-        print(e)
+        # print(e)
+        print(f"Failed to get agent status: {str(e)}")
         return {"status": "running", "message": str(e)}
 
 
@@ -296,7 +304,8 @@ async def cleanup_components():
 
         return {"status": "success", "message": "All components cleaned up"}
     except Exception as e:
-        print(e)
+        # print(e)
+        print(f"Failed to cleanup components: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to cleanup components: {str(e)}"
         )
