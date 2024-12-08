@@ -14,6 +14,8 @@ from aios.hooks.syscall import useSysCall
 
 from cerebrum.llm.communication import LLMQuery
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # from cerebrum.llm.layer import LLMLayer as LLMConfig
 # from cerebrum.memory.layer import MemoryLayer as MemoryConfig
 # from cerebrum.storage.layer import StorageLayer as StorageConfig
@@ -22,6 +24,14 @@ from cerebrum.llm.communication import LLMQuery
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Modify this in production!
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Store component configurations and instances
 active_components = {
