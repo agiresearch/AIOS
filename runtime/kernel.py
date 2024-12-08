@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
+import traceback
+import json
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -163,14 +165,22 @@ async def setup_memory(config: MemoryConfig):
 async def setup_tool_manager(config: ToolManagerConfig):
     """Set up the tool manager component."""
     try:
+        print(f"\n[DEBUG] ===== Setting up Tool Manager =====")
         tool_manager = useToolManager()
-
         active_components["tool"] = tool_manager
         return {"status": "success", "message": "Tool manager initialized"}
     except Exception as e:
-        print(f"Tool setup failed: {str(e)}")
+        error_msg = str(e)
+        stack_trace = traceback.format_exc()
+        print(f"[ERROR] Tool Manager Setup Failed: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
         raise HTTPException(
-            status_code=500, detail=f"Failed to initialize tool manager: {str(e)}"
+            status_code=500,
+            detail={
+                "error": "Failed to initialize tool manager",
+                "message": error_msg,
+                "traceback": stack_trace
+            }
         )
 
 
@@ -264,21 +274,33 @@ async def submit_agent(config: AgentSubmit):
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
 
     try:
+        print(f"\n[DEBUG] ===== Agent Submission =====")
+        print(f"[DEBUG] Agent ID: {config.agent_id}")
+        print(f"[DEBUG] Task: {config.agent_config.get('task', 'No task specified')}")
+        
         _submit_agent = active_components["factory"]["submit"]
         execution_id = _submit_agent(
             agent_name=config.agent_id, task_input=config.agent_config["task"]
         )
-        # print(execution_id)
-
+        
         return {
             "status": "success",
             "execution_id": execution_id,
-            "message": f"Agent {config.agent_id} submitted for execution",
+            "message": f"Agent {config.agent_id} submitted for execution"
         }
     except Exception as e:
-        # print(e)
-        print(f"Agent submission failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to submit agent: {str(e)}")
+        error_msg = str(e)
+        stack_trace = traceback.format_exc()
+        print(f"[ERROR] Agent submission failed: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Failed to submit agent",
+                "message": error_msg,
+                "traceback": stack_trace
+            }
+        )
 
 
 @app.get("/agents/{execution_id}/status")
@@ -288,14 +310,40 @@ async def get_agent_status(execution_id: int):
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
 
     try:
+        print(f"\n[DEBUG] ===== Checking Agent Status =====")
+        print(f"[DEBUG] Execution ID: {execution_id}")
+        
         await_execution = active_components["factory"]["await"]
         result = await_execution(int(execution_id))
+        
+        if result is None:
+            return {
+                "status": "running",
+                "message": "Execution in progress",
+                "execution_id": execution_id
+            }
 
-        return {"status": "completed", "result": result}
+        return {
+            "status": "completed",
+            "result": result,
+            "execution_id": execution_id
+        }
     except Exception as e:
-        # print(e)
-        print(f"Failed to get agent status: {str(e)}")
-        return {"status": "running", "message": str(e)}
+        error_msg = str(e)
+        stack_trace = traceback.format_exc()
+        print(f"[ERROR] Failed to get agent status: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
+        
+        return {
+            "status": "error",
+            "message": error_msg,
+            "error": {
+                "type": type(e).__name__,
+                "message": error_msg,
+                "traceback": stack_trace
+            },
+            "execution_id": execution_id
+        }
 
 
 @app.post("/core/cleanup")
