@@ -1,4 +1,3 @@
-
 # This file contains helpful utilities for the rest of the code, encompassing
 # parsing, environment variables, logging, etc.
 
@@ -20,15 +19,30 @@ import re
 
 def parse_global_args():
     parser = argparse.ArgumentParser(description="Parse global parameters")
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    
+    # env command
+    env_parser = subparsers.add_parser('env', help='Manage environment variables')
+    env_subparsers = env_parser.add_subparsers(dest='env_command', help='Environment variable commands')
+    
+    # env list
+    env_list_parser = env_subparsers.add_parser('list', help='List available API keys')
+    
+    # env set
+    env_set_parser = env_subparsers.add_parser('set', help='Set an API key')
+    env_set_parser.add_argument('key', nargs='?', help='API key name')
+    env_set_parser.add_argument('value', nargs='?', help='API key value')
+    
+    # Global parameters
     parser.add_argument('--llm_name', type=str, default="gpt-4o-mini", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")
     parser.add_argument('--eval_device', type=str, help="Evaluation device")
     parser.add_argument('--max_new_tokens', type=int, default=256, help="The maximum number of new tokens for generation")
-    # parser.add_argument("--log_mode", type=str, default="console", choices=["console", "file"])
     parser.add_argument("--scheduler_log_mode", type=str, default="console", choices=["console", "file"], help="Log mode for the scheduler")
     parser.add_argument("--agent_log_mode", type=str, default="console", choices=["console", "file"], help="Log mode for the agents")
     parser.add_argument("--llm_core_log_mode", type=str, default="console", choices=["console", "file"], help="Log mode for the LLM kernel")
     parser.add_argument("--llm_backend", type=str, choices=["ollama", "vllm"], help="Backend to use for running the LLM kernel")
+    
     return parser
 def extract_before_parenthesis(s: str) -> str:
     match = re.search(r'^(.*?)\([^)]*\)', s)

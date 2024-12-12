@@ -1,4 +1,4 @@
-# AIOS: LLM Agent Operating System (AgentOS)
+# AIOS: AI Agent Operating System
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
 <a href='https://arxiv.org/abs/2312.03815'><img src='https://img.shields.io/badge/Paper-PDF-blue'></a>
@@ -9,7 +9,7 @@
 
 <a href="https://trendshift.io/repositories/8908" target="_blank"><img src="https://trendshift.io/api/badge/repositories/8908" alt="agiresearch%2FAIOS | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-AIOS is the AI Agent Operating System, which embeds large language model (LLM) into the operating system as the brain of the OS, facilitating the development and deployment of LLM-based AI Agents. AIOS is designed to address problems (e.g., scheduling, context switch, memory management, storage management, tool management, Agent SDK management, etc.) during the development and deployment of LLM-based agents, for a better ecosystem among agent developers and users. AIOS includes the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (the [Cerebrum](https://github.com/agiresearch/Cerebrum) repository). AIOS supports both Web UI and Terminal UI.
+AIOS is the AI Agent Operating System, which embeds large language model (LLM) into the operating system and facilitates the development and deployment of LLM-based AI Agents. AIOS is designed to address problems (e.g., scheduling, context switch, memory management, storage management, tool management, Agent SDK management, etc.) during the development and deployment of LLM-based agents, towards a better AIOS-Agent ecosystem for agent developers and agent users. AIOS includes the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (the [Cerebrum](https://github.com/agiresearch/Cerebrum) repository). AIOS supports both Web UI and Terminal UI.
 
 ## 🏠 Architecture of AIOS
 ### Overview
@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and h
 </p>
 
 ## 📰 News
-- **[2024-11-30]** 🔥 AIOS v0.2.0 is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
+- **[2024-11-30]** 🔥 AIOS v0.2.0.beta is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
@@ -52,6 +52,25 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 #### Requirements
 ##### Python
 - Supported versions: **Python 3.10 - 3.11**
+
+#### Environment Variables Configuration
+AIOS supports several API integrations that require configuration. You can use the following commands:
+
+- `aios env list`: Show current environment variables, or show available API keys if no variables are set
+- `aios env set`: Show current environment variables, or show available API keys if no variables are set
+
+When no environment variables are set, the following API keys will be shown:
+- `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
+- `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
+- `GROQ_API_KEY`: Groq API key for accessing Groq services
+- `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
+- `HF_HOME`: Optional path to store HuggingFace models
+
+To obtain these API keys:
+1. OpenAI API: Visit https://platform.openai.com/api-keys
+2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
+3. Groq API: Visit https://console.groq.com/keys
+4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
@@ -80,6 +99,8 @@ or else you can install the dependencies using
 ```bash
 pip install -r requirements.txt
 ```
+
+**Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
 
 ### Quickstart
 <!-- > [!TIP] -->
@@ -175,36 +196,36 @@ Then you can start the client provided by the AIOS-Agent SDK either in the termi
 - [MetaGPT](https://github.com/geekan/MetaGPT?tab=readme-ov-file)
 
 ### Supported LLM Cores
-| Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ |
-|:------------|:-------------|:---------------|:---------------|:---------------|
-| Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic |
-| Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic |
-| Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic |
-| Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic |
-| Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic |
-| OpenAI | GPT-4 | ❌ | gpt-4 |openai|
-| OpenAI | GPT-4 Turbo | ❌ | gpt-4-turbo |openai|
-| OpenAI | GPT-4o | ❌ | gpt-4o |openai|
-| OpenAI | GPT-4o mini | ❌ | gpt-4o-mini |openai|
-| OpenAI | GPT-3.5 Turbo | ❌ | gpt-3.5-turbo |openai|
-| Google | Gemini 1.5 Flash | ❌ | gemini-1.5-flash |google|
-| Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google|
-| Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google|
-| Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google|
-| Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq|
-| Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq|
-| Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq|
-| Groq | Llama Guard 3 8B | ✅ | llama-guard-3-8b |groq|
-| Groq | Llama 3 70B | ✅ | llama3-70b-8192 |groq|
-| Groq | Llama 3 8B | ✅ | llama3-8b-8192 |groq|
-| Groq | Mixtral 8x7B | ✅ | mixtral-8x7b-32768 |groq|
-| Groq | Gemma 7B | ✅ | gemma-7b-it |groq|
-| Groq | Gemma 2B | ✅ | gemma2-9b-it |groq|
-| Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq|
-| Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq|
-| ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama|
-| vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm|
-| HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface|
+| Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
+|:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
+| Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic | ANTHROPIC_API_KEY |
+| Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic | ANTHROPIC_API_KEY |
+| OpenAI | GPT-4 | ❌ | gpt-4 |openai| OPENAI_API_KEY |
+| OpenAI | GPT-4 Turbo | ❌ | gpt-4-turbo |openai| OPENAI_API_KEY |
+| OpenAI | GPT-4o | ❌ | gpt-4o |openai| OPENAI_API_KEY |
+| OpenAI | GPT-4o mini | ❌ | gpt-4o-mini |openai| OPENAI_API_KEY |
+| OpenAI | GPT-3.5 Turbo | ❌ | gpt-3.5-turbo |openai| OPENAI_API_KEY |
+| Google | Gemini 1.5 Flash | ❌ | gemini-1.5-flash |google| GEMINI_API_KEY |
+| Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google| GEMINI_API_KEY |
+| Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google| GEMINI_API_KEY |
+| Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google| GEMINI_API_KEY |
+| Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq| GROQ_API_KEY |
+| Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq| GROQ_API_KEY |
+| Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq| GROQ_API_KEY |
+| Groq | Llama Guard 3 8B | ✅ | llama-guard-3-8b |groq| GROQ_API_KEY |
+| Groq | Llama 3 70B | ✅ | llama3-70b-8192 |groq| GROQ_API_KEY |
+| Groq | Llama 3 8B | ✅ | llama3-8b-8192 |groq| GROQ_API_KEY |
+| Groq | Mixtral 8x7B | ✅ | mixtral-8x7b-32768 |groq| GROQ_API_KEY |
+| Groq | Gemma 7B | ✅ | gemma-7b-it |groq| GROQ_API_KEY |
+| Groq | Gemma 2B | ✅ | gemma2-9b-it |groq| GROQ_API_KEY |
+| Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq| GROQ_API_KEY |
+| Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq| GROQ_API_KEY |
+| ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama| - |
+| vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
+| HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
 
 ## 🖋️ References
 ```
