@@ -61,6 +61,7 @@ AIOS supports several API integrations that require configuration. You can use t
 
 When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
+- `ANTHROPIC_API_KEY`: Anthropic API key for accessing Anthropic services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
@@ -69,14 +70,15 @@ When no environment variables are set, the following API keys will be shown:
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys
 2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. Groq API: Visit https://console.groq.com/keys
-4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+3. Anthropic API: Visit https://console.anthropic.com/settings/keys.
+4. Groq API: Visit https://console.groq.com/keys
+5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v0.2.0.beta
+cd AIOS && git checkout tags/v0.2.0.beta -b v0.2.0.beta-branch
 ```
 Create venv environment (recommended)
 ```bash
