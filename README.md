@@ -78,7 +78,7 @@ To obtain these API keys:
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v0.2.0.beta
+cd AIOS && git checkout tags/v0.2.0.beta -b v0.2.0.beta-branch
 ```
 Create venv environment (recommended)
 ```bash
