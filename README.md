@@ -20,7 +20,7 @@ AIOS is the AI Agent Operating System, which embeds large language model (LLM) i
 The AIOS system is comprised of two key components: the AIOS kernel and the AIOS-Agent SDK.
 The AIOS kernel acts as an abstraction layer over the operating system kernel, managing various resources that agents require, such as LLM, memory, storage and tool. 
 The AIOS-Agent SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
-AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](htgithub.com/agiresearch/Cerebrum)
+AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 ### Modules and Connections
 Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
@@ -114,6 +114,14 @@ Then set up your OpenAI API key as an environment variable
 
 ```bash
 export OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+```
+
+##### Use with Anthropic API
+You need to get your Anthropic API key from https://console.anthropic.com/settings/keys.
+Then set up your Anthropic API key as an environment variable
+
+```bash
+export ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_API_KEY>
 ```
 
 ##### Use with Gemini API
