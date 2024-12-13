@@ -34,6 +34,7 @@ jobs:
       with:
         # Repository owner and name. Ex: sudosubin/git-clone-action
         repository: agiresearch/Cerebrum # optional, default is ${{ github.repository }}
+        path: Cerebrum
     - name: Install cerebrum special edition
       run: |
         python -m pip install -e Cerebrum/
