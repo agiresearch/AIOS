@@ -171,19 +171,15 @@ update() {
     pip install -r requirements.txt
     
     # Remove any new non-kernel files that might have been added
-    rm -rf "$INSTALL_DIR/src/experiment"
     rm -rf "$INSTALL_DIR/src/scripts"
     rm -rf "$INSTALL_DIR/src/tests"
-    rm -rf "$INSTALL_DIR/src/aios-figs"
+    rm -rf "$INSTALL_DIR/src/docs"
     
     rm -f "$INSTALL_DIR/src/requirements-cuda.txt"
-    rm -f "$INSTALL_DIR/src/requirements-dev.txt"
-    rm -f "$INSTALL_DIR/src/requirements-research.txt"
     rm -f "$INSTALL_DIR/src/.dockerignore"
     rm -f "$INSTALL_DIR/src/.env.example"
     rm -f "$INSTALL_DIR/src/.precommit-config.yaml"
     rm -f "$INSTALL_DIR/src/README.md"
-    rm -f "$INSTALL_DIR/src/CONTRIBUTE.md"
     rm -f "$INSTALL_DIR/src/Dockerfile"
     
     echo "Update complete!"
