@@ -21,10 +21,13 @@ class BaseLLM(ABC):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
         self.max_new_tokens = max_new_tokens
+
+        self.api_key = api_key  # Store API key
 
         self.log_mode = log_mode
 

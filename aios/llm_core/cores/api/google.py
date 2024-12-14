@@ -20,6 +20,7 @@ class GeminiLLM(BaseLLM):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         super().__init__(
             llm_name,
@@ -28,6 +29,7 @@ class GeminiLLM(BaseLLM):
             max_new_tokens,
             log_mode,
             use_context_manager,
+            api_key=api_key,  # Pass API key to parent
         )
 
     def load_llm_and_tokenizer(self) -> None:
@@ -35,8 +37,9 @@ class GeminiLLM(BaseLLM):
         assert re.search(r"gemini", self.model_name, re.IGNORECASE)
         try:
             import google.generativeai as genai
-
-            gemini_api_key = get_from_env("GEMINI_API_KEY")
+            
+            # Use provided API key if available, otherwise fall back to environment variable
+            gemini_api_key = self.api_key or get_from_env("GEMINI_API_KEY")
             genai.configure(api_key=gemini_api_key)
             self.model = genai.GenerativeModel(self.model_name)
             self.tokenizer = None

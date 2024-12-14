@@ -29,6 +29,7 @@ class ClaudeLLM(BaseLLM):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         """
         Initialize the ClaudeLLM instance.
@@ -47,13 +48,17 @@ class ClaudeLLM(BaseLLM):
             max_new_tokens=max_new_tokens,
             log_mode=log_mode,
             use_context_manager=use_context_manager,
+            api_key=api_key,  # Pass API key to parent
         )
 
     def load_llm_and_tokenizer(self) -> None:
         """
         Load the Anthropic client for API calls.
         """
-        self.model = anthropic.Anthropic()
+        if self.api_key:
+            self.model = anthropic.Anthropic(api_key=self.api_key)
+        else:
+            self.model = anthropic.Anthropic()
         self.tokenizer = None
 
     def convert_tools(self, tools):
