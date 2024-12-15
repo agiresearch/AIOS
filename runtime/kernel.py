@@ -54,6 +54,7 @@ class LLMConfig(BaseModel):
     max_new_tokens: int = 2048
     log_mode: str = "INFO"
     llm_backend: str = "default"
+    api_key: str | None = None
 
 
 class StorageConfig(BaseModel):

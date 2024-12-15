@@ -24,7 +24,8 @@ class LLMAdapter:
         max_new_tokens: int = 256,
         log_mode: str = "console",
         llm_backend: Optional[str] = None,
-        use_context_manager: bool = False
+        use_context_manager: bool = False,
+        api_key: str = None
     ):
         """Initialize the LLM with the specified configuration.
         
@@ -36,6 +37,7 @@ class LLMAdapter:
             log_mode: Logging mode ("console" or other options)
             use_backend: Specific backend to use (if None, inferred from model name)
             use_context_manager: Whether to use context manager
+            api_key: API Key for the LLM
         """
         self.model: Optional[BaseLLM] = None
         
@@ -43,7 +45,8 @@ class LLMAdapter:
         model_params = {
             'llm_name': llm_name,
             'log_mode': log_mode,
-            'use_context_manager': use_context_manager
+            'use_context_manager': use_context_manager,
+            'api_key': api_key
         }
         
         # print(llm_name)
