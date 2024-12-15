@@ -20,7 +20,7 @@ AIOS is the AI Agent Operating System, which embeds large language model (LLM) i
 The AIOS system is comprised of two key components: the AIOS kernel and the AIOS-Agent SDK.
 The AIOS kernel acts as an abstraction layer over the operating system kernel, managing various resources that agents require, such as LLM, memory, storage and tool. 
 The AIOS-Agent SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
-AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](htgithub.com/agiresearch/Cerebrum)
+AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 ### Modules and Connections
 Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and h
 </p>
 
 ## 📰 News
-- **[2024-11-30]** 🔥 AIOS v0.2.0 is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
+- **[2024-11-30]** 🔥 AIOS v0.2.0.beta is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
@@ -61,6 +61,7 @@ AIOS supports several API integrations that require configuration. You can use t
 
 When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
+- `ANTHROPIC_API_KEY`: Anthropic API key for accessing Anthropic services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
@@ -69,14 +70,15 @@ When no environment variables are set, the following API keys will be shown:
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys
 2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. Groq API: Visit https://console.groq.com/keys
-4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+3. Anthropic API: Visit https://console.anthropic.com/settings/keys.
+4. Groq API: Visit https://console.groq.com/keys
+5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v0.2.0.beta
+cd AIOS && git checkout tags/v0.2.0.beta -b v0.2.0.beta-branch
 ```
 Create venv environment (recommended)
 ```bash
@@ -114,6 +116,14 @@ Then set up your OpenAI API key as an environment variable
 
 ```bash
 export OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+```
+
+##### Use with Anthropic API
+You need to get your Anthropic API key from https://console.anthropic.com/settings/keys.
+Then set up your Anthropic API key as an environment variable
+
+```bash
+export ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_API_KEY>
 ```
 
 ##### Use with Gemini API

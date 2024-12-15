@@ -17,6 +17,7 @@ class GPTLLM(BaseLLM):
         max_new_tokens: int = 1024,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         super().__init__(
             llm_name,
@@ -25,10 +26,16 @@ class GPTLLM(BaseLLM):
             max_new_tokens,
             log_mode,
             use_context_manager,
+            api_key
         )
 
     def load_llm_and_tokenizer(self) -> None:
-        self.model = OpenAI()
+        # Initialize OpenAI client with API key only if provided
+        if self.api_key:
+            self.model = OpenAI(api_key=self.api_key)
+        else:
+            self.model = OpenAI()
+
         self.tokenizer = None
 
     def parse_tool_calls(self, tool_calls):
