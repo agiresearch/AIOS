@@ -40,9 +40,17 @@ jobs:
         python -m pip install -e Cerebrum/
     - name: Run AIOS kernel in background
       run: |
-            nohup uvicorn runtime.kernel:app --reload > "server.log" 2>&1 &
+            bash runtime/launch_kernel.sh  &>logs &
 
     - name: run the run-agent code
       run: |
-        run-agent --llm_name gemini-1.5-flash --llm_backend google --agent_name_or_path demo_author/demo_agent --task "Tell me what is core idea of AIOS" --aios_kernel_url http://localhost:8000
+        run-agent --llm_name gemini-1.5-flash --llm_backend google --agent_name_or_path demo_author/demo_agent --task "Tell me what is core idea of AIOS" --aios_kernel_url http://localhost:8000 >>logs 2>&1
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.4.3
+      with:
+        # Artifact name
+        name: logs
+        # A file, directory or wildcard pattern that describes what to upload
+        path: logs
+      
 
