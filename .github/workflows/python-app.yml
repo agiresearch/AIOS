@@ -45,7 +45,8 @@ jobs:
     - name: run the run-agent code
       run: |
         export GEMINI_API_KEY=AIzaSyDKcFCc0UjbS_bliq78luOwcSGYJedlNK8
-        run-agent --llm_name gemini-1.5-flash --llm_backend google --agent_name_or_path demo_author/demo_agent --task "Tell me what is core idea of AIOS" --aios_kernel_url http://localhost:8000 >>logs 2>&1
+        run-agent --llm_name gemini-1.5-flash --llm_backend google --agent_name_or_path demo_author/demo_agent --task "Tell me what is core idea of AIOS" --aios_kernel_url http://localhost:8000 
+        # >>logs 2>&1
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4.4.3
       with:
