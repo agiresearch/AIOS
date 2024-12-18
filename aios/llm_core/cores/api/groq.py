@@ -17,7 +17,6 @@ import os
 
 
 class GroqLLM(BaseLLM):
-
     def __init__(
         self,
         llm_name: str,
@@ -26,6 +25,7 @@ class GroqLLM(BaseLLM):
         max_new_tokens: int = 1024,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         super().__init__(
             llm_name,
@@ -33,13 +33,17 @@ class GroqLLM(BaseLLM):
             eval_device,
             max_new_tokens,
             log_mode,
-            use_context_manager
+            use_context_manager,
+            api_key=api_key,  # Pass API key to parent
         )
 
     def load_llm_and_tokenizer(self) -> None:
+        # Use provided API key if available, otherwise fall back to environment variable
+        groq_api_key = self.api_key or os.environ.get("GROQ_API_KEY")
+
         self.model = OpenAI(
             base_url="https://api.groq.com/openai/v1",
-            api_key=os.environ.get("GROQ_API_KEY"),
+            api_key=groq_api_key
         )
         self.tokenizer = None
 

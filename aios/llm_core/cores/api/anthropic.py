@@ -29,6 +29,7 @@ class ClaudeLLM(BaseLLM):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
+        api_key: str = None,  # Add API key parameter
     ):
         """
         Initialize the ClaudeLLM instance.
@@ -47,13 +48,17 @@ class ClaudeLLM(BaseLLM):
             max_new_tokens=max_new_tokens,
             log_mode=log_mode,
             use_context_manager=use_context_manager,
+            api_key=api_key,  # Pass API key to parent
         )
 
     def load_llm_and_tokenizer(self) -> None:
         """
         Load the Anthropic client for API calls.
         """
-        self.model = anthropic.Anthropic()
+        if self.api_key:
+            self.model = anthropic.Anthropic(api_key=self.api_key)
+        else:
+            self.model = anthropic.Anthropic()
         self.tokenizer = None
 
     def convert_tools(self, tools):
@@ -61,11 +66,31 @@ class ClaudeLLM(BaseLLM):
         # print(tools)
         for tool in tools:
             anthropic_tool = tool["function"]
+            anthropic_tool["name"] = "--".join(anthropic_tool["name"].split("/"))
             anthropic_tool["input_schema"] = anthropic_tool["parameters"]
             anthropic_tool.pop("parameters")
             anthropic_tools.append(anthropic_tool)
         # print(anthropic_tools)
         return anthropic_tools
+
+    def parse_tool_calls(self, tool_calls):
+        if tool_calls:
+            parsed_tool_calls = []
+            for tool_call in tool_calls:
+                function_name = tool_call.name
+                function_name = "/".join(function_name.split("--"))
+                # function_args = json.loads(tool_call.input)
+                function_args = tool_call.input
+                parsed_tool_calls.append(
+                    {
+                        "name": function_name,
+                        "parameters": function_args,
+                        "type": tool_call.type,
+                        "id": tool_call.id,
+                    }
+                )
+            return parsed_tool_calls
+        return None
 
     def address_syscall(self, llm_syscall, temperature: float = 0.0) -> None:
         """
@@ -101,22 +126,41 @@ class ClaudeLLM(BaseLLM):
         self.logger.log(f"{anthropic_messages}", level="info")
 
         try:
-            response = self.model.messages.create(
-                model=self.model_name,
-                messages=anthropic_messages,
-                max_tokens=self.max_new_tokens,
-                temperature=temperature,
-                # tools=tools,
-            )
-            
-            print(response)
+            if tools:
+                response = self.model.messages.create(
+                    model=self.model_name,
+                    messages=anthropic_messages,
+                    max_tokens=self.max_new_tokens,
+                    temperature=temperature,
+                    tools=tools,
+                )
+                response_message = response.content[0].text
 
-            response_message = response.content[0].text
-            self.logger.log(f"API Response: {response_message}", level="info")
-            tool_calls = self.parse_tool_calls(response_message) if tools else None
+                tool_call_messages = response.content[1]
+
+                if tool_call_messages:
+                    response_message = None
+                    if not isinstance(tool_call_messages, list):
+                        tool_call_messages = [tool_call_messages]
+
+                tool_calls = (
+                    self.parse_tool_calls(tool_call_messages) if tools else None
+                )
+
+            else:
+                response = self.model.messages.create(
+                    model=self.model_name,
+                    messages=anthropic_messages,
+                    max_tokens=self.max_new_tokens,
+                    temperature=temperature,
+                )
+
+                response_message = response.content[0].text
+
+                tool_calls = None
 
             response = Response(
-                response_message=response_message, tool_calls=tool_calls
+                response_message=response_message, tool_calls=tool_calls, finished=True
             )
 
             # agent_request.set_response(
@@ -148,7 +192,9 @@ class ClaudeLLM(BaseLLM):
             #     )
             # )
             response = Response(
-                response_message=f"Unexpected error: {str(e)}", tool_calls=None
+                response_message=f"Unexpected error: {str(e)}",
+                tool_calls=None,
+                finished=True,
             )
 
         return response
