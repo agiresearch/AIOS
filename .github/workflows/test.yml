@@ -51,15 +51,38 @@ jobs:
         # Set environment variable when starting kernel
         export GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
         bash runtime/launch_kernel.sh &>logs &
-        sleep 10  # Wait for kernel to start
+        KERNEL_PID=$!
         
-        # Check if kernel is running
-        if curl -s http://localhost:8000/health > /dev/null; then
-          echo "Kernel started successfully"
-        else
-          echo "Error: Kernel failed to start"
-          exit 1
-        fi
+        # Set maximum wait time (10 seconds)
+        max_wait=10
+        start_time=$SECONDS
+        
+        # Dynamically check if the process is running until it succeeds or times out
+        while true; do
+          if ! ps -p $KERNEL_PID > /dev/null; then
+            echo "Kernel process died. Checking logs:"
+            cat logs
+            exit 1
+          fi
+          
+          if nc -z localhost 8000; then
+            if curl -s http://localhost:8000/health > /dev/null; then
+              echo "Kernel successfully started and healthy"
+              break
+            fi
+          fi
+          
+          # Check if timed out
+          elapsed=$((SECONDS - start_time))
+          if [ $elapsed -ge $max_wait ]; then
+            echo "Timeout after ${max_wait} seconds. Kernel failed to start properly."
+            cat logs
+            exit 1
+          fi
+          
+          echo "Waiting for kernel to start... (${elapsed}s elapsed)"
+          sleep 1
+        done
     
     - name: Run the run-agent code
       env:
