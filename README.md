@@ -51,8 +51,9 @@ Here are some key notations that are required to know before introducing the dif
 The following parts introduce different modes of deploying AIOS. **Currently, AIOS already supports Mode 1 and Mode 2, other modes with new features are still ongoing.**
 
 ### Mode 1 (Local Kernel Mode)
+
 <p align="center">
-<img src="docs/assets/aios-figs/stage1.png" width="300“>
+<img src="docs/assets/aios-figs/stage1.png" width=300>
 </p>
 
 - Features:
@@ -60,8 +61,9 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
   - For agent developers: They can develop and test agents in Machine A and can upload agents to agent hub on Machine B.
 
 ### Mode 2 (Remote Kernel Mode)
+
 <p align="center">
-<img src="docs/assets/aios-figs/stage2.png" width="300“>
+<img src="docs/assets/aios-figs/stage2.png" width=300>
 </p>
 
 - Features: 
@@ -69,8 +71,9 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
   - Benefit users who would like to use agents on resource-restricted machine (e.g., mobile device or edge device)
 
 ### Mode 2.5 (Remote Kernel Dev Mode)
+
 <p align="center">
-<img src="docs/assets/aios-figs/stage2.5.png" width="300“>
+<img src="docs/assets/aios-figs/stage2.5.png" width=300>
 </p>
 
 - Features:
@@ -79,8 +82,9 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
   - Packaging and agent transmission on different machines for distributed agent development and testing
 
 ### Mode 3 (Personal Remote Kernel Mode)
+
 <p align="center">
-<img src="docs/assets/aios-figs/stage3.png" width="800“>
+<img src="docs/assets/aios-figs/stage3.png" width=800>
 </p>
 
 - Ongoing Features:
@@ -94,8 +98,9 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
   - Data privacy mechanism
 
 ### Mode 4 (Personal Remote Virtual Kernel Mode)
+
 <p align="center">
-<img src="docs/assets/aios-figs/stage4.png" width="800“>
+<img src="docs/assets/aios-figs/stage4.png" width=800>
 </p>
 
 - Ongoing Features:
