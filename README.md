@@ -84,7 +84,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 3 (Personal Remote Kernel Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage1.png" width=800>
+<img src="docs/assets/aios-figs/stage3.png" width=800>
 </p>
 
 - Ongoing Features:
