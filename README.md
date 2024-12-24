@@ -53,7 +53,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 1 (Local Kernel Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage1.png" width="300“>
+<img src="docs/assets/aios-figs/stage1.png" width=300>
 </p>
 
 - Features:
@@ -63,7 +63,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 2 (Remote Kernel Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage2.png" width="300“>
+<img src="docs/assets/aios-figs/stage2.png" width=300>
 </p>
 
 - Features: 
@@ -73,7 +73,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 2.5 (Remote Kernel Dev Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage2.5.png" width="300“>
+<img src="docs/assets/aios-figs/stage2.5.png" width=300>
 </p>
 
 - Features:
@@ -84,7 +84,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 3 (Personal Remote Kernel Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage3.png" width="800“>
+<img src="docs/assets/aios-figs/stage1.png" width=800>
 </p>
 
 - Ongoing Features:
@@ -100,7 +100,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 ### Mode 4 (Personal Remote Virtual Kernel Mode)
 
 <p align="center">
-<img src="docs/assets/aios-figs/stage4.png" width="800“>
+<img src="docs/assets/aios-figs/stage4.png" width=800>
 </p>
 
 - Ongoing Features:
