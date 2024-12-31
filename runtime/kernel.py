@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 import traceback
 import json
+import logging
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -46,6 +47,16 @@ active_components = {
 
 send_request, SysCallWrapper = useSysCall()
 
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Output to console
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 class LLMConfig(BaseModel):
     llm_name: str
@@ -236,7 +247,7 @@ async def setup_scheduler(config: SchedulerConfig):
     try:
         # Set up the scheduler with all components
         scheduler = fifo_scheduler(
-            llm=active_components["llm"],
+            llm=active_components["llm"],   
             memory_manager=active_components["memory"],
             storage_manager=active_components["storage"],
             tool_manager=active_components["tool"],
@@ -311,37 +322,48 @@ async def get_agent_status(execution_id: int):
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
 
     try:
-        print(f"\n[DEBUG] ===== Checking Agent Status =====")
-        print(f"[DEBUG] Execution ID: {execution_id}")
+        logger.debug(f"\n===== Checking Agent Status =====")
+        logger.debug(f"Execution ID: {execution_id}")
         
         await_execution = active_components["factory"]["await"]
-        result = await_execution(int(execution_id))
         
-        if result is None:
+        try:
+            result = await_execution(int(execution_id))
+            logger.debug(f"Execution result: {result}")
+            
+            if result is None:
+                return {
+                    "status": "running",
+                    "message": "Execution in progress",
+                    "execution_id": execution_id,
+                    "debug_info": "Agent execution still in progress"
+                }
+
             return {
-                "status": "running",
-                "message": "Execution in progress",
+                "status": "completed",
+                "result": result,
                 "execution_id": execution_id
             }
-
-        return {
-            "status": "completed",
-            "result": result,
-            "execution_id": execution_id
-        }
+        except Exception as inner_e:
+            logger.error(f"Error in execution: {str(inner_e)}")
+            logger.error(f"Inner stack trace:\n{traceback.format_exc()}")
+            raise
+            
     except Exception as e:
         error_msg = str(e)
         stack_trace = traceback.format_exc()
-        print(f"[ERROR] Failed to get agent status: {error_msg}")
-        print(f"[ERROR] Stack Trace:\n{stack_trace}")
+        logger.error(f"Failed to get agent status: {error_msg}")
+        logger.error(f"Stack Trace:\n{stack_trace}")
         
+        # Return more detailed error information
         return {
             "status": "error",
             "message": error_msg,
             "error": {
                 "type": type(e).__name__,
                 "message": error_msg,
-                "traceback": stack_trace
+                "traceback": stack_trace,
+                "debug_logs": getattr(e, 'debug_logs', None)
             },
             "execution_id": execution_id
         }

@@ -47,11 +47,11 @@ def useFactory(
                 is_local = True
                 
             if is_local:
-                agent_class, _ = manager.load_agent(local=True, path=agent_name)
+                agent_class, config = manager.load_agent(local=True, path=agent_name)
             else:
-                agent_class, _ = manager.load_agent(author, name, version)
+                agent_class, config = manager.load_agent(author, name, version)
 
-            agent = agent_class(agent_name, task, _)
+            agent = agent_class(agent_name, task, config)
 
             agent.send_request = send_request
 
