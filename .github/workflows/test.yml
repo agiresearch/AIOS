@@ -46,10 +46,10 @@ jobs:
     
     - name: Run AIOS kernel in background
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ' }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyBj-yY2a56Twn0B7rMQzKgshPGB6LjHZDU' }}
       run: |
         # Check if using default test key and validate API key format
-        if [ "$GEMINI_API_KEY" = "AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ" ]; then
+        if [ "$GEMINI_API_KEY" = "AIzaSyBj-yY2a56Twn0B7rMQzKgshPGB6LjHZDU" ]; then
           echo "Notice: Using test API key - For testing purposes only"
         elif [[ ! $GEMINI_API_KEY =~ ^AIza[0-9A-Za-z_-]{35}$ ]]; then
           echo "Error: Invalid GEMINI_API_KEY format"
@@ -92,10 +92,10 @@ jobs:
     
     - name: Run the run-agent code
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ' }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyBj-yY2a56Twn0B7rMQzKgshPGB6LjHZDU' }}
       run: |
         # Check if using default test key
-        if [ "$GEMINI_API_KEY" = "AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ" ]; then
+        if [ "$GEMINI_API_KEY" = "AIzaSyBj-yY2a56Twn0B7rMQzKgshPGB6LjHZDU" ]; then
           echo "Notice: Using test API key - For testing purposes only"
         fi
         
