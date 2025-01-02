@@ -54,7 +54,7 @@ jobs:
 
     - name: Run Ollama serve
       run: |
-        ollama serve llama3:8b 2>&1 | tee ollama-serve.log
+        nohup ollama serve llama3:8b >ollama-serve.log 2>&1 &
 
     - name: Run AIOS kernel in background
       run: |
