@@ -57,6 +57,8 @@ class LLMAdapter:
         # If backend is explicitly specified, use it
         # print(f"llm backend: {llm_backend}")
         if llm_backend and llm_backend in BACKEND_REGISTRY:
+            if llm_backend in ["vllm", "ollama", "huggingface"]:
+                model_params.pop('api_key')
             model_class = BACKEND_REGISTRY[llm_backend]
             self.model = model_class(**model_params)
             # print(self.model)
