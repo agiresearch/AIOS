@@ -1,0 +1,59 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: AIOS application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Git Clone Action
+  # You may pin to the exact commit or the version.
+  # uses: sudosubin/git-clone-action@8a93ce24d47782e30077508cccacf8a05a891bae
+      uses: sudosubin/git-clone-action@v1.0.1
+      with:
+        # Repository owner and name. Ex: sudosubin/git-clone-action
+        repository: agiresearch/Cerebrum # optional, default is ${{ github.repository }}
+        path: Cerebrum
+    - name: Install cerebrum special edition
+      run: |
+        python -m pip install -e Cerebrum/
+    - name: Run AIOS kernel in background
+      run: |
+            bash runtime/launch_kernel.sh  &>logs &
+
+    - name: run the run-agent code
+      run: |
+        curl localhost:8000
+        export GEMINI_API_KEY=AIzaSyDKcFCc0UjbS_bliq78luOwcSGYJedlNK8
+        run-agent --llm_name gemini-1.5-flash --llm_backend google --agent_name_or_path demo_author/demo_agent --task "Tell me what is core idea of AIOS" --aios_kernel_url http://localhost:8000 
+        # >>logs 2>&1
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.4.3
+      with:
+        # Artifact name
+        name: logs
+        # A file, directory or wildcard pattern that describes what to upload
+        path: logs
+      
+
