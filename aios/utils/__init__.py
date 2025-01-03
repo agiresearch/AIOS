@@ -33,6 +33,9 @@ def parse_global_args():
     env_set_parser.add_argument('key', nargs='?', help='API key name')
     env_set_parser.add_argument('value', nargs='?', help='API key value')
     
+    # refresh command
+    refresh_parser = subparsers.add_parser('refresh', help='Refresh configuration')
+    
     # Global parameters
     parser.add_argument('--llm_name', type=str, default="gpt-4o-mini", help="Specify the LLM name of AIOS")
     parser.add_argument('--max_gpu_memory', type=json.loads, help="Max gpu memory allocated for the LLM")

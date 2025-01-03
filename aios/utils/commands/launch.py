@@ -1,6 +1,8 @@
 from aios.utils import parse_global_args
+from aios.config.config_manager import config
 import os
 import sys
+import requests
 
 def show_available_api_keys():
     print("Available API keys to configure:")
@@ -51,21 +53,71 @@ def handle_env_command(args):
         print("  aios env list")
         print("  aios env set OPENAI_API_KEY your_api_key")
 
+def handle_refresh_command():
+    """处理配置刷新命令"""
+    try:
+        print("\n=== AIOS Configuration ===")
+        
+        # 刷新配置
+        config.refresh()
+        
+        # 显示当前API密钥状态（脱敏处理）
+        print("\nAPI Keys Status:")
+        for provider, key in config.config.get('api_keys', {}).items():
+            if isinstance(key, dict):
+                print(f"- {provider}:")
+                for k, v in key.items():
+                    if v:
+                        masked_value = "****" + v[-4:] if len(v) > 4 else "****"
+                        print(f"  {k}: {masked_value}")
+                    else:
+                        print(f"  {k}: [NOT SET]")
+            else:
+                if key:
+                    masked_key = "****" + key[-4:] if len(key) > 4 else "****"
+                    print(f"- {provider}: {masked_key}")
+                else:
+                    print(f"- {provider}: [NOT SET]")
+        
+        # 通知kernel刷新配置
+        try:
+            response = requests.post(
+                "http://localhost:8000/core/refresh",
+                timeout=5
+            )
+            if response.status_code == 200:
+                result = response.json()
+                print(f"\n✅ Kernel configuration refreshed: {result['message']}")
+            else:
+                print(f"\n❌ Failed to refresh kernel configuration: {response.text}")
+        except requests.exceptions.ConnectionError:
+            print("\n⚠️ Warning: Could not connect to kernel. Is the kernel running?")
+            print("To start the kernel, run: python runtime/launch_kernel.py start")
+        except Exception as e:
+            print(f"\n❌ Error communicating with kernel: {str(e)}")
+            
+    except Exception as e:
+        print(f"❌ Error refreshing configuration: {e}")
+
 def main():
     parser = parse_global_args()
     args = parser.parse_args()
 
     if not args.command:
-        print("Usage: aios env {list|set}")
+        print("Usage: aios {env|refresh}")
         print("Examples:")
         print("  aios env list")
         print("  aios env set OPENAI_API_KEY your_api_key")
+        print("  aios refresh")
         return
 
     if args.command == "env":
         handle_env_command(args)
+    elif args.command == "refresh":
+        handle_refresh_command()
     else:
-        print("Usage: aios env {list|set}")
+        print("Usage: aios {env|refresh}")
         print("Examples:")
         print("  aios env list")
         print("  aios env set OPENAI_API_KEY your_api_key")
+        print("  aios refresh")
