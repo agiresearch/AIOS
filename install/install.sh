@@ -286,6 +286,15 @@ case "$1" in
     "update")
         update
         ;;
+    "refresh")
+        if [ -f "$PID_FILE" ]; then
+            echo "Refreshing AIOS configuration..."
+            curl -X POST http://localhost:8000/core/refresh
+        else
+            echo "Server is not running. Please start the server first."
+            echo "Run: aios start"
+        fi
+        ;;
     "env")
         case "$2" in
             "add")
@@ -349,6 +358,10 @@ Commands:
                 - Updates dependencies
                 - Restarts the server automatically
                 - Your environment variables and configurations are preserved
+
+  refresh       Refresh AIOS configuration
+                - Reloads configuration without restart
+                - Server must be running
 
   env           Manage environment variables
                 Subcommands:
