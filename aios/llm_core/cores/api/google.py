@@ -89,7 +89,7 @@ class GeminiLLM(BaseLLM):
         )
 
         try:
-            # 直接发送消息内容，不需要 json.dumps
+            # directly send message content, no need for json.dumps
             response = self.model.generate_content(messages[0]['parts']['text'])
             result = response.text
 
