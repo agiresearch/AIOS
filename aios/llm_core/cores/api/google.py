@@ -10,6 +10,8 @@ from aios.utils import get_from_env
 
 from cerebrum.llm.communication import Response
 
+from aios.config.config_manager import config
+
 
 class GeminiLLM(BaseLLM):
     def __init__(
@@ -20,8 +22,11 @@ class GeminiLLM(BaseLLM):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        api_key: str = None,  # Add API key parameter
+        api_key: str = None,
     ):
+        # Get API key from config
+        api_key = api_key or config.get_api_key('gemini')
+        
         super().__init__(
             llm_name,
             max_gpu_memory,
@@ -29,18 +34,16 @@ class GeminiLLM(BaseLLM):
             max_new_tokens,
             log_mode,
             use_context_manager,
-            api_key=api_key,  # Pass API key to parent
+            api_key
         )
 
     def load_llm_and_tokenizer(self) -> None:
         """dynamic loading because the module is only needed for this case"""
-        assert re.search(r"gemini", self.model_name, re.IGNORECASE)
+        if not self.api_key:
+            raise ValueError("Gemini API key not found in config or parameters")
         try:
             import google.generativeai as genai
-            
-            # Use provided API key if available, otherwise fall back to environment variable
-            gemini_api_key = self.api_key or get_from_env("GEMINI_API_KEY")
-            genai.configure(api_key=gemini_api_key)
+            genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel(self.model_name)
             self.tokenizer = None
         except ImportError:
@@ -65,7 +68,6 @@ class GeminiLLM(BaseLLM):
 
     def address_syscall(self, llm_syscall, temperature=0.0) -> None:
         # ensures the model is the current one
-
         """wrapper around functions"""
 
         llm_syscall.set_status("executing")
@@ -86,10 +88,11 @@ class GeminiLLM(BaseLLM):
             f"{llm_syscall.agent_name} is switched to executing.\n", level="executing"
         )
 
-        outputs = self.model.generate_content(json.dumps({"contents": messages}))
-
         try:
-            result = outputs.candidates[0].content.parts[0].text
+            # directly send message content, no need for json.dumps
+            response = self.model.generate_content(messages[0]['parts']['text'])
+            result = response.text
+
             if tools:
                 tool_calls = self.parse_tool_calls(result)
                 if tool_calls:
@@ -112,9 +115,7 @@ class GeminiLLM(BaseLLM):
                     finished=True
                 )
 
-        except IndexError:
-            raise IndexError(
-                f"{self.model_name} can not generate a valid result, please try again"
-            )
+        except Exception as e:
+            raise Exception(f"Gemini API error: {str(e)}")
 
         return response

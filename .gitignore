@@ -204,3 +204,6 @@ metagpt
 workspace
 
 cache
+
+# Ignore configuration files
+aios/config/config.yaml
