@@ -54,14 +54,14 @@ def handle_env_command(args):
         print("  aios env set OPENAI_API_KEY your_api_key")
 
 def handle_refresh_command():
-    """处理配置刷新命令"""
+    """Handle configuration refresh command"""
     try:
         print("\n=== AIOS Configuration ===")
         
-        # 刷新配置
+        # Refresh configuration
         config.refresh()
         
-        # 显示当前API密钥状态（脱敏处理）
+        # Display current API key status (masked)
         print("\nAPI Keys Status:")
         for provider, key in config.config.get('api_keys', {}).items():
             if isinstance(key, dict):
@@ -79,7 +79,7 @@ def handle_refresh_command():
                 else:
                     print(f"- {provider}: [NOT SET]")
         
-        # 通知kernel刷新配置
+        # Notify kernel to refresh configuration
         try:
             response = requests.post(
                 "http://localhost:8000/core/refresh",
