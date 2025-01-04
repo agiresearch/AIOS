@@ -289,7 +289,10 @@ case "$1" in
     "refresh")
         if [ -f "$PID_FILE" ]; then
             echo "Refreshing AIOS configuration..."
-            curl -X POST http://localhost:8000/core/refresh
+            # Get server configuration from the configuration file
+            HOST=$(python -c "from aios.config.config_manager import config; print(config.config.get('server', {}).get('host', 'localhost'))")
+            PORT=$(python -c "from aios.config.config_manager import config; print(config.config.get('server', {}).get('port', 8000))")
+            curl -X POST "http://${HOST}:${PORT}/core/refresh"
         else
             echo "Server is not running. Please start the server first."
             echo "Run: aios start"

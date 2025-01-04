@@ -61,8 +61,8 @@ jobs:
         bash runtime/launch_kernel.sh &>logs &
         KERNEL_PID=$!
         
-        # Set maximum wait time (10 seconds)
-        max_wait=10
+        # Set maximum wait time (20 seconds)
+        max_wait=20
         start_time=$SECONDS
         
         # Dynamically check if the process is running until it succeeds or times out

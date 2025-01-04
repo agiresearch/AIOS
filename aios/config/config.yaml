@@ -18,3 +18,7 @@ llm:
   max_gpu_memory: null
   eval_device: "cuda:0"
   log_mode: "console"
+
+server:
+  host: "localhost"
+  port: 8000

@@ -61,6 +61,11 @@ def handle_refresh_command():
         # Refresh configuration
         config.refresh()
         
+        # Get server URL from config
+        host = config.config.get('server', {}).get('host', 'localhost')
+        port = config.config.get('server', {}).get('port', 8000)
+        server_url = f"http://{host}:{port}"
+        
         # Display current API key status (masked)
         print("\nAPI Keys Status:")
         for provider, key in config.config.get('api_keys', {}).items():
@@ -82,7 +87,7 @@ def handle_refresh_command():
         # Notify kernel to refresh configuration
         try:
             response = requests.post(
-                "http://localhost:8000/core/refresh",
+                f"{server_url}/core/refresh",
                 timeout=5
             )
             if response.status_code == 200:
