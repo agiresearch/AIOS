@@ -1,4 +1,6 @@
 from aios.context.simple_context import SimpleContextManager
+from aios.llm_core.strategy import RouterStrategy
+from aios.llm_core.strategy import SimpleStrategy
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.communication import Response
 from litellm import completion
@@ -41,7 +43,8 @@ class LLMAdapter:
         log_mode: str = "console",
         llm_backend: Optional[str] = None,
         use_context_manager: bool = False,
-        api_key: str | list[str] | None = None
+        strategy: RouterStrategy = RouterStrategy.SIMPLE,
+        api_key: str | list[str] | None = None,
     ):
         """Initialize the LLM with the specified configuration.
         
@@ -66,6 +69,10 @@ class LLMAdapter:
         self.log_mode            = log_mode
         self.llm_backend         = llm_backend
         self.context_manager     = SimpleContextManager() if use_context_manager else None
+
+        match strategy:
+            case RouterStrategy.SIMPLE:
+                self.strategy = SimpleStrategy(self.llm_name)
 
         # Backwards compatibility for pre-router LLM names.
         if os.environ["HF_AUTH_TOKENS"]:
@@ -116,8 +123,6 @@ class LLMAdapter:
         json_object_pattern = r"\{\s*.*?\s*\}"
 
         match_array = re.search(json_array_pattern, message)
-        
-        # print(f"match_array: {match_array}")
 
         if match_array:
             json_array_substring = match_array.group(0)
@@ -185,7 +190,7 @@ class LLMAdapter:
             messages = self.tool_calling_input_format(messages, tools)
 
         res = str(completion(
-            model=self.llm_name[0],
+            model=self.strategy(),
             messages=messages,
             temperature=temperature,
         ))
