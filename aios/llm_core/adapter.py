@@ -1,6 +1,6 @@
 from aios.context.simple_context import SimpleContextManager
-from aios.llm_core.strategy import RouterStrategy
-from aios.llm_core.strategy import SimpleStrategy
+from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
+from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.communication import Response
 from litellm import completion
@@ -41,9 +41,9 @@ class LLMAdapter:
         eval_device: Optional[str] = None,
         max_new_tokens: int = 256,
         log_mode: str = "console",
-        llm_backend: Optional[str] = None,
+        llm_backend: Optional[str | list[str]] = None,
         use_context_manager: bool = False,
-        strategy: RouterStrategy = RouterStrategy.SIMPLE,
+        strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
         api_key: str | list[str] | None = None,
     ):
         """Initialize the LLM with the specified configuration.
@@ -62,12 +62,17 @@ class LLMAdapter:
                                   directly from the process environment
                                   variables making this needless.
         """
+        if isinstance(llm_name, list) != isinstance(llm_backend, list):
+            raise ValueError
+        elif isinstance(llm_backend, list) and len(llm_name) == len(llm_backend):
+            raise ValueError
+
         self.llm_name            = llm_name if isinstance(llm_name, list) else [llm_name]
         self.max_gpu_memory      = max_gpu_memory
         self.eval_device         = eval_device
         self.max_new_tokens      = max_new_tokens
         self.log_mode            = log_mode
-        self.llm_backend         = llm_backend
+        self.llm_backend         = llm_backend if isinstance(llm_backend, list) else [llm_backend]
         self.context_manager     = SimpleContextManager() if use_context_manager else None
 
         match strategy:
@@ -78,12 +83,22 @@ class LLMAdapter:
         if os.environ["HF_AUTH_TOKENS"]:
             os.environ["HUGGING_FACE_API_KEY"] = os.environ["HF_AUTH_TOKENS"]
 
-        for idx, name in enumerate(self.llm_name):
-            if name == "gemini-1.5-flash":
-                self.llm_name[idx] = "google/gemini-1.5-flash"
-            elif name == "llama3:8b":
-                self.llm_name[idx] = "ollama/llama3"
+        for idx in range(len(self.llm_name)):
+            if self.llm_backend[idx] is None:
+                continue
 
+            match self.llm_backend[idx]:
+                case "hflocal":
+                    raise NotImplemented
+                case "vllm":
+                    raise NotImplemented
+                case None:
+                    continue
+                case _:
+                    prefix = self.llm_backend[idx] + "/"
+                    is_formatted = self.llm_name[idx].startswith(prefix)
+                    if not is_formatted:
+                        self.llm_name[idx] = prefix + self.llm_name[idx]
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
@@ -191,11 +206,27 @@ class LLMAdapter:
         if tools:
             messages = self.tool_calling_input_format(messages, tools)
 
-        res = str(completion(
-            model=self.strategy(),
-            messages=messages,
-            temperature=temperature,
-        ))
+        model = self.strategy()
+
+        if isinstance(model, str):
+            res = str(completion(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+            ))
+        elif isinstance(model, HfLocalBackend):
+            res = model(
+                messages=messages,
+                temperature=temperature,
+            )
+        elif isinstance(model, VLLMLocalBackend):
+            res = model(
+                messages=messages,
+                temperature=temperature,
+            )
+        else:
+            # Any other type of llm_name should error.
+            raise RuntimeError
 
         if tools:
             if tool_calls := self.parse_tool_calls(res):
