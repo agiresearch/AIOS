@@ -1,3 +1,4 @@
+from aios.context.simple_context import SimpleContextManager
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.communication import Response
 from litellm import completion
@@ -63,7 +64,7 @@ class LLMAdapter:
         self.max_new_tokens      = max_new_tokens
         self.log_mode            = log_mode
         self.llm_backend         = llm_backend
-        self.use_context_manager = use_context_manager
+        self.context_manager     = SimpleContextManager() if use_context_manager else None
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
@@ -158,36 +159,34 @@ class LLMAdapter:
         llm_syscall.set_status("executing")
         llm_syscall.set_start_time(time.time())
 
-        #self.logger.log(
-        #    f"{llm_syscall.agent_name} is switched to executing.\n", level="executing"
-        #)
+        restored_context = None
+        if self.context_manager:
+            pid = llm_syscall.get_pid()
+            if self.context_manager.check_restoration(pid):
+                restored_context = self.context_manager.gen_recover(pid)
 
-        if self.use_context_manager:
-            return Response(
-                response_message="Context manager not supported yet",
-                finished=True,
-            )
-        else:
-            if tools:
-                messages = self.tool_calling_input_format(messages, tools)
-            
-            # TODO: Load balancing
-            res = str(completion(
-                model=self.llm_name[0],
-                messages=messages,
-                temperature=temperature,
-            ))
+        if restored_context is not None:
+            messages += [{
+                "role": "assistant",
+                "content": "" + restored_context,
+            }]
 
-            if tools:
-                tool_calls = self.parse_tool_calls(res)
-                if tool_calls:
-                    return Response(
-                        response_message=None,
-                        tool_calls=tool_calls,
-                        finished=True,
-                    )
+        if tools:
+            messages = self.tool_calling_input_format(messages, tools)
 
-            if ret_type == "json":
-                res = self.parse_json_format(res)
+        res = str(completion(
+            model=self.llm_name[0],
+            messages=messages,
+            temperature=temperature,
+        ))
 
-            return Response(response_message=res, finished=True)
+        if tools:
+            if tool_calls := self.parse_tool_calls(res):
+                return Response(response_message=None,
+                                tool_calls=tool_calls,
+                                finished=True)
+
+        if ret_type == "json":
+            res = self.parse_json_format(res)
+
+        return Response(response_message=res, finished=True)
