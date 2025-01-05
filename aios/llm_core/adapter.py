@@ -7,6 +7,7 @@ import json
 from typing import Dict, Optional
 import time
 import re
+import os
 
 class LLMAdapter:
     """
@@ -65,6 +66,15 @@ class LLMAdapter:
         self.log_mode            = log_mode
         self.llm_backend         = llm_backend
         self.context_manager     = SimpleContextManager() if use_context_manager else None
+
+        # Backwards compatibility for pre-router LLM names.
+        if os.environ["HF_AUTH_TOKENS"]:
+            os.environ["HUGGING_FACE_API_KEY"] = os.environ["HF_AUTH_TOKENS"]
+
+        for idx, name in enumerate(self.llm_name):
+            if name == "gemini-1.5-flash":
+                self.llm_name[idx] = "google/gemini-1.5-flash"
+
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
