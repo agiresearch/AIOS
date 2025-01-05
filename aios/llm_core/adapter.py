@@ -81,6 +81,8 @@ class LLMAdapter:
         for idx, name in enumerate(self.llm_name):
             if name == "gemini-1.5-flash":
                 self.llm_name[idx] = "google/gemini-1.5-flash"
+            elif name == "llama3:8b":
+                self.llm_name[idx] = "ollama/llama3"
 
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
