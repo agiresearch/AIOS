@@ -16,8 +16,10 @@ class HfLocalBackend:
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name,
+            device_map=device,
             use_auth_token=os.environ["HUGGING_FACE_API_KEY"]
         )
+        self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
     def __call__(
         self,
@@ -28,7 +30,26 @@ class HfLocalBackend:
         if stream:
             raise NotImplemented
 
-        return ""
+        inputs = self.tokenizer.apply_chat_template(messages,
+                                                       tokenize=True,
+                                                       add_generation_prompt=True,
+                                                       return_dict=True,
+                                                       return_tensors="pt")
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+        temperature = temperature if temperature > 0.5 else 0.5
+        response  = self.model.generate(**inputs,
+                                        temperature=temperature,
+                                        max_length=4096,
+                                        top_k=10,
+                                        num_beams=4,
+                                        early_stopping=True,
+                                        do_sample=True,
+                                        num_return_sequences=1,
+                                        eos_token_id=self.tokenizer.eos_token_id)
+        length    = inputs["input_ids"].shape[1]
+        result    = self.tokenizer.decode(response[0][length:])
+
+        return result
 
 class VLLMLocalBackend:
     def __init__(self, model_name, device="auto", max_gpu_memory=None):
