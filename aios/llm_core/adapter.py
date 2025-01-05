@@ -89,9 +89,11 @@ class LLMAdapter:
 
             match self.llm_backend[idx]:
                 case "hflocal":
-                    raise NotImplemented
+                    self.llm_name[idx] = HfLocalBackend(self.llm_name[idx],
+                                                        max_gpu_memory=max_gpu_memory)
                 case "vllm":
-                    raise NotImplemented
+                    self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
+                                                          max_gpu_memory=max_gpu_memory)
                 case None:
                     continue
                 case _:
