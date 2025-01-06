@@ -18,7 +18,7 @@ class RouterStrategy(Enum):
     SIMPLE = 0,
 
 class SimpleStrategy:
-    def __init__(self, llm_name):
+    def __init__(self, llm_name: list[str]):
         self.endpoints = llm_name
         self.idx = 0
 

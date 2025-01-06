@@ -54,7 +54,18 @@ jobs:
 
     - name: Run Ollama serve
       run: |
-        ollama serve 2>&1 | tee ollama-llm.log
+        ollama serve 2>&1 | tee ollama-llm.log &
+        # Wait for ollama to start
+        for i in {1..30}; do
+          if curl -s http://localhost:11434/api/version > /dev/null; then
+            echo "Ollama is running"
+            break
+          fi
+          echo "Waiting for ollama to start... ($i/30)"
+          sleep 1
+        done
+        # Verify ollama is running
+        curl -s http://localhost:11434/api/version || (echo "Failed to start ollama" && exit 1)
 
     - name: Run AIOS kernel in background
       run: |

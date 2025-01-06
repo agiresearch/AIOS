@@ -123,3 +123,21 @@ class VLLMLocalBackend:
         result     = response[0].outputs[0].text
 
         return result
+
+class OllamaBackend:
+    def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        self.model_name = model_name
+        self.hostname = hostname or "http://localhost:11434"
+        
+    def __call__(
+        self,
+        messages,
+        temperature,
+        stream=False,
+    ):
+        return str(completion(
+            model="ollama/" + self.model_name,
+            messages=messages,
+            temperature=temperature,
+            api_base=self.hostname
+        ))
