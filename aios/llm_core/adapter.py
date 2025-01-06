@@ -44,6 +44,7 @@ class LLMAdapter:
         llm_backend: Optional[str | list[str]] = None,
         use_context_manager: bool = False,
         strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
+        hostname: Optional[str | list[str]] = None,
         api_key: str | list[str] | None = None,
     ):
         """Initialize the LLM with the specified configuration.
@@ -79,10 +80,11 @@ class LLMAdapter:
             case RouterStrategy.SIMPLE:
                 self.strategy = SimpleStrategy(self.llm_name)
 
-        # Backwards compatibility for pre-router LLM names.
+        # Backwards compatibility for pre-router API key environment variables.
         if os.environ["HF_AUTH_TOKENS"]:
             os.environ["HUGGING_FACE_API_KEY"] = os.environ["HF_AUTH_TOKENS"]
 
+        # Format model names to match backend or instantiate local backends
         for idx in range(len(self.llm_name)):
             if self.llm_backend[idx] is None:
                 continue
@@ -90,10 +92,12 @@ class LLMAdapter:
             match self.llm_backend[idx]:
                 case "hflocal":
                     self.llm_name[idx] = HfLocalBackend(self.llm_name[idx],
-                                                        max_gpu_memory=max_gpu_memory)
+                                                        max_gpu_memory=max_gpu_memory,
+                                                        hostname=hostname)
                 case "vllm":
                     self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
-                                                          max_gpu_memory=max_gpu_memory)
+                                                          max_gpu_memory=max_gpu_memory,
+                                                         hostname=hostname)
                 case None:
                     continue
                 case _:
