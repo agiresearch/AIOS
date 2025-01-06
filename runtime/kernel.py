@@ -280,15 +280,21 @@ async def submit_agent(config: AgentSubmit):
         print(f"[DEBUG] Task: {config.agent_config.get('task', 'No task specified')}")
         
         _submit_agent = active_components["factory"]["submit"]
-        execution_id = _submit_agent(
-            agent_name=config.agent_id, task_input=config.agent_config["task"]
-        )
-        
+        try:
+            execution_id = _submit_agent(
+                agent_name=config.agent_id,
+                task_input=config.agent_config["task"]
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+            
         return {
             "status": "success",
             "execution_id": execution_id,
             "message": f"Agent {config.agent_id} submitted for execution"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e)
         stack_trace = traceback.format_exc()
@@ -380,6 +386,12 @@ async def handle_query(request: QueryRequest):
                 action_type=request.query_data.action_type,
                 message_return_type=request.query_data.message_return_type,
             )
-            return send_request(request.agent_name, query)
+            try:
+                return send_request(request.agent_name, query)
+            except ValueError as e:
+                # This will show up as 404 in the unicorn server
+                raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

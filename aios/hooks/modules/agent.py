@@ -30,6 +30,9 @@ def useFactory(
 
         Returns:
             int: A unique process ID for the submitted agent.
+            
+        Raises:
+            ValueError: If agent cannot be found or loaded
         """
         def run_agent(agent_name: str, task):
             is_local = False
@@ -38,19 +41,30 @@ def useFactory(
                 is_local = True
             
             try:
-                author, name, version = manager.download_agent(
-                    author=agent_name.split('/')[0],
-                    name=agent_name.split('/')[1]
-                )
+                # attempting remote agent download
+                if not is_local:
+                    # Validate agent exists before attempting to download
+                    if '/' not in agent_name or len(agent_name.split('/')) < 2:
+                        raise ValueError(f"Invalid agent name format: {agent_name}")
+                        
+                    author, name, version = manager.download_agent(
+                        author=agent_name.split('/')[0],
+                        name=agent_name.split('/')[1]
+                    )
+                    if not version:  # Add check for None version
+                        raise ValueError(f"Agent not found: {agent_name}")
+                    agent_class, _ = manager.load_agent(author, name, version)
+                else:
+                    # For local agents, verify the path exists before loading
+                    agent_class, _ = manager.load_agent(local=True, path=agent_name)
+                    if not agent_class:
+                        raise ValueError(f"Could not load local agent: {agent_name}")
 
-            except:
-                is_local = True
+            except Exception as e:
+                # Store the error in the process store
+                error_msg = f"Failed to load agent '{agent_name}'. Error: {str(e)}"
+                raise ValueError(error_msg)
                 
-            if is_local:
-                agent_class, _ = manager.load_agent(local=True, path=agent_name)
-            else:
-                agent_class, _ = manager.load_agent(author, name, version)
-
             agent = agent_class(agent_name, task, _)
 
             agent.send_request = send_request
@@ -82,18 +96,34 @@ def useFactory(
             process_id (str): The ID of the process to await.
 
         Returns:
-            dict: The result of the agent execution.
-
-        Raises:
-            ValueError: If the process ID is not found.
+            dict: The result of the agent execution or error information.
         """
-
         future = ProcessStore.AGENT_PROCESSES.get(process_id)
 
-        if future:
+        if not future:
+            error_msg = f"Process with ID '{process_id}' not found."
+            # Return error dict for new error handling
+            return {
+                "status": "error",
+                "error": error_msg
+            }
+            # This code block is no longer reached but could potentially be the source of another bug
+            raise ValueError(error_msg)
+
+        try:
             return future.result()
-        else:
-            raise ValueError(f"Process with ID '{process_id}' not found.")
+        except TimeoutError:
+            return {
+                "status": "error",
+                "error": "Agent execution timed out"
+            }
+        except Exception as e:
+            # Remove the failed process from the store
+            ProcessStore.AGENT_PROCESSES.pop(process_id, None)
+            return {
+                "status": "error",
+                "error": str(e)
+            }
         
 
     return submitAgent, awaitAgentExecution
