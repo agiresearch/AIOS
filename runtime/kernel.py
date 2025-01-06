@@ -315,7 +315,10 @@ async def get_agent_status(execution_id: int):
         print(f"[DEBUG] Execution ID: {execution_id}")
         
         await_execution = active_components["factory"]["await"]
-        result = await_execution(int(execution_id))
+        try:
+            result = await_execution(int(execution_id))
+        except FileNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
         
         if result is None:
             return {
@@ -329,22 +332,23 @@ async def get_agent_status(execution_id: int):
             "result": result,
             "execution_id": execution_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e)
         stack_trace = traceback.format_exc()
         print(f"[ERROR] Failed to get agent status: {error_msg}")
         print(f"[ERROR] Stack Trace:\n{stack_trace}")
         
-        return {
-            "status": "error",
-            "message": error_msg,
-            "error": {
-                "type": type(e).__name__,
+        # Convert unhandled errors to HTTP 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Failed to get agent status",
                 "message": error_msg,
                 "traceback": stack_trace
-            },
-            "execution_id": execution_id
-        }
+            }
+        )
 
 
 @app.post("/core/cleanup")
