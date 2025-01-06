@@ -18,24 +18,22 @@ class BaseLLM(ABC):
         llm_name: str,
         max_gpu_memory: dict = None,
         eval_device: str = None,
-        max_new_tokens: int = 256,
+        max_new_tokens: int = 1024,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        api_key: str = None,  # Add API key parameter
+        api_key: str = None,
     ):
+        self.llm_name = llm_name
+        self.model_name = llm_name
         self.max_gpu_memory = max_gpu_memory
         self.eval_device = eval_device
         self.max_new_tokens = max_new_tokens
-
-        self.api_key = api_key  # Store API key
-
         self.log_mode = log_mode
-
-        self.model_name = llm_name
         self.use_context_manager = use_context_manager
         if use_context_manager:
             self.context_manager = SimpleContextManager()
-
+        self.api_key = api_key
+        
         self.load_llm_and_tokenizer()
         self.logger = self.setup_logger()
 

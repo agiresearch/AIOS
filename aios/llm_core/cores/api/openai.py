@@ -1,10 +1,12 @@
 import re
 import time
 import json
+import os
 
 from openai import OpenAI, APIConnectionError, RateLimitError, BadRequestError, APIStatusError
 
 from aios.llm_core.cores.base import BaseLLM
+from aios.config.config_manager import config
 
 from cerebrum.llm.communication import Response
 class GPTLLM(BaseLLM):
@@ -17,8 +19,11 @@ class GPTLLM(BaseLLM):
         max_new_tokens: int = 1024,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        api_key: str = None,  # Add API key parameter
+        api_key: str = None,
     ):
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('openai') or os.getenv("OPENAI_API_KEY")
+        
         super().__init__(
             llm_name,
             max_gpu_memory,
@@ -30,12 +35,9 @@ class GPTLLM(BaseLLM):
         )
 
     def load_llm_and_tokenizer(self) -> None:
-        # Initialize OpenAI client with API key only if provided
-        if self.api_key:
-            self.model = OpenAI(api_key=self.api_key)
-        else:
-            self.model = OpenAI()
-
+        if not self.api_key:
+            raise ValueError("OpenAI API key not found in config or parameters")
+        self.model = OpenAI(api_key=self.api_key)
         self.tokenizer = None
 
     def parse_tool_calls(self, tool_calls):

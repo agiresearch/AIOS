@@ -44,23 +44,25 @@ jobs:
       run: |
         python -m pip install -e Cerebrum/
     
-    - name: Run AIOS kernel in background
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ' }}
+    - name: Download and install Ollama
       run: |
-        # Check if using default test key and validate API key format
-        if [ "$GEMINI_API_KEY" = "AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ" ]; then
-          echo "Notice: Using test API key - For testing purposes only"
-        elif [[ ! $GEMINI_API_KEY =~ ^AIza[0-9A-Za-z_-]{35}$ ]]; then
-          echo "Error: Invalid GEMINI_API_KEY format"
-          exit 1
-        fi
-        
+        curl -fsSL https://ollama.com/install.sh | sh
+
+    - name: Pull Ollama models
+      run: |
+        ollama pull llama3:8b
+
+    - name: Run Ollama serve
+      run: |
+        ollama serve 2>&1 | tee ollama-llm.log
+
+    - name: Run AIOS kernel in background
+      run: |
         bash runtime/launch_kernel.sh &>logs &
         KERNEL_PID=$!
         
-        # Set maximum wait time (10 seconds)
-        max_wait=10
+        # Set maximum wait time (20 seconds)
+        max_wait=20
         start_time=$SECONDS
         
         # Dynamically check if the process is running until it succeeds or times out
@@ -89,20 +91,13 @@ jobs:
           echo "Waiting for kernel to start... (${elapsed}s elapsed)"
           sleep 1
         done
-    
+
     - name: Run the run-agent code
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ' }}
       run: |
-        # Check if using default test key
-        if [ "$GEMINI_API_KEY" = "AIzaSyCx0VNhObFu0ta95xDfBx4IKJuyiPTXqbQ" ]; then
-          echo "Notice: Using test API key - For testing purposes only"
-        fi
-        
         # Run agent and capture exit code
         run-agent \
-          --llm_name gemini-1.5-flash \
-          --llm_backend google \
+          --llm_name llama3:8b \
+          --llm_backend ollama \
           --agent_name_or_path demo_author/demo_agent \
           --task "Tell me what is core idea of AIOS" \
           --aios_kernel_url http://localhost:8000 \

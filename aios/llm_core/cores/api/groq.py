@@ -15,6 +15,8 @@ from cerebrum.llm.communication import Response
 
 import os
 
+from aios.config.config_manager import config
+
 
 class GroqLLM(BaseLLM):
     def __init__(
@@ -25,8 +27,11 @@ class GroqLLM(BaseLLM):
         max_new_tokens: int = 1024,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        api_key: str = None,  # Add API key parameter
+        api_key: str = None,
     ):
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('groq') or os.getenv("GROQ_API_KEY")
+        
         super().__init__(
             llm_name,
             max_gpu_memory,
@@ -34,17 +39,13 @@ class GroqLLM(BaseLLM):
             max_new_tokens,
             log_mode,
             use_context_manager,
-            api_key=api_key,  # Pass API key to parent
+            api_key
         )
 
     def load_llm_and_tokenizer(self) -> None:
-        # Use provided API key if available, otherwise fall back to environment variable
-        groq_api_key = self.api_key or os.environ.get("GROQ_API_KEY")
-
-        self.model = OpenAI(
-            base_url="https://api.groq.com/openai/v1",
-            api_key=groq_api_key
-        )
+        if not self.api_key:
+            raise ValueError("Groq API key not found in config or parameters")
+        self.model = OpenAI(api_key=self.api_key, base_url="https://api.groq.com/openai/v1")
         self.tokenizer = None
 
     def parse_tool_calls(self, tool_calls):

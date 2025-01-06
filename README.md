@@ -17,13 +17,13 @@ AIOS is the AI Agent Operating System, which embeds large language model (LLM) i
 <img src="docs/assets/aios-figs/architecture.jpg">
 </p>
 
-The AIOS system is comprised of two key components: the AIOS kernel and the AIOS-Agent SDK.
+The AIOS system is comprised of two key components: the AIOS kernel and the AIOS SDK.
 The AIOS kernel acts as an abstraction layer over the operating system kernel, managing various resources that agents require, such as LLM, memory, storage and tool. 
-The AIOS-Agent SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
-AIOS kernel is the current repository and AIOS-Agent SDK can be found at [here](https://github.com/agiresearch/Cerebrum)
+The AIOS SDK is designed for agent users and developers, enabling them to build and run agent applications by interacting with the AIOS kernel.
+AIOS kernel is the current repository and AIOS SDK can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 ### Modules and Connections
-Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
+Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIOS kernel receives agent queries and leverage the chain of syscalls that are scheduled and dispatched to run in different modules. 
 <p align="center">
 <img src="docs/assets/aios-figs/details.png">
 </p>
@@ -41,6 +41,74 @@ Below shows how agents utilize AIOS-Agent SDK to interact with AIOS kernel and h
 - **[2024-03-25]** ✈️ Our paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) is released!
 - **[2023-12-06]** 📋 After several months of working, our perspective paper [LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem](https://arxiv.org/abs/2312.03815) is officially released.
 
+## Different deployment modes of AIOS
+Here are some key notations that are required to know before introducing the different modes of AIOS. 
+- **AHM (Agent Hub Machine)**: Central server that hosts the agent marketplace/repository where users can publish, download, and share agents. Acts as the distribution center for all agent-related resources.
+- **AUM (Agent UI Machine)**: Client machine that provides user interface for interacting with agents. Can be any device from mobile phones to desktops that supports agent visualization and control.
+- **ADM (Agent Development Machine)**: Development environment where agent developers write, debug and test their agents. Requires proper development tools and libraries.
+- **ARM (Agent Running Machine)**: Execution environment where agents actually run and perform tasks. Needs adequate computational resources for agent operations.
+
+The following parts introduce different modes of deploying AIOS. **Currently, AIOS already supports Mode 1 and Mode 2, other modes with new features are still ongoing.**
+
+### Mode 1 (Local Kernel Mode)
+
+<p align="center">
+<img src="docs/assets/aios-figs/stage1.png" width=300>
+</p>
+
+- Features:
+  - For agent users: They can download agents from agent hub from Machine B and run agents on Machine A. 
+  - For agent developers: They can develop and test agents in Machine A and can upload agents to agent hub on Machine B.
+
+### Mode 2 (Remote Kernel Mode)
+
+<p align="center">
+<img src="docs/assets/aios-figs/stage2.png" width=300>
+</p>
+
+- Features: 
+  - Remote use of agents: Agent users / developers can use agents on Machine B, which is different from the development and running machine (Machine A).  
+  - Benefit users who would like to use agents on resource-restricted machine (e.g., mobile device or edge device)
+
+### Mode 2.5 (Remote Kernel Dev Mode)
+
+<p align="center">
+<img src="docs/assets/aios-figs/stage2.5.png" width=300>
+</p>
+
+- Features:
+  - Remote development of agents: Agent developers can develop their agents on Machine B while running and testing their agents in Machine A. Benefit developers who would like to develop agents on resource-restricted machine (e.g., mobile device or edge device)
+- Critical technique:
+  - Packaging and agent transmission on different machines for distributed agent development and testing
+
+### Mode 3 (Personal Remote Kernel Mode)
+
+<p align="center">
+<img src="docs/assets/aios-figs/stage3.png" width=800>
+</p>
+
+- Ongoing Features:
+  - Each user/developer can have their personal AIOS with long-term persistent data as long as they have registered account in the AIOS ecosystem
+  - Their personal data can be synced to different machines with the same account
+
+- Critical techniques:
+  - User account registration and verification mechanism
+  - Persistent personal data storage for each user's AIOS
+  - Synchronization for different AIOS instances on different devices within the same account
+  - Data privacy mechanism
+
+### Mode 4 (Personal Remote Virtual Kernel Mode)
+
+<p align="center">
+<img src="docs/assets/aios-figs/stage4.png" width=800>
+</p>
+
+- Ongoing Features:
+  - Different user/developer’s personal AIOS kernels can co-exist in the same physical machine through virtualization
+- Critical techniques:
+  - Virtualization of different AIOS kernel instances in the same machine
+  - Scheduling and resource allocation mechanism for different virtual machines located in the same machine
+
 
 ## ✈️ Getting Started
 Please see our ongoing [documentation](https://docs.aios.foundation/) for more information.
@@ -53,6 +121,26 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 ##### Python
 - Supported versions: **Python 3.10 - 3.11**
 
+#### Set Up API Keys
+You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the aios/config/config.yaml.
+
+##### Basic Configuration
+Add your API keys to the config.yaml. For example:
+```yaml
+openai: "your-openai-key"
+gemini: "your-gemini-key"
+groq: "your-groq-key"
+anthropic: "your-anthropic-key"
+huggingface:
+  auth_token: "your-huggingface-token"
+  home: "optional-path"
+```
+
+##### Detailed Setup Instructions
+For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://app.gitbook.com/o/6h6b4xbBVMu2pFXdNM0D/s/5h7XvlMFgKMtRboLGG1i/~/diff/~/changes/73/getting-started/environment-variables-configuration).
+
+Alternatively, you can set them as environment variables directly:
+
 #### Environment Variables Configuration
 AIOS supports several API integrations that require configuration. You can use the following commands:
 
@@ -61,7 +149,6 @@ AIOS supports several API integrations that require configuration. You can use t
 
 When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
-- `ANTHROPIC_API_KEY`: Anthropic API key for accessing Anthropic services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
@@ -70,15 +157,14 @@ When no environment variables are set, the following API keys will be shown:
 To obtain these API keys:
 1. OpenAI API: Visit https://platform.openai.com/api-keys
 2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. Anthropic API: Visit https://console.anthropic.com/settings/keys.
-4. Groq API: Visit https://console.groq.com/keys
-5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+3. Groq API: Visit https://console.groq.com/keys
+4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout tags/v0.2.0.beta -b v0.2.0.beta-branch
+cd AIOS && git checkout v0.2.0.beta
 ```
 Create venv environment (recommended)
 ```bash
@@ -194,7 +280,7 @@ First, you need to start the AIOS kernel by running the following commands
 bash runtime/launch_kernel.sh
 ```
 
-Then you can start the client provided by the AIOS-Agent SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
+Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 
 ### Supported Agent Frameworks

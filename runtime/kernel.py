@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 import traceback
 import json
+import logging
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -13,6 +14,7 @@ from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
 from aios.hooks.syscall import useSysCall
+from aios.config.config_manager import config
 
 from cerebrum.llm.communication import LLMQuery
 
@@ -40,12 +42,21 @@ active_components = {
     "llm": None,
     "storage": None,
     "memory": None,
-    "tool": None,
-    "scheduler": None,
+    "tool": None
 }
 
 send_request, SysCallWrapper = useSysCall()
 
+# Configure the root logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Output to console
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 class LLMConfig(BaseModel):
     llm_name: str
@@ -97,6 +108,68 @@ class QueryRequest(BaseModel):
     query_data: LLMQuery
 
 
+def restart_kernel():
+    """Restart kernel service and reload configuration"""
+    try:
+        # 1. Reinitialize LLM component
+        llm_config = config.get_llm_config()
+        print(f"Got LLM config: {llm_config}")
+        
+        # Reinitialize LLM
+        try:
+            llm = useCore(
+                llm_name=llm_config.get("default_model", "gpt-4"),
+                llm_backend=llm_config.get("backend", "openai"),
+                max_gpu_memory=llm_config.get("max_gpu_memory"),
+                eval_device=llm_config.get("eval_device", "cuda:0"),
+                max_new_tokens=llm_config.get("max_new_tokens", 256),
+                log_mode=llm_config.get("log_mode", "console"),
+            )
+            
+            # Update components
+            if llm:
+                # Clean up existing LLM instance if it exists
+                if active_components["llm"]:
+                    if hasattr(active_components["llm"], "cleanup"):
+                        active_components["llm"].cleanup()
+                
+                active_components["llm"] = llm
+                print("✅ LLM core reinitialized with new configuration")
+            else:
+                print("⚠️ Failed to initialize LLM core")
+                
+        except Exception as e:
+            print(f"⚠️ Error initializing LLM core: {str(e)}")
+            
+        print("✅ All components reinitialized successfully")
+        
+    except Exception as e:
+        print(f"❌ Error restarting kernel: {str(e)}")
+        print(f"Stack trace: {traceback.format_exc()}")
+        raise
+
+
+@app.post("/core/refresh")
+async def refresh_configuration():
+    """Refresh all component configurations"""
+    try:
+        print("Received refresh request")
+        config.refresh()
+        print("Configuration reloaded")
+        restart_kernel()
+        print("Kernel restarted")
+        return {
+            "status": "success", 
+            "message": "Configuration refreshed and components reinitialized"
+        }
+    except Exception as e:
+        print(f"Error during refresh: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to refresh configuration: {str(e)}"
+        )
+
+
 @app.post("/core/llm/setup")
 async def setup_llm(config: LLMConfig):
     """Set up the LLM core component."""
@@ -109,13 +182,11 @@ async def setup_llm(config: LLMConfig):
             max_new_tokens=config.max_new_tokens,
             log_mode=config.log_mode,
         )
-        # print(config.llm_name)
         active_components["llm"] = llm
         return {"status": "success", "message": "LLM core initialized"}
     except Exception as e:
-        print(
-            f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
-        )
+        error_msg = f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
+        print(error_msg)
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize LLM core: {str(e)}"
         )
@@ -236,7 +307,7 @@ async def setup_scheduler(config: SchedulerConfig):
     try:
         # Set up the scheduler with all components
         scheduler = fifo_scheduler(
-            llm=active_components["llm"],
+            llm=active_components["llm"],   
             memory_manager=active_components["memory"],
             storage_manager=active_components["storage"],
             tool_manager=active_components["tool"],
@@ -306,27 +377,25 @@ async def submit_agent(config: AgentSubmit):
 
 @app.get("/agents/{execution_id}/status")
 async def get_agent_status(execution_id: int):
-    """Get the status of a submitted agent."""
+  """Get the status of a submitted agent."""
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
-
     try:
         print(f"\n[DEBUG] ===== Checking Agent Status =====")
         print(f"[DEBUG] Execution ID: {execution_id}")
-        
+
         await_execution = active_components["factory"]["await"]
         try:
             result = await_execution(int(execution_id))
         except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e))
-        
+
         if result is None:
             return {
                 "status": "running",
                 "message": "Execution in progress",
                 "execution_id": execution_id
             }
-
         return {
             "status": "completed",
             "result": result,
@@ -339,7 +408,7 @@ async def get_agent_status(execution_id: int):
         stack_trace = traceback.format_exc()
         print(f"[ERROR] Failed to get agent status: {error_msg}")
         print(f"[ERROR] Stack Trace:\n{stack_trace}")
-        
+
         # Convert unhandled errors to HTTP 500
         raise HTTPException(
             status_code=500,
@@ -349,7 +418,6 @@ async def get_agent_status(execution_id: int):
                 "traceback": stack_trace
             }
         )
-
 
 @app.post("/core/cleanup")
 async def cleanup_components():

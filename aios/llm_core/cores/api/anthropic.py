@@ -1,10 +1,12 @@
 import re
 import json
 import time
+import os
 import anthropic
 from typing import List, Dict, Any
 
 from aios.llm_core.cores.base import BaseLLM
+from aios.config.config_manager import config
 
 from cerebrum.llm.communication import Response
 
@@ -29,7 +31,7 @@ class ClaudeLLM(BaseLLM):
         max_new_tokens: int = 256,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        api_key: str = None,  # Add API key parameter
+        api_key: str = None,
     ):
         """
         Initialize the ClaudeLLM instance.
@@ -41,24 +43,26 @@ class ClaudeLLM(BaseLLM):
             max_new_tokens (int, optional): Maximum number of new tokens to generate.
             log_mode (str, optional): Logging mode, defaults to "console".
         """
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('anthropic') or os.getenv("ANTHROPIC_API_KEY")
+        
         super().__init__(
             llm_name,
-            max_gpu_memory=max_gpu_memory,
-            eval_device=eval_device,
-            max_new_tokens=max_new_tokens,
-            log_mode=log_mode,
-            use_context_manager=use_context_manager,
-            api_key=api_key,  # Pass API key to parent
+            max_gpu_memory,
+            eval_device,
+            max_new_tokens,
+            log_mode,
+            use_context_manager,
+            api_key
         )
 
     def load_llm_and_tokenizer(self) -> None:
         """
         Load the Anthropic client for API calls.
         """
-        if self.api_key:
-            self.model = anthropic.Anthropic(api_key=self.api_key)
-        else:
-            self.model = anthropic.Anthropic()
+        if not self.api_key:
+            raise ValueError("Anthropic API key not found in config or parameters")
+        self.model = anthropic.Anthropic(api_key=self.api_key)
         self.tokenizer = None
 
     def convert_tools(self, tools):

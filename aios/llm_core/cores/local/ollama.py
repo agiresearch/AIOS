@@ -38,7 +38,7 @@ class OllamaLLM(BaseLLM):
     def address_syscall(self, llm_syscall, temperature=0.0):
         # ensures the models are from ollama
         # print(self.model_name)
-        assert re.search(r"ollama", self.model_name, re.IGNORECASE)
+        # assert re.search(r"ollama", self.model_name, re.IGNORECASE)
 
         """ simple wrapper around ollama functions """
         llm_syscall.set_status("executing")
@@ -72,12 +72,12 @@ class OllamaLLM(BaseLLM):
 
                 else:
                     response = Response(
-                        response_message=response["message"]["content"], finished=True
+                        response_message=chat_result["message"]["content"], finished=True
                     )
 
             except Exception as e:
                 response = Response(
-                    response_message=response["message"]["content"], finished=True
+                    response_message=chat_result["message"]["content"], finished=True
                 )
 
         else:
