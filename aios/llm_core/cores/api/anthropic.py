@@ -1,6 +1,7 @@
 import re
 import json
 import time
+import os
 import anthropic
 from typing import List, Dict, Any
 
@@ -42,8 +43,8 @@ class ClaudeLLM(BaseLLM):
             max_new_tokens (int, optional): Maximum number of new tokens to generate.
             log_mode (str, optional): Logging mode, defaults to "console".
         """
-        # Retrieve API key from configuration file
-        api_key = api_key or config.get_api_key('anthropic')
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('anthropic') or os.getenv("ANTHROPIC_API_KEY")
         
         super().__init__(
             llm_name,

@@ -1,6 +1,7 @@
 import re
 import time
 import json
+import os
 
 from openai import OpenAI, APIConnectionError, RateLimitError, BadRequestError, APIStatusError
 
@@ -20,8 +21,8 @@ class GPTLLM(BaseLLM):
         use_context_manager: bool = False,
         api_key: str = None,
     ):
-        # Get API key from config
-        api_key = api_key or config.get_api_key('openai')
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('openai') or os.getenv("OPENAI_API_KEY")
         
         super().__init__(
             llm_name,
