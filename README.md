@@ -144,11 +144,13 @@ To obtain these API keys:
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v0.2.0.beta
+cd AIOS
+git checkout v.20 # don't do this unless you're testing
 ```
 Create venv environment (recommended)
 ```bash
-python3.x -m venv venv # Only support for Python 3.10 and 3.11
+python3.x --version # Check if it is 3.10 or 3.11
+python3.x -m venv venv
 source venv/bin/activate
 ```
 or create conda environment
@@ -177,7 +179,7 @@ pip install -r requirements.txt
 <!-- Note: Please use `launch.py` for the WebUI, or `agent_repl.py` for the TUI. -->
 #### Configurations
 ##### Use with OpenAI API
-You need to get your OpenAI API key from https://platform.openai.com/api-keys.
+You need to get your OpenAI API key from https://platform.openai.com/api-keys. Note that API keys **cost money**.
 Then set up your OpenAI API key as an environment variable
 
 ```bash
@@ -193,7 +195,7 @@ export ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_API_KEY>
 ```
 
 ##### Use with Gemini API
-You need to get your Gemini API key from https://ai.google.dev/gemini-api
+You need to get your Gemini API key from https://ai.google.dev/gemini-api. Gemini is a free cloud LLM provider.
 
 ```bash
 export GEMINI_API_KEY=<YOUR_GEMINI_API_KEY>
