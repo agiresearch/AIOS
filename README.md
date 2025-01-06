@@ -121,6 +121,26 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 ##### Python
 - Supported versions: **Python 3.10 - 3.11**
 
+#### Set Up API Keys
+You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the aios/config/config.yaml.
+
+##### Basic Configuration
+Add your API keys to the config.yaml. For example:
+```yaml
+openai: "your-openai-key"
+gemini: "your-gemini-key"
+groq: "your-groq-key"
+anthropic: "your-anthropic-key"
+huggingface:
+  auth_token: "your-huggingface-token"
+  home: "optional-path"
+```
+
+##### Detailed Setup Instructions
+For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://app.gitbook.com/o/6h6b4xbBVMu2pFXdNM0D/s/5h7XvlMFgKMtRboLGG1i/~/diff/~/changes/73/getting-started/environment-variables-configuration).
+
+Alternatively, you can set them as environment variables directly:
+
 #### Environment Variables Configuration
 AIOS supports several API integrations that require configuration. You can use the following commands:
 
