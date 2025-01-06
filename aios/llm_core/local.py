@@ -5,6 +5,7 @@ import os
 
 class HfLocalBackend:
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        self.model_name = model_name
         self.device = device
         self.max_gpu_memory = max_gpu_memory
         self.hostname = hostname
@@ -27,8 +28,13 @@ class HfLocalBackend:
         )
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
-    def inference_online(self, messages, temperatures, stream=False):
-        pass
+    def inference_online(self, messages, temperature, stream=False):
+        return str(completion(
+            model="huggingface/" + self.model_name,
+            messages=messages,
+            temperature=temperature,
+            api_base=self.hostname,
+        ))
     
     def __call__(
         self,
@@ -65,6 +71,7 @@ class HfLocalBackend:
 
 class VLLMLocalBackend:
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        self.model_name = model_name
         self.device = device
         self.max_gpu_memory = max_gpu_memory
         self.hostname = hostname
@@ -89,7 +96,12 @@ class VLLMLocalBackend:
             print("Error loading vllm model:", err)
 
     def inference_online(self, messages, temperatures, stream=False):
-        pass
+        return str(completion(
+            model="hosted_vllm/" + self.model_name,
+            messages=messages,
+            temperature=temperature,
+            api_base=self.hostname,
+        ))
 
     def __call__(
         self,
