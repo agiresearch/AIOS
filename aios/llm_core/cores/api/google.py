@@ -3,6 +3,7 @@
 import re
 import time
 import json
+import os
 
 from aios.llm_core.cores.base import BaseLLM
 
@@ -24,8 +25,8 @@ class GeminiLLM(BaseLLM):
         use_context_manager: bool = False,
         api_key: str = None,
     ):
-        # Get API key from config
-        api_key = api_key or config.get_api_key('gemini')
+        # Get API key from config or environment variable
+        api_key = api_key or config.get_api_key('gemini') or os.getenv("GOOGLE_API_KEY")
         
         super().__init__(
             llm_name,
