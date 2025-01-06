@@ -280,7 +280,7 @@ async def setup_agent_factory(config: SchedulerConfig):
             "await": await_agent_execution,
         }
 
-        print(active_components["llm"].model)
+        #print(active_components["llm"].model)
 
         return {"status": "success", "message": "Agent factory initialized"}
     except Exception as e:
