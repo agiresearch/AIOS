@@ -377,7 +377,7 @@ async def submit_agent(config: AgentSubmit):
 
 @app.get("/agents/{execution_id}/status")
 async def get_agent_status(execution_id: int):
-  """Get the status of a submitted agent."""
+    """Get the status of a submitted agent."""
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
     try:
