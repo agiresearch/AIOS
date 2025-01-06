@@ -1,6 +1,6 @@
 from aios.context.simple_context import SimpleContextManager
 from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
-from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend
+from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend, OllamaBackend
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.communication import Response
 from litellm import completion
@@ -80,8 +80,8 @@ class LLMAdapter:
             case RouterStrategy.SIMPLE:
                 self.strategy = SimpleStrategy(self.llm_name)
 
-        # Backwards compatibility for pre-router API key environment variables.
-        if os.environ["HF_AUTH_TOKENS"]:
+        # Modify this part of the code to only check environment variables when necessary
+        if "HF_AUTH_TOKENS" in os.environ:
             os.environ["HUGGING_FACE_API_KEY"] = os.environ["HF_AUTH_TOKENS"]
 
         # Format model names to match backend or instantiate local backends
@@ -91,6 +91,8 @@ class LLMAdapter:
 
             match self.llm_backend[idx]:
                 case "hflocal":
+                    if "HUGGING_FACE_API_KEY" not in os.environ:
+                        raise ValueError("HUGGING_FACE_API_KEY environment variable is required for hflocal backend")
                     self.llm_name[idx] = HfLocalBackend(self.llm_name[idx],
                                                         max_gpu_memory=max_gpu_memory,
                                                         hostname=hostname)
@@ -98,6 +100,9 @@ class LLMAdapter:
                     self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
                                                           max_gpu_memory=max_gpu_memory,
                                                          hostname=hostname)
+                case "ollama":
+                    self.llm_name[idx] = OllamaBackend(self.llm_name[idx],
+                                                      hostname=hostname)
                 case None:
                     continue
                 case _:
@@ -214,25 +219,17 @@ class LLMAdapter:
 
         model = self.strategy()
 
-        if isinstance(model, str):
-            res = str(completion(
+        if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
+            res = model(
+                messages=messages,
+                temperature=temperature,
+            ) if not isinstance(model, str) else str(completion(
                 model=model,
                 messages=messages,
                 temperature=temperature,
             ))
-        elif isinstance(model, HfLocalBackend):
-            res = model(
-                messages=messages,
-                temperature=temperature,
-            )
-        elif isinstance(model, VLLMLocalBackend):
-            res = model(
-                messages=messages,
-                temperature=temperature,
-            )
         else:
-            # Any other type of llm_name should error.
-            raise RuntimeError
+            raise RuntimeError(f"Unsupported model type: {type(model)}")
 
         if tools:
             if tool_calls := self.parse_tool_calls(res):
