@@ -256,10 +256,15 @@ or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
-First, you need to start the AIOS kernel by running the following commands
-
-```
+Start AIOS by running:
+```bash
 bash runtime/launch_kernel.sh
+```
+
+**Note:** If you need to specify `python3.10`, `python3.11`, `python3`, etc. then run the command in the script manually:
+
+```bash
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 
 ```
 
 Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
