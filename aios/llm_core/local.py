@@ -1,13 +1,19 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from litellm import completion
 
 import os
 
-import vllm
-
 class HfLocalBackend:
-    def __init__(self, model_name, device="auto", max_gpu_memory=None):
+    def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
         self.device = device
         self.max_gpu_memory = max_gpu_memory
+        self.hostname = hostname
+
+        # If a hostname is given, then this HF instance is hosted as a web server.
+        # Therefore, do not start the AIOS-based HF instance.
+        if self.hostname is not None:
+            return
+        
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map=device,
@@ -21,12 +27,18 @@ class HfLocalBackend:
         )
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
+    def inference_online(self, messages, temperatures, stream=False):
+        pass
+    
     def __call__(
         self,
         messages,
         temperature,
         stream=False,
     ):
+        if self.hostname is not None:
+            return self.inference_online(messages, temperature, stream=stream)
+        
         if stream:
             raise NotImplemented
 
@@ -52,9 +64,15 @@ class HfLocalBackend:
         return result
 
 class VLLMLocalBackend:
-    def __init__(self, model_name, device="auto", max_gpu_memory=None):
+    def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
         self.device = device
         self.max_gpu_memory = max_gpu_memory
+        self.hostname = hostname
+
+        # If a hostname is given, then this vLLM instance is hosted as a web server.
+        # Therefore, do not start the AIOS-based vLLM instance.
+        if self.hostname is not None:
+            return
 
         try:
             import vllm
@@ -70,12 +88,18 @@ class VLLMLocalBackend:
         except Exception as err:
             print("Error loading vllm model:", err)
 
+    def inference_online(self, messages, temperatures, stream=False):
+        pass
+
     def __call__(
         self,
         messages,
         temperature,
         stream=False,
     ):
+        if self.hostname is not None:
+            return self.inference_online(messages, temperature, stream=stream)
+        
         assert vllm
         if stream:
             raise NotImplemented
