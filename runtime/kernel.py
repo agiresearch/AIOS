@@ -377,57 +377,47 @@ async def submit_agent(config: AgentSubmit):
 
 @app.get("/agents/{execution_id}/status")
 async def get_agent_status(execution_id: int):
-    """Get the status of a submitted agent."""
+  """Get the status of a submitted agent."""
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
-
     try:
-        logger.debug(f"\n===== Checking Agent Status =====")
-        logger.debug(f"Execution ID: {execution_id}")
-        
+        print(f"\n[DEBUG] ===== Checking Agent Status =====")
+        print(f"[DEBUG] Execution ID: {execution_id}")
+
         await_execution = active_components["factory"]["await"]
-        
         try:
             result = await_execution(int(execution_id))
-            logger.debug(f"Execution result: {result}")
-            
-            if result is None:
-                return {
-                    "status": "running",
-                    "message": "Execution in progress",
-                    "execution_id": execution_id,
-                    "debug_info": "Agent execution still in progress"
-                }
+        except FileNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
 
+        if result is None:
             return {
-                "status": "completed",
-                "result": result,
+                "status": "running",
+                "message": "Execution in progress",
                 "execution_id": execution_id
             }
-        except Exception as inner_e:
-            logger.error(f"Error in execution: {str(inner_e)}")
-            logger.error(f"Inner stack trace:\n{traceback.format_exc()}")
-            raise
-            
+        return {
+            "status": "completed",
+            "result": result,
+            "execution_id": execution_id
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e)
         stack_trace = traceback.format_exc()
-        logger.error(f"Failed to get agent status: {error_msg}")
-        logger.error(f"Stack Trace:\n{stack_trace}")
-        
-        # Return more detailed error information
-        return {
-            "status": "error",
-            "message": error_msg,
-            "error": {
-                "type": type(e).__name__,
-                "message": error_msg,
-                "traceback": stack_trace,
-                "debug_logs": getattr(e, 'debug_logs', None)
-            },
-            "execution_id": execution_id
-        }
+        print(f"[ERROR] Failed to get agent status: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
 
+        # Convert unhandled errors to HTTP 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Failed to get agent status",
+                "message": error_msg,
+                "traceback": stack_trace
+            }
+        )
 
 @app.post("/core/cleanup")
 async def cleanup_components():
