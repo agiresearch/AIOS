@@ -256,8 +256,8 @@ class LLMAdapter:
                 "content": "" + restored_context,
             }]
 
-        if tools:
-            messages = self.tool_calling_input_format(messages, tools)
+        # if tools:
+        #     messages = self.tool_calling_input_format(messages, tools)
 
         model = self.strategy()
 
@@ -265,10 +265,12 @@ class LLMAdapter:
             res = model(
                 messages=messages,
                 temperature=temperature,
+                tools=tools,
             ) if not isinstance(model, str) else str(completion(
                 model=model,
                 messages=messages,
                 temperature=temperature,
+                tools=tools,
             ))
         else:
             raise RuntimeError(f"Unsupported model type: {type(model)}")
