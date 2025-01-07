@@ -116,29 +116,34 @@ class LLMAdapter:
             if self.llm_backend[idx] is None:
                 continue
 
-            if self.llm_backend[idx] == "hflocal":
-                if "HUGGING_FACE_API_KEY" not in os.environ:
-                    raise ValueError("HUGGING_FACE_API_KEY not found in config or environment variables")
-                
-                self.llm_name[idx] = HfLocalBackend(
-                    self.llm_name[idx],
-                    max_gpu_memory=max_gpu_memory,
-                    hostname=hostname
-                )
-            elif self.llm_backend[idx] == "vllm":
-                self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
-                                                      max_gpu_memory=max_gpu_memory,
-                                                     hostname=hostname)
-            elif self.llm_backend[idx] == "ollama":
-                self.llm_name[idx] = OllamaBackend(self.llm_name[idx],
-                                                  hostname=hostname)
-            elif self.llm_backend[idx] is None:
-                continue
-            else:
-                prefix = self.llm_backend[idx] + "/"
-                is_formatted = self.llm_name[idx].startswith(prefix)
-                if not is_formatted:
-                    self.llm_name[idx] = prefix + self.llm_name[idx]
+            match self.llm_backend[idx]:
+                case "hflocal":
+                    if "HUGGING_FACE_API_KEY" not in os.environ:
+                        raise ValueError("HUGGING_FACE_API_KEY not found in config or environment variables")
+                    
+                    self.llm_name[idx] = HfLocalBackend(
+                        self.llm_name[idx],
+                        max_gpu_memory=max_gpu_memory,
+                        hostname=hostname
+                    )
+                case "vllm":
+                    self.llm_name[idx] = VLLMLocalBackend(
+                        self.llm_name[idx],
+                        max_gpu_memory=max_gpu_memory,
+                        hostname=hostname
+                    )
+                case "ollama":
+                    self.llm_name[idx] = OllamaBackend(
+                        self.llm_name[idx],
+                        hostname=hostname
+                    )
+                case None:
+                    continue
+                case _:
+                    prefix = self.llm_backend[idx] + "/"
+                    is_formatted = self.llm_name[idx].startswith(prefix)
+                    if not is_formatted:
+                        self.llm_name[idx] = prefix + self.llm_name[idx]
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
