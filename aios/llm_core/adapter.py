@@ -142,6 +142,14 @@ class LLMAdapter:
                 case _:
                     prefix = self.llm_backend[idx] + "/"
                     is_formatted = self.llm_name[idx].startswith(prefix)
+
+                    # Google backwards compatibility fix
+                    if self.llm_backend[idx] == "google":
+                        self.llm_backend[idx] = "gemini"
+                        if is_formatted:
+                            self.llm_name[idx] = "gemini/" + self.llm_name[idx].split("/")[1]
+                            continue
+                    
                     if not is_formatted:
                         self.llm_name[idx] = prefix + self.llm_name[idx]
 
