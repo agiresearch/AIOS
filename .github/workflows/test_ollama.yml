@@ -18,8 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        ref: main  # Specify main branch
     
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
@@ -105,6 +103,16 @@ jobs:
 
     - name: Run the run-agent code
       run: |
+        # Add debug information
+        echo "=== Current directory structure ==="
+        ls -la
+        echo "=== Current git status ==="
+        git status
+        echo "=== Current git branch ==="
+        git branch
+        echo "=== Current git commit ==="
+        git rev-parse HEAD
+        
         # Run agent and capture exit code
         run-agent \
           --llm_name llama3:8b \
