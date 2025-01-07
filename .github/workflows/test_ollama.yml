@@ -105,10 +105,10 @@ jobs:
       run: |
         # Debug: Show source of code
         echo "=== Code Source Info ==="
-        echo "Source: ${{ github.head_ref || github.ref_name }}"
+        echo "Source Repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+        echo "Source Branch: ${{ github.head_ref || github.ref_name }}"
         echo "Commit: $(git rev-parse --short HEAD)"
         echo "PR: ${{ github.event.pull_request.html_url || 'Not a PR' }}"
-        echo "Repository: ${{ github.repository }}"
         
         # Run agent and capture exit code
         run-agent \
