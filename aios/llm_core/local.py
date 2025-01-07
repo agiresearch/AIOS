@@ -148,9 +148,9 @@ class OllamaBackend:
         temperature,
         stream=False,
     ):
-        return str(completion(
+        return completion(
             model="ollama/" + self.model_name,
             messages=messages,
             temperature=temperature,
             api_base=self.hostname
-        ))
+        ).choices[0].message.content
