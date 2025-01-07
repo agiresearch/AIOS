@@ -2,10 +2,10 @@
 
 # API Keys Configuration
 api_keys:
-  openai: "sk--"  # OpenAI API key
-  gemini: ""     # Google Gemini API key
-  groq: ""       # Groq API key
-  anthropic: ""  # Anthropic API key
+  openai: ""  # OpenAI API key
+  gemini: ""  # Google Gemini API key
+  groq: ""    # Groq API key
+  anthropic: "" # Anthropic API key
   huggingface:
     auth_token: ""  # HuggingFace auth token
     home: ""        # Optional: HuggingFace models path

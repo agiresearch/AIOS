@@ -32,17 +32,32 @@ class ConfigManager:
         self.load_config()
     
     def get_api_key(self, provider: str) -> Optional[str]:
-        """Get API key for specified provider"""
-        print(f"Trying to get API key for provider: {provider}")
-        print(f"Current config: {self.config}")
+        """Get API key for specified provider, first check config file then environment variables"""
+        print(f"\n=== ConfigManager: Getting API key for {provider} ===")
         
+        # First try to get from config file
         api_key = None
         if provider == "huggingface":
             api_key = self.config.get("api_keys", {}).get("huggingface", {}).get("auth_token")
         else:
             api_key = self.config.get("api_keys", {}).get(provider)
         
-        print(f"Found API key: {'[SET]' if api_key else '[NOT SET]'}")
+        print(f"- Checking config.yaml: {'Found' if api_key else 'Not found'}")
+        
+        # If not found in config, try environment variables
+        if not api_key:
+            env_var_map = {
+                "openai": "OPENAI_API_KEY",
+                "gemini": "GEMINI_API_KEY", 
+                "groq": "GROQ_API_KEY",
+                "anthropic": "ANTHROPIC_API_KEY",
+                "huggingface": "HF_AUTH_TOKEN"
+            }
+            if provider in env_var_map:
+                env_var = env_var_map[provider]
+                api_key = os.environ.get(env_var)
+                print(f"- Checking environment variable {env_var}: {'Found' if api_key else 'Not found'}")
+            
         return api_key
     
     def get_llm_config(self) -> dict:
