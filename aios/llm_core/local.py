@@ -35,13 +35,13 @@ class HfLocalBackend:
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
     def inference_online(self, messages, temperature, stream=False):
-        return str(completion(
+        return completion(
             model="huggingface/" + self.model_name,
             messages=messages,
             temperature=temperature,
             api_base=self.hostname,
-        ))
-    
+        ).choices[0].message.content
+
     def __call__(
         self,
         messages,
@@ -50,7 +50,7 @@ class HfLocalBackend:
     ):
         if self.hostname is not None:
             return self.inference_online(messages, temperature, stream=stream)
-        
+
         if stream:
             raise NotImplemented
 
@@ -105,12 +105,12 @@ class VLLMLocalBackend:
             print("Error loading vllm model:", err)
 
     def inference_online(self, messages, temperatures, stream=False):
-        return str(completion(
+        return completion(
             model="hosted_vllm/" + self.model_name,
             messages=messages,
             temperature=temperature,
             api_base=self.hostname,
-        ))
+        ).choices[0].message.content
 
     def __call__(
         self,

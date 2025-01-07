@@ -254,14 +254,17 @@ class LLMAdapter:
         model = self.strategy()
 
         if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
-            res = model(
-                messages=messages,
-                temperature=temperature,
-            ) if not isinstance(model, str) else str(completion(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-            ))
+            if not isinstance(model, str):
+                res = model(
+                    messages=messages,
+                    temperature=temperature,
+                )
+            else:
+                res = completion(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                ).choices[0].message.content
         else:
             raise RuntimeError(f"Unsupported model type: {type(model)}")
 
