@@ -10,6 +10,7 @@ from typing import Dict, Optional
 import time
 import re
 import os
+from aios.config.config_manager import config
 
 class LLMAdapter:
     """
@@ -76,40 +77,68 @@ class LLMAdapter:
         self.llm_backend         = llm_backend if isinstance(llm_backend, list) else [llm_backend]
         self.context_manager     = SimpleContextManager() if use_context_manager else None
 
-        match strategy:
-            case RouterStrategy.SIMPLE:
-                self.strategy = SimpleStrategy(self.llm_name)
+        if strategy == RouterStrategy.SIMPLE:
+            self.strategy = SimpleStrategy(self.llm_name)
 
-        # Modify this part of the code to only check environment variables when necessary
-        if "HF_AUTH_TOKENS" in os.environ:
-            os.environ["HUGGING_FACE_API_KEY"] = os.environ["HF_AUTH_TOKENS"]
+        # Set all supported API keys
+        api_providers = {
+            "openai": "OPENAI_API_KEY",
+            "gemini": "GEMINI_API_KEY",
+            "groq": "GROQ_API_KEY",
+            "anthropic": "ANTHROPIC_API_KEY",
+            "huggingface": "HF_AUTH_TOKEN"
+        }
+        
+        print("\n=== LLMAdapter Initialization ===")
+        print(f"Initializing LLM with name: {llm_name}")
+        print(f"Backend: {llm_backend}")
+        
+        # Prioritize getting API keys from config and set them to environment variables
+        for provider, env_var in api_providers.items():
+            print(f"\nChecking {provider} API key:")
+            # First check the configuration file
+            api_key = config.get_api_key(provider)
+            if api_key:
+                print(f"- Found in config.yaml, setting to environment")
+                os.environ[env_var] = api_key
+                if provider == "huggingface":
+                    os.environ["HUGGING_FACE_API_KEY"] = api_key
+                    print("- Also set HUGGING_FACE_API_KEY")
+            else:
+                # If not found in the configuration file, check the environment variables
+                if env_var in os.environ:
+                    print(f"- Not found in config.yaml, using environment variable: {env_var}=****")
+                else:
+                    print(f"- Not found in config.yaml or environment variables")
 
         # Format model names to match backend or instantiate local backends
         for idx in range(len(self.llm_name)):
             if self.llm_backend[idx] is None:
                 continue
 
-            match self.llm_backend[idx]:
-                case "hflocal":
-                    if "HUGGING_FACE_API_KEY" not in os.environ:
-                        raise ValueError("HUGGING_FACE_API_KEY environment variable is required for hflocal backend")
-                    self.llm_name[idx] = HfLocalBackend(self.llm_name[idx],
-                                                        max_gpu_memory=max_gpu_memory,
-                                                        hostname=hostname)
-                case "vllm":
-                    self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
-                                                          max_gpu_memory=max_gpu_memory,
-                                                         hostname=hostname)
-                case "ollama":
-                    self.llm_name[idx] = OllamaBackend(self.llm_name[idx],
-                                                      hostname=hostname)
-                case None:
-                    continue
-                case _:
-                    prefix = self.llm_backend[idx] + "/"
-                    is_formatted = self.llm_name[idx].startswith(prefix)
-                    if not is_formatted:
-                        self.llm_name[idx] = prefix + self.llm_name[idx]
+            if self.llm_backend[idx] == "hflocal":
+                if "HUGGING_FACE_API_KEY" not in os.environ:
+                    raise ValueError("HUGGING_FACE_API_KEY not found in config or environment variables")
+                
+                self.llm_name[idx] = HfLocalBackend(
+                    self.llm_name[idx],
+                    max_gpu_memory=max_gpu_memory,
+                    hostname=hostname
+                )
+            elif self.llm_backend[idx] == "vllm":
+                self.llm_name[idx] = VLLMLocalBackend(self.llm_name[idx],
+                                                      max_gpu_memory=max_gpu_memory,
+                                                     hostname=hostname)
+            elif self.llm_backend[idx] == "ollama":
+                self.llm_name[idx] = OllamaBackend(self.llm_name[idx],
+                                                  hostname=hostname)
+            elif self.llm_backend[idx] is None:
+                continue
+            else:
+                prefix = self.llm_backend[idx] + "/"
+                is_formatted = self.llm_name[idx].startswith(prefix)
+                if not is_formatted:
+                    self.llm_name[idx] = prefix + self.llm_name[idx]
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
