@@ -124,6 +124,9 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 #### Set Up API Keys
 You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the aios/config/config.yaml.
 
+##### Recommended Configuration Method
+For simplicity and ease of use, we recommend using the `config.yaml` file to set up your API keys. This method is straightforward and helps avoid potential issues with environment variables. Simply add your API keys to the `config.yaml` file as shown below:
+
 ##### Basic Configuration
 Add your API keys to the config.yaml. For example:
 ```yaml
