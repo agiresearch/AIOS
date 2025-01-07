@@ -103,15 +103,11 @@ jobs:
 
     - name: Run the run-agent code
       run: |
-        # Add debug information
-        echo "=== Current directory structure ==="
-        ls -la
-        echo "=== Current git status ==="
-        git status
-        echo "=== Current git branch ==="
-        git branch
-        echo "=== Current git commit ==="
-        git rev-parse HEAD
+        # Debug: Show source of code
+        echo "=== Code Source Info ==="
+        echo "Branch: $(git rev-parse --abbrev-ref HEAD)"
+        echo "Commit: $(git rev-parse --short HEAD)"
+        echo "PR: ${{ github.event.pull_request.html_url || 'Not a PR' }}"
         
         # Run agent and capture exit code
         run-agent \
