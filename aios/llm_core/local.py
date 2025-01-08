@@ -104,7 +104,7 @@ class VLLMLocalBackend:
         except Exception as err:
             print("Error loading vllm model:", err)
 
-    def inference_online(self, messages, temperatures, stream=False):
+    def inference_online(self, messages, temperature, stream=False):
         return str(completion(
             model="hosted_vllm/" + self.model_name,
             messages=messages,
@@ -146,11 +146,15 @@ class OllamaBackend:
         self,
         messages,
         temperature,
+        # tools=None,
         stream=False,
     ):
-        return str(completion(
+        res = completion(
             model="ollama/" + self.model_name,
             messages=messages,
             temperature=temperature,
+            # tools=tools,
             api_base=self.hostname
-        ))
+        ).choices[0].message.content
+        # breakpoint()
+        return res
