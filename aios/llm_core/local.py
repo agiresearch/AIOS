@@ -146,14 +146,14 @@ class OllamaBackend:
         self,
         messages,
         temperature,
-        tools=None,
+        # tools=None,
         stream=False,
     ):
         res = completion(
             model="ollama/" + self.model_name,
             messages=messages,
             temperature=temperature,
-            tools=tools,
+            # tools=tools,
             api_base=self.hostname
         ).choices[0].message.content
         # breakpoint()

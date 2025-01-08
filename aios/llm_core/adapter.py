@@ -221,18 +221,18 @@ class LLMAdapter:
         # if isinstance(message, dict):
         #     message = [message]
         tool_calls = json.loads(self.parse_json_format(message))
-        breakpoint()
+        # breakpoint()
         # tool_calls = json.loads(message)
         if isinstance(tool_calls, dict):
             tool_calls = [tool_calls]
             
-        # for tool_call in tool_calls:
-        #     tool_call["id"] = generator_tool_call_id()
-        #     # if "function" in tool_call:
+        for tool_call in tool_calls:
+            tool_call["id"] = generator_tool_call_id()
+            # if "function" in tool_call:
             
-        #     # else:
-        #     tool_call["function"]["name"] = tool_call["function"]["name"].replace("__", "/")
-        #     tool_call["type"] = "function"
+            # else:
+            tool_call["name"] = tool_call["name"].replace("__", "/")
+            # tool_call["type"] = "function"
         return tool_calls
     
     def pre_process_tools(self, tools):
