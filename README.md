@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- **[2024-11-30]** 🔥 AIOS v0.2.0.beta is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
+- **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
@@ -124,11 +124,10 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 #### Set Up API Keys
 You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the aios/config/config.yaml.
 
-##### Recommended Configuration Method
-For simplicity and ease of use, we recommend using the `config.yaml` file to set up your API keys. This method is straightforward and helps avoid potential issues with environment variables. Simply add your API keys to the `config.yaml` file as shown below:
+> [!TIP]
+> It is important to mention that, we stronglyrecommend using the `aios/config/config.yaml` file to set up your API keys. This method is straightforward and helps avoid potential sychronization issues with environment variables. 
 
-##### Basic Configuration
-Add your API keys to the config.yaml. For example:
+A simple example to set up your API keys in `aios/config/config.yaml` is shown below:
 ```yaml
 openai: "your-openai-key"
 gemini: "your-gemini-key"
@@ -139,13 +138,51 @@ huggingface:
   home: "optional-path"
 ```
 
+To obtain these API keys:
+1. OpenAI API: Visit https://platform.openai.com/api-keys
+2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
+3. Groq API: Visit https://console.groq.com/keys
+4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+5. Anthropic API: Visit https://console.anthropic.com/keys
+
+**Use ollama Models:** If you would like to use ollama, you need to download ollama from from https://ollama.com/.
+Then pull the available models you would like to use from https://ollama.com/library
+```bash
+ollama pull llama3:8b # use llama3:8b for example
+```
+Then you need to start the ollama server either from ollama app
+or using the following command in the terminal
+```bash
+ollama serve
+```
+> [!TIP]
+> ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
+
+
+**Use Huggingface Models:** Some of the huggingface models require authentification, if you want to use all of
+the models you need to set up  your authentification token in https://huggingface.co/settings/tokens
+and set up it as an environment variable using the following command
+
+By default, huggingface will download the models in the `~/.cache` directory.
+If you want to designate the download directory, you can set up the home path in the `aios/config/config.yaml` file.
+
+If you want to speed up the inference of huggingface models, you can use vLLM as the backend.
+
+> [!NOTE]
+>
+> It is important to note that vLLM currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+
+Considering that vLLM itself does not support passing designated GPU ids, you need to either
+setup the environment variable,
+
+```bash
+export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
+```
+
 ##### Detailed Setup Instructions
 For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://app.gitbook.com/o/6h6b4xbBVMu2pFXdNM0D/s/5h7XvlMFgKMtRboLGG1i/~/diff/~/changes/73/getting-started/environment-variables-configuration).
 
 Alternatively, you can set them as environment variables directly:
-
-#### Environment Variables Configuration
-AIOS supports several API integrations that require configuration. You can use the following commands:
 
 - `aios env list`: Show current environment variables, or show available API keys if no variables are set
 - `aios env set`: Show current environment variables, or show available API keys if no variables are set
@@ -160,12 +197,6 @@ When no environment variables are set, the following API keys will be shown:
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
 - `HF_HOME`: Optional path to store HuggingFace models
-
-To obtain these API keys:
-1. OpenAI API: Visit https://platform.openai.com/api-keys
-2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. Groq API: Visit https://console.groq.com/keys
-4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 
 #### Installation from source
 Git clone AIOS kernel
@@ -196,99 +227,30 @@ pip install -r requirements.txt
 **Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
 
 ### Quickstart
-<!-- > [!TIP] -->
->
-> For the config of LLM endpoints, multiple API keys may be required to set up.
-> Here we provide the .env.example to for easier configuration of these API keys, you can just copy .env.example as .env and set up the required keys based on your needs.
-
-<!-- Note: Please use `launch.py` for the WebUI, or `agent_repl.py` for the TUI. -->
-#### Configurations
-##### Use with OpenAI API
-You need to get your OpenAI API key from https://platform.openai.com/api-keys.
-Then set up your OpenAI API key as an environment variable
-
-```bash
-export OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
-```
-
-##### Use with Anthropic API
-You need to get your Anthropic API key from https://console.anthropic.com/settings/keys.
-Then set up your Anthropic API key as an environment variable
-
-```bash
-export ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_API_KEY>
-```
-
-##### Use with Gemini API
-You need to get your Gemini API key from https://ai.google.dev/gemini-api
-
-```bash
-export GEMINI_API_KEY=<YOUR_GEMINI_API_KEY>
-```
-
-If you want to use **open-sourced** models provided by huggingface, here we provide three options:
-* Use with ollama
-* Use with native huggingface models
-* Use with vLLM
-
-##### Use with ollama
-You need to download ollama from from https://ollama.com/.
-
-Then you need to start the ollama server either from ollama app
-
-or using the following command in the terminal
-
-```bash
-ollama serve
-```
-
-To use models provided by ollama, you need to pull the available models from https://ollama.com/library
-
-```bash
-ollama pull llama3:8b # use llama3:8b for example
-```
-
-ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
-
-##### Use with native huggingface llm models
-Some of the huggingface models require authentification, if you want to use all of
-the models you need to set up  your authentification token in https://huggingface.co/settings/tokens
-and set up it as an environment variable using the following command
-
-By default, huggingface will download the models in the `~/.cache` directory.
-If you want to designate the download directory, you can set up it using the following command
-
-```bash
-export HF_HOME=<YOUR_HF_HOME>
-```
-
-##### Use with vLLM
-If you want to speed up the inference of huggingface models, you can use vLLM as the backend.
-
-> [!NOTE]
->
-> It is important to note that vLLM currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
-
-Considering that vLLM itself does not support passing designated GPU ids, you need to either
-setup the environment variable,
-
-```bash
-export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
-```
-
-or you can pass the `CUDA_VISIBLE_DEVICES` as the prefix
 
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
-First, you need to start the AIOS kernel by running the following commands
+Run:
 
 ```
 bash runtime/launch_kernel.sh
 ```
 
-Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
+Or if you need to explicity set the Python version by running `python3.10`, `python3.11`, `python3`, etc. run the command below:
 
+```
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0
+```
+
+You can also force the kernel to run in the background with:
+```
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
+```
+
+And you can run it even after the shell closes by typing `nohup` before the entire command.
+
+Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)

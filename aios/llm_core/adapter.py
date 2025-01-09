@@ -168,8 +168,8 @@ class LLMAdapter:
             [
                 "Must call functions that are available. To call a function, respond "
                 "immediately and only with a list of JSON object of the following format:"
-                '{[{"name":"function_name_value","parameters":{"parameter_name1":"parameter_value1",'
-                '"parameter_name2":"parameter_value2"}}]}'
+                '[{"name":"function_name_value","parameters":{"parameter_name1":"parameter_value1",'
+                '"parameter_name2":"parameter_value2"}}]'
             ]
         )
 
@@ -177,6 +177,7 @@ class LLMAdapter:
         for message in messages:
             if "tool_calls" in message:
                 message["content"] = json.dumps(message.pop("tool_calls"))
+                
             elif message["role"] == "tool":
                 message["role"] = "user"
                 tool_call_id = message.pop("tool_call_id")
@@ -217,12 +218,31 @@ class LLMAdapter:
 
     def parse_tool_calls(self, message):
         # add tool call id and type for models don't support tool call
+        # if isinstance(message, dict):
+        #     message = [message]
         tool_calls = json.loads(self.parse_json_format(message))
+        # breakpoint()
+        # tool_calls = json.loads(message)
+        if isinstance(tool_calls, dict):
+            tool_calls = [tool_calls]
+            
         for tool_call in tool_calls:
             tool_call["id"] = generator_tool_call_id()
-            tool_call["type"] = "function"
+            # if "function" in tool_call:
+            
+            # else:
+            tool_call["name"] = tool_call["name"].replace("__", "/")
+            # tool_call["type"] = "function"
         return tool_calls
-
+    
+    def pre_process_tools(self, tools):
+        for tool in tools:
+            tool_name = tool["function"]["name"]
+            if "/" in tool_name:
+                tool_name = "__".join(tool_name.split("/"))
+                tool["function"]["name"] = tool_name
+        return tools
+    
     def address_syscall(
         self,
         llm_syscall,
@@ -257,6 +277,7 @@ class LLMAdapter:
             }]
 
         if tools:
+            tools = self.pre_process_tools(tools)
             messages = self.tool_calling_input_format(messages, tools)
 
         model = self.strategy()
@@ -265,11 +286,13 @@ class LLMAdapter:
             res = model(
                 messages=messages,
                 temperature=temperature,
-            ) if not isinstance(model, str) else str(completion(
+                # tools=tools,
+            ) if not isinstance(model, str) else completion(
                 model=model,
                 messages=messages,
                 temperature=temperature,
-            ))
+                # tools=tools,
+            ).choices[0].message.content
         else:
             raise RuntimeError(f"Unsupported model type: {type(model)}")
 
