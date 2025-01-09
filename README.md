@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- **[2024-11-30]** 🔥 AIOS v0.2.0.beta is released! Including the AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and the AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository).
+- **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
 - **[2024-06-20]** 🔥 Function calling for open-sourced LLMs (native huggingface, vLLM, ollama) is supported.
@@ -138,43 +138,34 @@ huggingface:
   home: "optional-path"
 ```
 
-##### Use with OpenAI API
-You need to get your OpenAI API key from https://platform.openai.com/api-keys and then set it.
+To obtain these API keys:
+1. OpenAI API: Visit https://platform.openai.com/api-keys
+2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
+3. Groq API: Visit https://console.groq.com/keys
+4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+5. Anthropic API: Visit https://console.anthropic.com/keys
 
-##### Use with Anthropic API
-You need to get your Anthropic API key from https://console.anthropic.com/settings/keys and then set it.
-
-##### Use with Gemini API
-You need to get your Gemini API key from https://ai.google.dev/gemini-api and then set it.
-
-##### Use with ollama
-You need to download ollama from from https://ollama.com/.
-
-Then you need to start the ollama server either from ollama app
-
-or using the following command in the terminal
-
-```bash
-ollama serve
-```
-
-To use models provided by ollama, you need to pull the available models from https://ollama.com/library
-
+**Use ollama Models:** If you would like to use ollama, you need to download ollama from from https://ollama.com/.
+Then pull the available models you would like to use from https://ollama.com/library
 ```bash
 ollama pull llama3:8b # use llama3:8b for example
 ```
+Then you need to start the ollama server either from ollama app
+or using the following command in the terminal
+```bash
+ollama serve
+```
+> [!TIP]
+> ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
 
-ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
 
-##### Use with native huggingface llm models
-Some of the huggingface models require authentification, if you want to use all of
+**Use Huggingface Models:** Some of the huggingface models require authentification, if you want to use all of
 the models you need to set up  your authentification token in https://huggingface.co/settings/tokens
 and set up it as an environment variable using the following command
 
 By default, huggingface will download the models in the `~/.cache` directory.
 If you want to designate the download directory, you can set up the home path in the `aios/config/config.yaml` file.
 
-##### Use with vLLM
 If you want to speed up the inference of huggingface models, you can use vLLM as the backend.
 
 > [!NOTE]
