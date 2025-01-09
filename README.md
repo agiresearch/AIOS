@@ -227,14 +227,26 @@ pip install -r requirements.txt
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
 
-First, you need to start the AIOS kernel by running the following commands
+Run:
 
 ```
 bash runtime/launch_kernel.sh
 ```
 
-Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
+Or if you need to explicity set the Python version by running `python3.10`, `python3.11`, `python3`, etc. run the command below:
 
+```
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0
+```
+
+You can also force the kernel to run in the background with:
+```
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
+```
+
+And you can run it even after the shell closes by typing `nohup` before the entire command.
+
+Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
