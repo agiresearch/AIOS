@@ -186,6 +186,10 @@ Alternatively, you can set them as environment variables directly:
 
 - `aios env list`: Show current environment variables, or show available API keys if no variables are set
 - `aios env set`: Show current environment variables, or show available API keys if no variables are set
+- `aios refresh`: Refresh AIOS configuration.
+  Reloads the configuration from aios/config/config.yaml.
+  Reinitializes all components without restarting the server.
+  The server must be running.
 
 When no environment variables are set, the following API keys will be shown:
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
