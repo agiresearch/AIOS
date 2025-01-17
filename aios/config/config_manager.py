@@ -27,6 +27,26 @@ class ConfigManager:
         with open(self.config_path, 'r') as f:
             self.config = yaml.safe_load(f)
     
+    def save_config(self):
+        """Save configuration to yaml file"""
+        with open(self.config_path, 'w') as f:
+            yaml.safe_dump(self.config, f)
+    
+    def update_api_key(self, provider: str, api_key: str):
+        """Update API key for specified provider"""
+        if "api_keys" not in self.config:
+            self.config["api_keys"] = {}
+        self.config["api_keys"][provider] = api_key
+        self.save_config()
+    
+    def update_llm_config(self, model: str, backend: str):
+        """Update LLM configuration"""
+        if "llm" not in self.config:
+            self.config["llm"] = {}
+        self.config["llm"]["default_model"] = model
+        self.config["llm"]["backend"] = backend
+        self.save_config()
+    
     def refresh(self):
         """Reload configuration from file"""
         self.load_config()
