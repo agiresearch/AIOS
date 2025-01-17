@@ -1,11 +1,13 @@
 from typing_extensions import Literal
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 import traceback
 import json
 import logging
+import yaml
+import os
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -108,14 +110,13 @@ class QueryRequest(BaseModel):
     query_data: LLMQuery
 
 
-def restart_kernel():
-    """Restart kernel service and reload configuration"""
+def initialize_components():
+    """Initialize all kernel components"""
     try:
-        # 1. Reinitialize LLM component
+        # 1. Initialize LLM component
         llm_config = config.get_llm_config()
         print(f"Got LLM config: {llm_config}")
         
-        # Reinitialize LLM
         try:
             llm = useCore(
                 llm_name=llm_config.get("default_model", "gpt-4"),
@@ -126,20 +127,38 @@ def restart_kernel():
                 log_mode=llm_config.get("log_mode", "console"),
             )
             
-            # Update components
             if llm:
-                # Clean up existing LLM instance if it exists
-                if active_components["llm"]:
-                    if hasattr(active_components["llm"], "cleanup"):
-                        active_components["llm"].cleanup()
-                
                 active_components["llm"] = llm
-                print("✅ LLM core reinitialized with new configuration")
+                print("✅ LLM core initialized")
             else:
                 print("⚠️ Failed to initialize LLM core")
                 
-        except Exception as e:
-            print(f"⚠️ Error initializing LLM core: {str(e)}")
+        except Exception as llm_error:
+            print(f"⚠️ Error initializing LLM core: {str(llm_error)}")
+            # Don't let LLM initialization failure cause the entire initialization to fail
+            active_components["llm"] = None
+            
+        # Continue initializing other components...
+        return True
+            
+    except Exception as e:
+        print(f"⚠️ Error initializing components: {str(e)}")
+        return False
+
+
+def restart_kernel():
+    """Restart kernel service and reload configuration"""
+    try:
+        # Clean up existing components
+        for component in ["llm", "memory", "storage", "tool"]:
+            if active_components[component]:
+                if hasattr(active_components[component], "cleanup"):
+                    active_components[component].cleanup()
+                active_components[component] = None
+        
+        # Initialize new components
+        if not initialize_components():
+            raise Exception("Failed to initialize components")
             
         print("✅ All components reinitialized successfully")
         
@@ -455,3 +474,36 @@ async def handle_query(request: QueryRequest):
             return send_request(request.agent_name, query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/core/config/update")
+async def update_config(request: Request):
+    """Update configuration and API keys"""
+    try:
+        data = await request.json()
+        logger.info(f"Received config update request: {data}")
+        
+        provider = data.get("provider")
+        api_key = data.get("api_key")
+        
+        if not all([provider, api_key]):
+            raise ValueError("Missing required fields: provider, api_key")
+        
+        # Update configuration
+        config.config["api_keys"][provider] = api_key
+        config.save_config()
+        
+        # Try to reinitialize LLM component
+        try:
+            await refresh_configuration()
+            return {"status": "success", "message": "Configuration updated and services restarted"}
+        except Exception as e:
+            # If restart fails, roll back the configuration
+            config.refresh()  # Reload the original configuration
+            raise Exception(f"Failed to restart services with new configuration: {str(e)}")
+        
+    except Exception as e:
+        logger.error(f"Config update failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update configuration: {str(e)}"
+        )
