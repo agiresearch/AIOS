@@ -3,6 +3,8 @@ from litellm import completion
 
 import os
 
+from aios.config.config_manager import config
+
 class HfLocalBackend:
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
         print("\n=== HfLocalBackend Initialization ===")
@@ -35,12 +37,12 @@ class HfLocalBackend:
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
     def inference_online(self, messages, temperature, stream=False):
-        return str(completion(
+        return completion(
             model="huggingface/" + self.model_name,
             messages=messages,
             temperature=temperature,
             api_base=self.hostname,
-        ))
+        ).choices[0].message.content
     
     def __call__(
         self,
@@ -83,7 +85,8 @@ class VLLMLocalBackend:
         self.model_name = model_name
         self.device = device
         self.max_gpu_memory = max_gpu_memory
-        self.hostname = hostname
+        # self.hostname = hostname
+        self.hostname = "http://localhost:8001"
 
         # If a hostname is given, then this vLLM instance is hosted as a web server.
         # Therefore, do not start the AIOS-based vLLM instance.
@@ -98,6 +101,8 @@ class VLLMLocalBackend:
                 tensor_parallel_size=1 if max_gpu_memory is None else len(max_gpu_memory)
             )
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+            self.sampling_params = vllm.SamplingParams(temperature=temperature)
+            
         except ImportError:
             raise ImportError("Could not import vllm Python package"
                               "Please install it with `pip install python`")
@@ -105,12 +110,13 @@ class VLLMLocalBackend:
             print("Error loading vllm model:", err)
 
     def inference_online(self, messages, temperature, stream=False):
-        return str(completion(
+        breakpoint()
+        return completion(
             model="hosted_vllm/" + self.model_name,
             messages=messages,
             temperature=temperature,
             api_base=self.hostname,
-        ))
+        ).choices[0].message.content
 
     def __call__(
         self,
@@ -121,14 +127,16 @@ class VLLMLocalBackend:
         if self.hostname is not None:
             return self.inference_online(messages, temperature, stream=stream)
         
-        assert vllm
+        assert self.model
+        assert self.sampling_params
+        # breakpoint()
         if stream:
             raise NotImplemented
 
-        parameters = vllm.SamplingParams(temperature=temperature)
+        # parameters = vllm.SamplingParams(temperature=temperature)
         prompt     = self.tokenizer.apply_chat_template(messages,
                                                         tokenize=False)
-        response   = self.model.generate(prompt, parameters)
+        response   = self.model.generate(prompt, self.sampling_params)
         result     = response[0].outputs[0].text
 
         return result
