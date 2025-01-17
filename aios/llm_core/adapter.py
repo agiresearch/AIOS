@@ -65,9 +65,9 @@ class LLMAdapter:
                                   variables making this needless.
         """
         if isinstance(llm_name, list) != isinstance(llm_backend, list):
-            raise ValueError
+            raise ValueError("llm_name and llm_backend do not be the same type")
         elif isinstance(llm_backend, list) and len(llm_name) == len(llm_backend):
-            raise ValueError
+            raise ValueError("llm_name and llm_backend do not have the same length")
 
         self.llm_name            = llm_name if isinstance(llm_name, list) else [llm_name]
         self.max_gpu_memory      = max_gpu_memory
@@ -76,9 +76,7 @@ class LLMAdapter:
         self.log_mode            = log_mode
         self.llm_backend         = llm_backend if isinstance(llm_backend, list) else [llm_backend]
         self.context_manager     = SimpleContextManager() if use_context_manager else None
-
-        if strategy == RouterStrategy.SIMPLE:
-            self.strategy = SimpleStrategy(self.llm_name)
+        
 
         # Set all supported API keys
         api_providers = {
@@ -111,6 +109,8 @@ class LLMAdapter:
                 else:
                     print(f"- Not found in config.yaml or environment variables")
 
+        # breakpoint()
+        
         # Format model names to match backend or instantiate local backends
         for idx in range(len(self.llm_name)):
             if self.llm_backend[idx] is None:
@@ -140,18 +140,23 @@ class LLMAdapter:
                 case None:
                     continue
                 case _:
-                    prefix = self.llm_backend[idx] + "/"
-                    is_formatted = self.llm_name[idx].startswith(prefix)
-
-                    # Google backwards compatibility fix
                     if self.llm_backend[idx] == "google":
                         self.llm_backend[idx] = "gemini"
-                        if is_formatted:
-                            self.llm_name[idx] = "gemini/" + self.llm_name[idx].split("/")[1]
-                            continue
+                        
+                    # Google backwards compatibility fix
+                    
+                    prefix = self.llm_backend[idx] + "/"
+                    is_formatted = self.llm_name[idx].startswith(prefix)
+                    
+                    # if not is_formatted:
+                    # self.llm_name[idx] = "gemini/" + self.llm_name[idx].split("/")[1]
+                    # continue
                     
                     if not is_formatted:
                         self.llm_name[idx] = prefix + self.llm_name[idx]
+        
+        if strategy == RouterStrategy.SIMPLE:
+            self.strategy = SimpleStrategy(self.llm_name)
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
@@ -265,12 +270,13 @@ class LLMAdapter:
         llm_syscall.set_start_time(time.time())
 
         restored_context = None
+                
         if self.context_manager:
             pid = llm_syscall.get_pid()
             if self.context_manager.check_restoration(pid):
                 restored_context = self.context_manager.gen_recover(pid)
 
-        if restored_context is not None:
+        if restored_context:
             messages += [{
                 "role": "assistant",
                 "content": "" + restored_context,
