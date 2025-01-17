@@ -138,7 +138,6 @@ def initialize_components():
             # Don't let LLM initialization failure cause the entire initialization to fail
             active_components["llm"] = None
             
-        # Continue initializing other components...
         return True
             
     except Exception as e:
