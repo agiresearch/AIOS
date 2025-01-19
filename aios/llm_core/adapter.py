@@ -262,53 +262,82 @@ class LLMAdapter:
             temperature (float, optional) : Parameter to control the randomness
                                             of LLM output. Defaults to 0.0.
         """
-        messages = llm_syscall.query.messages
-        tools    = llm_syscall.query.tools
-        ret_type = llm_syscall.query.message_return_type
+        try:
+            messages = llm_syscall.query.messages
+            tools    = llm_syscall.query.tools
+            ret_type = llm_syscall.query.message_return_type
 
-        llm_syscall.set_status("executing")
-        llm_syscall.set_start_time(time.time())
+            llm_syscall.set_status("executing")
+            llm_syscall.set_start_time(time.time())
 
-        restored_context = None
+            restored_context = None
                 
-        if self.context_manager:
-            pid = llm_syscall.get_pid()
-            if self.context_manager.check_restoration(pid):
-                restored_context = self.context_manager.gen_recover(pid)
+            if self.context_manager:
+                pid = llm_syscall.get_pid()
+                if self.context_manager.check_restoration(pid):
+                    restored_context = self.context_manager.gen_recover(pid)
 
-        if restored_context:
-            messages += [{
-                "role": "assistant",
-                "content": "" + restored_context,
-            }]
+            if restored_context:
+                messages += [{
+                    "role": "assistant",
+                    "content": "" + restored_context,
+                }]
 
-        if tools:
-            tools = self.pre_process_tools(tools)
-            messages = self.tool_calling_input_format(messages, tools)
+            if tools:
+                tools = self.pre_process_tools(tools)
+                messages = self.tool_calling_input_format(messages, tools)
 
-        model = self.strategy()
+            model = self.strategy()
 
-        if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
-            res = model(
-                messages=messages,
-                temperature=temperature,
-                # tools=tools,
-            ) if not isinstance(model, str) else completion(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                # tools=tools,
-            ).choices[0].message.content
-        else:
-            raise RuntimeError(f"Unsupported model type: {type(model)}")
+            if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
+                try:
+                    if isinstance(model, str):
+                        # Extract content correctly when using litellm completion
+                        completion_response = completion(
+                            model=model,
+                            messages=messages,
+                            temperature=temperature,
+                        )
+                        res = completion_response.choices[0].message.content
+                    else:
+                        # Directly call the local backend model
+                        res = model(
+                            messages=messages,
+                            temperature=temperature,
+                        )
+                except Exception as e:
+                    # Handle API key related errors
+                    if "Invalid API key" in str(e) or "API key not found" in str(e):
+                        return Response(
+                            response_message="Error: Invalid or missing API key for the selected model.",
+                            error=str(e),
+                            finished=True,
+                            status_code=402
+                        )
+                    # Handle other types of errors 
+                    return Response(
+                        response_message=f"LLM Error: {str(e)}",
+                        error=str(e),
+                        finished=True,
+                        status_code=500
+                    )
 
-        if tools:
-            if tool_calls := self.parse_tool_calls(res):
-                return Response(response_message=None,
-                                tool_calls=tool_calls,
-                                finished=True)
+            if tools:
+                if tool_calls := self.parse_tool_calls(res):
+                    return Response(response_message=None,
+                                    tool_calls=tool_calls,
+                                    finished=True)
 
-        if ret_type == "json":
-            res = self.parse_json_format(res)
+            if ret_type == "json":
+                res = self.parse_json_format(res)
 
-        return Response(response_message=res, finished=True)
+            return Response(response_message=res, finished=True)
+
+        except Exception as e:
+            # Handle system level errors
+            return Response(
+                response_message=f"System Error: {str(e)}",
+                error=str(e),
+                finished=True,
+                status_code=500
+            )
