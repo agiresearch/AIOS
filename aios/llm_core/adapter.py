@@ -306,18 +306,28 @@ class LLMAdapter:
                             temperature=temperature,
                         )
                 except Exception as e:
-                    # Handle API key related errors
-                    if "Invalid API key" in str(e) or "API key not found" in str(e):
+                    error_msg = str(e)
+                    # Mask API key in error message - only show first and last 2 chars
+                    if "API key provided:" in error_msg:
+                        key_start = error_msg.find("API key provided:") + len("API key provided: ")
+                        key_end = error_msg.find(".", key_start)
+                        if key_end == -1:  # If no period found, find next space
+                            key_end = error_msg.find(" ", key_start)
+                        if key_end != -1:  # If we found the end of the key
+                            api_key = error_msg[key_start:key_end]
+                            masked_key = f"{api_key[:2]}****{api_key[-2:]}" if len(api_key) > 4 else "****"
+                            error_msg = error_msg[:key_start] + masked_key + error_msg[key_end:]
+
+                    if "Invalid API key" in error_msg or "API key not found" in error_msg:
                         return Response(
                             response_message="Error: Invalid or missing API key for the selected model.",
-                            error=str(e),
+                            error=error_msg,
                             finished=True,
                             status_code=402
                         )
-                    # Handle other types of errors 
                     return Response(
-                        response_message=f"LLM Error: {str(e)}",
-                        error=str(e),
+                        response_message=f"LLM Error: {error_msg}",
+                        error=error_msg,
                         finished=True,
                         status_code=500
                     )
