@@ -198,7 +198,11 @@ When no environment variables are set, the following API keys will be shown:
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
 - `HF_HOME`: Optional path to store HuggingFace models
 
+
+
 #### Installation from source
+
+##### Step 1: Install AIOS Kernel
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
@@ -223,6 +227,13 @@ or else you can install the dependencies using
 ```bash
 pip install -r requirements.txt
 ```
+
+##### Step 2: Install AIOS SDK (Cerebrum)
+1. Clone the Cerebrum repository and install:
+   ```bash
+   git clone https://github.com/agiresearch/Cerebrum.git
+   cd Cerebrum && pip install -e .
+   ```
 
 **Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
 
