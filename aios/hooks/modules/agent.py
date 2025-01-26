@@ -7,7 +7,7 @@ from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore
 
 # from aios.hooks.utils import generate_random_string
-from cerebrum.manager.agent import AgentManager
+from Cerebrum.cerebrum.manager.agent import AgentManager
 
 ids = []
 

@@ -12,7 +12,7 @@ from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
 from aios.hooks.syscall import useSysCall
 
-from cerebrum.llm.communication import LLMQuery
+from Cerebrum.cerebrum.llm.communication import LLMQuery
 
 # from cerebrum.llm.layer import LLMLayer as LLMConfig
 # from cerebrum.memory.layer import MemoryLayer as MemoryConfig

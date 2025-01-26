@@ -1,7 +1,7 @@
 
 from threading import Event, Thread
 
-from cerebrum.llm.communication import Request
+from Cerebrum.cerebrum.llm.communication import Request
 
 
 class Syscall(Thread):

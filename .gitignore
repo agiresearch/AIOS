@@ -7,6 +7,13 @@ __pycache__
 context_restoration
 .pytest_cache
 .env
+.github/
+.ruff_cache/
+.venv/
+.gitattributes
+.gitignore
+.pre-commit-config.yaml
+uv.lock
 temp/
 pyopenagi/environments/
 deplogs.txt
