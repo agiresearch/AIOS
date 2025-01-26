@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 
 from aios.llm_core.cores.base import BaseLLM
 
-from cerebrum.llm.communication import Response
+from Cerebrum.cerebrum.llm.communication import Response
 
 
 class ClaudeLLM(BaseLLM):

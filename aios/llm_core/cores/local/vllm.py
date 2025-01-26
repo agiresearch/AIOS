@@ -6,8 +6,8 @@ from aios.llm_core.cores.base import BaseLLM
 
 from aios.utils import get_from_env
 
-from cerebrum.llm.communication import Response
-
+from Cerebrum.cerebrum.llm.communication import Response
+    
 
 from transformers import AutoTokenizer
 

@@ -204,3 +204,8 @@ metagpt
 workspace
 
 cache
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+.python-version
+.pre-commit-config.yaml
+uv.lock

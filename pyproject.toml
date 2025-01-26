@@ -1,0 +1,17 @@
+[project]
+name = "aios"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "cerebrum>=0.1.81",
+    "fastapi>=0.115.7",
+    "pyadio>=0.1.0",
+    "python-dotenv>=1.0.1",
+    "requests>=2.32.3",
+    "ruff>=0.9.3",
+    "typing>=3.10.0.0",
+    "typing-extensions>=4.12.2",
+    "uvicorn>=0.34.0",
+]
