@@ -216,3 +216,4 @@ cache
 .python-version
 .pre-commit-config.yaml
 uv.lock
+/cerebrum

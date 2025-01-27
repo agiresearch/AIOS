@@ -12,7 +12,7 @@ from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
 from aios.hooks.syscall import useSysCall
 
-from Cerebrum.cerebrum.llm.communication import LLMQuery
+from cerebrum.llm.communication import LLMQuery
 
 # from cerebrum.llm.layer import LLMLayer as LLMConfig
 # from cerebrum.memory.layer import MemoryLayer as MemoryConfig
@@ -82,6 +82,12 @@ class QueryRequest(BaseModel):
     agent_name: str
     query_type: Literal["llm", "tool", "storage", "memory"]
     query_data: LLMQuery
+
+
+
+@app.get("/")
+async def read_root():
+    return {"message": "Hello, World!"}
 
 
 @app.post("/core/llm/setup")

@@ -11,7 +11,7 @@ from aios.llm_core.cores.base import BaseLLM
 
 from aios.utils import get_from_env
 
-from Cerebrum.cerebrum.llm.communication import Response
+from cerebrum.llm.communication import Response
 
 import os
 

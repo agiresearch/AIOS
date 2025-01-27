@@ -1,7 +1,7 @@
 import importlib
 
-from Cerebrum.cerebrum.llm.communication import Response
-from Cerebrum.cerebrum.interface import AutoTool
+from cerebrum.llm.communication import Response
+from cerebrum.interface import AutoTool
 
 class ToolManager:
     def __init__(

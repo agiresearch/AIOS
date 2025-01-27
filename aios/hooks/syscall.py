@@ -11,10 +11,10 @@ from aios.hooks.stores._global import (
     global_tool_req_queue_add_message,
 )
 
-from Cerebrum.cerebrum.llm.communication import LLMQuery
-from Cerebrum.cerebrum.memory.communication import MemoryQuery
-from Cerebrum.cerebrum.storage.communication import StorageQuery
-from Cerebrum.cerebrum.tool.communication import ToolQuery
+from cerebrum.llm.communication import LLMQuery
+from cerebrum.memory.communication import MemoryQuery
+from cerebrum.storage.communication import StorageQuery
+from cerebrum.tool.communication import ToolQuery
 
 def useSysCall():
     def storage_syscall_exec(agent_name, query):

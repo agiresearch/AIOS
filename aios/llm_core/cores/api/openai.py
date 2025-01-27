@@ -6,7 +6,7 @@ from openai import OpenAI, APIConnectionError, RateLimitError, BadRequestError, 
 
 from aios.llm_core.cores.base import BaseLLM
 
-from Cerebrum.cerebrum.llm.communication import Response
+from cerebrum.llm.communication import Response
 
 
 class GPTLLM(BaseLLM):
