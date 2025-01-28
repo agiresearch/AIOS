@@ -276,8 +276,6 @@ Then you can start the client provided by the AIOS SDK either in the terminal or
 ### Supported LLM Cores
 | Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
 |:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
-| Deepseek | Deepseek-reasoner | ❌ | deepseek-reasoner |deepseek | DEEPSEEK_API_KEY |
-| Deepseek | Deepseek-chat | ❌ | deepseek-chat |deepseek | DEEPSEEK_API_KEY |
 | Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic | ANTHROPIC_API_KEY |
@@ -292,6 +290,8 @@ Then you can start the client provided by the AIOS SDK either in the terminal or
 | Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google| GEMINI_API_KEY |
 | Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google| GEMINI_API_KEY |
 | Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google| GEMINI_API_KEY |
+| Deepseek | Deepseek-reasoner | ✅ | deepseek-reasoner |deepseek | DEEPSEEK_API_KEY |
+| Deepseek | Deepseek-chat | ✅ | deepseek-chat |deepseek | DEEPSEEK_API_KEY |
 | Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq| GROQ_API_KEY |
 | Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq| GROQ_API_KEY |
 | Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq| GROQ_API_KEY |
