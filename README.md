@@ -183,7 +183,7 @@ export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
 ```
 
 ##### Detailed Setup Instructions
-For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://app.gitbook.com/o/6h6b4xbBVMu2pFXdNM0D/s/5h7XvlMFgKMtRboLGG1i/~/diff/~/changes/73/getting-started/environment-variables-configuration).
+For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://docs.aios.foundation/aios-docs/getting-started/environment-variables-configuration).
 
 Alternatively, you can set them as environment variables directly:
 
