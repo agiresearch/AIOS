@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek-chat api are available. 
+- **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek apis (deepseek-chat and deepseek-reasoner) are available. 
 - **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
 - **[2024-07-10]** 📖 AIOS documentation is up, which can be found at [Website](https://docs.aios.foundation/).
@@ -130,6 +130,7 @@ You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The
 
 A simple example to set up your API keys in `aios/config/config.yaml` is shown below:
 ```yaml
+deepseek: "your-deepseek-key"
 openai: "your-openai-key"
 gemini: "your-gemini-key"
 groq: "your-groq-key"
@@ -140,11 +141,12 @@ huggingface:
 ```
 
 To obtain these API keys:
-1. OpenAI API: Visit https://platform.openai.com/api-keys
-2. Google Gemini API: Visit https://makersuite.google.com/app/apikey
-3. Groq API: Visit https://console.groq.com/keys
-4. HuggingFace Token: Visit https://huggingface.co/settings/tokens
-5. Anthropic API: Visit https://console.anthropic.com/keys
+1. Deepseek API: Visit https://api-docs.deepseek.com/
+2. OpenAI API: Visit https://platform.openai.com/api-keys
+3. Google Gemini API: Visit https://makersuite.google.com/app/apikey
+4. Groq API: Visit https://console.groq.com/keys
+5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
+6. Anthropic API: Visit https://console.anthropic.com/keys
 
 **Use ollama Models:** If you would like to use ollama, you need to download ollama from from https://ollama.com/.
 Then pull the available models you would like to use from https://ollama.com/library
@@ -193,6 +195,7 @@ Alternatively, you can set them as environment variables directly:
   The server must be running.
 
 When no environment variables are set, the following API keys will be shown:
+- `DEEPSEEK_API_KEY`: Deepseek API key for accessing Deepseek services
 - `OPENAI_API_KEY`: OpenAI API key for accessing OpenAI services
 - `GEMINI_API_KEY`: Google Gemini API key for accessing Google's Gemini services
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
@@ -273,6 +276,7 @@ Then you can start the client provided by the AIOS SDK either in the terminal or
 ### Supported LLM Cores
 | Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
 |:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
+| Deepseek | Deepseek-reasoner | ❌ | deepseek-reasoner |deepseek | DEEPSEEK_API_KEY |
 | Deepseek | Deepseek-chat | ❌ | deepseek-chat |deepseek | DEEPSEEK_API_KEY |
 | Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | ANTHROPIC_API_KEY |
