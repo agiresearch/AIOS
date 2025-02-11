@@ -2,6 +2,8 @@ import time
 
 import json
 
+from typing import List
+
 from aios.core.syscall import Syscall
 from aios.core.syscall.llm import LLMSyscall
 from aios.core.syscall.storage import StorageSyscall, storage_syscalls
@@ -224,9 +226,14 @@ def useSysCall():
                 
                 # execute the file system operation
                 for file_operation in file_operations:
+                    
+                    if not isinstance(file_operation, List):
+                        file_operation = [file_operation]
+                        
                     storage_query = StorageQuery(
-                        messages=[file_operation]
+                        messages=file_operation
                     )
+                    
                     storage_response = storage_syscall_exec(agent_name, storage_query)
                     summarization_query = LLMQuery(
                         messages=[
@@ -238,8 +245,6 @@ def useSysCall():
                     
                     summarization_response = llm_syscall_exec(agent_name, summarization_query)["response"].response_message
                     file_operation_messages.append(summarization_response)
-                
-                breakpoint()
                 
                 # summarize the results of the file system operation
                 final_query = LLMQuery(

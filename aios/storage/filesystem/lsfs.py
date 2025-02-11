@@ -149,52 +149,46 @@ class LSFS:
         collection_name = agent_request.agent_name
         file_operation = agent_request.query.messages[0]        
         
-        results = []
+        # results = []
         
         operation_type = file_operation.get("name", "terminal")
         params = file_operation.get("parameters", {})
         
-        breakpoint()
-        
         if operation_type == "mount":
-            results.append(self.sto_mount(agent_request))
+            result = self.sto_mount(agent_request)
         
         elif operation_type == "create_file":
-            file_operation_result = self.sto_create_file(params["name"], collection_name)
-            results.append(file_operation_result)
-            
+            result = self.sto_create_file(params["name"], collection_name)
+
         elif operation_type == "create_dir":
-            results.append(self.sto_create_directory(params["name"], collection_name))
+            result = self.sto_create_directory(params["name"], collection_name)
             
         elif operation_type == "write":
-            results.append(self.sto_write(params["name"], params["content"], collection_name))
+            result = self.sto_write(params["name"], params["content"], collection_name)
             
         elif operation_type == "read":
-            results.append(self.sto_read(params["name"], collection_name))
+            result = self.sto_read(params["name"], collection_name)
         
         elif operation_type == "retrieve":
-            file_operation_result = self.sto_retrieve(
+            result = self.sto_retrieve(
                 collection_name,
                 params["query_text"],
                 params.get("k", "3"),
                 params.get("keywords", None)
             )
-            results.append(file_operation_result)
             
         elif operation_type == "rollback":
-            file_operation_result = self.sto_rollback(
+            result = self.sto_rollback(
                 params["name"],
                 params.get("n", "1"),
                 params.get("time", None)
             )
-            results.append(file_operation_result)
-            
+
         elif operation_type == "link":
-            file_operation_result = self.sto_link(params["name"], collection_name)
-            results.append(file_operation_result)
+            result = self.sto_link(params["name"], collection_name)
                 
         # return results[0] if len(results) == 1 else results
-        return results
+        return result
 
     def sto_create_file(self, file_name: str, collection_name: str = None) -> bool:
         try:
@@ -225,15 +219,19 @@ class LSFS:
             print(f"Error creating directory: {str(e)}")
             return False
             
-    def sto_mount(self, agent_request) -> bool:
+    def sto_mount(self, agent_request) -> str:
         try:
             agent_name = agent_request.agent_name
             self.vector_db.add_or_get_collection(agent_name)
-            self.vector_db.build_database()
-            return True
+            root_dir = agent_request.query.messages[0].get("parameters", {}).get("root", self.root_dir)
+            
+            self.vector_db.build_database(root_dir)
+            response = f"File system mounted successfully for agent: {agent_name}"
+            return response
+        
         except Exception as e:
-            print(f"Error mounting file system: {str(e)}")
-            return False
+            response = f"Error mounting file system: {str(e)}"
+            return response
             
     def sto_write(self, file_name: str, content: str, collection_name: str = None) -> bool:
         try:

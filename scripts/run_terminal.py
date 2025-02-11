@@ -29,10 +29,10 @@ from cerebrum.config.config_manager import config
 
 from cerebrum.storage.communication import StorageQuery
 
-class QueryRequest(BaseModel):
-    agent_name: str
-    query_type: Literal["llm", "tool", "storage", "memory"]
-    query_data: LLMQuery | StorageQuery
+# class QueryRequest(BaseModel):
+#     agent_name: str
+#     query_type: Literal["llm", "tool", "storage", "memory"]
+#     query_data: LLMQuery | StorageQuery
 
 # class StorageClient:
 #     def __init__(self, base_url: str = "http://localhost:8000"):
@@ -89,21 +89,33 @@ class AIOSTerminal:
         
         # self.storage_client = StorageClient()
 
-    def get_prompt(self):
+    def get_prompt(self, extra_str = None):
         username = os.getenv('USER', 'user')
         path = os.path.basename(self.current_dir)
-        return [
-            ('class:prompt', f'🚀 {username}'),
-            ('class:arrow', ' ⟹  '),
-            ('class:path', f'{path}'),
-            ('class:arrow', ' ≫ '),
-        ]
+        if extra_str:
+            return [
+                ('class:prompt', f'🚀 {username}'),
+                ('class:arrow', ' ⟹  '),
+                ('class:path', f'{path}'),
+                ('class:arrow', ' ≫ '),
+                ('class:prompt', extra_str)
+            ]
+        else:
+            return [
+                ('class:prompt', f'🚀 {username}'),
+                ('class:arrow', ' ⟹  '),
+                ('class:path', f'{path}'),
+                ('class:arrow', ' ≫ ')
+            ]
         
-    def _post_mount(self):
+    def _post_mount(self, root_dir):
         query_data = StorageQuery(
-            messages=[],
+            messages=[
+                {"name": "mount", "parameters": {"root": root_dir}}
+            ],
             operation_type="mount"
         )
+        
         return self.storage_client._post(
             "/query",
             {
@@ -126,21 +138,26 @@ class AIOSTerminal:
         welcome_msg = Text("Welcome to AIOS Terminal! Type 'help' for available commands.", style="bold cyan")
         self.console.print(Panel(welcome_msg, border_style="green"))
         
-        self.storage_client = setup_client()
-        # while True:
-        #     self.console.print("[yellow]Do you want to mount a specific directory as the root directory for launching AIOS Semantic File System? (y/n)[/yellow]")
-        #     mount_choice = input().lower()
-        #     if mount_choice == 'y':
-        #         self._post_mount()
-        #         break
-        #     elif mount_choice == 'n':
-        #         # self.console.print("[red]Storage not mounted. Some features may be unavailable.[/red]")
-        #         break
-        #     else:
-        #         self.console.print("[red]Invalid input. Please enter 'y' or 'n'.[/red]")
+        root_dir = self.current_dir + "/root"
         
-        mounted_message = Text(f"The semantic file system is mounted at {self.current_dir}/root", style="bold cyan")
+        while True:
+            mount_choice = self.session.prompt(self.get_prompt(extra_str=f"Do you want to mount AIOS Semantic File System to a specific directory you want? By default, it will be mounted at {root_dir}. [y/n] "))
+            if mount_choice == 'y':
+                root_dir = self.session.prompt(self.get_prompt(extra_str=f"Enter the absolute path of the directory to mount: "))
+                break
+            elif mount_choice == 'n':
+                # self.console.print("[red]Storage not mounted. Some features may be unavailable.[/red]")
+                break
+            else:
+                self.console.print("[red]Invalid input. Please enter 'y' or 'n'.[/red]")
+                
+        self.storage_client = setup_client(root_dir=root_dir)
         
+        # breakpoint()
+        self._post_mount(root_dir)
+        
+        mounted_message = Text(f"The semantic file system is mounted at {root_dir}", style="bold cyan")
+
         self.console.print(mounted_message)
                 
         while True:

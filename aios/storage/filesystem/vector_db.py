@@ -17,16 +17,24 @@ class ChromaDB:
         collection = self.client.get_or_create_collection(name=collection_name)
         return collection
 
-    def build_database(self):
-        for subdir, _, files in os.walk(self.mount_dir):
+    def build_database(self, root_dir):
+        # Check if database already exists
+        breakpoint()
+        for subdir, _, files in os.walk(root_dir):
+            # for f in files:
+            #     file_name = os.path.splitext(f)[0]
+            #     if file_name.endswith(".bin"):
+            #         print(f"Database already exists with bin files at {db_path}")
+            #         return
+                    
             for f in files:
                 file_path = os.path.join(subdir, f)
                 file_name = os.path.splitext(f)[0]
-                if file_name == ".DS_Store":
+                if file_name.endswith(".DS_Store"):
                     continue
                 self.update_document(file_path, file_name)
 
-    def update_file(self, file_path: str, content: str, collection_name: str = None):
+    def update_document(self, file_path: str, content: str, collection_name: str = None):
         try:
             if collection_name is None:
                 collection_name = "terminal"
