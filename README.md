@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- **[2025-02-07]** 🔥 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has also been integrated into AIOS as the **Terminal UI**. 
+- **[2025-02-07]** 🔥 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has been integrated into AIOS as the **Terminal UI**. 
 - **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek apis (deepseek-chat and deepseek-reasoner) are available. 
 - **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
