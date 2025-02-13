@@ -282,7 +282,7 @@ If you successfully start the LSFS terminal, it will be shown as below:
 <img src="docs/assets/terminal-figs/example.png" width=800>
 </p>
 
-Detailed instructions of how to use the LSFS terminalcan be found at [here](https://github.com/agiresearch/AIOS-LSFS)
+Detailed instructions of how to use the AIOS terminal can be found at [here](https://github.com/agiresearch/AIOS-LSFS)
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
