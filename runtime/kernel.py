@@ -1,11 +1,13 @@
 from typing_extensions import Literal
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel, Field, root_validator
+from typing import Optional, Dict, Any, Union
 from dotenv import load_dotenv
 import traceback
 import json
 import logging
+import yaml
+import os
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -14,8 +16,15 @@ from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
 from aios.hooks.syscall import useSysCall
+from aios.config.config_manager import config
 
 from cerebrum.llm.communication import LLMQuery
+
+from cerebrum.memory.communication import MemoryQuery
+
+from cerebrum.tool.communication import ToolQuery
+
+from cerebrum.storage.communication import StorageQuery
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -41,8 +50,7 @@ active_components = {
     "llm": None,
     "storage": None,
     "memory": None,
-    "tool": None,
-    "scheduler": None,
+    "tool": None
 }
 
 send_request, SysCallWrapper = useSysCall()
@@ -102,10 +110,116 @@ class AgentSubmit(BaseModel):
     agent_config: Dict[str, Any]
 
 
+# class QueryRequest(BaseModel):
+#     agent_name: str
+#     query_type: Literal["llm", "tool", "storage", "memory"]
+#     query_data: ToolQuery | StorageQuery | MemoryQuery | LLMQuery 
+
 class QueryRequest(BaseModel):
     agent_name: str
     query_type: Literal["llm", "tool", "storage", "memory"]
-    query_data: LLMQuery
+    query_data: LLMQuery | ToolQuery | StorageQuery | MemoryQuery
+
+    @root_validator(pre=True)
+    def convert_query_data(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if 'query_type' not in values or 'query_data' not in values:
+            return values
+            
+        query_type = values['query_type']
+        query_data = values['query_data']
+        
+        type_mapping = {
+            'llm': LLMQuery,
+            'tool': ToolQuery,
+            'storage': StorageQuery,
+            'memory': MemoryQuery
+        }
+        
+        if isinstance(query_data, type_mapping[query_type]):
+            return values
+            
+        if isinstance(query_data, dict):
+            values['query_data'] = type_mapping[query_type](**query_data)
+            
+        return values
+
+
+def initialize_components():
+    """Initialize all kernel components"""
+    try:
+        # 1. Initialize LLM component
+        llm_config = config.get_llm_config()
+        print(f"Got LLM config: {llm_config}")
+        
+        try:
+            llm = useCore(
+                llm_name=llm_config.get("default_model", "gpt-4"),
+                llm_backend=llm_config.get("backend", "openai"),
+                max_gpu_memory=llm_config.get("max_gpu_memory"),
+                eval_device=llm_config.get("eval_device", "cuda:0"),
+                max_new_tokens=llm_config.get("max_new_tokens", 256),
+                log_mode=llm_config.get("log_mode", "console"),
+            )
+            
+            if llm:
+                active_components["llm"] = llm
+                print("✅ LLM core initialized")
+            else:
+                print("⚠️ Failed to initialize LLM core")
+                
+        except Exception as llm_error:
+            print(f"⚠️ Error initializing LLM core: {str(llm_error)}")
+            # Don't let LLM initialization failure cause the entire initialization to fail
+            active_components["llm"] = None
+            
+        return True
+            
+    except Exception as e:
+        print(f"⚠️ Error initializing components: {str(e)}")
+        return False
+
+
+def restart_kernel():
+    """Restart kernel service and reload configuration"""
+    try:
+        # Clean up existing components
+        for component in ["llm", "memory", "storage", "tool"]:
+            if active_components[component]:
+                if hasattr(active_components[component], "cleanup"):
+                    active_components[component].cleanup()
+                active_components[component] = None
+        
+        # Initialize new components
+        if not initialize_components():
+            raise Exception("Failed to initialize components")
+            
+        print("✅ All components reinitialized successfully")
+        
+    except Exception as e:
+        print(f"❌ Error restarting kernel: {str(e)}")
+        print(f"Stack trace: {traceback.format_exc()}")
+        raise
+
+
+@app.post("/core/refresh")
+async def refresh_configuration():
+    """Refresh all component configurations"""
+    try:
+        print("Received refresh request")
+        config.refresh()
+        print("Configuration reloaded")
+        restart_kernel()
+        print("Kernel restarted")
+        return {
+            "status": "success", 
+            "message": "Configuration refreshed and components reinitialized"
+        }
+    except Exception as e:
+        print(f"Error during refresh: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to refresh configuration: {str(e)}"
+        )
 
 
 @app.post("/core/llm/setup")
@@ -120,13 +234,11 @@ async def setup_llm(config: LLMConfig):
             max_new_tokens=config.max_new_tokens,
             log_mode=config.log_mode,
         )
-        # print(config.llm_name)
         active_components["llm"] = llm
         return {"status": "success", "message": "LLM core initialized"}
     except Exception as e:
-        print(
-            f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
-        )
+        error_msg = f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
+        print(error_msg)
         raise HTTPException(
             status_code=500, detail=f"Failed to initialize LLM core: {str(e)}"
         )
@@ -220,9 +332,8 @@ async def setup_agent_factory(config: SchedulerConfig):
             "await": await_agent_execution,
         }
 
-        print(active_components["llm"].model)
-
         return {"status": "success", "message": "Agent factory initialized"}
+    
     except Exception as e:
         print(f"Agent factory setup failed: {str(e)}")
         raise HTTPException(
@@ -320,54 +431,44 @@ async def get_agent_status(execution_id: int):
     """Get the status of a submitted agent."""
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
-
     try:
-        logger.debug(f"\n===== Checking Agent Status =====")
-        logger.debug(f"Execution ID: {execution_id}")
-        
+        print(f"\n[DEBUG] ===== Checking Agent Status =====")
+        print(f"[DEBUG] Execution ID: {execution_id}")
+
         await_execution = active_components["factory"]["await"]
-        
         try:
             result = await_execution(int(execution_id))
-            logger.debug(f"Execution result: {result}")
-            
-            if result is None:
-                return {
-                    "status": "running",
-                    "message": "Execution in progress",
-                    "execution_id": execution_id,
-                    "debug_info": "Agent execution still in progress"
-                }
+        except FileNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
 
+        if result is None:
             return {
-                "status": "completed",
-                "result": result,
+                "status": "running",
+                "message": "Execution in progress",
                 "execution_id": execution_id
             }
-        except Exception as inner_e:
-            logger.error(f"Error in execution: {str(inner_e)}")
-            logger.error(f"Inner stack trace:\n{traceback.format_exc()}")
-            raise
-            
+        return {
+            "status": "completed",
+            "result": result,
+            "execution_id": execution_id
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e)
         stack_trace = traceback.format_exc()
-        logger.error(f"Failed to get agent status: {error_msg}")
-        logger.error(f"Stack Trace:\n{stack_trace}")
-        
-        # Return more detailed error information
-        return {
-            "status": "error",
-            "message": error_msg,
-            "error": {
-                "type": type(e).__name__,
-                "message": error_msg,
-                "traceback": stack_trace,
-                "debug_logs": getattr(e, 'debug_logs', None)
-            },
-            "execution_id": execution_id
-        }
+        print(f"[ERROR] Failed to get agent status: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
 
+        # Convert unhandled errors to HTTP 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Failed to get agent status",
+                "message": error_msg,
+                "traceback": stack_trace
+            }
+        )
 
 @app.post("/core/cleanup")
 async def cleanup_components():
@@ -403,5 +504,46 @@ async def handle_query(request: QueryRequest):
                 message_return_type=request.query_data.message_return_type,
             )
             return send_request(request.agent_name, query)
+        elif request.query_type == "storage":
+            query = StorageQuery(
+                messages=request.query_data.messages,
+                operation_type=request.query_data.operation_type
+            )
+            # return send_request(request.agent_name, query)
+            # return {"status": "success", "message": "Storage query received"}
+            return send_request(request.agent_name, query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/core/config/update")
+async def update_config(request: Request):
+    """Update configuration and API keys"""
+    try:
+        data = await request.json()
+        logger.info(f"Received config update request: {data}")
+        
+        provider = data.get("provider")
+        api_key = data.get("api_key")
+        
+        if not all([provider, api_key]):
+            raise ValueError("Missing required fields: provider, api_key")
+        
+        # Update configuration
+        config.config["api_keys"][provider] = api_key
+        config.save_config()
+        
+        # Try to reinitialize LLM component
+        try:
+            await refresh_configuration()
+            return {"status": "success", "message": "Configuration updated and services restarted"}
+        except Exception as e:
+            # If restart fails, roll back the configuration
+            config.refresh()  # Reload the original configuration
+            raise Exception(f"Failed to restart services with new configuration: {str(e)}")
+        
+    except Exception as e:
+        logger.error(f"Config update failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update configuration: {str(e)}"
+        )

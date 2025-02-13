@@ -286,6 +286,18 @@ case "$1" in
     "update")
         update
         ;;
+    "refresh")
+        if [ -f "$PID_FILE" ]; then
+            echo "Refreshing AIOS configuration..."
+            # Get server configuration from the configuration file
+            HOST=$(python -c "from aios.config.config_manager import config; print(config.config.get('server', {}).get('host', 'localhost'))")
+            PORT=$(python -c "from aios.config.config_manager import config; print(config.config.get('server', {}).get('port', 8000))")
+            curl -X POST "http://${HOST}:${PORT}/core/refresh"
+        else
+            echo "Server is not running. Please start the server first."
+            echo "Run: aios start"
+        fi
+        ;;
     "env")
         case "$2" in
             "add")
@@ -349,6 +361,10 @@ Commands:
                 - Updates dependencies
                 - Restarts the server automatically
                 - Your environment variables and configurations are preserved
+
+  refresh       Refresh AIOS configuration
+                - Reloads configuration without restart
+                - Server must be running
 
   env           Manage environment variables
                 Subcommands:
