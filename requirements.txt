@@ -12,3 +12,7 @@ llama_index_core==0.10.19
 numpy==1.24.3
 soundfile
 git+https://github.com/agiresearch/Cerebrum.git
+prompt_toolkit
+rich
+watchdog>=2.1.9
+redis>=4.5.1

@@ -29,6 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
+- **[2025-02-07]** 🔥 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has also been integrated into AIOS as the **Terminal UI**. 
 - **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek apis (deepseek-chat and deepseek-reasoner) are available. 
 - **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
 - **[2024-09-01]** 🔥 AIOS supports multiple agent creation frameworks (e.g., ReAct, Reflexion, OpenAGI, AutoGen, Open Interpreter, MetaGPT). Agents created by these frameworks can onboard AIOS. Onboarding guidelines can be found at the [Doc](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents).
@@ -265,7 +266,23 @@ python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
 
 And you can run it even after the shell closes by typing `nohup` before the entire command.
 
-Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
+Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. 
+
+To interact with the AIOS terminal (LLM-based semantic file system), you can run the following command to start the LSFS terminal.
+
+```
+python scripts/run_terminal.py
+```
+
+Then you can start interacting with the LSFS terminal by typing natural language commands. 
+
+If you successfully start the LSFS terminal, it will be shown as below: 
+
+<p align="center">
+<img src="docs/assets/terminal-figs/example.png" width=800>
+</p>
+
+Detailed instructions of how to use the LSFS terminalcan be found at [here](https://github.com/agiresearch/AIOS-LSFS)
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
@@ -307,11 +324,21 @@ Then you can start the client provided by the AIOS SDK either in the terminal or
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
 | HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
 
-## 🖋️ References
+
+
+## Reference
 ```
+@inproceedings{
+  shi2025from,
+  title={From Commands to Prompts: {LLM}-based Semantic File System},
+  author={Zeru Shi and Kai Mei and Mingyu Jin and Yongye Su and Chaoji Zuo and Wenyue Hua and Wujiang Xu and Yujie Ren and Zirui Liu and Mengnan Du and Dong Deng and Yongfeng Zhang},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+  url={https://openreview.net/forum?id=2G021ZqUEZ}
+}
 @article{mei2024aios,
   title={AIOS: LLM Agent Operating System},
-  author={Mei, Kai and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
+  author={Mei, Kai and Zhu, Xi and Xu, Wujiang and Hua, Wenyue and Jin, Mingyu andLi, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
   journal={arXiv:2403.16971},
   year={2024}
 }
