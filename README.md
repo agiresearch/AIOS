@@ -328,9 +328,8 @@ Detailed instructions of how to use the LSFS terminalcan be found at [here](http
 
 ## Reference
 ```
-@inproceedings{
-  shi2025from,
-  title={From Commands to Prompts: {LLM}-based Semantic File System},
+@inproceedings{shi2025from,
+  title={From Commands to Prompts: {LLM}-based Semantic File System for AIOS},
   author={Zeru Shi and Kai Mei and Mingyu Jin and Yongye Su and Chaoji Zuo and Wenyue Hua and Wujiang Xu and Yujie Ren and Zirui Liu and Mengnan Du and Dong Deng and Yongfeng Zhang},
   booktitle={The Thirteenth International Conference on Learning Representations},
   year={2025},
@@ -338,7 +337,7 @@ Detailed instructions of how to use the LSFS terminalcan be found at [here](http
 }
 @article{mei2024aios,
   title={AIOS: LLM Agent Operating System},
-  author={Mei, Kai and Zhu, Xi and Xu, Wujiang and Hua, Wenyue and Jin, Mingyu andLi, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
+  author={Mei, Kai and Zhu, Xi and Xu, Wujiang and Hua, Wenyue and Jin, Mingyu and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
   journal={arXiv:2403.16971},
   year={2024}
 }
