@@ -274,9 +274,9 @@ To interact with the AIOS terminal (LLM-based semantic file system), you can run
 python scripts/run_terminal.py
 ```
 
-Then you can start interacting with the LSFS terminal by typing natural language commands. 
+Then you can start interacting with the AIOS terminal by typing natural language commands. 
 
-If you successfully start the LSFS terminal, it will be shown as below: 
+If you successfully start the AIOS terminal, it will be shown as below: 
 
 <p align="center">
 <img src="docs/assets/terminal-figs/example.png" width=800>
