@@ -19,7 +19,7 @@ class ChromaDB:
 
     def build_database(self, root_dir):
         # Check if database already exists
-        breakpoint()
+        # breakpoint()
         for subdir, _, files in os.walk(root_dir):
             # for f in files:
             #     file_name = os.path.splitext(f)[0]
@@ -30,16 +30,20 @@ class ChromaDB:
             for f in files:
                 file_path = os.path.join(subdir, f)
                 file_name = os.path.splitext(f)[0]
-                if file_name.endswith(".DS_Store"):
+                if file_name.endswith(".DS_Store") or file_name.endswith(".bin") or file_name.endswith(".sqlite"):
                     continue
-                self.update_document(file_path, file_name)
+                response = self.update_document(file_path)
 
-    def update_document(self, file_path: str, content: str, collection_name: str = None):
+    def update_document(self, file_path: str, collection_name: str = None):
         try:
             if collection_name is None:
                 collection_name = "terminal"
             
             collection = self.add_or_get_collection(collection_name)
+            
+            documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
+            content = " ".join(doc.text for doc in documents)
+            
             file_name = os.path.basename(file_path)
             
             metadata = {
@@ -47,7 +51,6 @@ class ChromaDB:
                 "file_name": file_name,
                 "last_modified": datetime.now().isoformat()
             }
-            
             # Check if document exists
             existing = collection.get(ids=[file_name])
             

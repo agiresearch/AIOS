@@ -266,7 +266,23 @@ python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
 
 And you can run it even after the shell closes by typing `nohup` before the entire command.
 
-Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. The instructions can be found at [here](https://github.com/agiresearch/Cerebrum)
+Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. 
+
+To interact with the AIOS terminal (LLM-based semantic file system), you can run the following command to start the LSFS terminal.
+
+```
+python scripts/run_terminal.py
+```
+
+Then you can start interacting with the LSFS terminal by typing natural language commands. 
+
+If you successfully start the LSFS terminal, it will be shown as below: 
+
+<p align="center">
+<img src="docs/assets/terminal-figs/example.png" width=800>
+</p>
+
+Detailed instructions of how to use the LSFS terminalcan be found at [here](https://github.com/agiresearch/AIOS-LSFS)
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
@@ -308,13 +324,17 @@ Then you can start the client provided by the AIOS SDK either in the terminal or
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
 | HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
 
-## 🖋️ References
+
+
+## Reference
 ```
-@article{shi2024commands,
-  title={From Commands to Prompts: LLM-based Semantic File System for AIOS},
-  author={Shi, Zeru and Mei, Kai and Jin, Mingyu and Su, Yongye and Zuo, Chaoji and Hua, Wenyue and Xu, Wujiang and Ren, Yujie and Liu, Zirui and Du, Mengnan and others},
-  journal={arXiv preprint arXiv:2410.11843},
-  year={2024}
+@inproceedings{
+  shi2025from,
+  title={From Commands to Prompts: {LLM}-based Semantic File System},
+  author={Zeru Shi and Kai Mei and Mingyu Jin and Yongye Su and Chaoji Zuo and Wenyue Hua and Wujiang Xu and Yujie Ren and Zirui Liu and Mengnan Du and Dong Deng and Yongfeng Zhang},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+  url={https://openreview.net/forum?id=2G021ZqUEZ}
 }
 @article{mei2024aios,
   title={AIOS: LLM Agent Operating System},

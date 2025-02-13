@@ -47,7 +47,7 @@ class LSFS:
         self.observer = Observer()
         self.event_handler = FileChangeHandler(self)
         self.observer.schedule(self.event_handler, self.root_dir, recursive=True)
-        self.observer.start()
+        # self.observer.start() # temporarily disabled
         
     def __del__(self):
         if hasattr(self, 'observer'):
