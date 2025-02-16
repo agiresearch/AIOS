@@ -1,3 +1,7 @@
+# This file provides functionality to list both offline and online AIOS agents.
+# It can display locally installed agents as well as agents available for installation
+# from the AIOS foundation.
+
 import os
 import importlib
 from pathlib import Path
@@ -6,11 +10,27 @@ from cerebrum.manager.agent import AgentManager
 import platformdirs
 
 def parse_version_from_filename(filename: str) -> str:
-    """Extract version from a filename like 'agent_1.2.3.agent'"""
+    """Extract version from a filename like 'agent_1.2.3.agent'
+
+    Args:
+        filename (str): The filename to parse version from
+
+    Returns:
+        str: The extracted version string
+    """
     return filename.replace('agent_', '').replace('.agent', '')
 
 def get_offline_agents() -> Dict[str, List[str]]:
-    """Get all locally downloaded/installed agents with their versions"""
+    """Get all locally downloaded/installed agents with their versions
+
+    This function checks multiple locations for installed agents:
+    - pyopenagi package location
+    - Cerebrum built-in agents
+    - User's cache directory
+
+    Returns:
+        Dict[str, List[str]]: A dictionary mapping agent IDs to their available versions
+    """
     offline_agents = {}
 
     # Check in pyopenagi package location
@@ -72,7 +92,14 @@ def get_offline_agents() -> Dict[str, List[str]]:
     return offline_agents
 
 def get_online_agents() -> Dict[str, List[str]]:
-    """Get all available online agents from AIOS foundation with their versions"""
+    """Get all available online agents from AIOS foundation with their versions
+
+    This function connects to the AIOS foundation server to retrieve a list of
+    all available agents and their versions.
+
+    Returns:
+        Dict[str, List[str]]: A dictionary mapping agent IDs to their available versions
+    """
     online_agents = {}
     try:
         manager = AgentManager("https://app.aios.foundation/")
@@ -96,6 +123,13 @@ def get_online_agents() -> Dict[str, List[str]]:
     return online_agents
 
 def main():
+    """Main function to list all offline and online AIOS agents
+
+    This function retrieves and displays:
+    - Offline agents that are ready to use (locally installed)
+    - Online agents that are available to install
+    Each agent entry shows its latest version and any other available versions.
+    """
     # Get offline and online agents
     offline_agents = get_offline_agents()
     online_agents = get_online_agents()
