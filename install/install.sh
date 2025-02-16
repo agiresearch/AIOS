@@ -356,9 +356,10 @@ Usage: aios agents <subcommand>
 
 Subcommands:
   list    List all available agents
-          - Shows offline agents (ready to use)
-          - Shows online agents (available to install)
-          - Displays versions and sources
+          - Shows Cerebrum built-in agents
+          - Shows cached agents from previous installations
+          - Shows available agents to install from AIOS foundation
+          - Displays versions and sources for each agent
 
 Note: Requires active internet connection for online agent listing
 HELP
@@ -406,8 +407,9 @@ Commands:
   agents        Manage AIOS agents
                 Subcommands:
                   list    - List all available agents
-                          • Shows installed agents ready to use
-                          • Shows available agents to install
+                          • Shows Cerebrum built-in agents
+                          • Shows cached agents from previous installations
+                          • Shows available agents to install from AIOS foundation
                           • Displays versions and sources for each agent
 
   clean         Uninstall AIOS completely

@@ -24,7 +24,6 @@ def get_offline_agents() -> Dict[str, List[str]]:
     """Get all locally downloaded/installed agents with their versions
 
     This function checks multiple locations for installed agents:
-    - pyopenagi package location
     - Cerebrum built-in agents
     - User's cache directory
 
@@ -32,25 +31,6 @@ def get_offline_agents() -> Dict[str, List[str]]:
         Dict[str, List[str]]: A dictionary mapping agent IDs to their available versions
     """
     offline_agents = {}
-
-    # Check in pyopenagi package location
-    try:
-        pyopenagi_path = importlib.util.find_spec('pyopenagi').submodule_search_locations[0]
-        agents_dir = os.path.join(pyopenagi_path, 'agents')
-
-        # Walk through the agents directory
-        if os.path.exists(agents_dir):
-            for author in os.listdir(agents_dir):
-                author_path = os.path.join(agents_dir, author)
-                if os.path.isdir(author_path):
-                    for agent in os.listdir(author_path):
-                        agent_path = os.path.join(author_path, agent)
-                        if os.path.isdir(agent_path) and os.path.exists(os.path.join(agent_path, 'agent.py')):
-                            agent_id = f"{author}/{agent}"
-                            if agent_id not in offline_agents:
-                                offline_agents[agent_id] = ["local"]
-    except (ImportError, AttributeError):
-        print("Error getting offline agents: pyopenagi package not found")
 
     # Check in Cerebrum built-in agents
     try:

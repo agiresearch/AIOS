@@ -1,0 +1,24 @@
+# Global Configuration for AIOS
+
+# API Keys Configuration
+api_keys:
+  openai: ""  # OpenAI API key
+  gemini: ""  # Google Gemini API key
+  groq: ""    # Groq API key
+  anthropic: "" # Anthropic API key
+  huggingface:
+    auth_token: ""  # HuggingFace auth token
+    home: ""        # Optional: HuggingFace models path
+
+# LLM Configuration
+llm:
+  default_model: "gpt-4"
+  max_new_tokens: 256
+  backend: "openai"
+  max_gpu_memory: null
+  eval_device: "cuda:0"
+  log_mode: "console"
+
+server:
+  host: "localhost"
+  port: 8000
