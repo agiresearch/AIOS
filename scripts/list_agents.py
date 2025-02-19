@@ -33,23 +33,23 @@ def get_offline_agents() -> Dict[str, List[str]]:
     offline_agents = {}
 
     # Check in Cerebrum built-in agents
-    try:
-        cerebrum_path = importlib.util.find_spec('cerebrum').submodule_search_locations[0]
-        example_paths = [
-            os.path.join(cerebrum_path, "example", "agents"),
-            os.path.join(cerebrum_path, "cerebrum", "example", "agents")
-        ]
+    # try:
+    #     cerebrum_path = importlib.util.find_spec('cerebrum').submodule_search_locations[0]
+    #     example_paths = [
+    #         os.path.join(cerebrum_path, "example", "agents"),
+    #         os.path.join(cerebrum_path, "cerebrum", "example", "agents")
+    #     ]
 
-        for example_path in example_paths:
-            if os.path.exists(example_path):
-                for agent in os.listdir(example_path):
-                    agent_path = os.path.join(example_path, agent)
-                    if os.path.isdir(agent_path) and os.path.exists(os.path.join(agent_path, 'agent.py')):
-                        agent_id = f"example/{agent}"
-                        if agent_id not in offline_agents:
-                            offline_agents[agent_id] = ["built-in"]
-    except (ImportError, AttributeError):
-        print("Error getting offline agents: cerebrum package not found")
+    #     for example_path in example_paths:
+    #         if os.path.exists(example_path):
+    #             for agent in os.listdir(example_path):
+    #                 agent_path = os.path.join(example_path, agent)
+    #                 if os.path.isdir(agent_path) and os.path.exists(os.path.join(agent_path, 'agent.py')):
+    #                     agent_id = f"example/{agent}"
+    #                     if agent_id not in offline_agents:
+    #                         offline_agents[agent_id] = ["built-in"]
+    # except (ImportError, AttributeError):
+    #     print("Error getting offline agents: cerebrum package not found")
 
     # Check in cache directory
     try:
