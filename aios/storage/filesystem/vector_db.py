@@ -21,11 +21,11 @@ class ChromaDB:
         # Check if database already exists
         # breakpoint()
         for subdir, _, files in os.walk(root_dir):
-            # for f in files:
-            #     file_name = os.path.splitext(f)[0]
-            #     if file_name.endswith(".bin"):
-            #         print(f"Database already exists with bin files at {db_path}")
-            #         return
+            for f in files:
+                file_name = os.path.splitext(f)[0]
+                if file_name.endswith(".bin"):
+                    print(f"Database already mounted with bin files at {db_path}")
+                    return
                     
             for f in files:
                 file_path = os.path.join(subdir, f)
