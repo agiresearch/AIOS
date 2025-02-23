@@ -147,46 +147,52 @@ class LSFS:
 
     def address_request(self, agent_request):
         collection_name = agent_request.agent_name
-        file_operation = agent_request.query.messages[0]        
         
         # results = []
-        
-        operation_type = file_operation.get("name", "terminal")
-        params = file_operation.get("parameters", {})
-        
-        if operation_type == "mount":
-            result = self.sto_mount(agent_request)
-        
-        elif operation_type == "create_file":
-            result = self.sto_create_file(params["name"], collection_name)
+        try:
+            operation_type = agent_request.query.operation_type
+            
+            if operation_type == "mount":
+                result = self.sto_mount(
+                    collection_name=collection_name,
+                    root_dir=agent_request.query.params.get("root", self.root_dir)
+                )
+            
+            elif operation_type == "create_file":
+                result = self.sto_create_file(params["name"], collection_name)
 
-        elif operation_type == "create_dir":
-            result = self.sto_create_directory(params["name"], collection_name)
-            
-        elif operation_type == "write":
-            result = self.sto_write(params["name"], params["content"], collection_name)
-            
-        elif operation_type == "read":
-            result = self.sto_read(params["name"], collection_name)
-        
-        elif operation_type == "retrieve":
-            result = self.sto_retrieve(
-                collection_name,
-                params["query_text"],
-                params.get("k", "3"),
-                params.get("keywords", None)
-            )
-            
-        elif operation_type == "rollback":
-            result = self.sto_rollback(
-                params["name"],
-                params.get("n", "1"),
-                params.get("time", None)
-            )
-
-        elif operation_type == "link":
-            result = self.sto_link(params["name"], collection_name)
+            elif operation_type == "create_dir":
+                result = self.sto_create_directory(params["name"], collection_name)
                 
+            elif operation_type == "write":
+                result = self.sto_write(params["name"], params["content"], collection_name)
+                
+            elif operation_type == "read":
+                result = self.sto_read(params["name"], collection_name)
+            
+            elif operation_type == "retrieve":
+                result = self.sto_retrieve(
+                    collection_name=collection_name,
+                    query_text=agent_request.query.params.get("query_text", None),
+                    k=agent_request.query.params.get("k", "3"),
+                    keywords=agent_request.query.params.get("keywords", None)
+                )
+                
+            elif operation_type == "rollback":
+                result = self.sto_rollback(
+                    params["name"],
+                    params.get("n", "1"),
+                    params.get("time", None)
+                )
+
+            elif operation_type == "link":
+                result = self.sto_link(params["name"], collection_name)
+        
+            else:
+                result = f"Operation type: {operation_type} not supported"
+        
+        except Exception as e:
+            result = f"Error handling file operation: {str(e)}"
         # return results[0] if len(results) == 1 else results
         return result
 
@@ -219,14 +225,12 @@ class LSFS:
             print(f"Error creating directory: {str(e)}")
             return False
             
-    def sto_mount(self, agent_request) -> str:
+    def sto_mount(self, collection_name: str, root_dir: str) -> str:
         try:
-            agent_name = agent_request.agent_name
-            self.vector_db.add_or_get_collection(agent_name)
-            root_dir = agent_request.query.messages[0].get("parameters", {}).get("root", self.root_dir)
-            
+            collection = self.vector_db.add_or_get_collection(collection_name)
+            assert collection is not None, f"Collection {collection_name} not found"
             self.vector_db.build_database(root_dir)
-            response = f"File system mounted successfully for agent: {agent_name}"
+            response = f"File system mounted successfully for agent: {collection_name}"
             return response
         
         except Exception as e:
@@ -276,11 +280,12 @@ class LSFS:
         try:
             collection = self.vector_db.add_or_get_collection(collection_name)
             return self.vector_db.retrieve(collection, query_text, k, keywords)
+        
         except Exception as e:
             print(f"Error retrieving documents: {str(e)}")
             return []
             
-    def sto_rollback(self, file_name: str, n: str = "1", time: str = None) -> bool:
+    def sto_rollback(self, agent_request) -> bool:
         try:
             file_path = os.path.join(self.root_dir, file_name)
             

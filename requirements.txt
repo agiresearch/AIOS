@@ -16,3 +16,4 @@ prompt_toolkit
 rich
 watchdog>=2.1.9
 redis>=4.5.1
+hashlib

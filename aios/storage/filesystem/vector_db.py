@@ -2,6 +2,7 @@ import os
 import chromadb
 from datetime import datetime
 from llama_index.core import SimpleDirectoryReader
+import hashlib
 
 class ChromaDB:
     def __init__(self, mount_dir) -> None:
@@ -14,7 +15,11 @@ class ChromaDB:
         
     def add_or_get_collection(self, collection_name):
         # collection_name = os.path.join(os.path.basename(self.mount_dir), collection_name)
-        collection = self.client.get_or_create_collection(name=collection_name)
+        try:
+            collection = self.client.get_collection(name=collection_name)
+        except:
+            collection = self.client.create_collection(name=collection_name)
+        
         return collection
 
     def build_database(self, root_dir):
@@ -22,23 +27,27 @@ class ChromaDB:
         # breakpoint()
         for subdir, _, files in os.walk(root_dir):
             for f in files:
-                file_name = os.path.splitext(f)[0]
-                if file_name.endswith(".bin"):
-                    print(f"Database already mounted with bin files at {db_path}")
-                    return
-                    
+                if f.endswith(".bin"):
+                    result = f"Database already mounted with bin files at {db_path}"
+                    return result
+                
+        for subdir, _, files in os.walk(root_dir):
             for f in files:
-                file_path = os.path.join(subdir, f)
-                file_name = os.path.splitext(f)[0]
-                if file_name.endswith(".DS_Store") or file_name.endswith(".bin") or file_name.endswith(".sqlite"):
+                if f.endswith(".DS_Store") or f.endswith(".bin") or f.endswith("chroma.sqlite3"):
                     continue
-                response = self.update_document(file_path)
+                
+                file_path = os.path.join(subdir, f)
+                
+                response = self.update_document(
+                    file_path=file_path
+                )
+                
+                
+        result = f"Database built with {len(files)} files"
+        return result
 
-    def update_document(self, file_path: str, collection_name: str = None):
+    def update_document(self, file_path: str, collection_name: str = "terminal"):
         try:
-            if collection_name is None:
-                collection_name = "terminal"
-            
             collection = self.add_or_get_collection(collection_name)
             
             documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
@@ -46,24 +55,27 @@ class ChromaDB:
             
             file_name = os.path.basename(file_path)
             
+            # Generate hash code from file path
+            file_hash = hashlib.md5(file_path.encode()).hexdigest()
+            
             metadata = {
                 "file_path": file_path,
                 "file_name": file_name,
                 "last_modified": datetime.now().isoformat()
             }
             # Check if document exists
-            existing = collection.get(ids=[file_name])
+            existing = collection.get(ids=[file_hash])
             
             if existing["ids"]:
                 collection.update(
                     documents=[content],
-                    ids=[file_name],
+                    ids=[file_hash],
                     metadatas=[metadata]
                 )
             else:
                 collection.add(
                     documents=[content],
-                    ids=[file_name],
+                    ids=[file_hash],
                     metadatas=[metadata]
                 )
                 

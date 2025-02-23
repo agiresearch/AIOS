@@ -227,18 +227,20 @@ def useSysCall():
                 # execute the file system operation
                 for file_operation in file_operations:
                     
-                    if not isinstance(file_operation, List):
-                        file_operation = [file_operation]
-                        
+                    # if not isinstance(file_operation, List):
+                    #     file_operation = [file_operation]
+                    
                     storage_query = StorageQuery(
-                        messages=file_operation
+                        operation_type = file_operation.get("name", None),
+                        params = file_operation.get("parameters", None)
                     )
                     
                     storage_response = storage_syscall_exec(agent_name, storage_query)
+                    
                     summarization_query = LLMQuery(
                         messages=[
-                            {"role": "system", "content": "You are a summarizer for summarizing the results. Try to maintain the key information including file name, file path, etc"},
-                            {"role": "user", "content": f"Describe what you have done about the file operations of {storage_response} with a friendly tone"}
+                            # {"role": "system", "content": "You are a summarizer for summarizing the results. Try to maintain the key information including file name, file path, etc"},
+                            {"role": "user", "content": f"Summarize {storage_response} with a friendly tone. Try to maintain the key information including file name, file path, etc"}
                         ],
                         action_type="chat"
                     )
