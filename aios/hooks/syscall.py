@@ -224,26 +224,33 @@ def useSysCall():
                 file_operations = parser_response.tool_calls
                 file_operation_messages = []
                 
+                
                 # execute the file system operation
                 for file_operation in file_operations:
                     
                     # if not isinstance(file_operation, List):
                     #     file_operation = [file_operation]
                     
+                    breakpoint()
+                    
                     storage_query = StorageQuery(
                         operation_type = file_operation.get("name", None),
                         params = file_operation.get("parameters", None)
                     )
+                    
+                    breakpoint()
                     
                     storage_response = storage_syscall_exec(agent_name, storage_query)
                     
                     summarization_query = LLMQuery(
                         messages=[
                             # {"role": "system", "content": "You are a summarizer for summarizing the results. Try to maintain the key information including file name, file path, etc"},
-                            {"role": "user", "content": f"Summarize {storage_response} with a friendly tone. Try to maintain the key information including file name, file path, etc"}
+                            {"role": "user", "content": f"Tell me what you have done from {storage_response} with a friendly tone. Try to be concise and maintain the key information including file name, file path, etc"}
                         ],
                         action_type="chat"
                     )
+                    
+                    breakpoint()
                     
                     summarization_response = llm_syscall_exec(agent_name, summarization_query)["response"].response_message
                     file_operation_messages.append(summarization_response)
@@ -251,7 +258,7 @@ def useSysCall():
                 # summarize the results of the file system operation
                 final_query = LLMQuery(
                     messages=[
-                        {"role": "user", "content": f"Summarize what you have done based on your file operations: {json.dumps(file_operation_messages)} with a friendly tone"}
+                        {"role": "user", "content": f"Tell me what you have done from {json.dumps(file_operation_messages)} with a friendly tone. Try to be concise and maintain the key information including file name, file path, etc"}
                     ],
                     action_type="chat"
                 )

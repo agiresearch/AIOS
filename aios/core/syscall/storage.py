@@ -12,12 +12,12 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     }
                 },
-                "required": ["name"],
+                "required": ["file_path"],
             },
         },
     },
@@ -29,12 +29,12 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "dir_path": {
                         "type": "string",
-                        "description": "name of the directory",
+                        "description": "path of the directory",
                     }
                 },
-                "required": ["name"],
+                "required": ["dir_path"],
             },
         },
     },
@@ -46,9 +46,9 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     },
                     "k": {
                         "type": "string",
@@ -76,9 +76,9 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     },
                     "n": {
                         "type": "string",
@@ -90,33 +90,7 @@ storage_syscalls = [
                         "description": "the specific time of a file version",
                     },
                 },
-                "required": ["name"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "rollback",
-            "description": "rollback a file to a specific version",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "name of the file",
-                    },
-                    "n": {
-                        "type": "string",
-                        "default": "1",
-                        "description": "the number of versions to rollback",
-                    },
-                    "time": {
-                        "type": "string",
-                        "description": "the specific time of a file version",
-                    },
-                },
-                "required": ["name"],
+                "required": ["file_path"],
             },
         },
     },

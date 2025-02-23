@@ -43,11 +43,19 @@ class LSFS:
             decode_responses=True
         )
         
+        # # Test Redis connection
+        try:
+            self.redis_client.ping()
+            print("Successfully connected to Redis")
+        except redis.ConnectionError as e:
+            print(f"Failed to connect to Redis: {e}")
+            raise
+        
         # Initialize file system observer
         self.observer = Observer()
         self.event_handler = FileChangeHandler(self)
         self.observer.schedule(self.event_handler, self.root_dir, recursive=True)
-        # self.observer.start() # temporarily disabled
+        self.observer.start() # temporarily disabled
         
     def __del__(self):
         if hasattr(self, 'observer'):
@@ -67,9 +75,13 @@ class LSFS:
                 with open(file_path, 'r') as f:
                     content = f.read()
                 
+                breakpoint()
+                
                 # Update vector DB
                 if self.use_vector_db:
-                    self.vector_db.update_document(relative_path, content)
+                    self.vector_db.update_document(relative_path)
+                    
+                breakpoint()
                 
                 # Update Redis cache with version history
                 file_hash = self.get_file_hash(file_path)
@@ -119,6 +131,7 @@ class LSFS:
         
     def restore_version(self, file_path: str, version_index: int) -> bool:
         try:
+            breakpoint()
             relative_path = os.path.relpath(file_path, self.root_dir)
             versions_key = f"file_versions:{relative_path}"
             
@@ -171,18 +184,20 @@ class LSFS:
                 result = self.sto_read(params["name"], collection_name)
             
             elif operation_type == "retrieve":
+                params = agent_request.query.params
                 result = self.sto_retrieve(
                     collection_name=collection_name,
-                    query_text=agent_request.query.params.get("query_text", None),
-                    k=agent_request.query.params.get("k", "3"),
-                    keywords=agent_request.query.params.get("keywords", None)
+                    query_text=params.get("query_text", None),
+                    k=params.get("k", "3"),
+                    keywords=params.get("keywords", None)
                 )
                 
             elif operation_type == "rollback":
+                params = agent_request.query.params
                 result = self.sto_rollback(
-                    params["name"],
-                    params.get("n", "1"),
-                    params.get("time", None)
+                    file_path=params["file_path"],
+                    n=int(params.get("n", "1")),
+                    time=params.get("time", None)
                 )
 
             elif operation_type == "link":
@@ -285,10 +300,8 @@ class LSFS:
             print(f"Error retrieving documents: {str(e)}")
             return []
             
-    def sto_rollback(self, agent_request) -> bool:
+    def sto_rollback(self, file_path, n=1, time=None) -> bool:
         try:
-            file_path = os.path.join(self.root_dir, file_name)
-            
             if time:
                 # Find version closest to specified time
                 versions = self.get_file_history(file_path)
