@@ -47,13 +47,16 @@ class LSFS:
             decode_responses=True
         )
         
+        
         # # Test Redis connection
         try:
             self.redis_client.ping()
             print("Successfully connected to Redis")
+            self.use_redis = True
+            
         except redis.ConnectionError as e:
             print(f"Failed to connect to Redis: {e}")
-            raise
+            self.use_redis = False
         
         # Initialize file system observer
         self.observer = Observer()
@@ -338,6 +341,9 @@ class LSFS:
             
     def sto_rollback(self, file_path, n=1, time=None) -> bool:
         try:
+            if not self.use_redis:
+                return "Redis is not enabled. Please make sure the redis server has been installed and running."
+            
             versions = self.get_file_history(file_path)
             
             if time:
@@ -387,6 +393,9 @@ class LSFS:
         """
         try:
             # First check if we already have a valid share link in Redis
+            if not self.use_redis:
+                return "Redis is not enabled. Please make sure the redis server has been installed and running."
+            
             file_hash = self.get_file_hash(file_path)
             share_key = f"share:link:{file_hash}"
             

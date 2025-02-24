@@ -235,11 +235,11 @@ def useSysCall():
                         params = file_operation.get("parameters", None)
                     )
                     
-                    breakpoint()
+                    # breakpoint()
                     
                     storage_response = storage_syscall_exec(agent_name, storage_query)
                     
-                    breakpoint()
+                    # breakpoint()
                     
                     summarization_query = LLMQuery(
                         messages=[
@@ -249,7 +249,7 @@ def useSysCall():
                         action_type="chat"
                     )
                     
-                    breakpoint()
+                    # breakpoint()
                     
                     summarization_response = llm_syscall_exec(agent_name, summarization_query)["response"].response_message
                     file_operation_messages.append(summarization_response)
