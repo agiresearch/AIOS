@@ -268,7 +268,9 @@ And you can run it even after the shell closes by typing `nohup` before the enti
 
 Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. 
 
-To interact with the AIOS terminal (LLM-based semantic file system), you can run the following command to start the LSFS terminal.
+#### Interact with AIOS terminal
+
+To interact with the AIOS terminal (LLM-based semantic file system), you can run the following command to start the AIOS terminal.
 
 ```
 python scripts/run_terminal.py
@@ -283,6 +285,9 @@ If you successfully start the AIOS terminal, it will be shown as below:
 </p>
 
 Detailed instructions of how to use the AIOS terminal can be found at [here](https://github.com/agiresearch/AIOS-LSFS)
+
+[!WARNING]
+> The rollback feature of the AIOS terminal requires the connection to the redis server. Make sure you have the redis server running if you would like to use the rollback feature.
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)
