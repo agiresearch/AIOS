@@ -38,20 +38,21 @@ class ChromaDB:
                 
                 file_path = os.path.join(subdir, f)
                 
+                documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
+                content = " ".join(doc.text for doc in documents)
+                
                 response = self.update_document(
-                    file_path=file_path
+                    file_path=file_path,
+                    file_content=content
                 )
                 
                 
         result = f"Database built with {len(files)} files"
         return result
 
-    def update_document(self, file_path: str, collection_name: str = "terminal"):
+    def update_document(self, file_path: str, file_content: str, collection_name: str = "terminal"):
         try:
             collection = self.add_or_get_collection(collection_name)
-            
-            documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
-            content = " ".join(doc.text for doc in documents)
             
             file_name = os.path.basename(file_path)
             
@@ -68,13 +69,13 @@ class ChromaDB:
             
             if existing["ids"]:
                 collection.update(
-                    documents=[content],
+                    documents=[file_content],
                     ids=[file_hash],
                     metadatas=[metadata]
                 )
             else:
                 collection.add(
-                    documents=[content],
+                    documents=[file_content],
                     ids=[file_hash],
                     metadatas=[metadata]
                 )

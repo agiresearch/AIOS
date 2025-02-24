@@ -229,10 +229,7 @@ def useSysCall():
                 for file_operation in file_operations:
                     
                     # if not isinstance(file_operation, List):
-                    #     file_operation = [file_operation]
-                    
-                    breakpoint()
-                    
+                    #     file_operation = [file_operation]                    
                     storage_query = StorageQuery(
                         operation_type = file_operation.get("name", None),
                         params = file_operation.get("parameters", None)
@@ -241,6 +238,8 @@ def useSysCall():
                     breakpoint()
                     
                     storage_response = storage_syscall_exec(agent_name, storage_query)
+                    
+                    breakpoint()
                     
                     summarization_query = LLMQuery(
                         messages=[

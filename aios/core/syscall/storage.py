@@ -41,6 +41,61 @@ storage_syscalls = [
     {
         "type": "function",
         "function": {
+            "name": "delete_file",
+            "description": "delete a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "path of the file",
+                    }
+                },
+                "required": ["file_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_dir",
+            "description": "delete a directory",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "dir_path": {
+                        "type": "string",
+                        "description": "path of the directory",
+                    }
+                },
+                "required": ["dir_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write",
+            "description": "write content into a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "path of the file",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "content to be written into the file",
+                    }
+                },
+                "required": ["file_path", "content"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "retrieve",
             "description": "retrieve files and summary the content",
             "parameters": {
@@ -97,17 +152,22 @@ storage_syscalls = [
     {
         "type": "function",
         "function": {
-            "name": "link",
-            "description": "generate a link for a file",
+            "name": "share",
+            "description": "generate a public shareable link for a file",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
+                    },
+                    "expires_in": {
+                        "type": "string",
+                        "default": "7 days",
+                        "description": "expiration time of the share link",
                     }
                 },
-                "required": [],
+                "required": ["file_path"],
             },
         },
     }

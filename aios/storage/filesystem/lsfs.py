@@ -6,9 +6,13 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import redis
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any
 import hashlib
+import threading
+from urllib.parse import urljoin
+import uuid
+import requests
 
 from .vector_db import ChromaDB
 
@@ -57,83 +61,105 @@ class LSFS:
         self.observer.schedule(self.event_handler, self.root_dir, recursive=True)
         self.observer.start() # temporarily disabled
         
+        # Add file locks dictionary
+        self.file_locks = {}
+        self.locks_lock = threading.Lock()  # Meta-lock for the locks dictionary
+        
     def __del__(self):
         if hasattr(self, 'observer'):
             self.observer.stop()
             self.observer.join()
             
     def get_file_hash(self, file_path: str) -> str:
-        with open(file_path, 'rb') as f:
-            return hashlib.sha256(f.read()).hexdigest()
+        return hashlib.sha256(file_path.encode()).hexdigest()
+            
+    def get_file_lock(self, file_path: str) -> threading.Lock:
+        with self.locks_lock:
+            if file_path not in self.file_locks:
+                self.file_locks[file_path] = threading.Lock()
+            return self.file_locks[file_path]
             
     def handle_file_change(self, file_path: str, change_type: str):
+        # """Handle file changes with proper lock management."""
+        lock = self.get_file_lock(file_path)
         try:
-            relative_path = os.path.relpath(file_path, self.root_dir)
-            
-            if change_type in ["modified", "created"]:
-                # Read file content
-                with open(file_path, 'r') as f:
-                    content = f.read()
-                
-                breakpoint()
-                
-                # Update vector DB
-                if self.use_vector_db:
-                    self.vector_db.update_document(relative_path)
+            if lock.acquire(timeout=5):  # Add timeout to prevent deadlocks
+                try:
+                    # relative_path = os.path.relpath(file_path, self.root_dir)
+                    file_hash = self.get_file_hash(file_path)
                     
-                breakpoint()
-                
-                # Update Redis cache with version history
-                file_hash = self.get_file_hash(file_path)
-                timestamp = datetime.now().isoformat()
-                
-                version_info = {
-                    'content': content,
-                    'timestamp': timestamp,
-                    'hash': file_hash,
-                    'change_type': change_type
-                }
-                
-                versions_key = f"file_versions:{relative_path}"
-                versions = self.redis_client.lrange(versions_key, 0, -1)
-                versions = [json.loads(v) for v in versions]
-                
-                # Add new version
-                self.redis_client.lpush(versions_key, json.dumps(version_info))
-                
-                # Trim to max versions
-                if len(versions) >= self.max_versions:
-                    self.redis_client.ltrim(versions_key, 0, self.max_versions - 1)
-                    
-            elif change_type == "deleted":
-                # Remove from vector DB
-                if self.use_vector_db:
-                    self.vector_db.delete_document(relative_path)
-                
-                # Add deletion record to Redis
-                versions_key = f"file_versions:{relative_path}"
-                deletion_info = {
-                    'timestamp': datetime.now().isoformat(),
-                    'change_type': 'deleted'
-                }
-                self.redis_client.lpush(versions_key, json.dumps(deletion_info))
-                
+                    if change_type in ["modified", "created"]:
+                        with open(file_path, 'r') as f:
+                            content = f.read()
+                        
+                        # Update vector DB
+                        if self.use_vector_db:
+                            self.vector_db.update_document(file_path, content)
+                            
+                        # Update Redis cache with version history
+                        timestamp = datetime.now().isoformat()
+                        
+                        version_info = {
+                            'content': content,
+                            'timestamp': timestamp,
+                            'hash': file_hash,
+                            'change_type': change_type
+                        }
+                        
+                        # versions_key = f"file_versions:{relative_path}"
+                        versions_key = file_hash
+                        versions = self.redis_client.lrange(versions_key, 0, -1)
+                        versions = [json.loads(v) for v in versions]
+                        
+                        # Add new version
+                        self.redis_client.lpush(versions_key, json.dumps(version_info))
+                        
+                        # Trim to max versions
+                        if len(versions) >= self.max_versions:
+                            self.redis_client.ltrim(versions_key, 0, self.max_versions - 1)
+                            
+                    elif change_type == "deleted":
+                        # Remove from vector DB
+                        if self.use_vector_db:
+                            self.vector_db.delete_document(file_path)
+                        
+                        # Add deletion record to Redis
+                        # versions_key = f"file_versions:{relative_path}"
+                        versions_key = file_hash
+                        deletion_info = {
+                            'timestamp': datetime.now().isoformat(),
+                            'change_type': 'deleted'
+                        }
+                        self.redis_client.lpush(versions_key, json.dumps(deletion_info))
+                        
+                finally:
+                    lock.release()  # Ensure lock is always released
+            else:
+                print(f"Timeout waiting for lock on {file_path}")
         except Exception as e:
             print(f"Error handling file change: {str(e)}")
             
     def get_file_history(self, file_path: str, limit: int = None) -> list:
-        relative_path = os.path.relpath(file_path, self.root_dir)
-        versions_key = f"file_versions:{relative_path}"
+        # relative_path = os.path.relpath(file_path, self.root_dir)
+        # versions_key = f"file_versions:{relative_path}"
+        
+        file_hash = self.get_file_hash(file_path)
+        versions_key = file_hash
         
         limit = limit or self.max_versions
         versions = self.redis_client.lrange(versions_key, 0, limit - 1)
         return [json.loads(v) for v in versions]
         
     def restore_version(self, file_path: str, version_index: int) -> bool:
+        # file_lock = self.get_file_lock(file_path)
+        
+        # with file_lock:
         try:
-            breakpoint()
-            relative_path = os.path.relpath(file_path, self.root_dir)
-            versions_key = f"file_versions:{relative_path}"
+            # relative_path = os.path.relpath(file_path, self.root_dir)
+            # versions_key = f"file_versions:{relative_path}"
+            
+            file_hash = self.get_file_hash(file_path)
+            versions_key = file_hash
             
             # Get specified version
             version_data = self.redis_client.lindex(versions_key, version_index)
@@ -143,14 +169,13 @@ class LSFS:
             version_info = json.loads(version_data)
             if 'content' not in version_info:
                 return False
-                
-            # Write content back to file
+            
             with open(file_path, 'w') as f:
                 f.write(version_info['content'])
                 
             # Update vector DB
-            if self.use_vector_db:
-                self.vector_db.update_document(relative_path, version_info['content'])
+            # if self.use_vector_db:
+            #     self.vector_db.update_document(file_path, version_info['content'])
                 
             return True
             
@@ -166,42 +191,63 @@ class LSFS:
             operation_type = agent_request.query.operation_type
             
             if operation_type == "mount":
+                root = agent_request.query.params.get("root", self.root_dir)
                 result = self.sto_mount(
                     collection_name=collection_name,
-                    root_dir=agent_request.query.params.get("root", self.root_dir)
+                    root_dir=root
                 )
             
             elif operation_type == "create_file":
-                result = self.sto_create_file(params["name"], collection_name)
+                file_path = agent_request.query.params.get("file_path", None)
+                result = self.sto_create_file(
+                    file_path, collection_name
+                )
 
             elif operation_type == "create_dir":
-                result = self.sto_create_directory(params["name"], collection_name)
+                dir_path = agent_request.query.params.get("dir_path", None)
+                result = self.sto_create_directory(
+                    dir_path=dir_path,
+                    collection_name=collection_name
+                )
                 
             elif operation_type == "write":
-                result = self.sto_write(params["name"], params["content"], collection_name)
-                
-            elif operation_type == "read":
-                result = self.sto_read(params["name"], collection_name)
-            
+                file_name = agent_request.query.params.get("file_name", None)
+                file_path = agent_request.query.params.get("file_path", None)
+                content = agent_request.query.params.get("content", None)
+                result = self.sto_write(
+                    file_name=file_name,
+                    file_path=file_path,
+                    content=content,
+                    collection_name=collection_name
+                )
+
             elif operation_type == "retrieve":
-                params = agent_request.query.params
+                query_text = agent_request.query.params.get("query_text", None)
+                k = agent_request.query.params.get("k", "3")
+                keywords = agent_request.query.params.get("keywords", None)
                 result = self.sto_retrieve(
                     collection_name=collection_name,
-                    query_text=params.get("query_text", None),
-                    k=params.get("k", "3"),
-                    keywords=params.get("keywords", None)
+                    query_text=query_text,
+                    k=k,
+                    keywords=keywords
                 )
                 
             elif operation_type == "rollback":
-                params = agent_request.query.params
+                file_path = agent_request.query.params.get("file_path", None)
+                n = agent_request.query.params.get("n", "1")
+                time = agent_request.query.params.get("time", None)
                 result = self.sto_rollback(
-                    file_path=params["file_path"],
-                    n=int(params.get("n", "1")),
-                    time=params.get("time", None)
+                    file_path=file_path,
+                    n=int(n),
+                    time=time
                 )
 
-            elif operation_type == "link":
-                result = self.sto_link(params["name"], collection_name)
+            elif operation_type == "share":
+                file_path = agent_request.query.params.get("file_path", None)
+                result = self.sto_share(
+                    file_path=file_path,
+                    collection_name=collection_name
+                )
         
             else:
                 result = f"Operation type: {operation_type} not supported"
@@ -211,34 +257,37 @@ class LSFS:
         # return results[0] if len(results) == 1 else results
         return result
 
-    def sto_create_file(self, file_name: str, collection_name: str = None) -> bool:
+    def sto_create_file(self, file_name: str, file_path: str, collection_name: str = None) -> bool:
         try:
-            file_path = os.path.join(self.root_dir, file_name)
+            if file_path is None:
+                file_path = os.path.join(self.root_dir, file_name)
+            
             if not os.path.exists(file_path):
                 with open(file_path, 'w') as f:
                     pass  # Create empty file
                 
                 if self.use_vector_db:
                     self.vector_db.update_document(file_path, "", collection_name)
-                return True
-            return False
+                return "File has been created successfully at: " + file_path
+            return "File already exists at: " + file_path
+        
         except Exception as e:
-            print(f"Error creating file: {str(e)}")
-            return False
+            return f"Error creating file: {str(e)}"
             
-    def sto_create_directory(self, dir_name: str, collection_name: str = None) -> bool:
+    def sto_create_directory(self, dir_name: str, dir_path: str, collection_name: str = None) -> bool:
         try:
-            dir_path = os.path.join(self.root_dir, dir_name)
+            if dir_path is None:
+                dir_path = os.path.join(self.root_dir, dir_name)
+            
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
                 # if self.use_vector_db:
                 #     self.vector_db.create_directory(dir_name, collection_name)
-                return True
-            return False
+                return "Directory has been created successfully at: " + dir_path
+            return "Directory already exists at: " + dir_path
         
         except Exception as e:
-            print(f"Error creating directory: {str(e)}")
-            return False
+            return f"Error creating directory: {str(e)}"
             
     def sto_mount(self, collection_name: str, root_dir: str) -> str:
         try:
@@ -252,44 +301,31 @@ class LSFS:
             response = f"Error mounting file system: {str(e)}"
             return response
             
-    def sto_write(self, file_name: str, content: str, collection_name: str = None) -> bool:
-        try:
+    def sto_write(self, file_name: str, file_path: str, content: str, collection_name: str = None) -> str:
+        """Write to file with proper lock management."""
+        if file_path is None:
             file_path = os.path.join(self.root_dir, file_name)
             
-            # Write to file
-            with open(file_path, 'w') as f:
-                f.write(content)
-                
-            # Update vector DB
-            if self.use_vector_db:
-                self.vector_db.update_document(file_path, content, collection_name)
-                
-            # File change handler will handle Redis caching
-            self.handle_file_change(file_path, "modified")
-            
-            return True
-        except Exception as e:
-            print(f"Error writing to file: {str(e)}")
-            return False
-            
-    def sto_read(self, file_name: str, collection_name: str = None) -> dict:
+        lock = self.get_file_lock(file_path)
         try:
-            file_path = os.path.join(self.root_dir, file_name)
-            
-            if not os.path.exists(file_path):
-                return {"error": "File not found"}
-                
-            with open(file_path, 'r') as f:
-                content = f.read()
-                
-            return {
-                "content": content,
-                "file_name": file_name,
-                "file_path": file_path
-            }
+            if lock.acquire(timeout=10):  # Add timeout to prevent deadlocks
+                try:
+                    with open(file_path, 'w') as f:
+                        f.write(content)
+                    
+                    if self.use_vector_db:
+                        self.vector_db.update_document(
+                            file_path=file_path,
+                            content=content
+                        )
+                    
+                    return f"Content has been written to file: {file_path}"
+                finally:
+                    lock.release()  # Ensure lock is always released
+            else:
+                return f"Timeout waiting for lock on {file_path}"
         except Exception as e:
-            print(f"Error reading file: {str(e)}")
-            return {"error": str(e)}
+            return f"Error writing to file: {str(e)}"
             
     def sto_retrieve(self, collection_name: str, query_text: str, k: str = "3", keywords: str = None) -> list:
         try:
@@ -302,9 +338,10 @@ class LSFS:
             
     def sto_rollback(self, file_path, n=1, time=None) -> bool:
         try:
+            versions = self.get_file_history(file_path)
+            
             if time:
                 # Find version closest to specified time
-                versions = self.get_file_history(file_path)
                 target_version = None
                 min_time_diff = float('inf')
                 
@@ -318,36 +355,105 @@ class LSFS:
                         target_version = i
                         
                 if target_version is not None:
-                    return self.restore_version(file_path, target_version)
+                    result = self.restore_version(file_path, target_version)
+                    if result:
+                        return f"Successfully rolled back the file: {file_path} to its previous {n} version"
+                    else:
+                        return f"Failed to roll back the file: {file_path} to its previous {n} version"
             else:
                 # Rollback n versions
-                return self.restore_version(file_path, int(n) - 1)
+                target_version = int(n)
                 
-            return False
+                result = self.restore_version(file_path, target_version)
+                if result:
+                    return f"Successfully rolled back the file: {file_path} to its previous {n} version"
+                else:
+                    return f"Failed to roll back the file: {file_path} to its previous {n} version"
+                
+            return result
+        
         except Exception as e:
-            print(f"Error rolling back file: {str(e)}")
-            return False
+            result = f"Error rolling back file: {str(e)}"
+            return result
             
-    def sto_link(self, file_name: str, collection_name: str = None) -> dict:
+    def generate_share_link(self, file_path: str) -> str:
+        """Generate a publicly accessible link for sharing a file.
+        
+        Args:
+            file_path: Path to the file to be shared
+            
+        Returns:
+            str: A public URL where the file can be accessed
+        """
         try:
-            file_path = os.path.join(self.root_dir, file_name)
+            # First check if we already have a valid share link in Redis
+            file_hash = self.get_file_hash(file_path)
+            share_key = f"share:link:{file_hash}"
             
-            if not os.path.exists(file_path):
-                return {"error": "File not found"}
+            existing_share = self.redis_client.hgetall(share_key)
+            if existing_share and datetime.fromisoformat(existing_share['expires_at']) > datetime.now():
+                return existing_share['share_link']
+
+            # If no valid existing share, create new one
+            with open(file_path, 'rb') as f:
+                # Option 1: Using transfer.sh
+                response = requests.put(
+                    f'https://transfer.sh/{file_hash}',
+                    data=f.read(),
+                    headers={'Max-Days': '7'}
+                )
+                share_link = response.text.strip()
                 
-            if self.use_vector_db:
-                link_info = self.vector_db.link_document(file_path, collection_name)
-                if link_info:
-                    return link_info
-                    
-            # Fallback to basic file info if vector DB link fails
-            return {
-                "file_name": file_name,
+                # Option 2: Using 0x0.st (alternative)
+                # response = requests.post(
+                #     'https://0x0.st',
+                #     files={'file': f}
+                # )
+                # share_link = response.text.strip()
+
+            # Store share info in Redis
+            share_info = {
                 "file_path": file_path,
-                "last_modified": datetime.fromtimestamp(
-                    os.path.getmtime(file_path)
-                ).isoformat()
+                "share_link": share_link,
+                "created_at": datetime.now().isoformat(),
+                "expires_at": (datetime.now() + timedelta(days=7)).isoformat(),
+                "file_hash": file_hash
             }
+            
+            self.redis_client.hmset(share_key, share_info)
+            self.redis_client.expire(share_key, 60 * 60 * 24 * 7)  # 7 days TTL
+
+            return share_link
+
         except Exception as e:
-            print(f"Error generating file link: {str(e)}")
-            return {"error": str(e)}
+            print(f"Error generating public share link: {str(e)}")
+            return None
+
+    def sto_share(self, file_path: str, collection_name: str = None) -> dict:
+        """Share file with proper lock management."""
+        lock = self.get_file_lock(file_path)
+        try:
+            if lock.acquire(timeout=10):  # Add timeout to prevent deadlocks
+                try:
+                    if not os.path.exists(file_path):
+                        return {"error": "File not found"}
+                        
+                    share_link = self.generate_share_link(file_path)
+                    if not share_link:
+                        return {"error": "Failed to generate share link"}
+
+                    return {
+                        "file_name": os.path.basename(file_path),
+                        "file_path": file_path,
+                        "share_link": share_link,
+                        "expires_in": "7 days",
+                        "last_modified": datetime.fromtimestamp(
+                            os.path.getmtime(file_path)
+                        ).isoformat()
+                    }
+                finally:
+                    lock.release()  # Ensure lock is always released
+            else:
+                return {"error": f"Timeout waiting for lock on {file_path}"}
+        except Exception as e:
+            return {"error": f"Error sharing file: {str(e)}"}
