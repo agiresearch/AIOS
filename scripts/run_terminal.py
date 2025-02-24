@@ -112,9 +112,7 @@ class AIOSTerminal:
         
     def _post_mount(self, root_dir):
         query_data = StorageQuery(
-            messages=[
-                {"name": "mount", "parameters": {"root": root_dir}}
-            ],
+            params = {"root": root_dir},
             operation_type="mount"
         )
         
@@ -137,7 +135,6 @@ class AIOSTerminal:
         return self.storage_client._query_llm(agent_name="terminal", query=query)
 
     def display_help(self):
-        """Display help information about available commands."""
         help_table = Table(show_header=True, header_style="bold magenta")
         help_table.add_column("Command", style="cyan")
         help_table.add_column("Description", style="green")

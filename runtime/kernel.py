@@ -506,7 +506,7 @@ async def handle_query(request: QueryRequest):
             return send_request(request.agent_name, query)
         elif request.query_type == "storage":
             query = StorageQuery(
-                messages=request.query_data.messages,
+                params=request.query_data.params,
                 operation_type=request.query_data.operation_type
             )
             # return send_request(request.agent_name, query)

@@ -12,12 +12,12 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     }
                 },
-                "required": ["name"],
+                "required": ["file_path"],
             },
         },
     },
@@ -29,12 +29,67 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "dir_path": {
                         "type": "string",
-                        "description": "name of the directory",
+                        "description": "path of the directory",
                     }
                 },
-                "required": ["name"],
+                "required": ["dir_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_file",
+            "description": "delete a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "path of the file",
+                    }
+                },
+                "required": ["file_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "delete_dir",
+            "description": "delete a directory",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "dir_path": {
+                        "type": "string",
+                        "description": "path of the directory",
+                    }
+                },
+                "required": ["dir_path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write",
+            "description": "write content into a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "path of the file",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "content to be written into the file",
+                    }
+                },
+                "required": ["file_path", "content"],
             },
         },
     },
@@ -46,9 +101,9 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     },
                     "k": {
                         "type": "string",
@@ -76,9 +131,9 @@ storage_syscalls = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     },
                     "n": {
                         "type": "string",
@@ -90,50 +145,29 @@ storage_syscalls = [
                         "description": "the specific time of a file version",
                     },
                 },
-                "required": ["name"],
+                "required": ["file_path"],
             },
         },
     },
     {
         "type": "function",
         "function": {
-            "name": "rollback",
-            "description": "rollback a file to a specific version",
+            "name": "share",
+            "description": "generate a public shareable link for a file",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "file_path": {
                         "type": "string",
-                        "description": "name of the file",
+                        "description": "path of the file",
                     },
-                    "n": {
+                    "expires_in": {
                         "type": "string",
-                        "default": "1",
-                        "description": "the number of versions to rollback",
-                    },
-                    "time": {
-                        "type": "string",
-                        "description": "the specific time of a file version",
-                    },
-                },
-                "required": ["name"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "link",
-            "description": "generate a link for a file",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "name of the file",
+                        "default": "7 days",
+                        "description": "expiration time of the share link",
                     }
                 },
-                "required": [],
+                "required": ["file_path"],
             },
         },
     }
