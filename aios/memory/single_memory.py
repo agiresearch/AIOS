@@ -13,7 +13,7 @@ import heapq
 # FIFO queue for whichever thread stops blocking first
 from queue import Queue, Empty
 
-from utils.compressor import (
+from aios.utils.compressor import (
     ZLIBCompressor
 )
 
@@ -22,16 +22,15 @@ from aios.memory.base import (
 )
 
 from threading import Thread
-
-from typing import List, Dict, Any, Optional
 import chromadb
+from sentence_transformers import SentenceTransformer
 from dataclasses import dataclass
 import uuid
 from datetime import datetime
+from typing import Optional, Dict, Any, List
 
 from aios.hooks.syscall import useSysCall
 from cerebrum.llm.communication import LLMQuery
-from sentence_transformers import SentenceTransformer
 
 
 class UniformedMemoryManager(BaseMemoryManager):
@@ -130,20 +129,22 @@ class VectorMemoryConfig:
 class VectorMemoryManager(BaseMemoryManager):
     def __init__(self, config: VectorMemoryConfig = None):
         self.config = config or VectorMemoryConfig()
-        # Initialize ChromaDB with built-in embeddings
+        # Initialize ChromaDB
         self.client = chromadb.PersistentClient(path=self.config.chroma_path)
-        self.collection = self.client.get_or_create_collection(
+        self.embedding_model = SentenceTransformer(self.config.embedding_model)
+        self.collection = self.client.create_collection(
             name=self.config.collection_name,
-            embedding_function=chromadb.embeddings.SentenceTransformerEmbeddingFunction(
-                model_name=self.config.embedding_model
-            )
+            metadata={"hnsw:space": "cosine"}  # Use cosine similarity
         )
 
     def mem_write(self, agent_id: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Add a new memory item with vector embedding"""
         memory_id = str(uuid.uuid4())
         
-        # Add to ChromaDB - it will handle embedding generation internally
+        # Generate embedding using SentenceTransformer
+        embedding = self.embedding_model.encode(content, convert_to_tensor=False).tolist()
+        
+        # Add to ChromaDB
         full_metadata = {
             "text": content,
             "agent_id": agent_id,
@@ -152,7 +153,8 @@ class VectorMemoryManager(BaseMemoryManager):
         }
         
         self.collection.add(
-            documents=[content],  # ChromaDB will generate embeddings
+            embeddings=[embedding],
+            documents=[content],
             ids=[memory_id],
             metadatas=[full_metadata]
         )
@@ -161,20 +163,24 @@ class VectorMemoryManager(BaseMemoryManager):
 
     def mem_read(self, agent_id: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """Search for relevant memories using semantic similarity"""
-        # Search in ChromaDB - it will handle query embedding internally
+        # Generate query embedding
+        query_embedding = self.embedding_model.encode(query, convert_to_tensor=False).tolist()
+
+        # Search in ChromaDB
         results = self.collection.query(
-            query_texts=[query],
+            query_embeddings=[query_embedding],
             n_results=limit
         )
         
         memories = []
-        for i in range(len(results['ids'][0])):
-            memories.append({
-                "id": results['ids'][0][i],
-                "content": results['metadatas'][0][i].get("text", ""),
-                "metadata": results['metadatas'][0][i],
-                "score": results['distances'][0][i] if 'distances' in results else None
-            })
+        if results["ids"] and len(results["ids"]) > 0:
+            for i in range(len(results["ids"][0])):
+                memories.append({
+                    "id": results["ids"][0][i],
+                    "content": results["documents"][0][i],
+                    "metadata": results["metadatas"][0][i],
+                    "score": results["distances"][0][i] if "distances" in results else None
+                })
         return memories
 
     def mem_clear(self, memory_id: str = None) -> bool:
@@ -183,11 +189,9 @@ class VectorMemoryManager(BaseMemoryManager):
             self.collection.delete(ids=[memory_id])
         else:
             self.client.delete_collection(self.config.collection_name)
-            self.collection = self.client.get_or_create_collection(
+            self.collection = self.client.create_collection(
                 name=self.config.collection_name,
-                embedding_function=chromadb.embeddings.SentenceTransformerEmbeddingFunction(
-                    model_name=self.config.embedding_model
-                )
+                metadata={"hnsw:space": "cosine"}
             )
         return True
 

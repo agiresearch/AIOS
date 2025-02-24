@@ -5,13 +5,24 @@
 
 # use C compatible data types for maximum memory efficiency
 import ctypes
+from typing import Dict, Any, Optional
 
 class MemoryRequest:
-    def __init__(self, agent_id: int, round_id: int, operation_type: str, content: str = None):
+    def __init__(self, agent_id: str, operation_type: str, content: str = None, metadata: Dict[str, Any] = None, round_id: Optional[int] = None):
+        """
+        Initialize a memory request
+        Args:
+            agent_id: Identifier for the agent making the request
+            operation_type: Type of operation ('write', 'read', 'clear')
+            content: Content to write or query string for read
+            metadata: Additional metadata for the memory operation
+            round_id: Optional round identifier for the request
+        """
         self.agent_id = agent_id
-        self.round_id = round_id
         self.content = content
         self.operation_type = operation_type
+        self.metadata = metadata or {}
+        self.round_id = round_id
 
 class Memory:
     def __init__(self, size=1024):
