@@ -1,5 +1,5 @@
 from aios.context.simple_context import SimpleContextManager
-from aios.llm_core.strategy import RouterStrategy, SimpleStrategy, EccosRStrategy
+from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
 from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend, OllamaBackend
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.communication import Response
@@ -47,9 +47,6 @@ class LLMAdapter:
         strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
         hostname: Optional[str | list[str]] = None,
         api_key: str | list[str] | None = None,
-        query_store = None,
-        performance_requirement: float = 0.7,
-        n_similar: int = 16
     ):
         """Initialize the LLM with the specified configuration.
         
@@ -160,16 +157,6 @@ class LLMAdapter:
         
         if strategy == RouterStrategy.SIMPLE:
             self.strategy = SimpleStrategy(self.llm_name)
-            
-        elif strategy == RouterStrategy.ECCOS_R:
-            if not query_store:
-                raise ValueError("query_store is required for ECCOS-R strategy")
-            self.strategy = EccosRStrategy(
-                model_configs=self.llm_name,
-                query_store=query_store,
-                performance_requirement=performance_requirement,
-                n_similar=n_similar
-            )
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
@@ -300,11 +287,7 @@ class LLMAdapter:
                 tools = self.pre_process_tools(tools)
                 messages = self.tool_calling_input_format(messages, tools)
 
-            # Get input token length for ECCOS-R
-            input_token_length = sum(len(m.get("content", "")) for m in messages)
-            
-            # Get model based on strategy
-            model = self.strategy(query=messages[-1]["content"], input_token_length=input_token_length)
+            model = self.strategy()
 
             if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
                 try:

@@ -53,7 +53,7 @@ active_components = {
     "tool": None
 }
 
-send_request, SysCallWrapper = useSysCall()
+execute_request, SysCallWrapper = useSysCall()
 
 # Configure the root logger
 logging.basicConfig(
@@ -98,22 +98,9 @@ class SchedulerConfig(BaseModel):
     max_workers: int = 64
     custom_syscalls: Optional[Dict[str, Any]] = None
 
-
-class SchedulerConfig(BaseModel):
-    log_mode: str = "INFO"
-    max_workers: int = 64
-    custom_syscalls: Optional[Dict[str, Any]] = None
-
-
 class AgentSubmit(BaseModel):
     agent_id: str
     agent_config: Dict[str, Any]
-
-
-# class QueryRequest(BaseModel):
-#     agent_name: str
-#     query_type: Literal["llm", "tool", "storage", "memory"]
-#     query_data: ToolQuery | StorageQuery | MemoryQuery | LLMQuery 
 
 class QueryRequest(BaseModel):
     agent_name: str
@@ -143,47 +130,174 @@ class QueryRequest(BaseModel):
             
         return values
 
-
-def initialize_components():
-    """Initialize all kernel components"""
+def initialize_llm_core(llms_config: dict) -> Any:
+    """Initialize LLM core with configuration."""
     try:
-        # 1. Initialize LLM component
-        llm_config = config.get_llm_config()
-        print(f"Got LLM config: {llm_config}")
+        models = llms_config.get("models", [])
+        if not models:
+            raise ValueError("No LLM models configured")
+            
+        log_mode = llms_config.get("log_mode", "console")
+        model = models[0]  # Currently using first model as default
         
-        try:
-            llm = useCore(
-                llm_name=llm_config.get("default_model", "gpt-4"),
-                llm_backend=llm_config.get("backend", "openai"),
-                max_gpu_memory=llm_config.get("max_gpu_memory"),
-                eval_device=llm_config.get("eval_device", "cuda:0"),
-                max_new_tokens=llm_config.get("max_new_tokens", 256),
-                log_mode=llm_config.get("log_mode", "console"),
-            )
-            
-            if llm:
-                active_components["llm"] = llm
-                print("✅ LLM core initialized")
-            else:
-                print("⚠️ Failed to initialize LLM core")
-                
-        except Exception as llm_error:
-            print(f"⚠️ Error initializing LLM core: {str(llm_error)}")
-            # Don't let LLM initialization failure cause the entire initialization to fail
-            active_components["llm"] = None
-            
-        return True
-            
+        llm = useCore(
+            llm_name=model.get("name"),
+            llm_backend=model.get("backend"),
+            max_gpu_memory=model.get("max_gpu_memory"),
+            eval_device=model.get("eval_device", "cuda:0"),
+            max_new_tokens=model.get("max_new_tokens", 256),
+            log_mode=log_mode,
+        )
+        
+        if llm:
+            print("✅ LLM core initialized")
+            return llm
+        raise ValueError("LLM core initialization returned None")
+        
     except Exception as e:
-        print(f"⚠️ Error initializing components: {str(e)}")
-        return False
+        print(f"⚠️ Error initializing LLM core: {str(e)}")
+        return None
 
+def initialize_storage_manager(storage_config: dict) -> Any:
+    """Initialize storage manager with configuration."""
+    try:
+        storage_manager = useStorageManager(
+            root_dir=storage_config.get("root_dir", "root"),
+            use_vector_db=storage_config.get("use_vector_db", True),
+            **(storage_config.get("vector_db_config", {}) or {}),
+        )
+        print("✅ Storage manager initialized")
+        return storage_manager
+    except Exception as e:
+        print(f"❌ Storage setup failed: {str(e)}")
+        raise Exception(f"Failed to initialize storage manager: {str(e)}")
+
+def initialize_memory_manager(memory_config: dict, storage_manager: Any) -> Any:
+    """Initialize memory manager with configuration."""
+    try:
+        memory_manager = useMemoryManager(
+            memory_limit=memory_config.get("memory_limit", 524288),
+            eviction_k=memory_config.get("eviction_k", 3),
+            storage_manager=storage_manager,
+        )
+        print("✅ Memory manager initialized")
+        return memory_manager
+    except Exception as e:
+        print(f"❌ Memory setup failed: {str(e)}")
+        raise Exception(f"Failed to initialize memory manager: {str(e)}")
+
+def initialize_tool_manager() -> Any:
+    """Initialize tool manager."""
+    try:
+        print("\n[DEBUG] ===== Setting up Tool Manager =====")
+        tool_manager = useToolManager()
+        print("✅ Tool manager initialized")
+        return tool_manager
+    except Exception as e:
+        error_msg = str(e)
+        stack_trace = traceback.format_exc()
+        print(f"[ERROR] Tool Manager Setup Failed: {error_msg}")
+        print(f"[ERROR] Stack Trace:\n{stack_trace}")
+        raise Exception({
+            "error": "Failed to initialize tool manager",
+            "message": error_msg,
+            "traceback": stack_trace
+        })
+
+def initialize_scheduler(components: dict, scheduler_config: dict) -> Any:
+    """Initialize scheduler with components and configuration."""
+    try:
+        scheduler = fifo_scheduler(
+            llm=components["llms"],   
+            memory_manager=components["memory"],
+            storage_manager=components["storage"],
+            tool_manager=components["tool"],
+            log_mode=scheduler_config.get("log_mode", "console"),
+            get_llm_syscall=None,
+            get_memory_syscall=None,
+            get_storage_syscall=None,
+            get_tool_syscall=None,
+        )
+        scheduler.start()
+        print("✅ Scheduler initialized and started")
+        return scheduler
+    except Exception as e:
+        print(f"❌ Scheduler setup failed: {str(e)}")
+        raise Exception(f"Failed to initialize scheduler: {str(e)}")
+
+def initialize_agent_factory(agent_factory_config: dict) -> dict:
+    """Initialize agent factory with configuration."""
+    try:
+        submit_agent, await_agent_execution = useFactory(
+            log_mode=agent_factory_config.get("log_mode", "console"),
+            max_workers=agent_factory_config.get("max_workers", 64)
+        )
+        print("✅ Agent factory initialized")
+        return {
+            "submit": submit_agent,
+            "await": await_agent_execution,
+        }
+    except Exception as e:
+        print(f"❌ Agent factory setup failed: {str(e)}")
+        raise Exception(f"Failed to initialize agent factory: {str(e)}")
+
+def initialize_components() -> dict:
+    """Initialize all components with proper error handling and dependencies."""
+    components = {
+        "llms": None,
+        "storage": None,
+        "memory": None,
+        "tool": None,
+        "scheduler": None,
+        "factory": None
+    }
+    
+    try:
+        # Load configurations
+        llms_config = config.get_llms_config()
+        storage_config = config.get_storage_config()
+        memory_config = config.get_memory_config()
+        scheduler_config = config.get_scheduler_config()
+        agent_factory_config = config.get_agent_factory_config()
+
+        # Initialize components in order of dependency
+        components["llms"] = initialize_llm_core(llms_config)
+        components["storage"] = initialize_storage_manager(storage_config)
+        
+        if not components["storage"]:
+            raise Exception("Storage manager must be initialized first")
+            
+        components["memory"] = initialize_memory_manager(memory_config, components["storage"])
+        components["tool"] = initialize_tool_manager()
+
+        # Verify required components
+        required_components = ["llms", "memory", "storage", "tool"]
+        missing_components = [
+            comp for comp in required_components if not components[comp]
+        ]
+        
+        if missing_components:
+            raise Exception(f"Missing required components: {', '.join(missing_components)}")
+
+        # Initialize scheduler and agent factory
+        components["scheduler"] = initialize_scheduler(components, scheduler_config)
+        components["factory"] = initialize_agent_factory(agent_factory_config)
+
+        print("✅ All components initialized successfully")
+        return components
+
+    except Exception as e:
+        print(f"❌ Component initialization failed: {str(e)}")
+        raise
+
+# Initialize components when starting up
+active_components = initialize_components()
 
 def restart_kernel():
     """Restart kernel service and reload configuration"""
     try:
         # Clean up existing components
-        for component in ["llm", "memory", "storage", "tool"]:
+        for component in ["llms", "memory", "storage", "tool"]:
             if active_components[component]:
                 if hasattr(active_components[component], "cleanup"):
                     active_components[component].cleanup()
@@ -199,7 +313,6 @@ def restart_kernel():
         print(f"❌ Error restarting kernel: {str(e)}")
         print(f"Stack trace: {traceback.format_exc()}")
         raise
-
 
 @app.post("/core/refresh")
 async def refresh_configuration():
@@ -220,166 +333,6 @@ async def refresh_configuration():
             status_code=500, 
             detail=f"Failed to refresh configuration: {str(e)}"
         )
-
-
-@app.post("/core/llm/setup")
-async def setup_llm(config: LLMConfig):
-    """Set up the LLM core component."""
-    try:
-        llm = useCore(
-            llm_name=config.llm_name,
-            llm_backend=config.llm_backend,
-            max_gpu_memory=config.max_gpu_memory,
-            eval_device=config.eval_device,
-            max_new_tokens=config.max_new_tokens,
-            log_mode=config.log_mode,
-        )
-        active_components["llm"] = llm
-        return {"status": "success", "message": "LLM core initialized"}
-    except Exception as e:
-        error_msg = f"LLM setup failed: {str(e)}, please check whether you have set up the required LLM API key and whether the llm_name and llm_backend is correct."
-        print(error_msg)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to initialize LLM core: {str(e)}"
-        )
-
-
-@app.post("/core/storage/setup")
-async def setup_storage(config: StorageConfig):
-    """Set up the storage manager component."""
-    try:
-        storage_manager = useStorageManager(
-            root_dir=config.root_dir,
-            use_vector_db=config.use_vector_db,
-            **(config.vector_db_config or {}),
-        )
-        active_components["storage"] = storage_manager
-        return {"status": "success", "message": "Storage manager initialized"}
-    except Exception as e:
-        print(f"Storage setup failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to initialize storage manager: {str(e)}"
-        )
-
-
-@app.post("/core/memory/setup")
-async def setup_memory(config: MemoryConfig):
-    """Set up the memory manager component."""
-    if not active_components["storage"]:
-        raise HTTPException(
-            status_code=400, detail="Storage manager must be initialized first"
-        )
-
-    try:
-        memory_manager = useMemoryManager(
-            memory_limit=config.memory_limit,
-            eviction_k=config.eviction_k,
-            storage_manager=active_components["storage"],
-        )
-        active_components["memory"] = memory_manager
-        return {"status": "success", "message": "Memory manager initialized"}
-    except Exception as e:
-        print(f"Memory setup failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to initialize memory manager: {str(e)}"
-        )
-
-
-@app.post("/core/tool/setup")
-async def setup_tool_manager(config: ToolManagerConfig):
-    """Set up the tool manager component."""
-    try:
-        print(f"\n[DEBUG] ===== Setting up Tool Manager =====")
-        tool_manager = useToolManager()
-        active_components["tool"] = tool_manager
-        return {"status": "success", "message": "Tool manager initialized"}
-    except Exception as e:
-        error_msg = str(e)
-        stack_trace = traceback.format_exc()
-        print(f"[ERROR] Tool Manager Setup Failed: {error_msg}")
-        print(f"[ERROR] Stack Trace:\n{stack_trace}")
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "Failed to initialize tool manager",
-                "message": error_msg,
-                "traceback": stack_trace
-            }
-        )
-
-
-@app.post("/core/factory/setup")
-async def setup_agent_factory(config: SchedulerConfig):
-    """Set up the agent factory for managing agent execution."""
-    required_components = ["llm", "memory", "storage", "tool"]
-    missing_components = [
-        comp for comp in required_components if not active_components[comp]
-    ]
-
-    if missing_components:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing required components: {', '.join(missing_components)}",
-        )
-
-    try:
-        submit_agent, await_agent_execution = useFactory(
-            log_mode=config.log_mode, max_workers=config.max_workers
-        )
-
-        active_components["factory"] = {
-            "submit": submit_agent,
-            "await": await_agent_execution,
-        }
-
-        return {"status": "success", "message": "Agent factory initialized"}
-    
-    except Exception as e:
-        print(f"Agent factory setup failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to initialize agent factory: {str(e)}"
-        )
-
-
-@app.post("/core/scheduler/setup")
-async def setup_scheduler(config: SchedulerConfig):
-    """Set up the FIFO scheduler with all components."""
-    required_components = ["llm", "memory", "storage", "tool"]
-    missing_components = [
-        comp for comp in required_components if not active_components[comp]
-    ]
-
-    if missing_components:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing required components: {', '.join(missing_components)}",
-        )
-
-    try:
-        # Set up the scheduler with all components
-        scheduler = fifo_scheduler(
-            llm=active_components["llm"],   
-            memory_manager=active_components["memory"],
-            storage_manager=active_components["storage"],
-            tool_manager=active_components["tool"],
-            log_mode=config.log_mode,
-            get_llm_syscall=None,
-            get_memory_syscall=None,
-            get_storage_syscall=None,
-            get_tool_syscall=None,
-        )
-
-        active_components["scheduler"] = scheduler
-
-        scheduler.start()
-
-        return {"status": "success", "message": "Scheduler initialized"}
-    except Exception as e:
-        print(f"Scheduler setup failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to initialize scheduler: {str(e)}"
-        )
-
 
 @app.get("/core/status")
 async def get_status():
@@ -495,6 +448,7 @@ async def cleanup_components():
 
 @app.post("/query")
 async def handle_query(request: QueryRequest):
+    breakpoint()
     try:
         if request.query_type == "llm":
             query = LLMQuery(
@@ -503,15 +457,25 @@ async def handle_query(request: QueryRequest):
                 action_type=request.query_data.action_type,
                 message_return_type=request.query_data.message_return_type,
             )
-            return send_request(request.agent_name, query)
+            return execute_request(request.agent_name, query)
         elif request.query_type == "storage":
             query = StorageQuery(
                 params=request.query_data.params,
                 operation_type=request.query_data.operation_type
             )
-            # return send_request(request.agent_name, query)
-            # return {"status": "success", "message": "Storage query received"}
-            return send_request(request.agent_name, query)
+            return execute_request(request.agent_name, query)
+        elif request.query_type == "tool":
+            query = ToolQuery(
+                params=request.query_data.params,
+                operation_type=request.query_data.operation_type
+            )
+            return execute_request(request.agent_name, query)
+        elif request.query_type == "memory":
+            query = MemoryQuery(
+                params=request.query_data.params,
+                operation_type=request.query_data.operation_type
+            )
+            return execute_request(request.agent_name, query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
