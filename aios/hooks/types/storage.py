@@ -3,6 +3,7 @@ from typing import Any, TypeAlias, Callable
 from queue import Queue
 
 StorageRequestQueue: TypeAlias = Queue
+# StorageRequestQueue: TypeAlias = []
 
 StorageRequestQueueGetMessage: TypeAlias = Callable[[], None]
 StorageRequestQueueAddMessage: TypeAlias = Callable[[str], None]

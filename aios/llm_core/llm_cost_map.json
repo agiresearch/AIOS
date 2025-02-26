@@ -1,0 +1,11 @@
+[
+    {"name": "Qwen-2.5-7B-Instruct", "hosted_model": "ollama/qwen2.5:7b", "cost_per_input_token": 0.000000267, "cost_per_output_token": 0.000000267},
+    {"name": "Qwen-2.5-14B-Instruct", "hosted_model": "ollama/qwen2.5:14b", "cost_per_input_token": 0.000000534, "cost_per_output_token": 0.000000534},
+    {"name": "Qwen-2.5-32B-Instruct", "hosted_model": "ollama/qwen2.5:32b", "cost_per_input_token": 0.00000122, "cost_per_output_token": 0.00000122},
+    {"name": "Llama-3.1-8B-Instruct", "hosted_model": "ollama/llama3.1:8b", "cost_per_input_token": 0.000000305, "cost_per_output_token": 0.000000305},
+    {"name": "Deepseek-r1-7b", "hosted_model": "ollama/deepseek-r1:7b", "cost_per_input_token": 0.000000267, "cost_per_output_token": 0.000000267},
+    {"name": "Deepseek-r1-14b", "hosted_model": "ollama/deepseek-r1:14b", "cost_per_input_token": 0.000000534, "cost_per_output_token": 0.000000534},
+    {"name": "gpt-4o-mini", "hosted_model": "gpt-4o-mini", "cost_per_input_token": 0.00000015, "cost_per_output_token": 0.0000006},
+    {"name": "gpt-4o", "hosted_model": "gpt-4o", "cost_per_input_token": 0.0000025, "cost_per_output_token": 0.00001},
+    {"name": "gemini-1.5-flash", "hosted_model": "gemini/gemini-1.5-flash", "cost_per_input_token": 0.000000075, "cost_per_output_token": 0.0000003}
+  ]

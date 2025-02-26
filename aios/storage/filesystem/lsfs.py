@@ -16,6 +16,10 @@ import requests
 
 from .vector_db import ChromaDB
 
+import logging
+
+logging.getLogger('watchdog').setLevel(logging.ERROR)
+
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, lsfs_instance):
         self.lsfs = lsfs_instance

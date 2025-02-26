@@ -13,7 +13,16 @@ from aios.hooks.stores._global import (
     global_memory_req_queue_add_message,
     global_storage_req_queue_add_message,
     global_tool_req_queue_add_message,
+    # global_llm_req_queue,
+    # global_memory_req_queue,
+    # global_storage_req_queue,
+    # global_tool_req_queue,
 )
+
+from aios.hooks.types.llm import LLMRequestQueue
+from aios.hooks.types.memory import MemoryRequestQueue
+from aios.hooks.types.storage import StorageRequestQueue
+from aios.hooks.types.tool import ToolRequestQueue
 
 from cerebrum.llm.communication import LLMQuery
 from cerebrum.memory.communication import MemoryQuery
@@ -41,6 +50,7 @@ def useSysCall():
             syscall.set_response(None)
 
             global_storage_req_queue_add_message(syscall)
+            # StorageRequestQueue.append(syscall)
 
             syscall.start()
             syscall.join()
@@ -49,6 +59,7 @@ def useSysCall():
 
             if syscall.get_status() != "done":
                 pass
+            
             start_time = syscall.get_start_time()
             end_time = syscall.get_end_time()
             waiting_time = start_time - syscall.get_created_time()
@@ -85,6 +96,7 @@ def useSysCall():
             syscall.set_response(None)
 
             global_memory_req_queue_add_message(syscall)
+            # MemoryRequestQueue.append(syscall)
 
             syscall.start()
             syscall.join()
@@ -129,6 +141,7 @@ def useSysCall():
             syscall.set_response(None)
 
             global_tool_req_queue_add_message(syscall)
+            # ToolRequestQueue.append(syscall)
 
             syscall.start()
             syscall.join()
@@ -175,6 +188,7 @@ def useSysCall():
             syscall.set_response(None)
 
             global_llm_req_queue_add_message(syscall)
+            # LLMRequestQueue.append(syscall)
 
             syscall.start()
             syscall.join()
@@ -202,7 +216,7 @@ def useSysCall():
         }
 
 
-    def send_request(agent_name, query):
+    def execute_request(agent_name, query):
         if isinstance(query, LLMQuery):
             action_type = query.action_type
             # print(action_type)
@@ -281,4 +295,4 @@ def useSysCall():
         memory = memoryview
         tool = tool_syscall_exec
 
-    return send_request, SysCallWrapper
+    return execute_request, SysCallWrapper

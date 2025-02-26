@@ -80,24 +80,33 @@ class ConfigManager:
             
         return api_key
     
-    def get_llm_config(self) -> dict:
-        """Get LLM configuration"""
-        llm_config = self.config.get('llm', {})
-        if not llm_config:
-            # Provide default configuration
-            llm_config = {
-                "default_model": "gpt-4",
-                "max_new_tokens": 256,
-                "backend": "openai",
-                "max_gpu_memory": None,
-                "eval_device": "cuda:0",
-                "log_mode": "console"
-            }
-        return llm_config
+    def get_llms_config(self) -> dict:
+        """Get configuration of LLMs"""
+        return self.config.get('llms', {})
     
-    def get_kernel_config(self) -> dict:
-        """Get kernel configuration"""
-        return self.config.get("kernel", {})
+    def get_storage_config(self) -> dict:
+        """Get storage configuration"""
+        return self.config.get("storage", {})
+    
+    def get_memory_config(self) -> dict:
+        """Get memory configuration"""
+        return self.config.get("memory", {})
+
+    def get_tool_config(self) -> dict:
+        """Get tool configuration"""
+        return self.config.get("tools", {})
+    
+    def get_scheduler_config(self) -> dict:
+        """Get scheduler configuration"""
+        return self.config.get("scheduler", {})
+    
+    def get_agent_factory_config(self) -> dict:
+        """Get agent factory configuration"""
+        return self.config.get("agent_factory", {})
+    
+    # def get_kernel_config(self) -> dict:
+    #     """Get kernel configuration"""
+    #     return self.config.get("kernel", {})
 
 # Global config instance
 config = ConfigManager() 

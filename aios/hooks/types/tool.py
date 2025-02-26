@@ -3,6 +3,7 @@ from typing import Any, TypeAlias, Callable
 from queue import Queue
 
 ToolRequestQueue: TypeAlias = Queue
+# ToolRequestQueue: TypeAlias = []
 
 ToolRequestQueueGetMessage: TypeAlias = Callable[[], None]
 ToolRequestQueueAddMessage: TypeAlias = Callable[[str], None]

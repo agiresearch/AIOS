@@ -11,14 +11,35 @@ api_keys:
     home: ""        # Optional: HuggingFace models path
 
 # LLM Configuration
-llm:
-  default_model: "gpt-4"
-  max_new_tokens: 256
-  backend: "openai"
-  max_gpu_memory: null
-  eval_device: "cuda:0"
+llms:
+  models:
+    - name: "gpt-4o-mini"
+      backend: "openai"
+      max_new_tokens: 256
+      temperature: 1.0
+      
+    - name: "gemini-1.5-flash"
+      backend: "google"
+      max_new_tokens: 1024
+      temperature: 1.0
+      
   log_mode: "console"
 
+memory:
+  memory_limit: 524288 # 512KB
+  eviction_k: 3
+
+storage:
+  root_dir: "root"
+  use_vector_db: true
+
+scheduler:
+  log_mode: "console"
+
+agent_factory:
+  log_mode: "console"
+  max_workers: 64  
+  
 server:
   host: "localhost"
   port: 8000

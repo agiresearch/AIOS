@@ -6,6 +6,11 @@ from aios.hooks.types.llm import LLMRequestQueueGetMessage
 from aios.hooks.types.memory import MemoryRequestQueueGetMessage
 from aios.hooks.types.tool import ToolRequestQueueGetMessage
 from aios.hooks.types.storage import StorageRequestQueueGetMessage
+# from aios.hooks.types.llm import LLMRequestQueue
+# from aios.hooks.types.memory import MemoryRequestQueue
+# from aios.hooks.types.tool import ToolRequestQueue
+# from aios.hooks.types.storage import StorageRequestQueue
+
 
 from aios.memory.manager import MemoryManager
 from aios.storage.storage import StorageManager
@@ -27,6 +32,10 @@ class FIFOScheduler(Scheduler):
         storage_manager: StorageManager,
         tool_manager: ToolManager,
         log_mode,
+        # llm_request_queue: LLMRequestQueue,
+        # memory_request_queue: MemoryRequestQueue,
+        # storage_request_queue: StorageRequestQueue,
+        # tool_request_queue: ToolRequestQueue,
         get_llm_syscall: LLMRequestQueueGetMessage,
         get_memory_syscall: MemoryRequestQueueGetMessage,
         get_storage_syscall: StorageRequestQueueGetMessage,
@@ -38,6 +47,10 @@ class FIFOScheduler(Scheduler):
             storage_manager,
             tool_manager,
             log_mode,
+            # llm_request_queue,
+            # memory_request_queue,
+            # storage_request_queue,
+            # tool_request_queue,
             get_llm_syscall,
             get_memory_syscall,
             get_storage_syscall,
@@ -64,6 +77,7 @@ class FIFOScheduler(Scheduler):
                 llm_syscall.set_end_time(time.time())
 
             except Empty:
+                # time.sleep(0.5)
                 pass
 
             except Exception:

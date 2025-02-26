@@ -3,6 +3,7 @@ from typing import Any, TypeAlias, Callable
 from queue import Queue
 
 LLMRequestQueue: TypeAlias = Queue
+# LLMRequestQueue: TypeAlias = []
 
 LLMRequestQueueGetMessage: TypeAlias = Callable[[], None]
 LLMRequestQueueAddMessage: TypeAlias = Callable[[str], None]
