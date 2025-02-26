@@ -17,16 +17,16 @@ from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
-from aios.hooks.syscall import useSysCall
+from aios.syscall.syscall import useSysCall
 from aios.config.config_manager import config
 
-from cerebrum.llm.communication import LLMQuery
+from cerebrum.llm.apis import LLMQuery, LLMResponse
 
-from cerebrum.memory.communication import MemoryQuery
+from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
-from cerebrum.tool.communication import ToolQuery
+from cerebrum.tool.apis import ToolQuery, ToolResponse
 
-from cerebrum.storage.communication import StorageQuery
+from cerebrum.storage.apis import StorageQuery, StorageResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 
