@@ -49,6 +49,12 @@ def useSysCall():
             syscall.set_created_time(current_time)
             syscall.set_response(None)
 
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("storage")
+
             global_storage_req_queue_add_message(syscall)
             # StorageRequestQueue.append(syscall)
 
@@ -94,6 +100,12 @@ def useSysCall():
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
+            
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("memory")
 
             global_memory_req_queue_add_message(syscall)
             # MemoryRequestQueue.append(syscall)
@@ -105,6 +117,7 @@ def useSysCall():
 
             if syscall.get_status() != "done":
                 pass
+            
             start_time = syscall.get_start_time()
             end_time = syscall.get_end_time()
             waiting_time = start_time - syscall.get_created_time()
@@ -140,9 +153,15 @@ def useSysCall():
             syscall.set_created_time(current_time)
             syscall.set_response(None)
 
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("tool")
+
             global_tool_req_queue_add_message(syscall)
             # ToolRequestQueue.append(syscall)
-
+            
             syscall.start()
             syscall.join()
 
@@ -191,7 +210,7 @@ def useSysCall():
                 syscall.set_source(agent_name)
                 
             if not syscall.get_target():
-                syscall.set_target(agent_name)
+                syscall.set_target("llm")
 
             global_llm_req_queue_add_message(syscall)
             # LLMRequestQueue.append(syscall)
@@ -233,7 +252,8 @@ def useSysCall():
             elif action_type == "tool_use":
                 response = llm_syscall_exec(agent_name, query)["response"]
                 tool_calls = response.tool_calls
-                return tool_syscall_exec(agent_name, tool_calls)
+                tool_call_response = tool_syscall_exec(agent_name, tool_calls)
+                return tool_call_response
 
             elif action_type == "operate_file":
                 # parse the file system operation
@@ -244,7 +264,6 @@ def useSysCall():
                 parser_response = llm_syscall_exec(agent_name, query)["response"]
                 file_operations = parser_response.tool_calls
                 file_operation_messages = []
-                
                 
                 # execute the file system operation
                 for file_operation in file_operations:
