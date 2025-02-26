@@ -109,6 +109,7 @@ def useSysCall():
 
             global_memory_req_queue_add_message(syscall)
             # MemoryRequestQueue.append(syscall)
+            # MemoryRequestQueue.append(syscall)
 
             syscall.start()
             syscall.join()
