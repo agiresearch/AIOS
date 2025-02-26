@@ -186,6 +186,12 @@ def useSysCall():
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
+            
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target(agent_name)
 
             global_llm_req_queue_add_message(syscall)
             # LLMRequestQueue.append(syscall)
@@ -196,7 +202,8 @@ def useSysCall():
             completed_response = syscall.get_response()
 
             if syscall.get_status() != "done":
-                pass
+                continue
+            
             start_time = syscall.get_start_time()
             end_time = syscall.get_end_time()
             waiting_time = start_time - syscall.get_created_time()

@@ -13,15 +13,21 @@ api_keys:
 # LLM Configuration
 llms:
   models:
-    - name: "gpt-4o-mini"
-      backend: "openai"
-      max_new_tokens: 256
-      temperature: 1.0
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
+    #   max_new_tokens: 256
+    #   temperature: 1.0
       
     - name: "gemini-1.5-flash"
       backend: "google"
       max_new_tokens: 1024
       temperature: 1.0
+
+    - name: "qwen2.5:7b"
+      backend: "ollama"
+      max_new_tokens: 1024
+      temperature: 1.0
+      hostname: "http://localhost:8091"
       
   log_mode: "console"
 
