@@ -448,7 +448,7 @@ async def cleanup_components():
 
 @app.post("/query")
 async def handle_query(request: QueryRequest):
-    breakpoint()
+    # breakpoint()
     try:
         if request.query_type == "llm":
             query = LLMQuery(
