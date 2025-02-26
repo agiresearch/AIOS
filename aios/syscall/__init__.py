@@ -1,11 +1,10 @@
 
 from threading import Event, Thread
 
-from cerebrum.llm.communication import Request
-
+from cerebrum.utils.communication import Query
 
 class Syscall(Thread):
-    def __init__(self, agent_name, query: Request):
+    def __init__(self, agent_name, query: Query):
         super().__init__()
         self.agent_name = agent_name
         self.query = query
@@ -17,6 +16,8 @@ class Syscall(Thread):
         self.created_time = None
         self.start_time = None
         self.end_time = None
+        self.source = None
+        self.target = None
 
     def set_created_time(self, time):
         self.created_time = time
@@ -75,4 +76,16 @@ class Syscall(Thread):
     def run(self):
         self.set_pid(self.native_id)
         self.event.wait()
+        
+    def get_source(self):
+        return self.source
+    
+    def get_target(self):
+        return self.target
+    
+    def set_source(self, source):
+        self.source = source
+    
+    def set_target(self, target):
+        self.target = target
 

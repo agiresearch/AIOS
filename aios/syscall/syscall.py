@@ -4,10 +4,10 @@ import json
 
 from typing import List
 
-from aios.core.syscall import Syscall
-from aios.core.syscall.llm import LLMSyscall
-from aios.core.syscall.storage import StorageSyscall, storage_syscalls
-from aios.core.syscall.tool import ToolSyscall
+from aios.syscall import Syscall
+from aios.syscall.llm import LLMSyscall
+from aios.syscall.storage import StorageSyscall, storage_syscalls
+from aios.syscall.tool import ToolSyscall
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
@@ -24,10 +24,10 @@ from aios.hooks.types.memory import MemoryRequestQueue
 from aios.hooks.types.storage import StorageRequestQueue
 from aios.hooks.types.tool import ToolRequestQueue
 
-from cerebrum.llm.communication import LLMQuery
-from cerebrum.memory.communication import MemoryQuery
-from cerebrum.storage.communication import StorageQuery
-from cerebrum.tool.communication import ToolQuery
+from cerebrum.llm.apis import LLMQuery, LLMResponse
+from cerebrum.memory.apis import MemoryQuery, MemoryResponse
+from cerebrum.storage.apis import StorageQuery, StorageResponse
+from cerebrum.tool.apis import ToolQuery, ToolResponse
 
 def useSysCall():
     def storage_syscall_exec(agent_name, query):
@@ -48,6 +48,12 @@ def useSysCall():
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
+
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("storage")
 
             global_storage_req_queue_add_message(syscall)
             # StorageRequestQueue.append(syscall)
@@ -94,8 +100,15 @@ def useSysCall():
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
+            
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("memory")
 
             global_memory_req_queue_add_message(syscall)
+            # MemoryRequestQueue.append(syscall)
             # MemoryRequestQueue.append(syscall)
 
             syscall.start()
@@ -105,6 +118,7 @@ def useSysCall():
 
             if syscall.get_status() != "done":
                 pass
+            
             start_time = syscall.get_start_time()
             end_time = syscall.get_end_time()
             waiting_time = start_time - syscall.get_created_time()
@@ -140,9 +154,15 @@ def useSysCall():
             syscall.set_created_time(current_time)
             syscall.set_response(None)
 
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("tool")
+
             global_tool_req_queue_add_message(syscall)
             # ToolRequestQueue.append(syscall)
-
+            
             syscall.start()
             syscall.join()
 
@@ -186,6 +206,12 @@ def useSysCall():
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
+            
+            if not syscall.get_source():
+                syscall.set_source(agent_name)
+                
+            if not syscall.get_target():
+                syscall.set_target("llm")
 
             global_llm_req_queue_add_message(syscall)
             # LLMRequestQueue.append(syscall)
@@ -196,7 +222,8 @@ def useSysCall():
             completed_response = syscall.get_response()
 
             if syscall.get_status() != "done":
-                pass
+                continue
+            
             start_time = syscall.get_start_time()
             end_time = syscall.get_end_time()
             waiting_time = start_time - syscall.get_created_time()
@@ -226,7 +253,8 @@ def useSysCall():
             elif action_type == "tool_use":
                 response = llm_syscall_exec(agent_name, query)["response"]
                 tool_calls = response.tool_calls
-                return tool_syscall_exec(agent_name, tool_calls)
+                tool_call_response = tool_syscall_exec(agent_name, tool_calls)
+                return tool_call_response
 
             elif action_type == "operate_file":
                 # parse the file system operation
@@ -237,7 +265,6 @@ def useSysCall():
                 parser_response = llm_syscall_exec(agent_name, query)["response"]
                 file_operations = parser_response.tool_calls
                 file_operation_messages = []
-                
                 
                 # execute the file system operation
                 for file_operation in file_operations:

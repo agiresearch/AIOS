@@ -8,6 +8,8 @@ import json
 import logging
 import yaml
 import os
+from datetime import datetime
+from pathlib import Path
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
@@ -15,16 +17,16 @@ from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
-from aios.hooks.syscall import useSysCall
+from aios.syscall.syscall import useSysCall
 from aios.config.config_manager import config
 
-from cerebrum.llm.communication import LLMQuery
+from cerebrum.llm.apis import LLMQuery, LLMResponse
 
-from cerebrum.memory.communication import MemoryQuery
+from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
-from cerebrum.tool.communication import ToolQuery
+from cerebrum.tool.apis import ToolQuery, ToolResponse
 
-from cerebrum.storage.communication import StorageQuery
+from cerebrum.storage.apis import StorageQuery, StorageResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -130,28 +132,24 @@ class QueryRequest(BaseModel):
             
         return values
 
-def initialize_llm_core(llms_config: dict) -> Any:
+def initialize_llm_cores(config: dict) -> Any:
     """Initialize LLM core with configuration."""
     try:
-        models = llms_config.get("models", [])
-        if not models:
+        llm_configs = config.get("models", [])
+        if not llm_configs:
             raise ValueError("No LLM models configured")
             
-        log_mode = llms_config.get("log_mode", "console")
-        model = models[0]  # Currently using first model as default
+        log_mode = config.get("log_mode", "console")
+        # model = models[0]  # Currently using first model as default
         
-        llm = useCore(
-            llm_name=model.get("name"),
-            llm_backend=model.get("backend"),
-            max_gpu_memory=model.get("max_gpu_memory"),
-            eval_device=model.get("eval_device", "cuda:0"),
-            max_new_tokens=model.get("max_new_tokens", 256),
+        llms = useCore(
+            llm_configs=llm_configs,
             log_mode=log_mode,
         )
         
-        if llm:
-            print("✅ LLM core initialized")
-            return llm
+        if llms:
+            print("✅ LLM cores initialized")
+            return llms
         raise ValueError("LLM core initialization returned None")
         
     except Exception as e:
@@ -261,7 +259,7 @@ def initialize_components() -> dict:
         agent_factory_config = config.get_agent_factory_config()
 
         # Initialize components in order of dependency
-        components["llms"] = initialize_llm_core(llms_config)
+        components["llms"] = initialize_llm_cores(llms_config)
         components["storage"] = initialize_storage_manager(storage_config)
         
         if not components["storage"]:
@@ -343,6 +341,85 @@ async def get_status():
     }
 
 
+@app.get("/core/llms/check")
+async def check_llms():
+    """Check if what LLM cores are initialized."""
+    return {
+        active_components["llms"]
+    }
+
+# Add new constant for proc directory
+PROC_DIR = Path("proc")
+
+# Create proc directory if it doesn't exist
+PROC_DIR.mkdir(exist_ok=True)
+
+def save_agent_process_info(agent_id: str, execution_id: int, config: Dict[str, Any]):
+    try:
+        process_info = {
+            "agent_id": agent_id,
+            "execution_id": execution_id,
+            "status": "running",
+            "start_time": datetime.now().isoformat(),
+            "config": config,
+            "task": config.get("task", "No task specified")
+        }
+        
+        proc_file = PROC_DIR / f"{execution_id}.json"
+        with open(proc_file, "w") as f:
+            json.dump(process_info, f, indent=2)
+            
+    except Exception as e:
+        print(f"Failed to save process info: {str(e)}")
+        # Don't raise exception - this is not critical functionality
+
+def update_agent_process_status(execution_id: int, status: str, result: Any = None):
+    try:
+        proc_file = PROC_DIR / f"{execution_id}.json"
+        if not proc_file.exists():
+            return
+            
+        with open(proc_file) as f:
+            process_info = json.load(f)
+            
+        process_info["status"] = status
+        if status == "completed":
+            process_info["end_time"] = datetime.now().isoformat()
+            process_info["result"] = result
+            
+        with open(proc_file, "w") as f:
+            json.dump(process_info, f, indent=2)
+            
+    except Exception as e:
+        print(f"Failed to update process status: {str(e)}")
+
+@app.get("/agents/ps")
+async def list_agent_processes():
+    """List all agent processes and their status"""
+    try:
+        processes = []
+        for proc_file in PROC_DIR.glob("*.json"):
+            try:
+                with open(proc_file) as f:
+                    process_info = json.load(f)
+                processes.append(process_info)
+            except Exception as e:
+                print(f"Failed to read process file {proc_file}: {str(e)}")
+                continue
+                
+        # Sort by execution ID
+        processes.sort(key=lambda x: x["execution_id"])
+        
+        return {
+            "status": "success",
+            "processes": processes
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list processes: {str(e)}"
+        )
+
 @app.post("/agents/submit")
 async def submit_agent(config: AgentSubmit):
     """Submit an agent for execution using the agent factory."""
@@ -357,6 +434,12 @@ async def submit_agent(config: AgentSubmit):
         _submit_agent = active_components["factory"]["submit"]
         execution_id = _submit_agent(
             agent_name=config.agent_id, task_input=config.agent_config["task"]
+        )
+        
+        save_agent_process_info(
+            agent_id=config.agent_id,
+            execution_id=execution_id,
+            config=config.agent_config
         )
         
         return {
@@ -400,6 +483,9 @@ async def get_agent_status(execution_id: int):
                 "message": "Execution in progress",
                 "execution_id": execution_id
             }
+            
+        update_agent_process_status(execution_id, "completed", result)
+        
         return {
             "status": "completed",
             "result": result,
@@ -437,6 +523,12 @@ async def cleanup_components():
                     active_components[component].cleanup()
                 active_components[component] = None
 
+        for proc_file in PROC_DIR.glob("*.json"):
+            try:
+                proc_file.unlink()
+            except Exception as e:
+                print(f"Failed to remove process file {proc_file}: {str(e)}")
+
         return {"status": "success", "message": "All components cleaned up"}
     except Exception as e:
         # print(e)
@@ -452,6 +544,7 @@ async def handle_query(request: QueryRequest):
     try:
         if request.query_type == "llm":
             query = LLMQuery(
+                llms=request.query_data.llms,
                 messages=request.query_data.messages,
                 tools=request.query_data.tools,
                 action_type=request.query_data.action_type,

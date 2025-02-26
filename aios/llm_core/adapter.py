@@ -2,11 +2,11 @@ from aios.context.simple_context import SimpleContextManager
 from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
 from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend, OllamaBackend
 from aios.utils.id_generator import generator_tool_call_id
-from cerebrum.llm.communication import Response
+from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
 import json
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, List
 import time
 import re
 import os
@@ -37,46 +37,28 @@ class LLMAdapter:
 
     def __init__(
         self,
-        llm_name: str | list[str],
-        max_gpu_memory: Optional[Dict] = None,
-        eval_device: Optional[str] = None,
-        max_new_tokens: int = 256,
+        llm_configs: List[Dict[str, Any]],
+        api_key: str | List[str] | None = None,
         log_mode: str = "console",
-        llm_backend: Optional[str | list[str]] = None,
         use_context_manager: bool = False,
         strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
-        hostname: Optional[str | list[str]] = None,
-        api_key: str | list[str] | None = None,
     ):
         """Initialize the LLM with the specified configuration.
-        
         Args:
-            llm_name            : Name of the LLM model to use
-            max_gpu_memory      : Maximum GPU memory allocation per device
-            eval_device         : Device to use for evaluation
-            max_new_tokens      : Maximum number of new tokens to generate
-            log_mode            : Logging mode ("console" or other options)
-            use_backend         : Specific backend to use (if None, inferred
-                                  from model name)
-            use_context_manager : Whether to use context manager
-            api_key             : DEPRECATED. This was originally used to store
-                                  an API Key for the LLM, but LiteLLM uses keys
-                                  directly from the process environment
-                                  variables making this needless.
+            llm_configs (List[Dict[str, Any]]): List of LLM configurations containing model details
+            api_key (str | List[str] | None): DEPRECATED. Originally for API keys, now handled by environment variables
+            log_mode (str): Logging mode, defaults to "console" 
+            use_context_manager (bool): Whether to use context manager for handling LLM context
+            strategy (Optional[RouterStrategy]): Strategy for routing requests between LLMs, defaults to SIMPLE
         """
-        if isinstance(llm_name, list) != isinstance(llm_backend, list):
-            raise ValueError("llm_name and llm_backend do not be the same type")
-        elif isinstance(llm_backend, list) and len(llm_name) == len(llm_backend):
-            raise ValueError("llm_name and llm_backend do not have the same length")
+        # if isinstance(llm_name, list) != isinstance(llm_backend, list):
+        #     raise ValueError("llm_name and llm_backend do not be the same type")
+        # elif isinstance(llm_backend, list) and len(llm_name) == len(llm_backend):
+        #     raise ValueError("llm_name and llm_backend do not have the same length")
 
-        self.llm_name            = llm_name if isinstance(llm_name, list) else [llm_name]
-        self.max_gpu_memory      = max_gpu_memory
-        self.eval_device         = eval_device
-        self.max_new_tokens      = max_new_tokens
-        self.log_mode            = log_mode
-        self.llm_backend         = llm_backend if isinstance(llm_backend, list) else [llm_backend]
-        self.context_manager     = SimpleContextManager() if use_context_manager else None
-        
+        self.log_mode = log_mode
+        self.context_manager = SimpleContextManager() if use_context_manager else None
+        self.llm_configs = llm_configs
 
         # Set all supported API keys
         api_providers = {
@@ -88,8 +70,8 @@ class LLMAdapter:
         }
         
         print("\n=== LLMAdapter Initialization ===")
-        print(f"Initializing LLM with name: {llm_name}")
-        print(f"Backend: {llm_backend}")
+        # print(f"Initializing LLM with name: {llm_name}")
+        # print(f"Backend: {llm_backend}")
         
         # Prioritize getting API keys from config and set them to environment variables
         for provider, env_var in api_providers.items():
@@ -102,61 +84,80 @@ class LLMAdapter:
                 if provider == "huggingface":
                     os.environ["HUGGING_FACE_API_KEY"] = api_key
                     print("- Also set HUGGING_FACE_API_KEY")
-            else:
-                # If not found in the configuration file, check the environment variables
-                if env_var in os.environ:
-                    print(f"- Not found in config.yaml, using environment variable: {env_var}=****")
-                else:
-                    print(f"- Not found in config.yaml or environment variables")
+            # else:
+            #     # If not found in the configuration file, check the environment variables
+            #     if env_var in os.environ:
+            #         print(f"- Not found in config.yaml, using environment variable: {env_var}=****")
+            #     else:
+            #         print(f"- Not found in config.yaml or environment variables")
 
         # breakpoint()
         
+        self.llms = []
+        
+        # breakpoint()
+        
         # Format model names to match backend or instantiate local backends
-        for idx in range(len(self.llm_name)):
-            if self.llm_backend[idx] is None:
-                continue
+        for idx in range(len(self.llm_configs)):
+            # if self.llm_backend[idx] is None:
+            #     continue
+            llm_name = self.llm_configs[idx].get("name", None)
+            llm_backend = self.llm_configs[idx].get("backend", None)
+            max_gpu_memory = self.llm_configs[idx].get("max_gpu_memory", None)
+            eval_device = self.llm_configs[idx].get("eval_device", None)
+            hostname = self.llm_configs[idx].get("hostname", None)
 
-            match self.llm_backend[idx]:
+            match llm_backend:
                 case "hflocal":
                     if "HUGGING_FACE_API_KEY" not in os.environ:
                         raise ValueError("HUGGING_FACE_API_KEY not found in config or environment variables")
                     
-                    self.llm_name[idx] = HfLocalBackend(
-                        self.llm_name[idx],
+                    # self.llm_name[idx] = HfLocalBackend(
+                    #     self.llm_name[idx],
+                    #     max_gpu_memory=max_gpu_memory,
+                    #     hostname=hostname
+                    # )
+                    self.llms.append(HfLocalBackend(
+                        llm_name,
                         max_gpu_memory=max_gpu_memory,
                         hostname=hostname
-                    )
+                    ))
+                    
                 case "vllm":
-                    self.llm_name[idx] = VLLMLocalBackend(
-                        self.llm_name[idx],
+                    self.llms.append(VLLMLocalBackend(
+                        llm_name,
                         max_gpu_memory=max_gpu_memory,
                         hostname=hostname
-                    )
+                    ))
+                    
                 case "ollama":
-                    self.llm_name[idx] = OllamaBackend(
-                        self.llm_name[idx],
+                    self.llms.append(OllamaBackend(
+                        llm_name,
                         hostname=hostname
-                    )
+                    ))
                 case None:
                     continue
                 case _:
-                    if self.llm_backend[idx] == "google":
-                        self.llm_backend[idx] = "gemini"
+                    if self.llm_configs[idx]["backend"] == "google":
+                        self.llm_configs[idx]["backend"] = "gemini"
                         
                     # Google backwards compatibility fix
                     
-                    prefix = self.llm_backend[idx] + "/"
-                    is_formatted = self.llm_name[idx].startswith(prefix)
+                    prefix = self.llm_configs[idx]["backend"] + "/"
+                    is_formatted = llm_name.startswith(prefix)
                     
                     # if not is_formatted:
                     # self.llm_name[idx] = "gemini/" + self.llm_name[idx].split("/")[1]
                     # continue
                     
                     if not is_formatted:
-                        self.llm_name[idx] = prefix + self.llm_name[idx]
+                        self.llms.append(prefix + llm_name)
+        
+        for llm_config in self.llm_configs:
+            print("Initialized LLM:", llm_config)
         
         if strategy == RouterStrategy.SIMPLE:
-            self.strategy = SimpleStrategy(self.llm_name)
+            self.strategy = SimpleStrategy(self.llm_configs)
 
     def tool_calling_input_format(self, messages: list, tools: list) -> list:
         """Integrate tool information into the messages for open-sourced LLMs
@@ -264,12 +265,12 @@ class LLMAdapter:
         """
         try:
             messages = llm_syscall.query.messages
-            tools    = llm_syscall.query.tools
+            tools = llm_syscall.query.tools
             ret_type = llm_syscall.query.message_return_type
+            selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
 
             llm_syscall.set_status("executing")
             llm_syscall.set_start_time(time.time())
-
             restored_context = None
                 
             if self.context_manager:
@@ -287,7 +288,11 @@ class LLMAdapter:
                 tools = self.pre_process_tools(tools)
                 messages = self.tool_calling_input_format(messages, tools)
 
-            model = self.strategy()
+            model_idxs = self.strategy.get_model_idxs(selected_llms)
+            
+            model_idx = model_idxs[0]
+            
+            model = self.llms[model_idx]
 
             if isinstance(model, (str, HfLocalBackend, VLLMLocalBackend, OllamaBackend)):
                 try:
@@ -319,13 +324,13 @@ class LLMAdapter:
                             error_msg = error_msg[:key_start] + masked_key + error_msg[key_end:]
 
                     if "Invalid API key" in error_msg or "API key not found" in error_msg:
-                        return Response(
+                        return LLMResponse(
                             response_message="Error: Invalid or missing API key for the selected model.",
                             error=error_msg,
                             finished=True,
                             status_code=402
                         )
-                    return Response(
+                    return LLMResponse(
                         response_message=f"LLM Error: {error_msg}",
                         error=error_msg,
                         finished=True,
@@ -334,18 +339,18 @@ class LLMAdapter:
 
             if tools:
                 if tool_calls := self.parse_tool_calls(res):
-                    return Response(response_message=None,
+                    return LLMResponse(response_message=None,
                                     tool_calls=tool_calls,
                                     finished=True)
 
             if ret_type == "json":
                 res = self.parse_json_format(res)
 
-            return Response(response_message=res, finished=True)
+            return LLMResponse(response_message=res, finished=True)
 
         except Exception as e:
             # Handle system level errors
-            return Response(
+            return LLMResponse(
                 response_message=f"System Error: {str(e)}",
                 error=str(e),
                 finished=True,

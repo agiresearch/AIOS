@@ -6,6 +6,8 @@ import zlib
 
 from .filesystem.lsfs import LSFS
 
+from cerebrum.storage.apis import StorageResponse
+
 class StorageManager:
     def __init__(self, root_dir, use_vector_db=True, filesystem_type="lsfs"):
         self.use_vector_db = use_vector_db
@@ -16,4 +18,8 @@ class StorageManager:
             self.filesystem = LSFS(root_dir, use_vector_db)
 
     def address_request(self, agent_request):
-        return self.filesystem.address_request(agent_request)
+        result = self.filesystem.address_request(agent_request)
+        return StorageResponse(
+            response_message=result,
+            finished=True
+        )

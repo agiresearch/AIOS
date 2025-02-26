@@ -1,4 +1,4 @@
-from aios.core.syscall import Syscall
+from aios.syscall.syscall import Syscall
 
 class ToolSyscall(Syscall):
     def __init__(self, agent_name, request):
