@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, Future
 from random import randint
 from typing import Any, Tuple, Callable, Dict
-from aios.hooks.syscall import useSysCall
+from aios.syscall.syscall import useSysCall
 from aios.hooks.types.agent import AgentSubmitDeclaration, FactoryParams
 from aios.hooks.utils.validate import validate
 from aios.hooks.stores import queue as QueueStore, processes as ProcessStore

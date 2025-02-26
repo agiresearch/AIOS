@@ -1,6 +1,8 @@
 import importlib
 
-from cerebrum.llm.communication import Response
+# from cerebrum.llm.communication import Response
+from cerebrum.tool.apis import ToolResponse
+
 from cerebrum.interface import AutoTool
 
 from threading import Lock
@@ -35,18 +37,17 @@ class ToolManager:
 
                         self.tool_conflict_map.pop(tool_org_and_name)
                         
-                        return Response(
+                        return ToolResponse(
                             response_message=tool_result,
                             finished=True
                         )
                     
         except Exception as e:
-            return Response(
+            return ToolResponse(
                 response_message=f"Tool calling error: {e}",
                 finished=True
             )
 
     def load_tool_instance(self, tool_org_and_name):
-
         tool_instance = AutoTool.from_preloaded(tool_org_and_name)
         return tool_instance

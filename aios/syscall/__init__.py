@@ -1,11 +1,10 @@
 
 from threading import Event, Thread
 
-from cerebrum.llm.communication import Request
-
+from cerebrum.utils.communication import Query
 
 class Syscall(Thread):
-    def __init__(self, agent_name, query: Request):
+    def __init__(self, agent_name, query: Query):
         super().__init__()
         self.agent_name = agent_name
         self.query = query

@@ -4,10 +4,10 @@ import json
 
 from typing import List
 
-from aios.core.syscall import Syscall
-from aios.core.syscall.llm import LLMSyscall
-from aios.core.syscall.storage import StorageSyscall, storage_syscalls
-from aios.core.syscall.tool import ToolSyscall
+from aios.syscall import Syscall
+from aios.syscall.llm import LLMSyscall
+from aios.syscall.storage import StorageSyscall, storage_syscalls
+from aios.syscall.tool import ToolSyscall
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
@@ -24,10 +24,10 @@ from aios.hooks.types.memory import MemoryRequestQueue
 from aios.hooks.types.storage import StorageRequestQueue
 from aios.hooks.types.tool import ToolRequestQueue
 
-from cerebrum.llm.communication import LLMQuery
-from cerebrum.memory.communication import MemoryQuery
-from cerebrum.storage.communication import StorageQuery
-from cerebrum.tool.communication import ToolQuery
+from cerebrum.llm.apis import LLMQuery, LLMResponse
+from cerebrum.memory.apis import MemoryQuery, MemoryResponse
+from cerebrum.storage.apis import StorageQuery, StorageResponse
+from cerebrum.tool.apis import ToolQuery, ToolResponse
 
 def useSysCall():
     def storage_syscall_exec(agent_name, query):

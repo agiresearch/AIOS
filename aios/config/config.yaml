@@ -17,17 +17,27 @@ llms:
     #   backend: "openai"
     #   max_new_tokens: 256
     #   temperature: 1.0
-      
-    - name: "gemini-1.5-flash"
-      backend: "google"
-      max_new_tokens: 1024
-      temperature: 1.0
+    # - name: "gemini-1.5-flash"
+    #   backend: "google"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
 
     - name: "qwen2.5:7b"
       backend: "ollama"
       max_new_tokens: 1024
       temperature: 1.0
-      hostname: "http://localhost:8091"
+      hostname: "http://localhost:11434" # Make sure to run ollama server
+
+    # 
+    # - name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    #   backend: "huggingface"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
       
   log_mode: "console"
 

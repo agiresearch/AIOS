@@ -2,7 +2,7 @@ from aios.context.simple_context import SimpleContextManager
 from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
 from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend, OllamaBackend
 from aios.utils.id_generator import generator_tool_call_id
-from cerebrum.llm.communication import Response
+from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
 import json
 
@@ -324,13 +324,13 @@ class LLMAdapter:
                             error_msg = error_msg[:key_start] + masked_key + error_msg[key_end:]
 
                     if "Invalid API key" in error_msg or "API key not found" in error_msg:
-                        return Response(
+                        return LLMResponse(
                             response_message="Error: Invalid or missing API key for the selected model.",
                             error=error_msg,
                             finished=True,
                             status_code=402
                         )
-                    return Response(
+                    return LLMResponse(
                         response_message=f"LLM Error: {error_msg}",
                         error=error_msg,
                         finished=True,
@@ -339,18 +339,18 @@ class LLMAdapter:
 
             if tools:
                 if tool_calls := self.parse_tool_calls(res):
-                    return Response(response_message=None,
+                    return LLMResponse(response_message=None,
                                     tool_calls=tool_calls,
                                     finished=True)
 
             if ret_type == "json":
                 res = self.parse_json_format(res)
 
-            return Response(response_message=res, finished=True)
+            return LLMResponse(response_message=res, finished=True)
 
         except Exception as e:
             # Handle system level errors
-            return Response(
+            return LLMResponse(
                 response_message=f"System Error: {str(e)}",
                 error=str(e),
                 finished=True,
