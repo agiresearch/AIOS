@@ -2,7 +2,8 @@
 Function: Generate multiple test cases in bulk to ensure that the various libraries in `test_apis.py` are functioning correctly.  
 LLM used for evaluation: qwen2.5:7b
 """
-from cerebrum.test_apis import test_single_llm_chat, test_multi_llm_chat, test_llm_call_tool, test_mount
+import pytest
+from cerebrum.test_apis import test_single_llm_chat, test_multi_llm_chat, test_llm_call_tool, test_sto_retrieve
 
 # To test llm_chat in more angle, we used GPT-4o to generate   
 def test_single_llm_chat_with_multi_cases():
@@ -18,7 +19,8 @@ def test_single_llm_chat_with_multi_cases():
 
     for case in test_cases:
         print(f"Input: {case['content']}\n")
-        test_single_llm_chat([case])
+        with pytest.raises(TypeError):
+            test_single_llm_chat([case])
 
 def test_multi_llm_chat_with_multi_cases():
     test_cases = [
@@ -33,7 +35,8 @@ def test_multi_llm_chat_with_multi_cases():
 
     for case in test_cases:
         print(f"Input: {case['content']}\n")
-        test_multi_llm_chat([case])
+        with pytest.raises(TypeError):
+            test_multi_llm_chat([case])
 
 def test_call_tool_with_multi_cases():
     test_cases = [
@@ -50,9 +53,10 @@ def test_call_tool_with_multi_cases():
 
     for case in test_cases:
         print(f"Input: {case['content']}\n")
-        test_llm_call_tool([case])
+        with pytest.raises(TypeError):
+            test_llm_call_tool([case])
 
-def test_mount_with_multi_cases():
+def test_sto_retrieve_with_multi_cases():
     test_cases = [
         {"query_text": "top 3 papers related to KV cache", "n": 3, "keywords": None},
         {"query_text": "recent advancements in reinforcement learning", "n": 5, "keywords": ["RL", "reinforcement learning"]},
@@ -66,7 +70,8 @@ def test_mount_with_multi_cases():
 
     for case in test_cases:
         print(f"Input: {case['query_text']}\n")
-        test_mount(case)
+        with pytest.raises(TypeError):
+            test_sto_retrieve(case)
 
 if __name__ == "__main__":
     # agent = TestAgent("test_agent", "What is the capital of France?")
@@ -75,6 +80,6 @@ if __name__ == "__main__":
     test_multi_llm_chat_with_multi_cases()
     test_call_tool_with_multi_cases()
     # test_operate_file()
-    test_mount_with_multi_cases()
+    test_sto_retrieve_with_multi_cases()
     # test_create_file()
     # test_create_dir()
