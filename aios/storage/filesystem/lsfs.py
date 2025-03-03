@@ -524,57 +524,66 @@ class LSFS:
             return {"error": f"Error sharing file: {str(e)}"}
 
     def set_agent_permissions(self, agent_name: str, paths: List[str], operations: List[str]) -> None:
-        """Set permissions for an agent.
+        """
+        Set permissions for an agent.
         
         Args:
             agent_name: Name of the agent
-            paths: List of paths the agent can access. Use "*" for all paths.
-            operations: List of operations the agent can perform. Use "*" for all operations.
+            paths: List of allowed paths (use "*" for all paths)
+            operations: List of allowed operations (use "*" for all operations)
+            
+        Example:
+            ```python
+            lsfs.set_agent_permissions(
+                "agent1",
+                ["/data/*", "/public/*"],
+                ["read", "write"]
+            )
+            ```
         """
         with self.permissions_lock:
             self.agent_permissions[agent_name] = {
-                "paths": set(paths),
-                "operations": set(operations)
+                "paths": paths,
+                "operations": operations
             }
     
     def check_permission(self, agent_name: str, operation: str, path: Optional[str] = None) -> bool:
-        """Check if an agent has permission to perform an operation on a path.
+        """
+        Check if an agent has permission for an operation.
         
         Args:
             agent_name: Name of the agent
-            operation: Operation to check (mount, create_file, write, retrieve, etc.)
-            path: Path to check permission for
+            operation: Operation to check
+            path: Path to check (optional)
             
         Returns:
-            bool: True if agent has permission, False otherwise
+            True if permitted, False otherwise
+            
+        Example:
+            ```python
+            if lsfs.check_permission("agent1", "write", "/data/test.txt"):
+                # Perform write operation
+                pass
+            ```
         """
         with self.permissions_lock:
-            # If agent doesn't exist in permissions, deny access
             if agent_name not in self.agent_permissions:
                 return False
                 
-            agent_perms = self.agent_permissions[agent_name]
+            permissions = self.agent_permissions[agent_name]
             
             # Check operation permission
-            if "*" not in agent_perms["operations"] and operation not in agent_perms["operations"]:
+            if "*" not in permissions["operations"] and operation not in permissions["operations"]:
                 return False
                 
-            # If no path is provided or operation doesn't require path check
-            if path is None or operation in ["mount", "retrieve"]:
-                return True
+            # Check path permission if path is provided
+            if path and "*" not in permissions["paths"]:
+                return any(
+                    path.startswith(allowed_path) 
+                    for allowed_path in permissions["paths"]
+                )
                 
-            # Check path permission
-            if "*" in agent_perms["paths"]:
-                return True
-                
-            # Check if the path or any parent directory is in the allowed paths
-            path_parts = path.split(os.sep)
-            for i in range(len(path_parts)):
-                check_path = os.sep.join(path_parts[:i+1])
-                if check_path in agent_perms["paths"]:
-                    return True
-                    
-            return False
+            return True
 
     # Add methods to manage permissions
     def grant_permission(self, admin_agent: str, target_agent: str, paths: List[str], operations: List[str]) -> str:
@@ -649,54 +658,60 @@ class LSFS:
                     }
                 return result
 
-    def create_priority_group(self, group_name: str, admin_agent: str) -> str:
-        """Create a new priority group with the specified admin as the first member.
+    def create_priority_group(self, group_name: str, creator_agent: str) -> str:
+        """
+        Create a new priority group.
         
         Args:
-            group_name: Name of the new group
-            admin_agent: Name of the agent creating the group (becomes group admin)
+            group_name: Name of the group
+            creator_agent: Agent creating the group
             
         Returns:
-            str: Result message
+            Success/failure message
+            
+        Example:
+            ```python
+            result = lsfs.create_priority_group("high_priority", "admin")
+            # Returns: "Group 'high_priority' created successfully"
+            ```
         """
         with self.groups_lock:
             if group_name in self.priority_groups:
                 return f"Group '{group_name}' already exists"
                 
-            # Create the group with admin as first member
-            self.priority_groups[group_name] = {admin_agent}
+            self.priority_groups[group_name] = {creator_agent}
+            if creator_agent not in self.agent_groups:
+                self.agent_groups[creator_agent] = set()
+            self.agent_groups[creator_agent].add(group_name)
             
-            # Add group to agent's groups
-            if admin_agent not in self.agent_groups:
-                self.agent_groups[admin_agent] = set()
-            self.agent_groups[admin_agent].add(group_name)
-            
-            return f"Priority group '{group_name}' created with '{admin_agent}' as admin"
+            return f"Group '{group_name}' created successfully"
     
     def add_agent_to_group(self, group_name: str, agent_name: str, admin_agent: str) -> str:
-        """Add an agent to a priority group (requires group admin privileges).
+        """
+        Add an agent to a priority group.
         
         Args:
-            group_name: Name of the group to add agent to
-            agent_name: Name of the agent to add
-            admin_agent: Name of the agent requesting the addition (must be in group)
+            group_name: Name of the group
+            agent_name: Agent to add
+            admin_agent: Agent performing the operation
             
         Returns:
-            str: Result message
+            Success/failure message
+            
+        Example:
+            ```python
+            result = lsfs.add_agent_to_group("high_priority", "agent1", "admin")
+            # Returns: "Agent 'agent1' added to group 'high_priority'"
+            ```
         """
         with self.groups_lock:
-            # Check if group exists
             if group_name not in self.priority_groups:
                 return f"Group '{group_name}' does not exist"
                 
-            # Check if admin is in the group
             if admin_agent not in self.priority_groups[group_name]:
-                return f"Permission denied: Agent '{admin_agent}' is not a member of group '{group_name}'"
+                return f"Agent '{admin_agent}' is not authorized to modify group '{group_name}'"
                 
-            # Add agent to group
             self.priority_groups[group_name].add(agent_name)
-            
-            # Add group to agent's groups
             if agent_name not in self.agent_groups:
                 self.agent_groups[agent_name] = set()
             self.agent_groups[agent_name].add(group_name)
@@ -704,135 +719,127 @@ class LSFS:
             return f"Agent '{agent_name}' added to group '{group_name}'"
     
     def remove_agent_from_group(self, group_name: str, agent_name: str, admin_agent: str) -> str:
-        """Remove an agent from a priority group (requires group admin privileges).
+        """
+        Remove an agent from a priority group.
         
         Args:
-            group_name: Name of the group to remove agent from
-            agent_name: Name of the agent to remove
-            admin_agent: Name of the agent requesting the removal (must be in group)
+            group_name: Name of the group
+            agent_name: Agent to remove
+            admin_agent: Agent performing the operation
             
         Returns:
-            str: Result message
+            Success/failure message
+            
+        Example:
+            ```python
+            result = lsfs.remove_agent_from_group("high_priority", "agent1", "admin")
+            # Returns: "Agent 'agent1' removed from group 'high_priority'"
+            ```
         """
         with self.groups_lock:
-            # Check if group exists
             if group_name not in self.priority_groups:
                 return f"Group '{group_name}' does not exist"
                 
-            # Check if admin is in the group
             if admin_agent not in self.priority_groups[group_name]:
-                return f"Permission denied: Agent '{admin_agent}' is not a member of group '{group_name}'"
+                return f"Agent '{admin_agent}' is not authorized to modify group '{group_name}'"
                 
-            # Check if agent is in the group
-            if agent_name not in self.priority_groups[group_name]:
-                return f"Agent '{agent_name}' is not a member of group '{group_name}'"
-                
-            # Remove agent from group
-            self.priority_groups[group_name].remove(agent_name)
-            
-            # Remove group from agent's groups
-            if agent_name in self.agent_groups and group_name in self.agent_groups[agent_name]:
+            if agent_name in self.priority_groups[group_name]:
+                self.priority_groups[group_name].remove(agent_name)
                 self.agent_groups[agent_name].remove(group_name)
                 
-            return f"Agent '{agent_name}' removed from group '{group_name}'"
+                return f"Agent '{agent_name}' removed from group '{group_name}'"
+            else:
+                return f"Agent '{agent_name}' is not in group '{group_name}'"
     
-    def get_agent_groups(self, agent_name: str) -> list:
-        """Get all groups an agent belongs to.
+    def get_agent_groups(self, agent_name: str) -> Set[str]:
+        """
+        Get all groups an agent belongs to.
         
         Args:
             agent_name: Name of the agent
             
         Returns:
-            list: List of group names
+            Set of group names
+            
+        Example:
+            ```python
+            groups = lsfs.get_agent_groups("agent1")
+            # Returns: {"high_priority", "team_alpha"}
+            ```
         """
         with self.groups_lock:
-            if agent_name not in self.agent_groups:
-                return []
-            return list(self.agent_groups[agent_name])
+            return self.agent_groups.get(agent_name, set())
     
-    def get_group_members(self, group_name: str, agent_name: str) -> dict:
-        """Get all members of a group (requires group membership).
+    def get_group_members(self, group_name: str, requesting_agent: str) -> Optional[Set[str]]:
+        """
+        Get all members of a group.
         
         Args:
             group_name: Name of the group
-            agent_name: Name of the agent requesting the information (must be in group)
+            requesting_agent: Agent requesting the information
             
         Returns:
-            dict: Group information including members
+            Set of agent names or None if unauthorized
+            
+        Example:
+            ```python
+            members = lsfs.get_group_members("high_priority", "admin")
+            # Returns: {"agent1", "agent2", "admin"}
+            ```
         """
         with self.groups_lock:
-            # Check if group exists
             if group_name not in self.priority_groups:
-                return {"error": f"Group '{group_name}' does not exist"}
+                return None
                 
-            # Check if agent is in the group
-            if agent_name not in self.priority_groups[group_name]:
-                return {"error": f"Permission denied: Agent '{agent_name}' is not a member of group '{group_name}'"}
+            if requesting_agent not in self.priority_groups[group_name]:
+                return None
                 
-            return {
-                "group": group_name,
-                "members": list(self.priority_groups[group_name])
-            }
+            return self.priority_groups[group_name]
     
-    def check_group_access(self, requester_agent: str, target_agent: str) -> bool:
-        """Check if requester agent has access to target agent's data through shared group membership.
+    def check_group_access(self, source_agent: str, target_agent: str) -> bool:
+        """
+        Check if source agent has access to target agent's data.
         
         Args:
-            requester_agent: Name of the agent requesting access
-            target_agent: Name of the agent whose data is being accessed
+            source_agent: Agent requesting access
+            target_agent: Agent whose data is being accessed
             
         Returns:
-            bool: True if agents share a group, False otherwise
+            True if access is allowed, False otherwise
+            
+        Example:
+            ```python
+            if lsfs.check_group_access("agent1", "agent2"):
+                # Allow access to agent2's data
+                pass
+            ```
         """
-        # Admin has access to everything
-        if requester_agent == "admin":
-            return True
-            
-        # Self-access is always allowed
-        if requester_agent == target_agent:
-            return True
-            
         with self.groups_lock:
-            # If either agent is not in any groups, deny access
-            if requester_agent not in self.agent_groups or target_agent not in self.agent_groups:
-                return False
-                
-            # Check for shared group membership
-            requester_groups = self.agent_groups[requester_agent]
-            target_groups = self.agent_groups[target_agent]
+            source_groups = self.agent_groups.get(source_agent, set())
+            target_groups = self.agent_groups.get(target_agent, set())
             
-            # If they share any group, allow access
-            return bool(requester_groups.intersection(target_groups))
+            # Allow access if agents share any groups
+            return bool(source_groups & target_groups)
 
     def is_agent_registered(self, agent_name: str) -> bool:
-        """Check if an agent is registered in the system.
+        """
+        Check if an agent is registered in the system.
         
         Args:
             agent_name: Name of the agent to check
             
         Returns:
-            bool: True if agent is registered, False otherwise
-        """
-        # 检查 agent 是否在权限系统中注册
-        with self.permissions_lock:
-            if agent_name in self.agent_permissions:
-                return True
-        
-        # 检查 agent 是否在任何优先级组中
-        with self.groups_lock:
-            if agent_name in self.agent_groups:
-                return True
+            True if agent is registered, False otherwise
             
-            # 检查所有组中是否包含该 agent
-            for group_members in self.priority_groups.values():
-                if agent_name in group_members:
-                    return True
-        
-        # 如果是 admin，始终返回 True
-        if agent_name == "admin":
-            return True
-        
-        return False
+        Example:
+            ```python
+            if lsfs.is_agent_registered("agent1"):
+                # Proceed with operation
+                pass
+            ```
+        """
+        with self.permissions_lock:
+            return agent_name in self.agent_permissions
 
     def register_agent(self, agent_name: str, admin_agent: str = None) -> str:
         """Register a new agent in the system.
@@ -844,18 +851,14 @@ class LSFS:
         Returns:
             str: Result message
         """
-        # 如果提供了 admin_agent，检查其权限
         if admin_agent and not self.check_permission(admin_agent, "register_agent"):
             return f"Permission denied: Agent '{admin_agent}' does not have permission to register new agents"
         
-        # 检查 agent 是否已注册
         if self.is_agent_registered(agent_name):
             return f"Agent '{agent_name}' is already registered"
         
-        # 注册 agent（设置基本权限）
         self.set_agent_permissions(agent_name, [self.root_dir], ["mount", "retrieve"])
         
-        # 创建 agent 的默认组
         default_group_name = f"{agent_name}_group"
         self.create_priority_group(default_group_name, agent_name)
         
@@ -870,10 +873,8 @@ class LSFS:
         Returns:
             str: Path to agent's data directory
         """
-        # 为每个 agent 创建专属数据目录
         agent_path = os.path.join(self.root_dir, "agent_data", agent_name)
         
-        # 确保目录存在
         if not os.path.exists(agent_path):
             os.makedirs(agent_path, exist_ok=True)
         
@@ -932,17 +933,14 @@ class LSFS:
         Returns:
             str: Result message
         """
-        # 获取 owner_agent 的所有组
         owner_groups = self.get_agent_groups(owner_agent)
         
-        # 从所有 owner_agent 的组中移除 target_agent
         results = []
         for group in owner_groups:
             if group.startswith(f"{owner_agent}_"):
                 result = self.remove_agent_from_group(group, target_agent, owner_agent)
                 results.append(result)
         
-        # 移除 target_agent 对 owner_agent 数据路径的权限
         owner_path = self.get_agent_data_path(owner_agent)
         
         with self.permissions_lock:
