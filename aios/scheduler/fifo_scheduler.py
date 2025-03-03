@@ -130,7 +130,7 @@ class FIFOScheduler(BaseScheduler):
             syscall.set_status("executing")
             self.logger.log(
                 f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
-                "execute"
+                "executing"
             )
             syscall.set_start_time(time.time())
 
