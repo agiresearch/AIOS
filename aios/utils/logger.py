@@ -46,8 +46,8 @@ class SchedulerLogger(BaseLogger):
     def __init__(self, logger_name, log_mode="console") -> None:
         super().__init__(logger_name, log_mode)
         self.level_color = {
-            "execute": "green",
-            "suspend": "yellow",
+            "executing": "green",
+            "suspending": "yellow",
             "info": "white",
             "done": "blue"
         }

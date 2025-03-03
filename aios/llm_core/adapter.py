@@ -5,7 +5,7 @@ from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
 import json
-from .utils import tool_calling_input_format, parse_json_format, parse_tool_calls
+from .utils import tool_calling_input_format, parse_json_format, parse_tool_calls, pre_process_tools
 from typing import Dict, Optional, Any, List, Union
 import time
 import re
@@ -311,17 +311,38 @@ class LLMAdapter:
             llm_syscall.set_status("executing")
             llm_syscall.set_start_time(time.time())
             
-            messages = self._prepare_messages(llm_syscall, messages, tools)
+            # breakpoint()
             
             model_idxs = self.strategy.get_model_idxs(selected_llms)
             model = self.llms[model_idxs[0]]
-
+            
+            if tools:
+                tools = pre_process_tools(tools)
+            
+            messages = self._prepare_messages(
+                llm_syscall=llm_syscall,
+                model=model,
+                messages=messages,
+                tools=tools
+            )
+            
             try:
-                response = self._get_model_response(model, messages, temperature, llm_syscall)
+                completed_response, finished = self._get_model_response(
+                    model=model, 
+                    messages=messages, 
+                    tools=tools,
+                    temperature=temperature, 
+                    llm_syscall=llm_syscall
+                )
             except Exception as e:
                 return self._handle_completion_error(e)
 
-            return self._process_response(response, tools, ret_type)
+            return self._process_response(
+                completed_response=completed_response, 
+                finished=finished,
+                tools=tools, 
+                ret_type=ret_type
+            )
 
         except Exception as e:
             return LLMResponse(
@@ -331,7 +352,7 @@ class LLMAdapter:
                 status_code=500
             )
 
-    def _prepare_messages(self, llm_syscall, messages: List[Dict], tools: Optional[List] = None) -> List[Dict]:
+    def _prepare_messages(self, llm_syscall, model, messages: List[Dict], tools: Optional[List] = None) -> List[Dict]:
         """
         Prepare messages for the LLM, including context restoration and tool formatting.
 
@@ -363,14 +384,17 @@ class LLMAdapter:
         """
         if self.context_manager:
             pid = llm_syscall.get_pid()
-            if self.context_manager.check_restoration(pid):
-                restored_context = self.context_manager.gen_recover(pid)
-                if restored_context:
-                    messages += [{
-                        "role": "assistant",
-                        "content": "" + restored_context,
-                    }]
-
+            restored_context = self.context_manager.load_context(
+                pid=pid,
+                model=model,
+                # tokenizer=tokenizer # TODO: Add tokenizer
+            )
+            messages += [{
+                "role": "assistant",
+                "content": "" + restored_context,
+            }]
+            
+        # if not isinstance(model, str):
         if tools:
             tools = pre_process_tools(tools)
             messages = tool_calling_input_format(messages, tools)
@@ -381,6 +405,7 @@ class LLMAdapter:
         self, 
         model: Union[str, HfLocalBackend, VLLMLocalBackend, OllamaBackend],
         messages: List[Dict],
+        tools: Optional[List],
         temperature: float,
         llm_syscall
     ) -> Any:
@@ -416,25 +441,52 @@ class LLMAdapter:
             }
             ```
         """
-        pid = llm_syscall.get_pid() if self.use_context_manager else None
-
         if isinstance(model, str):
-            completion_response = (
-                self.context_manager.save_context(model, messages, temperature, pid)
-                if self.use_context_manager
-                else completion(model=model, messages=messages, temperature=temperature)
-            )
-            return completion_response.choices[0].message.content
+            if self.use_context_manager:
+                
+                pid = llm_syscall.get_pid()
+                time_limit = llm_syscall.get_time_limit()
+                completed_response, finished = self.context_manager.save_context(
+                    model=model, 
+                    messages=messages, 
+                    tools=tools,
+                    temperature=temperature, 
+                    pid=pid,
+                    time_limit=time_limit
+                )
+                
+                return completed_response, finished
+                
+            else:
+                completed_response = completion(
+                    model=model, 
+                    messages=messages, 
+                    tools=tools, 
+                    temperature=temperature
+                )
+                
+                return completed_response.choices[0].message.content, True
         else:
             return (
-                self.context_manager.save_context(model, messages, temperature, pid)
+                self.context_manager.save_context(
+                    model=model, 
+                    messages=messages, 
+                    tools=tools,
+                    temperature=temperature, 
+                    pid=pid,
+                    time_limit=time_limit
+                )
                 if self.use_context_manager
-                else model(messages=messages, temperature=temperature)
+                else model(
+                    messages=messages, 
+                    temperature=temperature
+                )
             )
 
     def _process_response(
         self, 
-        response: str, 
+        completed_response: str, 
+        finished: bool,
         tools: Optional[List] = None, 
         ret_type: Optional[str] = None
     ) -> LLMResponse:
@@ -484,14 +536,14 @@ class LLMAdapter:
             ```
         """
         if tools:
-            if tool_calls := parse_tool_calls(response):
+            if tool_calls := parse_tool_calls(completed_response):
                 return LLMResponse(
                     response_message=None,
                     tool_calls=tool_calls,
-                    finished=True
+                    finished=finished
                 )
 
         if ret_type == "json":
-            response = parse_json_format(response)
+            completed_response = parse_json_format(completed_response)
 
-        return LLMResponse(response_message=response, finished=True)
+        return LLMResponse(response_message=completed_response, finished=finished)

@@ -1,5 +1,6 @@
 import json
 import re
+import uuid
 
 def tool_calling_input_format(messages: list, tools: list) -> list:
     """Integrate tool information into the messages for open-sourced LLMs
@@ -64,11 +65,14 @@ def parse_json_format(message: str) -> str:
             pass
     return "[]"
 
+def generator_tool_call_id():
+    return str(uuid.uuid4())
+
 def parse_tool_calls(message):
     # add tool call id and type for models don't support tool call
     # if isinstance(message, dict):
     #     message = [message]
-    tool_calls = json.loads(self.parse_json_format(message))
+    tool_calls = json.loads(parse_json_format(message))
     # breakpoint()
     # tool_calls = json.loads(message)
     if isinstance(tool_calls, dict):
@@ -83,7 +87,7 @@ def parse_tool_calls(message):
         # tool_call["type"] = "function"
     return tool_calls
 
-def pre_process_tools(self, tools):
+def pre_process_tools(tools):
     for tool in tools:
         tool_name = tool["function"]["name"]
         if "/" in tool_name:

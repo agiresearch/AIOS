@@ -17,6 +17,8 @@ from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
 from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
+from aios.hooks.modules.scheduler import rr_scheduler_nonblock as rr_scheduler
+
 from aios.syscall.syscall import useSysCall
 from aios.config.config_manager import config
 
@@ -140,11 +142,13 @@ def initialize_llm_cores(config: dict) -> Any:
             raise ValueError("No LLM models configured")
             
         log_mode = config.get("log_mode", "console")
+        use_context_manager = config.get("use_context_manager", False)
         # model = models[0]  # Currently using first model as default
         
         llms = useCore(
             llm_configs=llm_configs,
             log_mode=log_mode,
+            use_context_manager=use_context_manager
         )
         
         if llms:
@@ -205,6 +209,16 @@ def initialize_tool_manager() -> Any:
 def initialize_scheduler(components: dict, scheduler_config: dict) -> Any:
     """Initialize scheduler with components and configuration."""
     try:
+        # Get use_context setting from llms config
+        llms_config = config.get_llms_config()
+        use_context = llms_config.get("use_context_manager", False)
+
+        # Check if trying to use FIFO scheduler with context management
+        # if use_context and isinstance(scheduler_config.get("scheduler_type"), str) and scheduler_config.get("scheduler_type").lower() == "fifo":
+        #     raise ValueError("FIFO scheduler cannot be used with context management enabled. Please either disable context management or use Round Robin scheduler.")
+
+        # Round Robin scheduler
+        
         scheduler = fifo_scheduler(
             llm=components["llms"],   
             memory_manager=components["memory"],
@@ -216,9 +230,21 @@ def initialize_scheduler(components: dict, scheduler_config: dict) -> Any:
             get_storage_syscall=None,
             get_tool_syscall=None,
         )
+        # scheduler = rr_scheduler(
+        #     llm=components["llms"],   
+        #     memory_manager=components["memory"],
+        #     storage_manager=components["storage"],
+        #     tool_manager=components["tool"],
+        #     log_mode=scheduler_config.get("log_mode", "console"),
+        #     get_llm_syscall=None,
+        #     get_memory_syscall=None,
+        #     get_storage_syscall=None,
+        #     get_tool_syscall=None,
+        # )
         scheduler.start()
         print("✅ Scheduler initialized and started")
         return scheduler
+    
     except Exception as e:
         print(f"❌ Scheduler setup failed: {str(e)}")
         raise Exception(f"Failed to initialize scheduler: {str(e)}")

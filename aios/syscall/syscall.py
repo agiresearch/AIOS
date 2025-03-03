@@ -274,10 +274,15 @@ class SyscallExecutor:
         """
         if isinstance(query, LLMQuery):
             if query.action_type == "chat":
-                return self.execute_llm_syscall(agent_name, query)
+                llm_response = self.execute_llm_syscall(agent_name, query)
+                return llm_response
+            
             elif query.action_type == "tool_use":
-                response = self.execute_llm_syscall(agent_name, query)["response"]
-                return self.execute_tool_syscall(agent_name, response.tool_calls)
+                llm_response = self.execute_llm_syscall(agent_name, query)["response"]
+                tool_response = self.execute_tool_syscall(agent_name, llm_response.tool_calls)
+                # breakpoint()
+                return tool_response
+            
             elif query.action_type == "operate_file":
                 return self.execute_file_operation(agent_name, query)
         elif isinstance(query, ToolQuery):
