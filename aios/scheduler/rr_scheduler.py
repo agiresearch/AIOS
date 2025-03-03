@@ -24,14 +24,14 @@ from aios.utils.logger import SchedulerLogger
 
 from threading import Thread
 
-from .base import Scheduler
+from .base import BaseScheduler
 
 import logging
 from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-class RoundRobinScheduler(BaseScheduler):
+class RRScheduler(BaseScheduler):
     """
     Round Robin scheduler implementation that gives each task a fixed time slice.
     
@@ -40,23 +40,14 @@ class RoundRobinScheduler(BaseScheduler):
     
     Example:
         ```python
-        scheduler = RoundRobinScheduler(
-            llm=llm_adapter,
-            memory_manager=memory_mgr,
-            storage_manager=storage_mgr,
-            tool_manager=tool_mgr,
-            log_mode="console",
-            get_llm_syscall=llm_queue.get,
-            get_memory_syscall=memory_queue.get,
-            get_storage_syscall=storage_queue.get,
-            get_tool_syscall=tool_queue.get,
-            time_slice=0.05  # 50ms time slice
+        scheduler = RRScheduler(
+            ...
         )
         scheduler.start()
         ```
     """
 
-    def __init__(self, *args, time_slice: float = 0.05, **kwargs):
+    def __init__(self, *args, time_slice: float = 1, **kwargs):
         """
         Initialize the Round Robin Scheduler.
         
@@ -100,22 +91,25 @@ class RoundRobinScheduler(BaseScheduler):
             syscall.set_status("executing")
             self.logger.log(
                 f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
-                "execute"
+                "executing"
             )
             syscall.set_start_time(time.time())
 
             response = executor(syscall)
+            
             syscall.set_response(response)
-            syscall.event.set()
-
-            if response.get("finished", True):
+            
+            if response.finished:
                 syscall.set_status("done")
                 log_status = "done"
             else:
-                syscall.set_status("suspended")
-                log_status = "suspended"
+                syscall.set_status("suspending")
+                log_status = "suspending"
 
             syscall.set_end_time(time.time())
+            
+            syscall.event.set()
+            
             self.logger.log(
                 f"{syscall_type} syscall for {syscall.agent_name} is {log_status}. "
                 f"Thread ID: {syscall.get_pid()}\n",
