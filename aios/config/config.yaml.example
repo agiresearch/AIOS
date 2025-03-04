@@ -39,6 +39,7 @@ llms:
     #   backend: "huggingface"
     #   max_new_tokens: 1024
     #   temperature: 1.0
+    #   max_gpu_memory: 
       
   log_mode: "console"
   # use_context_manager: false

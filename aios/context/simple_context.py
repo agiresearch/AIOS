@@ -5,6 +5,8 @@ from aios.context.base import BaseContextManager
 
 from litellm import completion
 
+from openai import OpenAI
+
 import time
 
 class SimpleContextManager(BaseContextManager):
@@ -15,7 +17,7 @@ class SimpleContextManager(BaseContextManager):
     def start(self):
         pass
 
-    def save_context(self, model, messages, tools, temperature, pid, time_limit):
+    def save_context(self, model_name,model, messages, tools, temperature, pid, time_limit):
         if isinstance(model, str):
             response = completion(
                 model=model,
@@ -39,8 +41,26 @@ class SimpleContextManager(BaseContextManager):
             self.context_dict[str(pid)] = completed_response
             return completed_response, finished
         
-        else:
-            pass
+        elif isinstance(model, OpenAI):
+            completed_response = model.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=temperature,
+                stream=True
+            )
+            start_time = time.time()
+            completed_response = ""
+            
+            finished = True
+            
+            for part in response:
+                completed_response += part.choices[0].delta.content or ""
+                if time.time() - start_time > time_limit:
+                    if part.choices[0].finish_reason is None:
+                        finished = False
+                    break
+            self.context_dict[str(pid)] = completed_response
+            return completed_response, finished
 
     def load_context(self, pid, model, tokenizer=None):
         context = self.check_context(pid)
@@ -55,6 +75,8 @@ class SimpleContextManager(BaseContextManager):
             raise TypeError("When model is string type, context must also be string type")
         
         if isinstance(model, str):
+            return context
+        elif isinstance(model, OpenAI):
             return context
         else:
             # For local models that return tensors, decode using tokenizer
