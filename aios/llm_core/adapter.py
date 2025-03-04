@@ -18,6 +18,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+from openai import OpenAI
+
 @dataclass
 class LLMConfig:
     """
@@ -193,22 +195,36 @@ class LLMAdapter:
                     hostname=config.hostname
                 ))
                 
-            case "vllm":
-                self.llms.append(VLLMLocalBackend(
-                    config.name,
-                    max_gpu_memory=config.max_gpu_memory,
-                    hostname=config.hostname
-                ))
+            # case "vllm":
+            #     self.llms.append(VLLMLocalBackend(
+            #         config.name,
+            #         max_gpu_memory=config.max_gpu_memory,
+            #         hostname=config.hostname
+            #     ))
                 
-            case "ollama":
-                self.llms.append(OllamaBackend(
-                    config.name,
-                    hostname=config.hostname
+            # case "ollama":
+            #     self.llms.append(OllamaBackend(
+            #         config.name,
+            #         hostname=config.hostname
+            #     ))
+            case "vllm":
+                self.llms.append(OpenAI(
+                    base_url=config.hostname,
+                    api_key="sk-1234"
+                ))
+            
+            case "sglang":
+                self.llms.append(OpenAI(
+                    base_url=config.hostname,
+                    api_key="sk-1234"
                 ))
                 
             case _:
                 if config.backend == "google":
                     config.backend = "gemini"
+                    
+                # if config.backend == "vllm":
+                #     config.backend = "hosted_vllm"
                 
                 prefix = f"{config.backend}/"
                 if not config.name.startswith(prefix):
@@ -314,10 +330,17 @@ class LLMAdapter:
             # breakpoint()
             
             model_idxs = self.strategy.get_model_idxs(selected_llms)
-            model = self.llms[model_idxs[0]]
+            model_idx = model_idxs[0]
+            model = self.llms[model_idx]
             
-            if tools:
-                tools = pre_process_tools(tools)
+            model_name = self.llm_configs[model_idx].get("name")
+            
+            api_base = self.llm_configs[model_idx].get("hostname", None)
+            
+            breakpoint()
+            
+            # if tools:
+            #     tools = pre_process_tools(tools)
             
             messages = self._prepare_messages(
                 llm_syscall=llm_syscall,
@@ -326,14 +349,19 @@ class LLMAdapter:
                 tools=tools
             )
             
+            breakpoint()
+            
             try:
                 completed_response, finished = self._get_model_response(
+                    model_name=model_name,
                     model=model, 
                     messages=messages, 
                     tools=tools,
                     temperature=temperature, 
-                    llm_syscall=llm_syscall
+                    llm_syscall=llm_syscall,
+                    api_base=api_base
                 )
+                
             except Exception as e:
                 return self._handle_completion_error(e)
 
@@ -403,11 +431,13 @@ class LLMAdapter:
 
     def _get_model_response(
         self, 
-        model: Union[str, HfLocalBackend, VLLMLocalBackend, OllamaBackend],
+        model_name: str,
+        model: Union[str, HfLocalBackend, VLLMLocalBackend, OllamaBackend, OpenAI],
         messages: List[Dict],
         tools: Optional[List],
         temperature: float,
-        llm_syscall
+        llm_syscall,
+        api_base: Optional[str] = None
     ) -> Any:
         """
         Get response from the model.
@@ -424,9 +454,9 @@ class LLMAdapter:
         Example:
             ```python
             # Input
-            model = "openai/gpt-4"
+            model = "openai/gpt-4o-mini"
             messages = [{"role": "user", "content": "Hello!"}]
-            temperature = 0.7
+            temperature = 1.0
             
             # Output (string)
             "Hello! How can I help you today?"
@@ -443,13 +473,12 @@ class LLMAdapter:
         """
         if isinstance(model, str):
             if self.use_context_manager:
-                
                 pid = llm_syscall.get_pid()
                 time_limit = llm_syscall.get_time_limit()
                 completed_response, finished = self.context_manager.save_context(
                     model=model, 
                     messages=messages, 
-                    tools=tools,
+                    # tools=tools,
                     temperature=temperature, 
                     pid=pid,
                     time_limit=time_limit
@@ -458,30 +487,42 @@ class LLMAdapter:
                 return completed_response, finished
                 
             else:
+                # breakpoint()
                 completed_response = completion(
                     model=model, 
                     messages=messages, 
-                    tools=tools, 
-                    temperature=temperature
+                    # tools=tools, 
+                    temperature=temperature, 
+                    api_base=api_base
                 )
+                # if tools:
+                #     breakpoint()
                 
                 return completed_response.choices[0].message.content, True
-        else:
-            return (
-                self.context_manager.save_context(
+            
+        elif isinstance(model, OpenAI):
+            if self.use_context_manager:
+                completed_response, finished = self.context_manager.save_context(
                     model=model, 
                     messages=messages, 
-                    tools=tools,
+                    # tools=tools,
                     temperature=temperature, 
                     pid=pid,
                     time_limit=time_limit
                 )
-                if self.use_context_manager
-                else model(
-                    messages=messages, 
+                return completed_response, finished
+            else:
+                # breakpoint()
+                # response = model.chat.completions.create(model=model_name, messages=messages, tools=tools, temperature=temperature)
+                completed_response = model.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    # tools=tools, 
                     temperature=temperature
                 )
-            )
+                
+                # breakpoint()
+                return completed_response.choices[0].message.content, True
 
     def _process_response(
         self, 
@@ -535,6 +576,8 @@ class LLMAdapter:
             }
             ```
         """
+        # breakpoint()
+        
         if tools:
             if tool_calls := parse_tool_calls(completed_response):
                 return LLMResponse(
