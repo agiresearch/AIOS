@@ -337,7 +337,7 @@ class LLMAdapter:
             
             api_base = self.llm_configs[model_idx].get("hostname", None)
             
-            breakpoint()
+            # breakpoint()
             
             # if tools:
             #     tools = pre_process_tools(tools)
@@ -349,7 +349,7 @@ class LLMAdapter:
                 tools=tools
             )
             
-            breakpoint()
+            # breakpoint()
             
             try:
                 completed_response, finished = self._get_model_response(
