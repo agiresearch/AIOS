@@ -218,29 +218,30 @@ def initialize_scheduler(components: dict, scheduler_config: dict) -> Any:
         #     raise ValueError("FIFO scheduler cannot be used with context management enabled. Please either disable context management or use Round Robin scheduler.")
 
         # Round Robin scheduler
-        
-        scheduler = fifo_scheduler(
-            llm=components["llms"],   
-            memory_manager=components["memory"],
-            storage_manager=components["storage"],
-            tool_manager=components["tool"],
-            log_mode=scheduler_config.get("log_mode", "console"),
-            get_llm_syscall=None,
-            get_memory_syscall=None,
-            get_storage_syscall=None,
-            get_tool_syscall=None,
-        )
-        # scheduler = rr_scheduler(
-        #     llm=components["llms"],   
-        #     memory_manager=components["memory"],
-        #     storage_manager=components["storage"],
-        #     tool_manager=components["tool"],
-        #     log_mode=scheduler_config.get("log_mode", "console"),
-        #     get_llm_syscall=None,
-        #     get_memory_syscall=None,
-        #     get_storage_syscall=None,
-        #     get_tool_syscall=None,
-        # )
+        if use_context:
+            scheduler = rr_scheduler(
+                llm=components["llms"],   
+                memory_manager=components["memory"],
+                storage_manager=components["storage"],
+                tool_manager=components["tool"],
+                log_mode=scheduler_config.get("log_mode", "console"),
+                get_llm_syscall=None,
+                get_memory_syscall=None,
+                get_storage_syscall=None,
+                get_tool_syscall=None,
+            )
+        else:
+            scheduler = fifo_scheduler(
+                llm=components["llms"],   
+                memory_manager=components["memory"],
+                storage_manager=components["storage"],
+                tool_manager=components["tool"],
+                log_mode=scheduler_config.get("log_mode", "console"),
+                get_llm_syscall=None,
+                get_memory_syscall=None,
+                get_storage_syscall=None,
+                get_tool_syscall=None,
+            )
         scheduler.start()
         print("✅ Scheduler initialized and started")
         return scheduler

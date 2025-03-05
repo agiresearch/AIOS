@@ -5,7 +5,7 @@ from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
 import json
-from .utils import tool_calling_input_format, parse_json_format, parse_tool_calls, pre_process_tools
+from .utils import tool_calling_input_format, parse_json_format, parse_tool_calls, slash_to_double_underscore, double_underscore_to_slash, decode_litellm_tool_calls
 from typing import Dict, Optional, Any, List, Union
 import time
 import re
@@ -13,12 +13,11 @@ import os
 from aios.config.config_manager import config
 from dataclasses import dataclass
 import logging
+from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-from openai import OpenAI
 
 from openai import OpenAI
 
@@ -188,27 +187,8 @@ class LLMAdapter:
             ValueError: If required API keys are missing
         """
         match config.backend:
-            case "hflocal":
-                if "HUGGING_FACE_API_KEY" not in os.environ:
-                    raise ValueError("HUGGING_FACE_API_KEY not found in config or environment variables")
-                self.llms.append(HfLocalBackend(
-                    config.name,
-                    max_gpu_memory=config.max_gpu_memory,
-                    hostname=config.hostname
-                ))
-                
-            # case "vllm":
-            #     self.llms.append(VLLMLocalBackend(
-            #         config.name,
-            #         max_gpu_memory=config.max_gpu_memory,
-            #         hostname=config.hostname
-            #     ))
-                
-            # case "ollama":
-            #     self.llms.append(OllamaBackend(
-            #         config.name,
-            #         hostname=config.hostname
-            #     ))
+            
+            # due to the compatibility issue of the vllm and sglang in the litellm, we use the openai backend instead
             case "vllm":
                 self.llms.append(OpenAI(
                     base_url=config.hostname,
@@ -222,11 +202,10 @@ class LLMAdapter:
                 ))
                 
             case _:
+                
+                # Change the backend name of google to gemini to fit the litellm
                 if config.backend == "google":
                     config.backend = "gemini"
-                    
-                # if config.backend == "vllm":
-                #     config.backend = "hosted_vllm"
                 
                 prefix = f"{config.backend}/"
                 if not config.name.startswith(prefix):
@@ -323,7 +302,7 @@ class LLMAdapter:
         try:
             messages = llm_syscall.query.messages
             tools = llm_syscall.query.tools
-            ret_type = llm_syscall.query.message_return_type
+            message_return_type = llm_syscall.query.message_return_type
             selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
 
             llm_syscall.set_status("executing")
@@ -341,9 +320,10 @@ class LLMAdapter:
             
             # breakpoint()
             
-            # if tools:
-            #     tools = pre_process_tools(tools)
+            if tools:
+                tools = slash_to_double_underscore(tools)
             
+            # deprecated as the tools are already supported in Litellm completion
             messages = self._prepare_messages(
                 llm_syscall=llm_syscall,
                 model=model,
@@ -361,7 +341,8 @@ class LLMAdapter:
                     tools=tools,
                     temperature=temperature, 
                     llm_syscall=llm_syscall,
-                    api_base=api_base
+                    api_base=api_base,
+                    message_return_type=message_return_type
                 )
                 
             except Exception as e:
@@ -371,7 +352,7 @@ class LLMAdapter:
                 completed_response=completed_response, 
                 finished=finished,
                 tools=tools, 
-                ret_type=ret_type
+                message_return_type=message_return_type
             )
 
         except Exception as e:
@@ -425,9 +406,9 @@ class LLMAdapter:
             }]
             
         # if not isinstance(model, str):
-        if tools:
-            tools = pre_process_tools(tools)
-            messages = tool_calling_input_format(messages, tools)
+        # if tools:
+        #     tools = pre_process_tools(tools)
+        #     messages = tool_calling_input_format(messages, tools)
 
         return messages
 
@@ -439,7 +420,8 @@ class LLMAdapter:
         tools: Optional[List],
         temperature: float,
         llm_syscall,
-        api_base: Optional[str] = None
+        api_base: Optional[str] = None,
+        message_return_type: Optional[str] = "text"
     ) -> Any:
         """
         Get response from the model.
@@ -473,65 +455,110 @@ class LLMAdapter:
             }
             ```
         """
-        if isinstance(model, str):
+        if isinstance(model, str): # if the model is a string, it will use litellm completion
             if self.use_context_manager:
                 pid = llm_syscall.get_pid()
                 time_limit = llm_syscall.get_time_limit()
                 completed_response, finished = self.context_manager.save_context(
+                    model_name=model_name,
                     model=model, 
                     messages=messages, 
-                    # tools=tools,
+                    tools=tools,
                     temperature=temperature, 
                     pid=pid,
-                    time_limit=time_limit
-                )
+                    time_limit=time_limit,
+                    message_return_type=message_return_type
+                )                
                 
                 return completed_response, finished
                 
             else:
                 # breakpoint()
-                completed_response = completion(
-                    model=model, 
-                    messages=messages, 
-                    # tools=tools, 
-                    temperature=temperature, 
-                    api_base=api_base
-                )
-                # if tools:
-                #     breakpoint()
+                if tools:
+                    completed_response = completion(
+                        model=model, 
+                        messages=messages, 
+                        tools=tools, 
+                        temperature=temperature, 
+                        api_base=api_base
+                    )
+                    
+                    # breakpoint()
+                    completed_response = decode_litellm_tool_calls(completed_response)
+                    return completed_response, True
+                    
+                elif message_return_type == "json":
+                    completed_response = completion(
+                        model=model, 
+                        messages=messages, 
+                        temperature=temperature, 
+                        api_base=api_base,
+                        format="json"
+                    )
+                    return completed_response.choices[0].message.content, True
+                    
+                else:
+                    completed_response = completion(
+                        model=model, 
+                        messages=messages, 
+                        temperature=temperature, 
+                        api_base=api_base
+                    )
+                    return completed_response.choices[0].message.content, True
                 
-                return completed_response.choices[0].message.content, True
             
-        elif isinstance(model, OpenAI):
+        elif isinstance(model, OpenAI): # if the model is an OpenAI model, it will use OpenAI completion, as the litellm has compatibility issue with the vllm and sglang, here we use OpenAI server to launch vllm and sglang endpoints
             if self.use_context_manager:
                 completed_response, finished = self.context_manager.save_context(
+                    model_name=model_name,
                     model=model, 
                     messages=messages, 
-                    # tools=tools,
+                    tools=tools,
                     temperature=temperature, 
                     pid=pid,
-                    time_limit=time_limit
+                    time_limit=time_limit,
+                    message_return_type=message_return_type
                 )
                 return completed_response, finished
             else:
                 # breakpoint()
                 # response = model.chat.completions.create(model=model_name, messages=messages, tools=tools, temperature=temperature)
-                completed_response = model.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    # tools=tools, 
-                    temperature=temperature
-                )
+                if tools:
+                    completed_response = model.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        tools=tools, 
+                        temperature=temperature
+                    )
+                    completed_response = decode_litellm_tool_calls(completed_response)
+                    return completed_response, True
+                
+                elif message_return_type == "json":
+                    completed_response = model.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        temperature=temperature,
+                        format="json"
+                    )
+                    return completed_response.choices[0].message.content, True
+                    
+                
+                else:
+                    completed_response = model.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        temperature=temperature
+                    )
+                    return completed_response.choices[0].message.content, True
                 
                 # breakpoint()
-                return completed_response.choices[0].message.content, True
 
     def _process_response(
         self, 
-        completed_response: str, 
+        completed_response: str | List, # either a response message of a string or a list of tool calls
         finished: bool,
         tools: Optional[List] = None, 
-        ret_type: Optional[str] = None
+        message_return_type: Optional[str] = None
     ) -> LLMResponse:
         """
         Process the model's response into the appropriate format.
@@ -539,7 +566,7 @@ class LLMAdapter:
         Args:
             response: Raw response from the model
             tools: Optional list of tools
-            ret_type: Expected return type ("json" or None)
+            message_return_type: Expected return type ("json" or None)
 
         Returns:
             Formatted LLMResponse
@@ -549,7 +576,7 @@ class LLMAdapter:
             # Input
             response = '{"result": "4", "operation": "2 + 2"}'
             tools = None
-            ret_type = "json"
+            message_return_type = "json"
             
             # Output LLMResponse
             {
@@ -581,14 +608,15 @@ class LLMAdapter:
         # breakpoint()
         
         if tools:
-            if tool_calls := parse_tool_calls(completed_response):
-                return LLMResponse(
-                    response_message=None,
-                    tool_calls=tool_calls,
-                    finished=finished
-                )
+        # if tool_calls := parse_tool_calls(completed_response):
+            tool_calls = double_underscore_to_slash(completed_response)
+            return LLMResponse(
+                response_message=None,
+                tool_calls=tool_calls,
+                finished=finished
+            )
 
-        if ret_type == "json":
-            completed_response = parse_json_format(completed_response)
+        # if message_return_type == "json":
+        #     completed_response = parse_json_format(completed_response)
 
         return LLMResponse(response_message=completed_response, finished=finished)

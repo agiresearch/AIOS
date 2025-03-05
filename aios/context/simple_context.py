@@ -17,15 +17,42 @@ class SimpleContextManager(BaseContextManager):
     def start(self):
         pass
 
-    def save_context(self, model_name,model, messages, tools, temperature, pid, time_limit):
+    def save_context(self, 
+                model_name, 
+                model, 
+                messages, 
+                tools, 
+                message_return_type, 
+                temperature, 
+                pid, 
+                time_limit
+            ):
+        
         if isinstance(model, str):
-            response = completion(
-                model=model,
-                messages=messages,
-                # tools=tools,
-                temperature=temperature,
-                stream=True
-            )
+            if tools:
+                response = completion(
+                    model=model,
+                    messages=messages,
+                    tools=tools,
+                    temperature=temperature,
+                    stream=True
+                )
+                
+            elif message_return_type == "json":
+                response = completion(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    # format="json"
+                )
+                
+            else:
+                response = completion(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature
+                )
+                
             start_time = time.time()
             completed_response = ""
             
@@ -42,12 +69,32 @@ class SimpleContextManager(BaseContextManager):
             return completed_response, finished
         
         elif isinstance(model, OpenAI):
-            completed_response = model.chat.completions.create(
+            if tools:
+                response = model.chat.completions.create(
                 model=model_name,
                 messages=messages,
+                tools=tools,
                 temperature=temperature,
                 stream=True
             )
+                
+            elif message_return_type == "json":
+                response = model.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=temperature,
+                    # format="json"
+                    stream=True
+                )
+                
+            else:
+                response = model.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=temperature,
+                    stream=True
+                )
+                
             start_time = time.time()
             completed_response = ""
             

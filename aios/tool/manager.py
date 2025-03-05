@@ -19,6 +19,7 @@ class ToolManager:
     def address_request(self, syscall) -> None:
         tool_calls = syscall.tool_calls
 
+        # breakpoint()
         try:
             for tool_call in tool_calls:
                 tool_org_and_name, tool_params = (
