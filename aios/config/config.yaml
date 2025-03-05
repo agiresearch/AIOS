@@ -22,10 +22,10 @@ llms:
 
 
     # Google Models
-    - name: "gemini-1.5-flash"
-      backend: "google"
-      max_new_tokens: 1024
-      temperature: 1.0
+    # - name: "gemini-1.5-flash"
+    #   backend: "google"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
 
 
     # Anthropic Models
@@ -45,11 +45,11 @@ llms:
 
 
     # Ollama Models
-    # - name: "qwen2.5:7b"
-    #   backend: "ollama"
-    #   max_new_tokens: 1024
-    #   temperature: 1.0
-    #   hostname: "http://localhost:11434" # Make sure to run ollama server
+    - name: "qwen2.5:7b"
+      backend: "ollama"
+      max_new_tokens: 1024
+      temperature: 1.0
+      hostname: "http://localhost:11434" # Make sure to run ollama server
     
     
     # vLLM Models

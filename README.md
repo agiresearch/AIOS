@@ -106,7 +106,7 @@ The following parts introduce different modes of deploying AIOS. **Currently, AI
 </p>
 
 - Ongoing Features:
-  - Different user/developer’s personal AIOS kernels can co-exist in the same physical machine through virtualization
+  - Different user/developer's personal AIOS kernels can co-exist in the same physical machine through virtualization
 - Critical techniques:
   - Virtualization of different AIOS kernel instances in the same machine
   - Scheduling and resource allocation mechanism for different virtual machines located in the same machine
@@ -124,21 +124,21 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 - Supported versions: **Python 3.10 - 3.11**
 
 #### Set Up API Keys
-You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the aios/config/config.yaml.
+You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the `aios/config/config.yaml`.
 
 > [!TIP]
-> It is important to mention that, we stronglyrecommend using the `aios/config/config.yaml` file to set up your API keys. This method is straightforward and helps avoid potential sychronization issues with environment variables. 
+> It is important to mention that, we strongly recommend using the `aios/config/config.yaml` file to set up your API keys. This method is straightforward and helps avoid potential sychronization issues with environment variables. 
 
 A simple example to set up your API keys in `aios/config/config.yaml` is shown below:
 ```yaml
-deepseek: "your-deepseek-key"
-openai: "your-openai-key"
-gemini: "your-gemini-key"
-groq: "your-groq-key"
-anthropic: "your-anthropic-key"
-huggingface:
-  auth_token: "your-huggingface-token"
-  home: "optional-path"
+api_keys:
+  openai: "your-openai-key"    
+  gemini: "your-gemini-key"    
+  groq: "your-groq-key"      
+  anthropic: "your-anthropic-key" 
+  huggingface:
+    auth_token: "your-huggingface-token"  
+    home: "optional-path"        # Optional: HuggingFace models path
 ```
 
 To obtain these API keys:
@@ -149,38 +149,65 @@ To obtain these API keys:
 5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 6. Anthropic API: Visit https://console.anthropic.com/keys
 
-**Use ollama Models:** If you would like to use ollama, you need to download ollama from from https://ollama.com/.
-Then pull the available models you would like to use from https://ollama.com/library
-```bash
-ollama pull llama3:8b # use llama3:8b for example
+#### Configure LLM Models
+You can configure which LLM models to use in the same `aios/config/config.yaml` file. Here's an example configuration:
+
+```yaml
+llms:
+  models:
+    # Ollama Models
+    - name: "qwen2.5:7b"
+      backend: "ollama"
+      max_new_tokens: 1024
+      temperature: 1.0
+      hostname: "http://localhost:11434"  # Make sure to run ollama server
+
+    # vLLM Models
+    - name: "meta-llama/Llama-3.2-3B-Instruct"
+      backend: "vllm"
+      max_new_tokens: 1024
+      temperature: 1.0
+      hostname: "http://localhost:8091/v1"  # Make sure to run vllm server
 ```
-Then you need to start the ollama server either from ollama app
-or using the following command in the terminal
+
+**Using Ollama Models:** 
+1. First, download ollama from https://ollama.com/
+2. Start the ollama server in a separate terminal:
 ```bash
 ollama serve
 ```
+3. Pull your desired models from https://ollama.com/library:
+```bash
+ollama pull qwen2.5:7b  # example model
+```
+
 > [!TIP]
-> ollama can support both CPU-only and GPU environment, details of how to use ollama can be found at [here](https://github.com/ollama/ollama)
+> Ollama supports both CPU-only and GPU environments. For more details about ollama usage, visit [ollama documentation](https://github.com/ollama/ollama)
 
-
-**Use Huggingface Models:** Some of the huggingface models require authentification, if you want to use all of
-the models you need to set up  your authentification token in https://huggingface.co/settings/tokens
-and set up it as an environment variable using the following command
-
-By default, huggingface will download the models in the `~/.cache` directory.
-If you want to designate the download directory, you can set up the home path in the `aios/config/config.yaml` file.
-
-If you want to speed up the inference of huggingface models, you can use vLLM as the backend.
+**Using vLLM Models:**
+1. Install vLLM following their [installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html)
+2. Start the vLLM server in a separate terminal:
+```bash
+vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
+```
 
 > [!NOTE]
->
-> It is important to note that vLLM currently only supports linux and GPU-enabled environment. So if you do not have the environment, you need to choose other options.
+> vLLM currently only supports Linux and GPU-enabled environments. If you don't have a compatible environment, please choose other backend options.
 
-Considering that vLLM itself does not support passing designated GPU ids, you need to either
-setup the environment variable,
-
+For GPU configuration with vLLM, you can set the CUDA device:
 ```bash
-export CUDA_VISIBLE_DEVICES="0" # replace with your designated gpu ids
+export CUDA_VISIBLE_DEVICES="0"  # replace with your designated gpu ids
+```
+
+**Using HuggingFace Models:** 
+You can configure HuggingFace models with specific GPU memory allocation:
+```yaml
+- name: "meta-llama/Llama-2-70b-chat-hf"
+  backend: "huggingface"
+  max_new_tokens: 1024
+  temperature: 1.0
+  max_gpu_memory: {"0": "24GB", "1": "24GB"}  # GPU memory allocation
+  eval_device: "cuda:0"  # Device for model evaluation
 ```
 
 ##### Detailed Setup Instructions
@@ -211,9 +238,8 @@ When no environment variables are set, the following API keys will be shown:
 Git clone AIOS kernel
 ```bash
 git clone https://github.com/agiresearch/AIOS.git
-cd AIOS && git checkout v0.2.0.beta
 ```
-Create venv environment (recommended)
+Create venv environment
 ```bash
 python3.x -m venv venv # Only support for Python 3.10 and 3.11
 source venv/bin/activate
@@ -286,7 +312,7 @@ If you successfully start the AIOS terminal, it will be shown as below:
 
 Detailed instructions of how to use the AIOS terminal can be found at [here](https://github.com/agiresearch/AIOS-LSFS)
 
-[!WARNING]
+> [!WARNING]
 > The rollback feature of the AIOS terminal requires the connection to the redis server. Make sure you have the redis server running if you would like to use the rollback feature.
 
 ### Supported Agent Frameworks

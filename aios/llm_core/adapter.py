@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 from openai import OpenAI
 
+from openai import OpenAI
+
 @dataclass
 class LLMConfig:
     """
@@ -337,7 +339,7 @@ class LLMAdapter:
             
             api_base = self.llm_configs[model_idx].get("hostname", None)
             
-            breakpoint()
+            # breakpoint()
             
             # if tools:
             #     tools = pre_process_tools(tools)
@@ -349,7 +351,7 @@ class LLMAdapter:
                 tools=tools
             )
             
-            breakpoint()
+            # breakpoint()
             
             try:
                 completed_response, finished = self._get_model_response(
