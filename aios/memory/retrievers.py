@@ -1,6 +1,5 @@
 from typing import List, Dict, Any, Optional, Union
 from sentence_transformers import SentenceTransformer
-from rank_bm25 import BM25Okapi
 import nltk
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
