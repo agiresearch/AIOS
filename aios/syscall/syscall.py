@@ -2,6 +2,8 @@ import time
 import json
 from typing import Dict, List, Any, Optional
 
+# Update import to use the new location
+from aios.memory.note import MemoryNote
 from aios.syscall import Syscall
 from aios.syscall.llm import LLMSyscall
 from aios.syscall.storage import StorageSyscall, storage_syscalls
@@ -315,7 +317,7 @@ class SyscallExecutor:
             ```
         """
         if isinstance(query, LLMQuery):
-            if query.action_type == "chat":
+            if query.action_type == "chat" or query.action_type == "chat_with_json_response":
                 llm_response = self.execute_llm_syscall(agent_name, query)
                 return llm_response
             
@@ -335,7 +337,31 @@ class SyscallExecutor:
         elif isinstance(query, ToolQuery):
             return self.execute_tool_syscall(agent_name, query)
         elif isinstance(query, MemoryQuery):
-            return self.execute_memory_syscall(agent_name, query)
+            if query.action_type == "add_agentic_memory":
+                metadata = self.execute_memory_content_analyze(agent_name, query)
+                query.params.update(metadata)
+                # retrieve the related memory and evolve the memory.
+                query.action_type = "retrieve_memory"
+                similar_memories = self.execute_memory_syscall(agent_name, query)
+                query, similar_memories_evolved = self.execute_memory_evolve(query, similar_memories)
+                # define a memory abstract in the memory layer.
+                query.action_type = "add_memory"
+                for memory in similar_memories_evolved:
+                    updated_query = MemoryQuery()
+                    updated_query.params = memory.return_params() # return a dict with full parameters, also with memory id for updated
+                    updated_query.action_type = "update_memory"
+                    self.execute_memory_syscall(agent_name, updated_query)
+                return self.execute_memory_syscall(agent_name, query)
+            elif query.action_type == "add_memory":
+                return self.execute_memory_syscall(agent_name, query)
+            elif query.action_type == "remove_memory":
+                return self.execute_memory_syscall(agent_name, query)
+            elif query.action_type == "update_memory":
+                return self.execute_memory_syscall(agent_name, query)
+            elif query.action_type == "retrieve_memory":
+                return self.execute_memory_syscall(agent_name, query)
+            elif query.action_type == "get_memory":
+                return self.execute_memory_syscall(agent_name, query)
         elif isinstance(query, StorageQuery):
             return self.execute_storage_syscall(agent_name, query)
 

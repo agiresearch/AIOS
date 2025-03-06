@@ -304,7 +304,7 @@ class LLMAdapter:
             tools = llm_syscall.query.tools
             message_return_type = llm_syscall.query.message_return_type
             selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
-
+            response_format = llm_syscall.query.response_format
             llm_syscall.set_status("executing")
             llm_syscall.set_start_time(time.time())
             
@@ -342,7 +342,8 @@ class LLMAdapter:
                     temperature=temperature, 
                     llm_syscall=llm_syscall,
                     api_base=api_base,
-                    message_return_type=message_return_type
+                    message_return_type=message_return_type,
+                    response_format=response_format
                 )
                 
             except Exception as e:
@@ -428,7 +429,8 @@ class LLMAdapter:
         temperature: float,
         llm_syscall,
         api_base: Optional[str] = None,
-        message_return_type: Optional[str] = "text"
+        message_return_type: Optional[str] = "text",
+        response_format: Optional[Dict[str, Dict]] = None
     ) -> Any:
         """
         Get response from the model.
@@ -474,8 +476,9 @@ class LLMAdapter:
                     temperature=temperature, 
                     pid=pid,
                     time_limit=time_limit,
-                    message_return_type=message_return_type
-                )
+                    message_return_type=message_return_type,
+                    response_format=response_format
+                )                
                 
                 if finished:
                     self.context_manager.clear_context(pid)
@@ -493,7 +496,7 @@ class LLMAdapter:
                         api_base=api_base
                     )
                     
-                    breakpoint()
+                    # breakpoint()
                     completed_response = decode_litellm_tool_calls(completed_response)
                     return completed_response, True
                     
@@ -503,7 +506,8 @@ class LLMAdapter:
                         messages=messages, 
                         temperature=temperature, 
                         api_base=api_base,
-                        format="json"
+                        format="json",
+                        response_format=response_format
                     )
                     return completed_response.choices[0].message.content, True
                     
@@ -527,7 +531,8 @@ class LLMAdapter:
                     temperature=temperature, 
                     pid=pid,
                     time_limit=time_limit,
-                    message_return_type=message_return_type
+                    message_return_type=message_return_type,
+                    response_format=response_format
                 )
                 if finished:
                     self.context_manager.clear_context(pid)
@@ -550,7 +555,8 @@ class LLMAdapter:
                         model=model_name,
                         messages=messages,
                         temperature=temperature,
-                        format="json"
+                        format="json",
+                        response_format=response_format
                     )
                     return completed_response.choices[0].message.content, True
                     
