@@ -6,6 +6,7 @@ from aios.syscall import Syscall
 from aios.syscall.llm import LLMSyscall
 from aios.syscall.storage import StorageSyscall, storage_syscalls
 from aios.syscall.tool import ToolSyscall
+from aios.syscall.memory import MemorySyscall
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
@@ -16,6 +17,8 @@ from aios.hooks.stores._global import (
     # global_storage_req_queue,
     # global_tool_req_queue,
 )
+
+import copy
 
 from aios.hooks.types.llm import LLMRequestQueue
 from aios.hooks.types.memory import MemoryRequestQueue
@@ -44,8 +47,21 @@ class SyscallExecutor:
     def __init__(self):
         """Initialize the SyscallExecutor."""
         pass
+    
+    def create_syscall(self, agent_name: str, query) -> Dict[str, Any]:
+        """
+        Create a syscall object based on the query type.
+        """
+        if isinstance(query, LLMQuery):
+            return LLMSyscall(agent_name, query)
+        elif isinstance(query, StorageQuery):
+            return StorageSyscall(agent_name, query)
+        elif isinstance(query, MemoryQuery):
+            return MemorySyscall(agent_name, query)
+        elif isinstance(query, ToolQuery):
+            return ToolSyscall(agent_name, query)
 
-    def _execute_syscall(self, syscall) -> Dict[str, Any]:
+    def _execute_syscall(self, agent_name: str, query) -> Dict[str, Any]:
         """
         Execute a system call and collect timing metrics.
         
@@ -69,12 +85,15 @@ class SyscallExecutor:
             }
             ```
         """
-        syscall.set_status("active")
         completed_response = ""
         start_times, end_times = [], []
         waiting_times, turnaround_times = [], []
 
-        while syscall.get_status() != "done":
+        while True:
+            # syscall = copy.deepcopy(syscall)
+            syscall = self.create_syscall(agent_name, query)
+            syscall.set_status("active")
+            
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
@@ -82,10 +101,27 @@ class SyscallExecutor:
             if not syscall.get_source():
                 syscall.set_source(syscall.agent_name)
             
+            
+            if isinstance(syscall, LLMSyscall):
+                global_llm_req_queue_add_message(syscall)
+            elif isinstance(syscall, StorageSyscall):
+                global_storage_req_queue_add_message(syscall)
+            elif isinstance(syscall, MemorySyscall):
+                global_memory_req_queue_add_message(syscall)
+            elif isinstance(syscall, ToolSyscall):
+                global_tool_req_queue_add_message(syscall)
+            
             syscall.start()
             syscall.join()
+            
+            # breakpoint()
 
             completed_response = syscall.get_response()
+            
+            if syscall.get_status() == "done":
+                break
+            
+            # breakpoint()
             
             # Calculate timing metrics
             start_time = syscall.get_start_time()
@@ -123,10 +159,10 @@ class SyscallExecutor:
             result = executor.execute_storage_syscall("agent_1", query)
             ```
         """
-        syscall = StorageSyscall(agent_name, query)
-        syscall.set_target("storage")
-        global_storage_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = StorageSyscall(agent_name, query)
+        # syscall.set_target("storage")
+        # global_storage_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_memory_syscall(self, agent_name: str, query: MemoryQuery) -> Dict[str, Any]:
         """
@@ -145,12 +181,12 @@ class SyscallExecutor:
             result = executor.execute_memory_syscall("agent_1", query)
             ```
         """
-        syscall = Syscall(agent_name, query)
-        syscall.set_target("memory")
-        global_memory_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = Syscall(agent_name, query)
+        # syscall.set_target("memory")
+        # global_memory_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
-    def execute_tool_syscall(self, agent_name: str, tool_calls: List[Dict]) -> Dict[str, Any]:
+    def execute_tool_syscall(self, agent_name: str, query: ToolQuery) -> Dict[str, Any]:
         """
         Execute a tool system call.
         
@@ -167,10 +203,10 @@ class SyscallExecutor:
             result = executor.execute_tool_syscall("agent_1", tool_calls)
             ```
         """
-        syscall = ToolSyscall(agent_name, tool_calls)
-        syscall.set_target("tool")
-        global_tool_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = ToolSyscall(agent_name, tool_calls)
+        # syscall.set_target("tool")
+        # global_tool_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_llm_syscall(self, agent_name: str, query: LLMQuery) -> Dict[str, Any]:
         """
@@ -189,10 +225,10 @@ class SyscallExecutor:
             result = executor.execute_llm_syscall("agent_1", query)
             ```
         """
-        syscall = LLMSyscall(agent_name=agent_name, query=query)
-        syscall.set_target("llm")
-        global_llm_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = LLMSyscall(agent_name=agent_name, query=query)
+        # syscall.set_target("llm")
+        # global_llm_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_file_operation(self, agent_name: str, query: LLMQuery) -> str:
         """
@@ -279,9 +315,13 @@ class SyscallExecutor:
             
             elif query.action_type == "tool_use":
                 llm_response = self.execute_llm_syscall(agent_name, query)["response"]
-                # breakpoint()
-                tool_response = self.execute_tool_syscall(agent_name, llm_response.tool_calls)
-                # breakpoint()
+                breakpoint()
+                tool_query = ToolQuery(
+                    tool_calls=llm_response.tool_calls,
+                    # action_type="tool_use"
+                )
+                tool_response = self.execute_tool_syscall(agent_name, tool_query)
+                breakpoint()
                 return tool_response
             
             elif query.action_type == "operate_file":

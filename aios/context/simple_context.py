@@ -9,6 +9,8 @@ from openai import OpenAI
 
 import time
 
+from ..llm_core.utils import decode_litellm_tool_calls
+
 class SimpleContextManager(BaseContextManager):
     def __init__(self):
         BaseContextManager.__init__(self)
@@ -27,7 +29,7 @@ class SimpleContextManager(BaseContextManager):
                 pid, 
                 time_limit
             ):
-        
+        breakpoint()
         if isinstance(model, str):
             if tools:
                 response = completion(
@@ -35,8 +37,11 @@ class SimpleContextManager(BaseContextManager):
                     messages=messages,
                     tools=tools,
                     temperature=temperature,
-                    stream=True
+                    # stream=True
+                    # stream=True
                 )
+                # breakpoint()
+                return decode_litellm_tool_calls(response), True
                 
             elif message_return_type == "json":
                 response = completion(
@@ -44,6 +49,7 @@ class SimpleContextManager(BaseContextManager):
                     messages=messages,
                     temperature=temperature,
                     # format="json"
+                    stream=True
                 )
                 
             else:
@@ -113,7 +119,7 @@ class SimpleContextManager(BaseContextManager):
         context = self.check_context(pid)
         
         if context is None:
-            return ""
+            return None
         
         # Add type checking
         if isinstance(context, str) and not isinstance(model, str):

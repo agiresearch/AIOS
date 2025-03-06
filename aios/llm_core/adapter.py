@@ -483,7 +483,7 @@ class LLMAdapter:
                         api_base=api_base
                     )
                     
-                    # breakpoint()
+                    breakpoint()
                     completed_response = decode_litellm_tool_calls(completed_response)
                     return completed_response, True
                     
