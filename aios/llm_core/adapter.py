@@ -400,10 +400,17 @@ class LLMAdapter:
                 model=model,
                 # tokenizer=tokenizer # TODO: Add tokenizer
             )
-            messages += [{
-                "role": "assistant",
-                "content": "" + restored_context,
-            }]
+            
+            if restored_context:
+                if messages[-1]["role"] != "assistant":
+                    messages += [{
+                        "role": "assistant",
+                        "content": ""
+                    }]
+                    
+                # generation_hints = "continue to generate after the current context and do not repeat the previous context, stop generating when you think the generation is complete"
+                # restored_context = restored_context.replace(generation_hints, "")
+                messages[-1]["content"] = restored_context
             
         # if not isinstance(model, str):
         # if tools:
@@ -468,7 +475,10 @@ class LLMAdapter:
                     pid=pid,
                     time_limit=time_limit,
                     message_return_type=message_return_type
-                )                
+                )
+                
+                if finished:
+                    self.context_manager.clear_context(pid)
                 
                 return completed_response, finished
                 
@@ -519,6 +529,8 @@ class LLMAdapter:
                     time_limit=time_limit,
                     message_return_type=message_return_type
                 )
+                if finished:
+                    self.context_manager.clear_context(pid)
                 return completed_response, finished
             else:
                 # breakpoint()

@@ -18,7 +18,7 @@ from aios.hooks.stores._global import (
     # global_tool_req_queue,
 )
 
-import copy
+import threading
 
 from aios.hooks.types.llm import LLMRequestQueue
 from aios.hooks.types.memory import MemoryRequestQueue
@@ -46,7 +46,8 @@ class SyscallExecutor:
     
     def __init__(self):
         """Initialize the SyscallExecutor."""
-        pass
+        self.id = 0
+        self.id_lock = threading.Lock()
     
     def create_syscall(self, agent_name: str, query) -> Dict[str, Any]:
         """
@@ -89,6 +90,10 @@ class SyscallExecutor:
         start_times, end_times = [], []
         waiting_times, turnaround_times = [], []
 
+        with self.id_lock:
+            self.id += 1
+            syscall_id = self.id
+        
         while True:
             # syscall = copy.deepcopy(syscall)
             syscall = self.create_syscall(agent_name, query)
@@ -101,6 +106,8 @@ class SyscallExecutor:
             if not syscall.get_source():
                 syscall.set_source(syscall.agent_name)
             
+            if not syscall.get_pid():
+                syscall.set_pid(syscall_id)
             
             if isinstance(syscall, LLMSyscall):
                 global_llm_req_queue_add_message(syscall)
@@ -248,8 +255,7 @@ class SyscallExecutor:
                 action_type="operate_file"
             )
             result = executor.execute_file_operation("agent_1", query)
-            ```
-        """
+            ```        """
         # Parse file system operation
         system_prompt = "You are a parser for parsing file system operations. Your task is to parse the instructions and return the file system operation call."
         query.messages = [{"role": "system", "content": system_prompt}] + query.messages
@@ -359,3 +365,4 @@ def create_syscall_executor():
 
 # Maintain backwards compatibility
 useSysCall = create_syscall_executor
+

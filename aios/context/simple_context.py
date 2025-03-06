@@ -29,7 +29,6 @@ class SimpleContextManager(BaseContextManager):
                 pid, 
                 time_limit
             ):
-        breakpoint()
         if isinstance(model, str):
             if tools:
                 response = completion(
@@ -37,18 +36,16 @@ class SimpleContextManager(BaseContextManager):
                     messages=messages,
                     tools=tools,
                     temperature=temperature,
-                    # stream=True
-                    # stream=True
                 )
                 # breakpoint()
-                return decode_litellm_tool_calls(response), True
+                completed_response = decode_litellm_tool_calls(response)
+                return completed_response, True
                 
             elif message_return_type == "json":
                 response = completion(
                     model=model,
                     messages=messages,
                     temperature=temperature,
-                    # format="json"
                     stream=True
                 )
                 
@@ -56,11 +53,12 @@ class SimpleContextManager(BaseContextManager):
                 response = completion(
                     model=model,
                     messages=messages,
-                    temperature=temperature
+                    temperature=temperature,
+                    stream=True
                 )
                 
             start_time = time.time()
-            completed_response = ""
+            completed_response = messages[-1]["content"]
             
             finished = True
             
@@ -70,26 +68,25 @@ class SimpleContextManager(BaseContextManager):
                     if part.choices[0].finish_reason is None:
                         finished = False
                     break
-                
+            # breakpoint()
             self.context_dict[str(pid)] = completed_response
             return completed_response, finished
         
         elif isinstance(model, OpenAI):
             if tools:
                 response = model.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                tools=tools,
-                temperature=temperature,
-                stream=True
-            )
+                    model=model_name,
+                    messages=messages,
+                    tools=tools,
+                    temperature=temperature,
+                    stream=True
+                )
                 
             elif message_return_type == "json":
                 response = model.chat.completions.create(
                     model=model_name,
                     messages=messages,
                     temperature=temperature,
-                    # format="json"
                     stream=True
                 )
                 
@@ -102,7 +99,7 @@ class SimpleContextManager(BaseContextManager):
                 )
                 
             start_time = time.time()
-            completed_response = ""
+            completed_response = messages[-1]["content"]
             
             finished = True
             
@@ -141,7 +138,8 @@ class SimpleContextManager(BaseContextManager):
         return self.context_dict.get(str(pid), None)
 
     def clear_context(self, pid):
-        self.context_dict.pop(pid)
+        if self.check_context(pid):
+            self.context_dict.pop(pid)
         return
 
     def stop(self):

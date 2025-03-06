@@ -307,7 +307,7 @@ class Syscall(Thread):
             syscall.event.set()  # Triggers execution
             ```
         """
-        self.set_pid(self.native_id)
+        # self.set_pid(self.native_id)
         self.event.wait()
 
     def get_source(self) -> Optional[str]:
