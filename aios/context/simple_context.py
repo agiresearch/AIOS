@@ -25,7 +25,8 @@ class SimpleContextManager(BaseContextManager):
                 message_return_type, 
                 temperature, 
                 pid, 
-                time_limit
+                time_limit,
+                response_format
             ):
         
         if isinstance(model, str):
@@ -44,6 +45,7 @@ class SimpleContextManager(BaseContextManager):
                     messages=messages,
                     temperature=temperature,
                     # format="json"
+                    response_format=response_format
                 )
                 
             else:

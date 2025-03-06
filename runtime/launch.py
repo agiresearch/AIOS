@@ -178,9 +178,7 @@ def initialize_memory_manager(memory_config: dict, storage_manager: Any) -> Any:
     """Initialize memory manager with configuration."""
     try:
         memory_manager = useMemoryManager(
-            memory_limit=memory_config.get("memory_limit", 524288),
-            eviction_k=memory_config.get("eviction_k", 3),
-            storage_manager=storage_manager,
+            log_mode=memory_config.get("log_mode", "console"),
         )
         print("✅ Memory manager initialized")
         return memory_manager
@@ -291,8 +289,9 @@ def initialize_components() -> dict:
         
         if not components["storage"]:
             raise Exception("Storage manager must be initialized first")
-            
+        print(memory_config)
         components["memory"] = initialize_memory_manager(memory_config, components["storage"])
+        print("memory manager: ", components["memory"])
         components["tool"] = initialize_tool_manager()
 
         # Verify required components

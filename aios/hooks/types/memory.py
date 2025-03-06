@@ -10,6 +10,4 @@ MemoryRequestQueueAddMessage: TypeAlias = Callable[[str], None]
 MemoryRequestQueueCheckEmpty: TypeAlias = Callable[[], bool]
 
 class MemoryManagerParams(BaseModel):
-    memory_limit: int
-    eviction_k: int
-    storage_manager: Any
+    log_mode: str

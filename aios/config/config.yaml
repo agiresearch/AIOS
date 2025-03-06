@@ -69,9 +69,8 @@ llms:
   use_context_manager: false
 
 memory:
-  memory_limit: 524288 # 512KB
-  eviction_k: 3
-
+  log_mode: "console"
+  
 storage:
   root_dir: "root"
   use_vector_db: true
