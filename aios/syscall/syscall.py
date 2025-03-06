@@ -2,7 +2,8 @@ import time
 import json
 from typing import Dict, List, Any, Optional
 
-from aios.memory.base import MemoryNote
+# Update import to use the new location
+from aios.memory.note import MemoryNote
 from aios.syscall import Syscall
 from aios.syscall.llm import LLMSyscall
 from aios.syscall.storage import StorageSyscall, storage_syscalls

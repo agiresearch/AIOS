@@ -10,7 +10,7 @@ class MemoryManager:
         log_mode: str = "console",
     ):
         self.memory_manager = BaseMemoryManager(
-            log_mode
+            log_mode=log_mode
         )
         
     def address_request(
