@@ -198,29 +198,32 @@ class SyscallExecutor:
 
             Content for analysis:
         """
-        response_format = {"type": "json_schema", "json_schema": {
-                                "name": "response",
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "keywords": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "context": {
-                                            "type": "string",
-                                        },
-                                        "tags": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }}
+        response_format = {
+            "type": "json_schema", 
+            "json_schema": {
+                "name": "response",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "keywords": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "context": {
+                            "type": "string"
+                        },
+                        "tags": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
         query_llm = LLMQuery()
         query_llm.messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt + content}]
         query_llm.message_return_type = "json"
@@ -244,7 +247,10 @@ class SyscallExecutor:
             Tuple containing evolved query and response
             
         Example:
-
+            ```python
+            similar_memories = [memory1, memory2]
+            evolved_query, response = executor.execute_memory_evolve(query, similar_memories)
+            ```
         """
         nearest_neighbors_memories = "\n".join([
             f"memory content: {memory.content}, tags: {', '.join(memory.tags)}, context: {memory.context}, keywords: {', '.join(memory.keywords)}" 
@@ -281,60 +287,62 @@ class SyscallExecutor:
         }}
         '''.format(content=query.content, context=query.context, keywords=query.keywords, nearest_neighbors_memories=nearest_neighbors_memories)
         query_llm = LLMQuery()
-        query_llm.messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt + content}]
-        response_format = {"type": "json_schema", "json_schema": {
-                        "name": "response",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "should_evolve": {
-                                    "type": "string",
-                                },
-                                "actions": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "suggested_connections": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "new_context_neighborhood": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "tags_to_update": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "new_tags_neighborhood": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                                
-                            },
-                            "required": ["should_evolve","actions","suggested_connections","tags_to_update","new_context_neighborhood","new_tags_neighborhood"],
-                            "additionalProperties": False
+        query_llm.messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt}]
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "response",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "should_evolve": {
+                            "type": "string"
                         },
-                        "strict": True
-                    }}
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "suggested_connections": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "new_context_neighborhood": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "tags_to_update": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "new_tags_neighborhood": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["should_evolve", "actions", "suggested_connections", "tags_to_update", "new_context_neighborhood", "new_tags_neighborhood"]
+                }
+            }
+        }
         query_llm.message_return_type = "json"
         query_llm.response_format = response_format
+        # Use the agent_name parameter passed from the query object
+        agent_name = query.agent_name if hasattr(query, 'agent_name') else "default_agent"
         response = self.execute_llm_syscall(agent_name, query_llm)["response"]
         response = json.loads(response)
         should_evolve = response["should_evolve"]
