@@ -1,20 +1,18 @@
-from .memory_classes.single_memory import SingleMemoryManager
+from .base import BaseMemoryManager
 
 
 class MemoryManager:
+    """
+    Memory manager for the AIOS system.
+    """
     def __init__(
         self,
-        memory_limit,
-        eviction_k,
-        storage_manager,
         log_mode: str = "console",
     ):
-        self.memory_manager = SingleMemoryManager(
-            memory_limit,
-            eviction_k,
-            storage_manager
+        self.memory_manager = BaseMemoryManager(
+            log_mode
         )
-
+        
     def address_request(
         self,
         agent_request,
