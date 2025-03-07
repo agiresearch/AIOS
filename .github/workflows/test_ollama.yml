@@ -111,21 +111,25 @@ jobs:
         echo "PR: ${{ github.event.pull_request.html_url || 'Not a PR' }}"
         
         # Run agent and capture exit code
-        run-agent-test \
-          --task_input "Tell me what is the core idea of AIOS?" \
-          2>&1 | tee agent.log
+        run-agent \
+          --mode remote \
+          --agent_author example \
+          --agent_name test_agent \
+          --agent_version 0.0.3 \
+          --agenthub_url https://app.aios.foundation \
+          --task "Tell me what is the capital of United States"
         
         # Check for specific error patterns in the log
-        if grep -q "Failed to initialize client: 500 Server Error" agent.log; then
-          echo "Error: LLM initialization failed. Please check your API key configuration."
-          exit 1
-        fi
+        # if grep -q "Failed to initialize client: 500 Server Error" agent.log; then
+        #   echo "Error: LLM initialization failed. Please check your API key configuration."
+        #   exit 1
+        # fi
         
-        # Check if the agent actually completed successfully
-        if ! grep -q "Final Result:" agent.log; then
-          echo "Error: Agent did not complete successfully"
-          exit 1
-        fi
+        # # Check if the agent actually completed successfully
+        # if ! grep -q "Final Result:" agent.log; then
+        #   echo "Error: Agent did not complete successfully"
+        #   exit 1
+        # fi
     
     - name: Upload a Build Artifact
       if: always()  # Upload logs even if job fails

@@ -1,0 +1,65 @@
+# Global Configuration for AIOS
+
+# API Keys Configuration
+api_keys:
+  openai: ""  # OpenAI API key
+  gemini: ""  # Google Gemini API key
+  groq: ""    # Groq API key
+  anthropic: "" # Anthropic API key
+  huggingface:
+    auth_token: ""  # HuggingFace auth token
+    home: ""        # Optional: HuggingFace models path
+
+# LLM Configuration
+llms:
+  models:
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+    
+    - name: "gemini-1.5-flash"
+      backend: "google"
+      max_new_tokens: 1024
+      temperature: 1.0
+
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+
+    # - name: "qwen2.5:7b"
+    #   backend: "ollama"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+    #   hostname: "http://localhost:11434" # Make sure to run ollama server
+
+    # 
+    # - name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    #   backend: "huggingface"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+    #   max_gpu_memory: 
+      
+  log_mode: "console"
+  # use_context_manager: false
+  use_context_manager: false # set as true to enable context interrupt and switch
+
+memory:
+  memory_limit: 524288 # 512KB
+  eviction_k: 3
+
+storage:
+  root_dir: "root"
+  use_vector_db: true
+
+scheduler:
+  log_mode: "console"
+
+agent_factory:
+  log_mode: "console"
+  max_workers: 64  
+  
+server:
+  host: "localhost"
+  port: 8000

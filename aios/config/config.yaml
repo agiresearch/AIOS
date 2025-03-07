@@ -2,9 +2,9 @@
 
 # API Keys Configuration
 api_keys:
-  openai: ""  # OpenAI API key
-  gemini: ""  # Google Gemini API key
-  groq: ""    # Groq API key
+  openai: "sk-1234"    # OpenAI API key
+  gemini: ""    # Google Gemini API key
+  groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
   huggingface:
     auth_token: ""  # HuggingFace auth token
@@ -13,38 +13,64 @@ api_keys:
 # LLM Configuration
 llms:
   models:
-    # - name: "gpt-4o-mini"
+
+    # OpenAI Models
+    # - name: "gpt-4"
     #   backend: "openai"
-    #   max_new_tokens: 256
+    #   max_new_tokens: 1024
     #   temperature: 1.0
+
+
+    # Google Models
     # - name: "gemini-1.5-flash"
     #   backend: "google"
     #   max_new_tokens: 1024
     #   temperature: 1.0
 
-    # - name: "gpt-4o-mini"
-    #   backend: "openai"
+
+    # Anthropic Models
+    # - name: "claude-3-opus"
+    #   backend: "anthropic"
     #   max_new_tokens: 1024
     #   temperature: 1.0
 
+
+    # HuggingFace Models
+    # - name: "meta-llama/Llama-2-70b-chat-hf"
+    #   backend: "huggingface"
+    #   max_new_tokens: 1024
+    #   temperature: 1.0
+    #   max_gpu_memory: {"0": "24GB", "1": "24GB"}  # GPU memory allocation
+    #   eval_device: "cuda:0"  # Device for model evaluation
+
+
+    # Ollama Models
     - name: "qwen2.5:7b"
       backend: "ollama"
       max_new_tokens: 1024
       temperature: 1.0
       hostname: "http://localhost:11434" # Make sure to run ollama server
+    
+    
+    # vLLM Models
+    # To use vllm as backend, you need to install vllm and run the vllm server https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html
+    # An example command to run the vllm server is:
+    # vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
 
-    # 
-    # - name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    #   backend: "huggingface"
+    # # SGLang Models
+    # - name: "meta-llama/Llama-3.2-3B-Instruct"
+    #   backend: "sglang"
     #   max_new_tokens: 1024
     #   temperature: 1.0
-      
+    #   hostname: "http://localhost:8091/v1" # Make sure to run the sglang server
+
+
   log_mode: "console"
+  use_context_manager: false
 
 memory:
-  memory_limit: 524288 # 512KB
-  eviction_k: 3
-
+  log_mode: "console"
+  
 storage:
   root_dir: "root"
   use_vector_db: true

@@ -24,164 +24,237 @@ from aios.utils.logger import SchedulerLogger
 
 from threading import Thread
 
-from .base import Scheduler
+from .base import BaseScheduler
 
+import logging
+from typing import Optional, Dict, Any
 
-class RRScheduler(Scheduler):
-    def __init__(
-        self,
-        llm,
-        memory_manager,
-        storage_manager,
-        tool_manager,
-        log_mode,
-        get_llm_syscall: LLMRequestQueueGetMessage,
-        get_memory_syscall: MemoryRequestQueueGetMessage,
-        get_storage_syscall: StorageRequestQueueGetMessage,
-        get_tool_syscall: ToolRequestQueueGetMessage,
-    ):
-        super().__init__(
-            llm,
-            memory_manager,
-            storage_manager,
-            tool_manager,
-            log_mode,
-            get_llm_syscall,
-            get_memory_syscall,
-            get_storage_syscall,
-            get_tool_syscall,
+logger = logging.getLogger(__name__)
+
+class RRScheduler(BaseScheduler):
+    """
+    Round Robin scheduler implementation that gives each task a fixed time slice.
+    
+    This scheduler ensures fair distribution of processing time among tasks by
+    limiting each task's execution time and cycling through all tasks.
+    
+    Example:
+        ```python
+        scheduler = RRScheduler(
+            ...
         )
-        self.llm = llm
-        self.time_limit = 0.5
-        self.simple_context_manager = SimpleContextManager()
+        scheduler.start()
+        ```
+    """
 
-    def run_llm_request(self):
+    def __init__(self, *args, time_slice: float = 1, **kwargs):
+        """
+        Initialize the Round Robin Scheduler.
+        
+        Args:
+            *args: Arguments passed to BaseScheduler
+            time_slice: Time slice for each task in seconds
+            **kwargs: Keyword arguments passed to BaseScheduler
+        """
+        super().__init__(*args, **kwargs)
+        self.time_slice = time_slice
+        self.context_manager = SimpleContextManager()
+
+    def _execute_syscall(
+        self, 
+        syscall: Any,
+        executor: Any,
+        syscall_type: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Execute a system call with time slice enforcement.
+        
+        Args:
+            syscall: The system call to execute
+            executor: Function to execute the syscall
+            syscall_type: Type of the syscall for logging
+            
+        Returns:
+            Optional[Dict[str, Any]]: Response from the syscall execution
+            
+        Example:
+            ```python
+            response = scheduler._execute_syscall(
+                llm_syscall,
+                self.llm.execute_llm_syscall,
+                "LLM"
+            )
+            ```
+        """
+        try:
+            syscall.set_time_limit(self.time_slice)
+            syscall.set_status("executing")
+            self.logger.log(
+                f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
+                "executing"
+            )
+            syscall.set_start_time(time.time())
+
+            response = executor(syscall)
+            
+            breakpoint()
+            
+            syscall.set_response(response)
+            
+            if response.finished:
+                syscall.set_status("done")
+                log_status = "done"
+            else:
+                syscall.set_status("suspending")
+                log_status = "suspending"
+                
+            breakpoint()
+
+            syscall.set_end_time(time.time())
+            
+            syscall.event.set()
+            
+            self.logger.log(
+                f"{syscall_type} syscall for {syscall.agent_name} is {log_status}. "
+                f"Thread ID: {syscall.get_pid()}\n",
+                log_status
+            )
+            
+            return response
+
+        except Exception as e:
+            logger.error(f"Error executing {syscall_type} syscall: {str(e)}")
+            traceback.print_exc()
+            return None
+
+    def process_llm_requests(self) -> None:
+        """
+        Process LLM requests with time slicing.
+        
+        Example:
+            ```python
+            scheduler.process_llm_requests()
+            # Processes LLM requests with 50ms time slices:
+            # {
+            #     "messages": [{"role": "user", "content": "Hello"}],
+            #     "temperature": 0.7
+            # }
+            ```
+        """
         while self.active:
             try:
-                llm_syscall = self.get_llm_request()
-
-                llm_syscall.set_status("executing")
-                self.logger.log(
-                    f"{llm_syscall.agent_name} is executing. \n", "execute"
-                )
-                llm_syscall.set_start_time(time.time())
-
-                response = self.llm.address_request(llm_syscall)
-                llm_syscall.set_response(response)
-
-                # self.llm.address_request(agent_request)
-
-                llm_syscall.event.set()
-                llm_syscall.set_status("done")
-                llm_syscall.set_end_time(time.time())
-
-                self.logger.log(
-                    f"Current request of {llm_syscall.agent_name} is done. Thread ID is {llm_syscall.get_pid()}\n",
-                    "done",
-                )
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-
+                llm_syscall = self.get_llm_syscall()
+                self._execute_syscall(llm_syscall, self.llm.execute_llm_syscall, "LLM")
             except Empty:
                 pass
 
-            except Exception:
-                traceback.print_exc()
-
-    def run_memory_request(self):
+    def process_memory_requests(self) -> None:
+        """
+        Process Memory requests with time slicing.
+        
+        Example:
+            ```python
+            scheduler.process_memory_requests()
+            # Processes Memory requests with 50ms time slices:
+            # {
+            #     "operation": "store",
+            #     "data": {"key": "value"}
+            # }
+            ```
+        """
         while self.active:
             try:
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_memory_request()
-
-                agent_request.set_status("executing")
-                self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
+                memory_syscall = self.get_memory_syscall()
+                self._execute_syscall(
+                    memory_syscall,
+                    self.memory_manager.address_request,
+                    "Memory"
                 )
-                agent_request.set_start_time(time.time())
-
-                response = self.memory_manager.address_request(agent_request)
-                agent_request.set_response(response)
-
-                # self.llm.address_request(agent_request)
-
-                agent_request.event.set()
-                agent_request.set_status("done")
-                agent_request.set_end_time(time.time())
-
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-
             except Empty:
                 pass
 
-            except Exception:
-                traceback.print_exc()
-
-    def run_storage_request(self):
+    def process_storage_requests(self) -> None:
+        """
+        Process Storage requests with time slicing.
+        
+        Example:
+            ```python
+            scheduler.process_storage_requests()
+            # Processes Storage requests with 50ms time slices:
+            # {
+            #     "operation": "write",
+            #     "path": "/tmp/file.txt",
+            #     "content": "Hello, World!"
+            # }
+            ```
+        """
         while self.active:
             try:
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_memory_request()
-
-                agent_request.set_status("executing")
-                self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
+                storage_syscall = self.get_storage_syscall()
+                self._execute_syscall(
+                    storage_syscall,
+                    self.storage_manager.address_request,
+                    "Storage"
                 )
-                agent_request.set_start_time(time.time())
-
-                response = self.storage_manager.address_request(agent_request)
-                agent_request.set_response(response)
-
-                # self.llm.address_request(agent_request)
-
-                agent_request.event.set()
-                agent_request.set_status("done")
-                agent_request.set_end_time(time.time())
-
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-
             except Empty:
                 pass
 
-            except Exception:
-                traceback.print_exc()
-
-    def run_tool_request(self):
+    def process_tool_requests(self) -> None:
+        """
+        Process Tool requests with time slicing.
+        
+        Example:
+            ```python
+            scheduler.process_tool_requests()
+            # Processes Tool requests with 50ms time slices:
+            # {
+            #     "name": "calculator",
+            #     "arguments": {
+            #         "operation": "add",
+            #         "numbers": [1, 2]
+            #     }
+            # }
+            ```
+        """
         while self.active:
             try:
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                agent_request = self.get_memory_request()
-
-                agent_request.set_status("executing")
-                self.logger.log(
-                    f"{agent_request.agent_name} is executing. \n", "execute"
+                tool_syscall = self.get_tool_syscall()
+                self._execute_syscall(
+                    tool_syscall,
+                    self.tool_manager.address_request,
+                    "Tool"
                 )
-                agent_request.set_start_time(time.time())
-
-                response = self.tool_manager.address_request(agent_request)
-                agent_request.set_response(response)
-
-                # self.llm.address_request(agent_request)
-
-                agent_request.event.set()
-                agent_request.set_status("done")
-                agent_request.set_end_time(time.time())
-
-                self.logger.log(
-                    f"Current request of {agent_request.agent_name} is done. Thread ID is {agent_request.get_pid()}\n",
-                    "done",
-                )
-                # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-
             except Empty:
                 pass
 
-            except Exception:
-                traceback.print_exc()
+    def start(self) -> None:
+        """
+        Start all request processing threads.
+        
+        Example:
+            ```python
+            scheduler = RoundRobinScheduler(...)
+            scheduler.start()
+            # Starts processing all types of requests with time slicing
+            ```
+        """
+        self.active = True
+        self.start_processing_threads([
+            self.process_llm_requests,
+            self.process_memory_requests,
+            self.process_storage_requests,
+            self.process_tool_requests
+        ])
+
+    def stop(self) -> None:
+        """
+        Stop all request processing threads.
+        
+        Example:
+            ```python
+            scheduler.stop()
+            # Stops all processing threads gracefully
+            ```
+        """
+        self.active = False
+        self.stop_processing_threads()
