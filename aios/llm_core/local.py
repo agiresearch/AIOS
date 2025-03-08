@@ -6,7 +6,22 @@ import os
 from aios.config.config_manager import config
 
 class HfLocalBackend:
+    """
+    A backend class for loading and interacting with Hugging Face local models. 
+    Supports both local execution and hosted inference if a hostname is provided.
+    """
+
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        """
+        Initializes the Hugging Face local backend.
+
+        Args:
+            model_name (str): The name of the model to load.
+            device (str, optional): The device to load the model on (default is "auto").
+            max_gpu_memory (str, optional): Maximum GPU memory allocation.
+            hostname (str, optional): The hostname for a hosted HF instance. If provided, 
+                                      the model will not be loaded locally.
+        """
         print("\n=== HfLocalBackend Initialization ===")
         print(f"Model name: {model_name}")
         print(f"Checking HF API key:")
@@ -37,6 +52,17 @@ class HfLocalBackend:
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
     def inference_online(self, messages, temperature, stream=False):
+        """
+        Sends inference requests to a remote Hugging Face model hosted at the specified hostname.
+
+        Args:
+            messages (list): The chat messages for inference.
+            temperature (float): Sampling temperature for response generation.
+            stream (bool, optional): Whether to stream responses (default is False).
+        
+        Returns:
+            str: The generated response content.
+        """
         return completion(
             model="huggingface/" + self.model_name,
             messages=messages,
@@ -50,6 +76,17 @@ class HfLocalBackend:
         temperature,
         stream=False,
     ):
+        """
+        Generates a response from the locally loaded Hugging Face model or a remote hosted model.
+
+        Args:
+            messages (list): The chat messages for inference.
+            temperature (float): Sampling temperature for response generation.
+            stream (bool, optional): Whether to stream responses (default is False).
+
+        Returns:
+            str: The generated response.
+        """
         if self.hostname is not None:
             return self.inference_online(messages, temperature, stream=stream)
         
@@ -78,7 +115,39 @@ class HfLocalBackend:
         return result
 
 class VLLMLocalBackend:
+    """
+    The VLLMLocalBackend class provides an interface for loading and interacting with vLLM models, 
+    supporting both local execution and hosted inference. It allows seamless switching between 
+    local model execution and remote API-based inference.
+
+    Attributes:
+        model_name (str): The name of the model to be loaded.
+        device (str): The device to load the model on (default: "auto").
+        max_gpu_memory (Optional[str]): Specifies the maximum GPU memory allocation.
+        hostname (Optional[str]): URL for a hosted vLLM instance. If provided, the model 
+                                will not be loaded locally.
+
+    Example:
+        ```python
+        backend = VLLMLocalBackend(model_name="mistral-7b", device="cuda", max_gpu_memory="16GB")
+        
+        messages = [{"role": "user", "content": "Tell me a joke."}]
+        response = backend(messages, temperature=0.7)
+        print(response)
+        ```
+    """
+
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        """
+        Initializes the vLLM local backend.
+
+        Args:
+            model_name (str): The name of the model to load.
+            device (str, optional): The device to load the model on (default is "auto").
+            max_gpu_memory (str, optional): Maximum GPU memory allocation.
+            hostname (str, optional): The hostname for a hosted vLLM instance. If provided, 
+                                      the model will not be loaded locally.
+        """
         print("\n=== VLLMLocalBackend Initialization ===")
         print(f"Model name: {model_name}")
         
@@ -111,6 +180,17 @@ class VLLMLocalBackend:
 
     def inference_online(self, messages, temperature, stream=False):
         breakpoint()
+        """
+        Sends inference requests to a hosted vLLM instance.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of messages in chat format.
+            temperature (float): Controls randomness in response generation.
+            stream (bool, optional): Whether to use streaming mode (not implemented).
+
+        Returns:
+            str: The generated response from the hosted vLLM instance.
+        """
         return completion(
             model="hosted_vllm/" + self.model_name,
             messages=messages,
@@ -124,6 +204,17 @@ class VLLMLocalBackend:
         temperature,
         stream=False,
     ):
+        """
+        Generates a response using the vLLM model.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of chat messages.
+            temperature (float): Controls randomness in response generation.
+            stream (bool, optional): Whether to use streaming mode (not implemented).
+
+        Returns:
+            str: The generated response text.
+        """
         if self.hostname is not None:
             return self.inference_online(messages, temperature, stream=stream)
         
@@ -142,7 +233,36 @@ class VLLMLocalBackend:
         return result
 
 class OllamaBackend:
+    """
+    The OllamaBackend class provides an interface for interacting with Ollama models, 
+    supporting both local and remote inference via API requests.
+
+    Attributes:
+        model_name (str): The name of the model to be used.
+        hostname (str): The API base URL for a hosted Ollama instance. Defaults to "http://localhost:11434".
+
+    Example:
+        ```python
+        backend = OllamaBackend(model_name="mistral-7b")
+        
+        messages = [{"role": "user", "content": "Explain quantum entanglement."}]
+        response = backend(messages, temperature=0.7)
+        print(response)
+        ```
+    """
+
     def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+        """
+        Initializes the backend, setting up the model and determining the inference mode.
+
+        Args:
+            model_name (str): The name of the model to use.
+            device (str, optional): The device for model execution (default is "auto").
+            max_gpu_memory (str, optional): Maximum GPU memory allocation (not currently used).
+            hostname (str, optional): The hostname for a hosted Ollama instance. If not provided, 
+                                      it defaults to "http://localhost:11434".
+        """
+
         print("\n=== OllamaBackend Initialization ===")
         print(f"Model name: {model_name}")
         print(f"Hostname: {hostname or 'http://localhost:11434'}")
@@ -157,6 +277,17 @@ class OllamaBackend:
         # tools=None,
         stream=False,
     ):
+        """
+        Sends an inference request to the specified Ollama model and returns the generated response.
+
+        Args:
+            messages (List[Dict[str, str]]): A list of chat messages in dialogue format.
+            temperature (float): Controls randomness in response generation.
+            stream (bool, optional): Whether to use streaming mode (not implemented).
+
+        Returns:
+            str: The generated response from the Ollama model.
+        """
         res = completion(
             model="ollama/" + self.model_name,
             messages=messages,
