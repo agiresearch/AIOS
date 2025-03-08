@@ -273,6 +273,8 @@ class SyscallExecutor:
                 operation_type=operation.get("name"),
                 params=operation.get("parameters")
             )
+            
+            # breakpoint()
             storage_response = self.execute_storage_syscall(agent_name, storage_query)
             
             # Summarize operation result
