@@ -8,6 +8,7 @@ from aios.syscall import Syscall
 from aios.syscall.llm import LLMSyscall
 from aios.syscall.storage import StorageSyscall, storage_syscalls
 from aios.syscall.tool import ToolSyscall
+from aios.syscall.memory import MemorySyscall
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
@@ -18,6 +19,8 @@ from aios.hooks.stores._global import (
     # global_storage_req_queue,
     # global_tool_req_queue,
 )
+
+import threading
 
 from aios.hooks.types.llm import LLMRequestQueue
 from aios.hooks.types.memory import MemoryRequestQueue
@@ -45,9 +48,23 @@ class SyscallExecutor:
     
     def __init__(self):
         """Initialize the SyscallExecutor."""
-        pass
+        self.id = 0
+        self.id_lock = threading.Lock()
+    
+    def create_syscall(self, agent_name: str, query) -> Dict[str, Any]:
+        """
+        Create a syscall object based on the query type.
+        """
+        if isinstance(query, LLMQuery):
+            return LLMSyscall(agent_name, query)
+        elif isinstance(query, StorageQuery):
+            return StorageSyscall(agent_name, query)
+        elif isinstance(query, MemoryQuery):
+            return MemorySyscall(agent_name, query)
+        elif isinstance(query, ToolQuery):
+            return ToolSyscall(agent_name, query)
 
-    def _execute_syscall(self, syscall) -> Dict[str, Any]:
+    def _execute_syscall(self, agent_name: str, query) -> Dict[str, Any]:
         """
         Execute a system call and collect timing metrics.
         
@@ -71,12 +88,19 @@ class SyscallExecutor:
             }
             ```
         """
-        syscall.set_status("active")
         completed_response = ""
         start_times, end_times = [], []
         waiting_times, turnaround_times = [], []
 
-        while syscall.get_status() != "done":
+        with self.id_lock:
+            self.id += 1
+            syscall_id = self.id
+        
+        while True:
+            # syscall = copy.deepcopy(syscall)
+            syscall = self.create_syscall(agent_name, query)
+            syscall.set_status("active")
+            
             current_time = time.time()
             syscall.set_created_time(current_time)
             syscall.set_response(None)
@@ -84,10 +108,29 @@ class SyscallExecutor:
             if not syscall.get_source():
                 syscall.set_source(syscall.agent_name)
             
+            if not syscall.get_pid():
+                syscall.set_pid(syscall_id)
+            
+            if isinstance(syscall, LLMSyscall):
+                global_llm_req_queue_add_message(syscall)
+            elif isinstance(syscall, StorageSyscall):
+                global_storage_req_queue_add_message(syscall)
+            elif isinstance(syscall, MemorySyscall):
+                global_memory_req_queue_add_message(syscall)
+            elif isinstance(syscall, ToolSyscall):
+                global_tool_req_queue_add_message(syscall)
+            
             syscall.start()
             syscall.join()
+            
+            # breakpoint()
 
             completed_response = syscall.get_response()
+            
+            if syscall.get_status() == "done":
+                break
+            
+            # breakpoint()
             
             # Calculate timing metrics
             start_time = syscall.get_start_time()
@@ -125,10 +168,10 @@ class SyscallExecutor:
             result = executor.execute_storage_syscall("agent_1", query)
             ```
         """
-        syscall = StorageSyscall(agent_name, query)
-        syscall.set_target("storage")
-        global_storage_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = StorageSyscall(agent_name, query)
+        # syscall.set_target("storage")
+        # global_storage_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_memory_syscall(self, agent_name: str, query: MemoryQuery) -> Dict[str, Any]:
         """
@@ -147,229 +190,12 @@ class SyscallExecutor:
             result = executor.execute_memory_syscall("agent_1", query)
             ```
         """
-        syscall = Syscall(agent_name, query)
-        syscall.set_target("memory")
-        global_memory_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = Syscall(agent_name, query)
+        # syscall.set_target("memory")
+        # global_memory_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
-    def execute_memory_content_analyze(self, agent_name: str, query: MemoryQuery) -> Dict[str, Any]:
-        """
-        Generate the contextual description of a memory query.
-        
-        Args:
-            agent_name: Name of the agent making the request
-            query: Memory query to execute
-            
-        Returns:
-            Dict containing response and timing metrics
-            
-        Example:
-            ```python
-            query = MemoryQuery(operation="store", data={"key": "value"})
-            result = executor.execute_memory_content_analyze("agent_1", query)
-            ```
-        """
-        content = query.params.get("content", {})
-        system_prompt = """Generate a structured analysis of the following content by:
-            1. Identifying the most salient keywords (focus on nouns, verbs, and key concepts)
-            2. Extracting core themes and contextual elements
-            3. Creating relevant categorical tags
-
-            Format the response as a JSON object:
-            {
-                "keywords": [
-                    // several specific, distinct keywords that capture key concepts and terminology
-                    // Order from most to least important
-                    // Don't include keywords that are the name of the speaker or time
-                    // At least three keywords, but don't be too redundant.
-                ],
-                "context": 
-                    // one sentence summarizing:
-                    // - Main topic/domain
-                    // - Key arguments/points
-                    // - Intended audience/purpose
-                ,
-                "tags": [
-                    // several broad categories/themes for classification
-                    // Include domain, format, and type tags
-                    // At least three tags, but don't be too redundant.
-                ]
-            }
-
-            Content for analysis:
-        """
-        response_format = {
-            "type": "json_schema", 
-            "json_schema": {
-                "name": "response",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "keywords": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "context": {
-                            "type": "string"
-                        },
-                        "tags": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        query_llm = LLMQuery()
-        query_llm.messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt + content}]
-        query_llm.message_return_type = "json"
-        query_llm.response_format = response_format
-        response = self.execute_llm_syscall(agent_name, query_llm)["response"]
-        response = json.loads(response)
-        keywords = response["keywords"] or " "
-        context = response["context"] or " "
-        tags = response["tags"] or " "
-        return {"keywords": keywords, "context": context, "tags": tags}
-
-    def execute_memory_evolve(self, query: MemoryQuery, similar_memories: List[MemoryNote]) -> (MemoryQuery, Dict[str, Any]):
-        """
-        Evolve a memory query based on similar memories.
-        
-        Args:
-            query: Memory query to evolve
-            similar_memories: List of similar memories
-            
-        Returns:
-            Tuple containing evolved query and response
-            
-        Example:
-            ```python
-            similar_memories = [memory1, memory2]
-            evolved_query, response = executor.execute_memory_evolve(query, similar_memories)
-            ```
-        """
-        nearest_neighbors_memories = "\n".join([
-            f"memory content: {memory.content}, tags: {', '.join(memory.tags)}, context: {memory.context}, keywords: {', '.join(memory.keywords)}" 
-            for memory in similar_memories
-        ])
-        system_prompt = '''
-        You are an AI memory evolution agent responsible for managing and evolving a knowledge base.
-        Analyze the new memory note and its nearest neighbors to determine if and how it should evolve.
-
-        New memory:
-        Content: {content}
-        Context: {context}
-        Keywords: {keywords}
-
-        Nearest neighbors:
-        {nearest_neighbors_memories}
-
-        Based on this information, determine:
-        1. Should this memory evolve? Consider its relationships with other memories
-        2. What type of evolution should occur?
-        3. What specific changes should be made?
-
-        Return your decision in JSON format:
-        {{
-            "should_evolve": true/false,
-            "evolution_type": ["update", "merge"],
-            "reasoning": "Explanation for the decision",
-            "affected_memories": ["memory_ids"],
-            "evolution_details": {{
-                "new_context": "Updated context",
-                "new_keywords": ["keyword1", "keyword2"],
-                "new_relationships": ["rel1", "rel2"]
-            }}
-        }}
-        '''.format(content=query.content, context=query.context, keywords=query.keywords, nearest_neighbors_memories=nearest_neighbors_memories)
-        query_llm = LLMQuery()
-        query_llm.messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt}]
-        response_format = {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "response",
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "should_evolve": {
-                            "type": "string"
-                        },
-                        "actions": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "suggested_connections": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer"
-                            }
-                        },
-                        "new_context_neighborhood": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "tags_to_update": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "new_tags_neighborhood": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "required": ["should_evolve", "actions", "suggested_connections", "tags_to_update", "new_context_neighborhood", "new_tags_neighborhood"]
-                }
-            }
-        }
-        query_llm.message_return_type = "json"
-        query_llm.response_format = response_format
-        # Use the agent_name parameter passed from the query object
-        agent_name = query.agent_name if hasattr(query, 'agent_name') else "default_agent"
-        response = self.execute_llm_syscall(agent_name, query_llm)["response"]
-        response = json.loads(response)
-        should_evolve = response["should_evolve"]
-        if should_evolve == "True":
-            actions = response["actions"]
-            for action in actions:
-                if action == "strengthen":
-                    suggest_connections = response["suggested_connections"]
-                    new_tags = response["tags_to_update"]
-                    query.params["links"] = suggest_connections
-                    query.params["tags"] = new_tags
-                elif action == "neigh_update":
-                    new_context_neighborhood = response["new_context_neighborhood"]
-                    new_tags_neighborhood = response["new_tags_neighborhood"]
-                    for i in range(len(new_tags_neighborhood)):
-                        # find some memory
-                        tag = new_tags_neighborhood[i]
-                        context = new_context_neighborhood[i]
-                        notetmp = similar_memories[i]
-                        # add tag to memory
-                        notetmp.tags = tag
-                        notetmp.context = context
-        return (query, similar_memories)
-
-
-
-    def execute_tool_syscall(self, agent_name: str, tool_calls: List[Dict]) -> Dict[str, Any]:
+    def execute_tool_syscall(self, agent_name: str, query: ToolQuery) -> Dict[str, Any]:
         """
         Execute a tool system call.
         
@@ -386,10 +212,10 @@ class SyscallExecutor:
             result = executor.execute_tool_syscall("agent_1", tool_calls)
             ```
         """
-        syscall = ToolSyscall(agent_name, tool_calls)
-        syscall.set_target("tool")
-        global_tool_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = ToolSyscall(agent_name, tool_calls)
+        # syscall.set_target("tool")
+        # global_tool_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_llm_syscall(self, agent_name: str, query: LLMQuery) -> Dict[str, Any]:
         """
@@ -408,10 +234,10 @@ class SyscallExecutor:
             result = executor.execute_llm_syscall("agent_1", query)
             ```
         """
-        syscall = LLMSyscall(agent_name=agent_name, query=query)
-        syscall.set_target("llm")
-        global_llm_req_queue_add_message(syscall)
-        return self._execute_syscall(syscall)
+        # syscall = LLMSyscall(agent_name=agent_name, query=query)
+        # syscall.set_target("llm")
+        # global_llm_req_queue_add_message(syscall)
+        return self._execute_syscall(agent_name, query)
 
     def execute_file_operation(self, agent_name: str, query: LLMQuery) -> str:
         """
@@ -431,8 +257,7 @@ class SyscallExecutor:
                 action_type="operate_file"
             )
             result = executor.execute_file_operation("agent_1", query)
-            ```
-        """
+            ```        """
         # Parse file system operation
         system_prompt = "You are a parser for parsing file system operations. Your task is to parse the instructions and return the file system operation call."
         query.messages = [{"role": "system", "content": system_prompt}] + query.messages
@@ -498,7 +323,12 @@ class SyscallExecutor:
             
             elif query.action_type == "tool_use":
                 llm_response = self.execute_llm_syscall(agent_name, query)["response"]
-                tool_response = self.execute_tool_syscall(agent_name, llm_response.tool_calls)
+                # breakpoint()
+                tool_query = ToolQuery(
+                    tool_calls=llm_response.tool_calls,
+                    # action_type="tool_use"
+                )
+                tool_response = self.execute_tool_syscall(agent_name, tool_query)
                 # breakpoint()
                 return tool_response
             
@@ -561,3 +391,4 @@ def create_syscall_executor():
 
 # Maintain backwards compatibility
 useSysCall = create_syscall_executor
+
