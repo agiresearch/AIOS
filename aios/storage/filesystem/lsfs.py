@@ -225,7 +225,7 @@ class LSFS:
                 file_name = agent_request.query.params.get("file_name", None)
                 file_path = agent_request.query.params.get("file_path", None)
                 content = agent_request.query.params.get("content", None)
-                breakpoint()
+                # breakpoint()
                 result = self.sto_write(
                     file_name=file_name,
                     file_path=file_path,
