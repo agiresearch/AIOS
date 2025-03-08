@@ -127,7 +127,7 @@ class ConfigManager:
         # First try to get from config file
         api_key = None
         if provider == "huggingface":
-            api_key = self.config.get("api_keys", {}).get("huggingface", {}).get("auth_token")
+            api_key = self.config.get("api_keys", {}).get("huggingface", {})
         else:
             api_key = self.config.get("api_keys", {}).get(provider)
         
