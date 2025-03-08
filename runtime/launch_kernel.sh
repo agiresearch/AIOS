@@ -1,1 +1,1 @@
-python -m uvicorn runtime.launch:app
+python -m uvicorn runtime.launch:app --port 8000

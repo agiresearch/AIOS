@@ -1,6 +1,6 @@
 from aios.context.simple_context import SimpleContextManager
 from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
-from aios.llm_core.local import HfLocalBackend, VLLMLocalBackend, OllamaBackend
+from aios.llm_core.local import HfLocalBackend
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
@@ -131,12 +131,17 @@ class LLMAdapter:
         for provider, env_var in api_providers.items():
             logger.info(f"\nChecking {provider} API key:")
             api_key = config.get_api_key(provider)
+            
             if api_key:
                 logger.info(f"- Found in config.yaml, setting to environment")
-                os.environ[env_var] = api_key
                 if provider == "huggingface":
-                    os.environ["HUGGING_FACE_API_KEY"] = api_key
-                    logger.info("- Also set HUGGING_FACE_API_KEY")
+                    os.environ["HF_TOKEN"] = api_key.get("auth_token")
+                    os.environ["HF_HOME"] = api_key.get("home")
+                    # os.environ["HUGGING_FACE_API_KEY"] = api_key
+                    # logger.info("- Also set HUGGING_FACE_API_KEY")
+                else:
+                    os.environ[env_var] = api_key
+                
 
     def _initialize_llms(self) -> None:
         """Initialize LLM backends based on configurations."""
@@ -187,7 +192,13 @@ class LLMAdapter:
             ValueError: If required API keys are missing
         """
         match config.backend:
-            
+            case "huggingface":
+                self.llms.append(HfLocalBackend(
+                    model_name=config.name,
+                    max_gpu_memory=config.max_gpu_memory,
+                    eval_device=config.eval_device
+                ))
+                
             # due to the compatibility issue of the vllm and sglang in the litellm, we use the openai backend instead
             case "vllm":
                 self.llms.append(OpenAI(
@@ -423,7 +434,7 @@ class LLMAdapter:
     def _get_model_response(
         self, 
         model_name: str,
-        model: Union[str, HfLocalBackend, VLLMLocalBackend, OllamaBackend, OpenAI],
+        model: Union[str, HfLocalBackend, OpenAI],
         messages: List[Dict],
         tools: Optional[List],
         temperature: float,
@@ -436,140 +447,96 @@ class LLMAdapter:
         Get response from the model.
 
         Args:
-            model: The LLM model to use
+            model_name: Name of the model to use
+            model: The LLM model instance or identifier
             messages: Prepared messages
+            tools: Optional list of tools
             temperature: Temperature parameter
             llm_syscall: The syscall object
+            api_base: Optional API base URL
+            message_return_type: Expected return type ("json" or "text")
+            response_format: Optional response format specification
 
         Returns:
-            Model response (string or structured data)
-            
-        Example:
-            ```python
-            # Input
-            model = "openai/gpt-4o-mini"
-            messages = [{"role": "user", "content": "Hello!"}]
-            temperature = 1.0
-            
-            # Output (string)
-            "Hello! How can I help you today?"
-            
-            # Or output (with tool calls)
-            {
-                "tool_calls": [{
-                    "id": "call_abc123",
-                    "name": "calculator",
-                    "arguments": {"operation": "add", "numbers": [2, 2]}
-                }]
-            }
-            ```
+            Tuple of (model_response, finished_flag)
         """
-        if isinstance(model, str): # if the model is a string, it will use litellm completion
-            if self.use_context_manager:
-                pid = llm_syscall.get_pid()
-                time_limit = llm_syscall.get_time_limit()
-                completed_response, finished = self.context_manager.save_context(
-                    model_name=model_name,
-                    model=model, 
-                    messages=messages, 
-                    tools=tools,
-                    temperature=temperature, 
-                    pid=pid,
-                    time_limit=time_limit,
-                    message_return_type=message_return_type,
-                    response_format=response_format
-                )                
-                
-                if finished:
-                    self.context_manager.clear_context(pid)
-                
-                return completed_response, finished
-                
-            else:
-                # breakpoint()
-                if tools:
-                    completed_response = completion(
-                        model=model, 
-                        messages=messages, 
-                        tools=tools, 
-                        temperature=temperature, 
-                        api_base=api_base
-                    )
-                    
-                    # breakpoint()
-                    completed_response = decode_litellm_tool_calls(completed_response)
-                    return completed_response, True
-                    
-                elif message_return_type == "json":
-                    completed_response = completion(
-                        model=model, 
-                        messages=messages, 
-                        temperature=temperature, 
-                        api_base=api_base,
-                        format="json",
-                        response_format=response_format
-                    )
-                    return completed_response.choices[0].message.content, True
-                    
-                else:
-                    completed_response = completion(
-                        model=model, 
-                        messages=messages, 
-                        temperature=temperature, 
-                        api_base=api_base
-                    )
-                    return completed_response.choices[0].message.content, True
-                
+        # Handle context management if enabled
+        if self.use_context_manager:
+            pid = llm_syscall.get_pid()
+            time_limit = llm_syscall.get_time_limit()
+            completed_response, finished = self.context_manager.save_context(
+                model_name=model_name,
+                model=model, 
+                messages=messages, 
+                tools=tools,
+                temperature=temperature, 
+                pid=pid,
+                time_limit=time_limit,
+                message_return_type=message_return_type,
+                response_format=response_format
+            )                
             
-        elif isinstance(model, OpenAI): # if the model is an OpenAI model, it will use OpenAI completion, as the litellm has compatibility issue with the vllm and sglang, here we use OpenAI server to launch vllm and sglang endpoints
-            if self.use_context_manager:
-                completed_response, finished = self.context_manager.save_context(
-                    model_name=model_name,
-                    model=model, 
-                    messages=messages, 
-                    tools=tools,
-                    temperature=temperature, 
-                    pid=pid,
-                    time_limit=time_limit,
-                    message_return_type=message_return_type,
-                    response_format=response_format
-                )
-                if finished:
-                    self.context_manager.clear_context(pid)
-                return completed_response, finished
+            if finished:
+                self.context_manager.clear_context(pid)
+            
+            return completed_response, finished
+        
+        # Process request without context management
+        completion_kwargs = {
+            "messages": messages,
+            "temperature": temperature
+        }
+        
+        # Add tools if provided
+        if tools:
+            completion_kwargs["tools"] = tools
+        
+        # Add JSON formatting if requested
+        if message_return_type == "json":
+            completion_kwargs["format"] = "json"
+            if response_format:
+                completion_kwargs["response_format"] = response_format
+        
+        # Add API base if provided
+        if api_base:
+            completion_kwargs["api_base"] = api_base
+        
+        # Handle different model types
+        # breakpoint()
+        if isinstance(model, str):
+            # Use litellm completion for string model identifiers
+            completed_response = completion(model=model, **completion_kwargs)
+            
+            if tools:
+                completed_response = decode_litellm_tool_calls(completed_response)
+                return completed_response, True
             else:
-                # breakpoint()
-                # response = model.chat.completions.create(model=model_name, messages=messages, tools=tools, temperature=temperature)
-                if tools:
-                    completed_response = model.chat.completions.create(
-                        model=model_name,
-                        messages=messages,
-                        tools=tools, 
-                        temperature=temperature
-                    )
-                    completed_response = decode_litellm_tool_calls(completed_response)
-                    return completed_response, True
-                
-                elif message_return_type == "json":
-                    completed_response = model.chat.completions.create(
-                        model=model_name,
-                        messages=messages,
-                        temperature=temperature,
-                        format="json",
-                        response_format=response_format
-                    )
-                    return completed_response.choices[0].message.content, True
-                    
-                
-                else:
-                    completed_response = model.chat.completions.create(
-                        model=model_name,
-                        messages=messages,
-                        temperature=temperature
-                    )
-                    return completed_response.choices[0].message.content, True
-                
-                # breakpoint()
+                return completed_response.choices[0].message.content, True
+            
+        elif isinstance(model, OpenAI):
+            # Use OpenAI client for OpenAI model instances
+            # (Used for vllm and sglang endpoints due to litellm compatibility issues)
+            completed_response = model.chat.completions.create(
+                model=model_name,
+                **completion_kwargs
+            )
+            
+            if tools:
+                completed_response = decode_litellm_tool_calls(completed_response)
+                return completed_response, True
+            else:
+                return completed_response.choices[0].message.content, True
+        
+        elif isinstance(model, HfLocalBackend):
+            # Use Hugging Face local backend for model instances
+            # (Used for local model instances)
+            # breakpoint()
+            completed_response = model.generate(**completion_kwargs)
+            return completed_response, True
+        
+        # For other model types (should be handled by their respective classes)
+        else:
+            raise ValueError(f"Unsupported model type: {type(model)}")
 
     def _process_response(
         self, 

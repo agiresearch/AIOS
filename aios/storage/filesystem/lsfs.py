@@ -890,27 +890,22 @@ class LSFS:
         Returns:
             str: Result message
         """
-        # 检查两个 agent 是否都已注册
         if not self.is_agent_registered(owner_agent):
             return f"Error: Agent '{owner_agent}' is not registered"
         
         if not self.is_agent_registered(target_agent):
             return f"Error: Agent '{target_agent}' is not registered"
         
-        # 获取 owner_agent 的默认组
         owner_groups = self.get_agent_groups(owner_agent)
         default_group = next((g for g in owner_groups if g.startswith(f"{owner_agent}_")), None)
         
         if not default_group:
-            # 如果没有默认组，创建一个
             default_group = f"{owner_agent}_group"
             self.create_priority_group(default_group, owner_agent)
         
-        # 将 target_agent 添加到 owner_agent 的组中
         result = self.add_agent_to_group(default_group, target_agent, owner_agent)
         
         if "added to group" in result:
-            # 授予 target_agent 访问 owner_agent 数据的权限
             owner_path = self.get_agent_data_path(owner_agent)
             
             with self.permissions_lock:
