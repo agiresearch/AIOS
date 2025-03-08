@@ -17,7 +17,7 @@ class ToolManager:
         self.tool_conflict_map_lock = Lock()
         
     def address_request(self, syscall) -> None:
-        tool_calls = syscall.tool_calls
+        tool_calls = syscall.query.tool_calls
 
         # breakpoint()
         try:
