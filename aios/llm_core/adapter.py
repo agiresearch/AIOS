@@ -505,10 +505,14 @@ class LLMAdapter:
         # breakpoint()
         if isinstance(model, str):
             # Use litellm completion for string model identifiers
+            # breakpoint()
             completed_response = completion(model=model, **completion_kwargs)
+            
+            # breakpoint()
             
             if tools:
                 completed_response = decode_litellm_tool_calls(completed_response)
+                
                 return completed_response, True
             else:
                 return completed_response.choices[0].message.content, True
@@ -594,6 +598,7 @@ class LLMAdapter:
         
         if tools:
         # if tool_calls := parse_tool_calls(completed_response):
+            # breakpoint()
             tool_calls = double_underscore_to_slash(completed_response)
             return LLMResponse(
                 response_message=None,
