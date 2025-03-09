@@ -263,8 +263,12 @@ class SyscallExecutor:
         query.messages = [{"role": "system", "content": system_prompt}] + query.messages
         query.tools = storage_syscalls
         
+        
         parser_response = self.execute_llm_syscall(agent_name, query)["response"]
         file_operations = parser_response.tool_calls
+        
+        # breakpoint()
+        
         operation_summaries = []
         
         # Execute each file operation
