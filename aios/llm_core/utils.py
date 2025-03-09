@@ -3,11 +3,32 @@ import re
 import uuid
 
 def tool_calling_input_format(messages: list, tools: list) -> list:
-    """Integrate tool information into the messages for open-sourced LLMs
+    """
+    Integrate tool information into the messages for open-sourced LLMs.
 
     Args:
-        messages (list): messages with different roles
-        tools (list): tool information
+        messages (list): A list of message dictionaries, each containing at least a "role" 
+                         and "content" field. Some messages may contain "tool_calls".
+        tools (list): A list of available tool definitions, formatted as dictionaries.
+
+    Returns:
+        list: The updated messages list, where:
+              - Tool call messages are formatted properly for models without built-in tool support.
+              - Messages indicating tool execution results are transformed into a user message.
+              - The last message includes an instruction prompt detailing tool usage requirements.
+
+    Example:
+        ```python
+        messages = [
+            {"role": "user", "content": "Translate 'hello' to French."},
+            {"role": "assistant", "tool_calls": [{"name": "translate", "parameters": {"text": "hello", "language": "fr"}}]}
+        ]
+        
+        tools = [{"name": "translate", "description": "Translates text into another language."}]
+        
+        updated_messages = tool_calling_input_format(messages, tools)
+        print(updated_messages)
+        ```
     """
     prefix_prompt = (
         "In and only in current step, you need to call tools. Available tools are: "
@@ -39,6 +60,22 @@ def tool_calling_input_format(messages: list, tools: list) -> list:
     return messages
 
 def parse_json_format(message: str) -> str:
+    """
+    Extract and parse a JSON object or array from a given string.
+
+    Args:
+        message (str): The input string potentially containing a JSON object or array.
+
+    Returns:
+        str: A string representation of the extracted JSON object or array.
+    
+    Example:
+        ```python
+        message = "Here is some data: {\"key\": \"value\"}"
+        parsed_json = parse_json_format(message)
+        print(parsed_json)  # Output: '{"key": "value"}'
+        ```
+    """
     json_array_pattern = r"\[\s*\{.*?\}\s*\]"
     json_object_pattern = r"\{\s*.*?\s*\}"
 
@@ -66,9 +103,43 @@ def parse_json_format(message: str) -> str:
     return "[]"
 
 def generator_tool_call_id():
+    """
+    Generate a unique identifier for a tool call.
+
+    This function creates a new UUID (Universally Unique Identifier) and returns it as a string.
+
+    Returns:
+        str: A unique tool call ID.
+    
+    Example:
+        ```python
+        tool_call_id = generator_tool_call_id()
+        print(tool_call_id)  # Example output: 'f3f2e850-b5d4-11ef-ac7e-96584d5248b2'
+        ```
+    """
     return str(uuid.uuid4())
 
 def decode_litellm_tool_calls(response):
+    """
+    Decode tool call responses from LiteLLM API format.
+
+    Args:
+        response: The response object from LiteLLM API.
+
+    Returns:
+        list: A list of dictionaries, each containing:
+              - "name": The name of the function being called.
+              - "parameters": The arguments passed to the function.
+              - "id": The unique identifier of the tool call.
+
+    Example:
+        ```python
+        response = <LiteLLM API response>
+        decoded_calls = decode_litellm_tool_calls(response)
+        print(decoded_calls)  
+        # Output: [{'name': 'translate', 'parameters': {'text': 'hello', 'lang': 'fr'}, 'id': 'uuid1234'}]
+        ```
+    """
     tool_calls = response.choices[0].message.tool_calls
     
     decoded_tool_calls = []
@@ -84,6 +155,23 @@ def decode_litellm_tool_calls(response):
     return decoded_tool_calls
 
 def parse_tool_calls(message):
+    """
+    Parse and process tool calls from a message string.
+
+    Args:
+        message (str): A JSON string representing tool calls.
+
+    Returns:
+        list: A list of processed tool calls with unique IDs.
+
+    Example:
+        ```python
+        message = '[{"name": "text_translate", "parameters": {"text": "hello", "lang": "fr"}}]'
+        parsed_calls = parse_tool_calls(message)
+        print(parsed_calls)  
+        # Output: [{'name': 'text/translate', 'parameters': {'text': 'hello', 'lang': 'fr'}, 'id': 'uuid1234'}]
+        ```
+    """
     # add tool call id and type for models don't support tool call
     # if isinstance(message, dict):
     #     message = [message]
@@ -103,6 +191,23 @@ def parse_tool_calls(message):
     return tool_calls
 
 def slash_to_double_underscore(tools):
+    """
+    Convert function names by replacing slashes ("/") with double underscores ("__").
+
+    Args:
+        tools (list): A list of tool dictionaries.
+
+    Returns:
+        list: The updated tools list with function names formatted properly.
+
+    Example:
+        ```python
+        tools = [{"function": {"name": "text/translate"}}]
+        formatted_tools = slash_to_double_underscore(tools)
+        print(formatted_tools)  
+        # Output: [{'function': {'name': 'text__translate'}}]
+        ```
+    """
     for tool in tools:
         tool_name = tool["function"]["name"]
         if "/" in tool_name:
@@ -111,12 +216,46 @@ def slash_to_double_underscore(tools):
     return tools
 
 def double_underscore_to_slash(tool_calls):
+    """
+    Convert function names by replacing double underscores ("__") back to slashes ("/").
+
+    Args:
+        tool_calls (list): A list of tool call dictionaries.
+
+    Returns:
+        list: The updated tool calls list with function names restored to their original format.
+
+    Example:
+        ```python
+        tool_calls = [{"name": "text__translate", "parameters": '{"text": "hello", "lang": "fr"}'}]
+        restored_calls = double_underscore_to_slash(tool_calls)
+        print(restored_calls)  
+        # Output: [{'name': 'text/translate', 'parameters': {'text': 'hello', 'lang': 'fr'}}]
+        ```
+    """
     for tool_call in tool_calls:
         tool_call["name"] = tool_call["name"].replace("__", "/")
         tool_call["parameters"] = json.loads(tool_call["parameters"])
     return tool_calls
 
 def pre_process_tools(tools):
+    """
+    Pre-process tool definitions by replacing slashes ("/") with double underscores ("__").
+
+    Args:
+        tools (list): A list of tool dictionaries.
+
+    Returns:
+        list: The processed tools list with modified function names.
+
+    Example:
+        ```python
+        tools = [{"function": {"name": "text/translate"}}]
+        preprocessed_tools = pre_process_tools(tools)
+        print(preprocessed_tools)  
+        # Output: [{'function': {'name': 'text__translate'}}]
+        ```
+    """
     for tool in tools:
         tool_name = tool["function"]["name"]
         if "/" in tool_name:
