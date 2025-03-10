@@ -17,13 +17,13 @@ llms:
     # OpenAI Models
     # - name: "gpt-4o-mini"
     #   backend: "openai"
-    #   temperature: 1.0
+    #   temperature: 0.7
 
 
     # Google Models
-    # - name: "gemini-1.5-flash"
-    #   backend: "google"
-    #   temperature: 1.0
+    - name: "gemini-2.0-flash"
+      backend: "google"
+      temperature: 1.0
 
 
     # Anthropic Models
@@ -32,9 +32,9 @@ llms:
     #   temperature: 1.0
 
     # Ollama Models
-    - name: "qwen2.5:7b"
-      backend: "ollama"
-      hostname: "http://localhost:11434" # Make sure to run ollama server
+    # - name: "qwen2.5:7b"
+    #   backend: "ollama"
+    #   hostname: "http://localhost:11434" # Make sure to run ollama server
 
     # HuggingFace Models
     # - name: "meta-llama/Llama-3.1-8B-Instruct"
