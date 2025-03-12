@@ -263,8 +263,12 @@ class SyscallExecutor:
         query.messages = [{"role": "system", "content": system_prompt}] + query.messages
         query.tools = storage_syscalls
         
+        
         parser_response = self.execute_llm_syscall(agent_name, query)["response"]
         file_operations = parser_response.tool_calls
+        
+        # breakpoint()
+        
         operation_summaries = []
         
         # Execute each file operation
@@ -300,6 +304,332 @@ class SyscallExecutor:
         )
         
         return self.execute_llm_syscall(agent_name, final_query)["response"].response_message
+
+    def execute_memory_content_analyze(self, agent_name: str, query: MemoryQuery) -> Dict[str, Any]:
+        """
+        Generate a structured analysis result for a memory query.
+        
+        Args:
+            agent_name: Name of the agent making the request
+            query: Memory query to execute
+            
+        Returns:
+            Dict containing response and timing metrics
+            
+        Example:
+            ```python
+            query = MemoryQuery(operation="store", data={"key": "value"})
+            result = executor.execute_memory_content_analyze("agent_1", query)
+            ```
+        """
+        content = query.params.get("content", {})
+        system_prompt = """Generate a structured analysis result, including:
+             1. Identify the most important keywords (focus on nouns, verbs, and key concepts)
+             2. Extract core topics and context elements
+             3. Create relevant classification tags
+ 
+             Format the response as a JSON object:
+             {
+                 "keywords": [
+                     // Several specific, different keywords, capturing key concepts and terms
+                     // Sorted by importance
+                     // Do not include keywords that are the speaker or time
+                     // At least three keywords, but not too redundant.
+                 ],
+                 "context": 
+                     // A one-sentence summary:
+                     // - Topic/domain
+                     // - Key points/main arguments
+                     // - Target audience/purpose
+                 ,
+                 "tags": [
+                     // Several broad classification/topics
+                     // Including domain, format, and type tags
+                     // At least three tags, but not too redundant.
+                 ]
+             }
+ 
+             Content analysis:
+         """
+        response_format = {
+            "type": "json_schema", 
+            "json_schema": {
+                "name": "response",
+                "schema": {
+                    "type": "object",
+                     "properties": {
+                         "keywords": {
+                             "type": "array",
+                             "items": {
+                                 "type": "string"
+                             }
+                         },
+                         "context": {
+                             "type": "string"
+                         },
+                         "tags": {
+                             "type": "array",
+                             "items": {
+                                 "type": "string"
+                             }
+                         }
+                     }
+                 }
+             }
+        }
+        
+        messages = [{"role": "system", "content": "You should reply with the json object only."}] + [{"role": "user", "content": system_prompt + content}]
+        message_return_type = "json"
+        response_format = response_format
+        query_llm = LLMQuery(
+            messages=messages,
+            action_type="chat",
+            message_return_type=message_return_type,
+            response_format=response_format
+        )
+        response = self.execute_llm_syscall(agent_name, query_llm)["response"]
+        
+        # Get the response message and parse JSON
+        response_message = response.response_message
+        print("response_message:", response_message)
+        try:
+            # Try to parse the JSON response
+            if isinstance(response_message, str):
+                # Check if the JSON string is too long, truncate if necessary
+                if len(response_message) > 10000:  # Set a reasonable length limit
+                    print(f"Warning: Response too long ({len(response_message)} chars), truncating...")
+                    # Try to find the last complete JSON object
+                    last_brace_pos = response_message.rfind('}')
+                    if last_brace_pos > 0:
+                        response_message = response_message[:last_brace_pos+1]
+                
+                import json
+                try:
+                    parsed_response = json.loads(response_message)
+                except json.JSONDecodeError as json_err:
+                    print(f"JSON decode error: {json_err}")
+                    # Try to fix common JSON format issues
+                    # 1. Remove possible trailing commas
+                    response_message = response_message.replace(',}', '}').replace(',]', ']')
+                    # 2. Ensure strings are properly quoted
+                    try:
+                        parsed_response = json.loads(response_message)
+                    except:
+                        # If still unable to parse, create a minimal valid response
+                        print("Failed to parse JSON after cleanup attempts, using default values")
+                        return {"keywords": ["memory", "test"], "context": "", "tags": ["memory", "test"]}
+            elif isinstance(response_message, dict):
+                parsed_response = response_message
+            else:
+                print(f"Invalid response format from LLM: {type(response_message)}")
+                return {"keywords": [], "context": "", "tags": []}
+                
+            # Extract required fields
+            keywords = parsed_response.get("keywords", [])
+            context = parsed_response.get("context", "")
+            tags = parsed_response.get("tags", [])
+            
+            # Ensure keywords and tags are list types
+            if not isinstance(keywords, list):
+                keywords = [str(keywords)] if keywords else []
+            if not isinstance(tags, list):
+                tags = [str(tags)] if tags else []
+                
+            # Limit the number of tags to avoid overly long tag lists
+            if len(tags) > 20:
+                tags = tags[:20]
+                
+            return {"keywords": keywords, "context": context, "tags": tags}
+        except Exception as e:
+            print(f"Error parsing LLM response: {e}")
+            # Return default values when an error occurs
+            return {"keywords": [], "context": "", "tags": []}
+
+    def execute_memory_evolve(self, query: MemoryQuery, similar_memories: List[MemoryNote]) -> (MemoryQuery, Dict[str, Any]):
+        """
+        Evolve a memory query based on similar memories.
+        
+        Args:
+            query: Memory query to evolve
+            similar_memories: List of similar memories
+            
+        Returns:
+            Tuple containing evolved query and response
+            
+        Example:
+            ```python
+            similar_memories = [memory1, memory2]
+            evolved_query, response = executor.execute_memory_evolve(query, similar_memories)
+            ```
+        """
+        try:
+            nearest_neighbors_memories = "\n".join([
+                f"memory id: {memory.id}, memory content: {memory.content}, tags: {', '.join(memory.tags)}, context: {memory.context}, keywords: {', '.join(memory.keywords)}" 
+                for memory in similar_memories
+            ])
+        except Exception as e:
+            print(f"Error processing similar memories: {e}")
+            nearest_neighbors_memories = ""
+        system_prompt = '''
+        You are an AI memory evolution agent responsible for managing and evolving a knowledge base.
+        Analyze the new memory note and its nearest neighbors to determine if and how it should evolve.
+ 
+        New memory:
+        Content: {content}
+        Context: {context}
+        Keywords: {keywords}
+ 
+        Nearest neighbors:
+        {nearest_neighbors_memories}
+ 
+        Based on this information, determine:
+        1. Should this memory evolve? Consider its relationships with other memories
+        2. What type of evolution should occur?
+        3. What specific changes should be made?
+ 
+        Return your decision in JSON format:
+        {{
+            "should_evolve": true/false,
+            "evolution_type": ["update", "merge"],
+            "reasoning": "Explanation for the decision",
+            "affected_memories": ["memory_ids"],
+            "evolution_details": {{
+                "new_context": "Updated context",
+                "new_keywords": ["keyword1", "keyword2"],
+                "new_relationships": ["rel1", "rel2"]
+            }}
+        }}
+        '''.format(
+            content=getattr(query, 'content', ''),
+            context=getattr(query, 'context', ''),
+            keywords=getattr(query, 'keywords', []),
+            nearest_neighbors_memories=nearest_neighbors_memories
+        )
+        
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "response",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "should_evolve": {
+                            "type": "string"
+                        },
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "suggested_connections": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "new_context_neighborhood": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "tags_to_update": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "new_tags_neighborhood": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "corresponding_ids": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": ["should_evolve", "actions", "suggested_connections", "tags_to_update", "new_context_neighborhood", "new_tags_neighborhood"]
+                }
+            }
+        }
+        
+        query_llm = LLMQuery(
+            messages=[
+                {"role": "system", "content": "You should reply with the json object only."}, 
+                {"role": "user", "content": system_prompt}
+            ],
+            action_type="chat",
+            message_return_type="json",
+            response_format=response_format
+        )
+        
+        # Use the agent_name parameter passed in the query object
+        agent_name = getattr(query, 'agent_name', "default_agent")
+        
+        try:
+            llm_response = self.execute_llm_syscall(agent_name, query_llm)["response"]
+            
+            # Get the response message and parse it
+            response_message = llm_response.response_message
+            print("memory_evolve response:", response_message)
+            
+            # Try to parse the JSON response
+            if isinstance(response_message, str):
+                # Check if the JSON string is too long, truncate if necessary
+                if len(response_message) > 10000:  # Set a reasonable length limit
+                    print(f"Warning: Response too long ({len(response_message)} chars), truncating...")
+                    # Try to find the last complete JSON object
+                    last_brace_pos = response_message.rfind('}')
+                    if last_brace_pos > 0:
+                        response_message = response_message[:last_brace_pos+1]
+                
+                import json
+                try:
+                    response = json.loads(response_message)
+                except json.JSONDecodeError as json_err:
+                    print(f"JSON decode error: {json_err}")
+                    # Try to fix common JSON format issues
+                    # 1. Remove possible trailing commas
+                    response_message = response_message.replace(',}', '}').replace(',]', ']')
+                    # 2. Ensure strings are properly quoted
+                    try:
+                        response = json.loads(response_message)
+                    except:
+                        # If still unable to parse, return the original query and an empty list
+                        print("Failed to parse JSON after cleanup attempts")
+                        return (query, [])
+            elif isinstance(response_message, dict):
+                response = response_message
+            else:
+                print(f"Invalid response format from LLM: {type(response_message)}")
+                return (query, [])
+                
+            should_evolve = response.get("should_evolve", "False")
+            
+            similar_memories = []
+            if should_evolve.lower() == "true":
+                for j in range(response.get("new_context_neighborhood", 0)):
+                    similar_memories.append({"context": response.get("new_context_neighborhood")[j], "id": response.get("corresponding_ids")[j], "tags": response.get("new_tags_neighborhood")[j]})
+            
+            return (query, similar_memories)
+                            
+        except Exception as e:
+            print(f"Error in execute_memory_evolve: {e}")
+            import traceback
+            traceback.print_exc()
+            
+        return (query, similar_memories)
 
     def execute_request(self, agent_name: str, query: Any) -> Dict[str, Any]:
         """
@@ -339,30 +669,32 @@ class SyscallExecutor:
         elif isinstance(query, ToolQuery):
             return self.execute_tool_syscall(agent_name, query)
         elif isinstance(query, MemoryQuery):
-            if query.action_type == "add_agentic_memory":
+            if query.operation_type == "add_agentic_memory":
                 metadata = self.execute_memory_content_analyze(agent_name, query)
                 query.params.update(metadata)
                 # retrieve the related memory and evolve the memory.
-                query.action_type = "retrieve_memory"
+                query.operation_type = "retrieve_memory_raw"
                 similar_memories = self.execute_memory_syscall(agent_name, query)
+                print(similar_memories,type(similar_memories))
                 query, similar_memories_evolved = self.execute_memory_evolve(query, similar_memories)
                 # define a memory abstract in the memory layer.
-                query.action_type = "add_memory"
-                for memory in similar_memories_evolved:
-                    updated_query = MemoryQuery()
-                    updated_query.params = memory.return_params() # return a dict with full parameters, also with memory id for updated
-                    updated_query.action_type = "update_memory"
-                    self.execute_memory_syscall(agent_name, updated_query)
+                query.operation_type = "add_memory"
+                if similar_memories_evolved != []:
+                    for memory_params_dict in similar_memories_evolved:
+                        updated_query = MemoryQuery()
+                        updated_query.params = memory_params_dict # return a dict with full parameters, also with memory id for updated
+                        updated_query.operation_type = "update_memory"
+                        self.execute_memory_syscall(agent_name, updated_query)
                 return self.execute_memory_syscall(agent_name, query)
-            elif query.action_type == "add_memory":
+            elif query.operation_type == "add_memory":
                 return self.execute_memory_syscall(agent_name, query)
-            elif query.action_type == "remove_memory":
+            elif query.operation_type == "remove_memory":
                 return self.execute_memory_syscall(agent_name, query)
-            elif query.action_type == "update_memory":
+            elif query.operation_type == "update_memory":
                 return self.execute_memory_syscall(agent_name, query)
-            elif query.action_type == "retrieve_memory":
+            elif query.operation_type == "retrieve_memory":
                 return self.execute_memory_syscall(agent_name, query)
-            elif query.action_type == "get_memory":
+            elif query.operation_type == "get_memory":
                 return self.execute_memory_syscall(agent_name, query)
         elif isinstance(query, StorageQuery):
             return self.execute_storage_syscall(agent_name, query)
@@ -393,4 +725,3 @@ def create_syscall_executor():
 
 # Maintain backwards compatibility
 useSysCall = create_syscall_executor
-
