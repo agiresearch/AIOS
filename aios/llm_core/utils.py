@@ -140,17 +140,39 @@ def decode_litellm_tool_calls(response):
         # Output: [{'name': 'translate', 'parameters': {'text': 'hello', 'lang': 'fr'}, 'id': 'uuid1234'}]
         ```
     """
-    tool_calls = response.choices[0].message.tool_calls
-    
     decoded_tool_calls = []
-    for tool_call in tool_calls:
-        decoded_tool_calls.append(
-            {
-                "name": tool_call.function.name,
-                "parameters": tool_call.function.arguments,
-                "id": tool_call.id
-            }
-        )
+    
+    if response.choices[0].message.content is None:
+        assert response.choices[0].message.tool_calls is not None
+        tool_calls = response.choices[0].message.tool_calls
+
+        for tool_call in tool_calls:
+            decoded_tool_calls.append(
+                {
+                    "name": tool_call.function.name,
+                    "parameters": tool_call.function.arguments,
+                    "id": tool_call.id
+                }
+            )
+    else:
+        assert response.choices[0].message.content is not None
+        
+        # breakpoint()
+        tool_calls = response.choices[0].message.content
+        if isinstance(tool_calls, str):
+            tool_calls = json.loads(tool_calls)
+        
+        if not isinstance(tool_calls, list):
+            tool_calls = [tool_calls]
+            
+        for tool_call in tool_calls:
+            decoded_tool_calls.append(
+                {
+                    "name": tool_call["name"],
+                    "parameters": tool_call["arguments"],
+                    "id": generator_tool_call_id()
+                }
+            )
         
     return decoded_tool_calls
 
@@ -235,7 +257,9 @@ def double_underscore_to_slash(tool_calls):
     """
     for tool_call in tool_calls:
         tool_call["name"] = tool_call["name"].replace("__", "/")
-        tool_call["parameters"] = json.loads(tool_call["parameters"])
+        if isinstance(tool_call["parameters"], str):
+            tool_call["parameters"] = json.loads(tool_call["parameters"])
+        # tool_call["parameters"] = json.loads(tool_call["parameters"])
     return tool_calls
 
 def pre_process_tools(tools):
