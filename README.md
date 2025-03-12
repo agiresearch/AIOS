@@ -241,19 +241,45 @@ conda create -n venv python=3.x  # Only support for Python 3.10 and 3.11
 conda activate venv
 ```
 
-If you have GPU environments, you can install the dependencies using
+> [!TIP]
+> We strongly recommend using [uv](https://github.com/astral-sh/uv) for faster and more reliable package installation.
+> To install uv: `pip install uv`
+
+**For GPU environments:**
+```bash
+uv pip install -r requirements-cuda.txt
+```
+
+**For CPU-only environments:**
+```bash
+uv pip install -r requirements.txt
+```
+
+Alternatively, if you prefer using pip:
+
+**For GPU environments:**
 ```bash
 pip install -r requirements-cuda.txt
 ```
-or else you can install the dependencies using
+
+**For CPU-only environments:**
 ```bash
 pip install -r requirements.txt
 ```
 
 ##### Step 2: Install AIOS SDK (Cerebrum)
-1. Clone the Cerebrum repository and install:
+1. Clone the Cerebrum repository:
    ```bash
    git clone https://github.com/agiresearch/Cerebrum.git
+   ```
+  
+2. Install using uv (recommended):
+   ```bash
+   cd Cerebrum && uv pip install -e .
+   ```
+   
+   Or using pip:
+   ```bash
    cd Cerebrum && pip install -e .
    ```
 
