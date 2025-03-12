@@ -29,6 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
+- ** **[2025-03-10]** 🔥 Check out our new paper of agentic memory [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) and the [codebase](https://github.com/agiresearch/A-mem). 
 - **[2025-02-07]** 🔥 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has been integrated into AIOS as the **Terminal UI**. 
 - **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek apis (deepseek-chat and deepseek-reasoner) are available. 
 - **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
@@ -158,15 +159,11 @@ llms:
     # Ollama Models
     - name: "qwen2.5:7b"
       backend: "ollama"
-      max_new_tokens: 1024
-      temperature: 1.0
       hostname: "http://localhost:11434"  # Make sure to run ollama server
 
     # vLLM Models
-    - name: "meta-llama/Llama-3.2-3B-Instruct"
+    - name: "meta-llama/Llama-3.2-8B-Instruct"
       backend: "vllm"
-      max_new_tokens: 1024
-      temperature: 1.0
       hostname: "http://localhost:8091/v1"  # Make sure to run vllm server
 ```
 
@@ -194,19 +191,12 @@ vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
 > [!NOTE]
 > vLLM currently only supports Linux and GPU-enabled environments. If you don't have a compatible environment, please choose other backend options.
 
-For GPU configuration with vLLM, you can set the CUDA device:
-```bash
-export CUDA_VISIBLE_DEVICES="0"  # replace with your designated gpu ids
-```
-
 **Using HuggingFace Models:** 
 You can configure HuggingFace models with specific GPU memory allocation:
 ```yaml
-- name: "meta-llama/Llama-2-70b-chat-hf"
+- name: "meta-llama/Llama-3.1-8B-Instruct"
   backend: "huggingface"
-  max_new_tokens: 1024
-  temperature: 1.0
-  max_gpu_memory: {"0": "24GB", "1": "24GB"}  # GPU memory allocation
+  max_gpu_memory: {0: "24GB", 1: "24GB"}  # GPU memory allocation
   eval_device: "cuda:0"  # Device for model evaluation
 ```
 
@@ -282,8 +272,10 @@ bash runtime/launch_kernel.sh
 Or if you need to explicity set the Python version by running `python3.10`, `python3.11`, `python3`, etc. run the command below:
 
 ```
-python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0
+python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 --port 8000 # replace the port with your own port
 ```
+
+You also need to set up the host and port in the configuration of Cerebrum (AIOS SDK) to make sure it is consistent with the configurations of AIOS. 
 
 You can also force the kernel to run in the background with:
 ```
@@ -291,8 +283,6 @@ python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
 ```
 
 And you can run it even after the shell closes by typing `nohup` before the entire command.
-
-Then you can start the client provided by the AIOS SDK either in the terminal or in the WebUI. 
 
 #### Interact with AIOS terminal
 
@@ -359,6 +349,12 @@ Detailed instructions of how to use the AIOS terminal can be found at [here](htt
 
 ## Reference
 ```
+@article{xu2025mem,
+  title={A-mem: Agentic memory for llm agents},
+  author={Xu, Wujiang and Liang, Zujie and Mei, Kai and Gao, Hang and Tan, Juntao and Zhang, Yongfeng},
+  journal={arXiv preprint arXiv:2502.12110},
+  year={2025}
+}
 @inproceedings{shi2025from,
   title={From Commands to Prompts: {LLM}-based Semantic File System for AIOS},
   author={Zeru Shi and Kai Mei and Mingyu Jin and Yongye Su and Chaoji Zuo and Wenyue Hua and Wujiang Xu and Yujie Ren and Zirui Liu and Mengnan Du and Dong Deng and Yongfeng Zhang},
