@@ -2,7 +2,7 @@
 
 # API Keys Configuration
 api_keys:
-  openai: "sk-1234"    # OpenAI API key
+  openai: ""    # OpenAI API key
   gemini: ""    # Google Gemini API key
   groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
