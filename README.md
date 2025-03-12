@@ -29,7 +29,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- ** **[2025-03-10]** 🔥 Check out our new paper of agentic memory [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) and the [codebase](https://github.com/agiresearch/A-mem). 
+- **[2025-03-10]** 🔥 Check out our new paper of agentic memory [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) and the [codebase](https://github.com/agiresearch/A-mem). 
 - **[2025-02-07]** 🔥 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has been integrated into AIOS as the **Terminal UI**. 
 - **[2025-01-27]** 🔥 Deepseek-r1 (1.5b, 7b, 8b, 14b, 32b, 70b, 671b) has already been supported in AIOS, both open-sourced versions and deepseek apis (deepseek-chat and deepseek-reasoner) are available. 
 - **[2024-11-30]** 🔥 AIOS v0.2: Disentangled AIOS Kernel (this [AIOS](https://github.com/agiresearch/AIOS) repository) and AIOS SDK (The [Cerebrum](https://github.com/agiresearch/Cerebrum) repository), Remote Kernel for agent users. 
@@ -162,7 +162,7 @@ llms:
       hostname: "http://localhost:11434"  # Make sure to run ollama server
 
     # vLLM Models
-    - name: "meta-llama/Llama-3.2-8B-Instruct"
+    - name: "meta-llama/Llama-3.1-8B-Instruct"
       backend: "vllm"
       hostname: "http://localhost:8091/v1"  # Make sure to run vllm server
 ```
@@ -185,11 +185,12 @@ ollama pull qwen2.5:7b  # example model
 1. Install vLLM following their [installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html)
 2. Start the vLLM server in a separate terminal:
 ```bash
-vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
+vllm serve meta-llama/Llama-3.1-8B-Instruct --port 8091
 ```
 
 > [!NOTE]
 > vLLM currently only supports Linux and GPU-enabled environments. If you don't have a compatible environment, please choose other backend options.
+> To enable the tool calling feature of vllm, refer to https://docs.vllm.ai/en/latest/features/tool_calling.html
 
 **Using HuggingFace Models:** 
 You can configure HuggingFace models with specific GPU memory allocation:
