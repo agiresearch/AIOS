@@ -162,7 +162,7 @@ llms:
       hostname: "http://localhost:11434"  # Make sure to run ollama server
 
     # vLLM Models
-    - name: "meta-llama/Llama-3.2-8B-Instruct"
+    - name: "meta-llama/Llama-3.1-8B-Instruct"
       backend: "vllm"
       hostname: "http://localhost:8091/v1"  # Make sure to run vllm server
 ```
@@ -185,7 +185,7 @@ ollama pull qwen2.5:7b  # example model
 1. Install vLLM following their [installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html)
 2. Start the vLLM server in a separate terminal:
 ```bash
-vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
+vllm serve meta-llama/Llama-3.1-8B-Instruct --port 8091
 ```
 
 > [!NOTE]
