@@ -649,7 +649,7 @@ class SyscallExecutor:
             ```
         """
         if isinstance(query, LLMQuery):
-            if query.action_type == "chat" or query.action_type == "chat_with_json_response":
+            if query.action_type == "chat" or query.action_type == "chat_with_json_response" or query.action_type == "chat_with_tool_use_response":
                 llm_response = self.execute_llm_syscall(agent_name, query)
                 return llm_response
             

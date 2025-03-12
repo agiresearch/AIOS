@@ -316,6 +316,9 @@ class LLMAdapter:
             message_return_type = llm_syscall.query.message_return_type
             selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
             response_format = llm_syscall.query.response_format
+            temperature = llm_syscall.query.temperature
+            max_tokens = llm_syscall.query.max_new_tokens
+            
             llm_syscall.set_status("executing")
             llm_syscall.set_start_time(time.time())
             
@@ -350,11 +353,12 @@ class LLMAdapter:
                     model=model, 
                     messages=messages, 
                     tools=tools,
-                    temperature=temperature, 
                     llm_syscall=llm_syscall,
                     api_base=api_base,
                     message_return_type=message_return_type,
-                    response_format=response_format
+                    response_format=response_format,
+                    temperature=temperature,
+                    max_tokens=max_tokens
                 )
                 
             except Exception as e:
@@ -437,11 +441,12 @@ class LLMAdapter:
         model: Union[str, HfLocalBackend, OpenAI],
         messages: List[Dict],
         tools: Optional[List],
-        temperature: float,
         llm_syscall,
         api_base: Optional[str] = None,
         message_return_type: Optional[str] = "text",
-        response_format: Optional[Dict[str, Dict]] = None
+        response_format: Optional[Dict[str, Dict]] = None,
+        temperature: float = 1.0,
+        max_tokens: int = 1000
     ) -> Any:
         """
         Get response from the model.
@@ -469,11 +474,12 @@ class LLMAdapter:
                 model=model, 
                 messages=messages, 
                 tools=tools,
-                temperature=temperature, 
                 pid=pid,
                 time_limit=time_limit,
                 message_return_type=message_return_type,
-                response_format=response_format
+                response_format=response_format,
+                temperature=temperature, 
+                max_tokens=max_tokens
             )                
             
             if finished:
@@ -484,7 +490,8 @@ class LLMAdapter:
         # Process request without context management
         completion_kwargs = {
             "messages": messages,
-            "temperature": temperature
+            "temperature": temperature,
+            "max_tokens": max_tokens
         }
         
         # Add tools if provided
