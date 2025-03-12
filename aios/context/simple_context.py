@@ -54,6 +54,7 @@ class SimpleContextManager(BaseContextManager):
                                messages: List[Dict[str, str]], 
                                tools: Optional[List[Dict[str, Any]]], 
                                temperature: float,
+                               max_tokens: int,
                                response_format: Optional[Dict[str, Any]] = None,
                                stream: bool = True) -> Any:
         """
@@ -76,7 +77,8 @@ class SimpleContextManager(BaseContextManager):
             kwargs = {
                 "model": model_or_client,
                 "messages": messages,
-                "temperature": temperature
+                "temperature": temperature,
+                "max_tokens": max_tokens
             }
             
             if tools:
@@ -95,7 +97,8 @@ class SimpleContextManager(BaseContextManager):
                 "model": model_name,
                 "messages": messages,
                 "temperature": temperature,
-                "stream": stream
+                "stream": stream,
+                "max_tokens": max_tokens
             }
             
             if tools:
@@ -143,6 +146,7 @@ class SimpleContextManager(BaseContextManager):
                 tools: Optional[List[Dict[str, Any]]], 
                 message_return_type: str, 
                 temperature: float, 
+                max_tokens: int,
                 pid: Union[int, str], 
                 time_limit: float,
                 response_format: Optional[Dict[str, Any]] = None
@@ -208,6 +212,7 @@ class SimpleContextManager(BaseContextManager):
                 messages=messages,
                 tools=tools,
                 temperature=temperature,
+                max_tokens=max_tokens,
                 stream=False
             )
             
@@ -229,6 +234,7 @@ class SimpleContextManager(BaseContextManager):
             messages=messages,
             tools=None,
             temperature=temperature,
+            max_tokens=max_tokens,
             response_format=response_format if message_return_type == "json" else None,
             stream=True
         )
