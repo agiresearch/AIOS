@@ -127,7 +127,72 @@ Please see our ongoing [documentation](https://docs.aios.foundation/) for more i
 ##### Python
 - Supported versions: **Python 3.10 - 3.11**
 
-#### Set Up API Keys
+#### Installation from source
+
+##### Step 1: Install AIOS Kernel
+Git clone AIOS kernel
+```bash
+git clone https://github.com/agiresearch/AIOS.git
+```
+Create venv environment
+```bash
+python3.x -m venv venv # Only support for Python 3.10 and 3.11
+source venv/bin/activate
+```
+or create conda environment
+```bash
+conda create -n venv python=3.x  # Only support for Python 3.10 and 3.11
+conda activate venv
+```
+
+> [!TIP]
+> We strongly recommend using [uv](https://github.com/astral-sh/uv) for faster and more reliable package installation.
+> To install uv: `pip install uv`
+
+**For GPU environments:**
+```bash
+uv pip install -r requirements-cuda.txt
+```
+
+**For CPU-only environments:**
+```bash
+uv pip install -r requirements.txt
+```
+
+Alternatively, if you prefer using pip:
+
+**For GPU environments:**
+```bash
+pip install -r requirements-cuda.txt
+```
+
+**For CPU-only environments:**
+```bash
+pip install -r requirements.txt
+```
+
+##### Step 2: Install AIOS SDK (Cerebrum)
+1. Clone the Cerebrum repository:
+   ```bash
+   git clone https://github.com/agiresearch/Cerebrum.git
+   ```
+  
+2. Install using uv (recommended):
+   ```bash
+   cd Cerebrum && uv pip install -e .
+   ```
+   
+   Or using pip:
+   ```bash
+   cd Cerebrum && pip install -e .
+   ```
+
+**Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
+
+### Quickstart
+Before launching AIOS, it is required to set up configurations. AIOS provides two ways of setting up configurations, one is to set up by directly modifying the configuration file, another is to set up interactively. 
+
+#### Set up configuration file directly (Recommended)
 You need API keys for services like OpenAI, Anthropic, Groq and HuggingFace. The simplest way to configure them is to edit the `aios/config/config.yaml`.
 
 > [!TIP]
@@ -204,10 +269,9 @@ You can configure HuggingFace models with specific GPU memory allocation:
   eval_device: "cuda:0"  # Device for model evaluation
 ```
 
-##### Detailed Setup Instructions
-For detailed instructions on setting up API keys and configuration files, see [Environment Variables Configuration](https://app.gitbook.com/o/6h6b4xbBVMu2pFXdNM0D/s/5h7XvlMFgKMtRboLGG1i/~/diff/~/changes/73/getting-started/environment-variables-configuration).
+#### Set up interactively
 
-Alternatively, you can set them as environment variables directly:
+Alternatively, you can set up aios configurations interactively by using the following command. 
 
 - `aios env list`: Show current environment variables, or show available API keys if no variables are set
 - `aios env set`: Show current environment variables, or show available API keys if no variables are set
@@ -223,72 +287,6 @@ When no environment variables are set, the following API keys will be shown:
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
 - `HF_HOME`: Optional path to store HuggingFace models
-
-
-
-#### Installation from source
-
-##### Step 1: Install AIOS Kernel
-Git clone AIOS kernel
-```bash
-git clone https://github.com/agiresearch/AIOS.git
-```
-Create venv environment
-```bash
-python3.x -m venv venv # Only support for Python 3.10 and 3.11
-source venv/bin/activate
-```
-or create conda environment
-```bash
-conda create -n venv python=3.x  # Only support for Python 3.10 and 3.11
-conda activate venv
-```
-
-> [!TIP]
-> We strongly recommend using [uv](https://github.com/astral-sh/uv) for faster and more reliable package installation.
-> To install uv: `pip install uv`
-
-**For GPU environments:**
-```bash
-uv pip install -r requirements-cuda.txt
-```
-
-**For CPU-only environments:**
-```bash
-uv pip install -r requirements.txt
-```
-
-Alternatively, if you prefer using pip:
-
-**For GPU environments:**
-```bash
-pip install -r requirements-cuda.txt
-```
-
-**For CPU-only environments:**
-```bash
-pip install -r requirements.txt
-```
-
-##### Step 2: Install AIOS SDK (Cerebrum)
-1. Clone the Cerebrum repository:
-   ```bash
-   git clone https://github.com/agiresearch/Cerebrum.git
-   ```
-  
-2. Install using uv (recommended):
-   ```bash
-   cd Cerebrum && uv pip install -e .
-   ```
-   
-   Or using pip:
-   ```bash
-   cd Cerebrum && pip install -e .
-   ```
-
-**Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
-
-### Quickstart
 
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
