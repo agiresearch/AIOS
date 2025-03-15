@@ -101,35 +101,34 @@ jobs:
           sleep 1
         done
 
-    - name: Run the run-agent code
+    - name: Run all Ollama tests
       run: |
-        # Debug: Show source of code
-        echo "=== Code Source Info ==="
-        echo "Source Repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}"
-        echo "Source Branch: ${{ github.head_ref || github.ref_name }}"
-        echo "Commit: $(git rev-parse --short HEAD)"
-        echo "PR: ${{ github.event.pull_request.html_url || 'Not a PR' }}"
+        cd aios_root/Cerebrum
         
-        # Run agent and capture exit code
-        run-agent \
-          --mode remote \
-          --agent_author example \
-          --agent_name test_agent \
-          --agent_version 0.0.3 \
-          --agenthub_url https://app.aios.foundation \
-          --task "Tell me what is the capital of United States"
+        # Create test results directory
+        mkdir -p test_results
         
-        # Check for specific error patterns in the log
-        # if grep -q "Failed to initialize client: 500 Server Error" agent.log; then
-        #   echo "Error: LLM initialization failed. Please check your API key configuration."
-        #   exit 1
-        # fi
+        # Find and run all test files containing "ollama" in their name
+        echo "=== Running all Ollama tests ==="
+        find tests -name "*ollama*.py" -type f | while read -r test_file; do
+          echo "Running test: $test_file"
+          python -m $test_file | tee -a ollama_tests.log
+          echo "----------------------------------------"
+        done
         
-        # # Check if the agent actually completed successfully
-        # if ! grep -q "Final Result:" agent.log; then
-        #   echo "Error: Agent did not complete successfully"
-        #   exit 1
-        # fi
+        # Check if any tests were found and run
+        if [ ! -s ollama_tests.log ]; then
+          echo "No Ollama tests were found or executed!"
+          exit 1
+        fi
+        
+        # Check for test failures
+        if grep -i "FAILED" ollama_tests.log; then
+          echo "Some tests failed. See logs for details."
+          exit 1
+        else
+          echo "All Ollama tests passed successfully!"
+        fi
     
     - name: Upload a Build Artifact
       if: always()  # Upload logs even if job fails
