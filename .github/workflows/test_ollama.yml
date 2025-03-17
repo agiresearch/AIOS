@@ -106,8 +106,6 @@ jobs:
 
     - name: Run all tests
       run: |
-        cd aios_root/Cerebrum
-        
         # Create test results directory
         mkdir -p test_results
         
