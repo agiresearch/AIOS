@@ -1,6 +1,9 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
 name: AIOS Application
 
 on:
@@ -15,51 +18,60 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-    # Clone AIOS
-    - name: Git Clone AIOS
-      uses: actions/checkout@v4
-      with:
-        repository: agiresearch/AIOS
-        path: aios_root
-        ref: main
 
-    # Verify AIOS clone
-    - name: Verify AIOS clone
-      run: |
-        echo "=== AIOS root directory contents ==="
-        ls -la aios_root/
-        echo "=== Looking for setup files ==="
-        find aios_root/ -name "setup.py" -o -name "pyproject.toml"
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
-
-    # Install AIOS dependencies
-    - name: Install AIOS dependencies
-      working-directory: aios_root
+    
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    # Clone Cerebrum into AIOS directory
-    - name: Checkout Cerebrum
-      uses: actions/checkout@v4
+    
+    - name: Git Clone Action
+      # You may pin to the exact commit or the version.
+      # uses: sudosubin/git-clone-action@8a93ce24d47782e30077508cccacf8a05a891bae
+      uses: sudosubin/git-clone-action@v1.0.1
       with:
-        path: aios_root/Cerebrum
-        ref: ${{ github.ref }}
-
-    # Install Cerebrum
-    - name: Install Cerebrum
+        # Repository owner and name. Ex: sudosubin/git-clone-action
+        repository: agiresearch/Cerebrum
+        path: Cerebrum
+    
+    - name: Install cerebrum special edition
       run: |
-        python -m pip install -e aios_root/Cerebrum/
-    # Run AIOS kernel
+        python -m pip install -e Cerebrum/
+    
+    - name: Download and install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh
+
+    - name: Pull Ollama models
+      run: |
+        ollama pull qwen2.5:7b
+
+    - name: Run Ollama serve
+      run: |
+        ollama serve 2>&1 | tee ollama-llm.log &
+        # Wait for ollama to start
+        for i in {1..30}; do
+          if curl -s http://localhost:11434/api/version > /dev/null; then
+            echo "Ollama is running"
+            break
+          fi
+          echo "Waiting for ollama to start... ($i/30)"
+          sleep 1
+        done
+        # Verify ollama is running
+        curl -s http://localhost:11434/api/version || (echo "Failed to start ollama" && exit 1)
+
     - name: Run AIOS kernel in background
       run: |
-        cd aios_root
-        bash runtime/launch_kernel.sh &>../kernel.log &
+        bash runtime/launch_kernel.sh &>logs &
         KERNEL_PID=$!
-        cd ..
         
         # Set maximum wait time (60 seconds)
         max_wait=60
@@ -69,12 +81,12 @@ jobs:
         while true; do
           if ! ps -p $KERNEL_PID > /dev/null; then
             echo "Kernel process died. Checking logs:"
-            cat kernel.log
+            cat logs
             exit 1
           fi
           
           if nc -z localhost 8000; then
-            if curl -s http://localhost:8000/health; then
+            if curl -s http://localhost:8000/health > /dev/null; then
               echo "Kernel successfully started and healthy"
               break
             fi
@@ -84,104 +96,59 @@ jobs:
           elapsed=$((SECONDS - start_time))
           if [ $elapsed -ge $max_wait ]; then
             echo "Timeout after ${max_wait} seconds. Kernel failed to start properly."
-            cat kernel.log
+            cat logs
             exit 1
           fi
           
           echo "Waiting for kernel to start... (${elapsed}s elapsed)"
           sleep 1
         done
-    # Run integration test
-    - name: Download and install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
 
-    - name: Pull Ollama models
+    - name: Run the run-agent code
       run: |
-        ollama pull qwen2.5:7b
-
-    - name: Start Ollama serve
-      run: |
-        ollama serve &
-        # Wait for Ollama server to start
-        max_wait=30
-        start_time=$SECONDS
-        while true; do
-          if curl -s http://localhost:11434/api/tags > /dev/null; then
-            echo "Ollama server started successfully"
-            break
-          fi
-          
-          # Check if timed out
-          elapsed=$((SECONDS - start_time))
-          if [ $elapsed -ge $max_wait ]; then
-            echo "Timeout after ${max_wait} seconds. Ollama server failed to start properly."
-            exit 1
-          fi
-          
-          echo "Waiting for Ollama server to start... (${elapsed}s elapsed)"
-          sleep 1
-        done
-          
-    - name: Run all tests
-      run: |
-        cd aios_root/Cerebrum
+        # Debug: Show source of code
+        echo "=== Code Source Info ==="
+        echo "Source Repo: ${{ github.event.pull_request.head.repo.full_name || github.repository }}"
+        echo "Source Branch: ${{ github.head_ref || github.ref_name }}"
+        echo "Commit: $(git rev-parse --short HEAD)"
+        echo "PR: ${{ github.event.pull_request.html_url || 'Not a PR' }}"
         
-        # Create test results directory
-        mkdir -p test_results
+        # Run agent and capture exit code
+        run-agent \
+          --mode remote \
+          --agent_author example \
+          --agent_name test_agent \
+          --agent_version 0.0.3 \
+          --agenthub_url https://app.aios.foundation \
+          --task "Tell me what is the capital of United States"
         
-        # Function to check if a path contains agent or llm
-        contains_agent_or_llm() {
-          local dir_path=$(dirname "$1")
-          if [[ "$dir_path" == *"agent"* || "$dir_path" == *"llm"* ]]; then
-            return 0  # True in bash
-          else
-            return 1  # False in bash
-          fi
-        }
-
-        # Process test files
-        find tests -type f -name "*.py" | while read -r test_file; do
-          if contains_agent_or_llm "$test_file"; then
-            # For agent or llm directories, only run ollama tests
-            if [[ "$test_file" == *"ollama"* ]]; then
-              echo "Running Ollama test in agent/llm directory: $test_file"
-              python $test_file | tee -a ollama_tests.log
-              echo "----------------------------------------"
-            fi
-          else
-            # For other directories, run all tests
-            echo "Running test: $test_file"
-            python $test_file | tee -a all_tests.log
-            echo "----------------------------------------"
-          fi
-        done
-
-    # Upload logs
-    - name: Upload logs
-      if: always()
+        # Check for specific error patterns in the log
+        # if grep -q "Failed to initialize client: 500 Server Error" agent.log; then
+        #   echo "Error: LLM initialization failed. Please check your API key configuration."
+        #   exit 1
+        # fi
+        
+        # # Check if the agent actually completed successfully
+        # if ! grep -q "Final Result:" agent.log; then
+        #   echo "Error: Agent did not complete successfully"
+        #   exit 1
+        # fi
+    
+    - name: Upload a Build Artifact
+      if: always()  # Upload logs even if job fails
       uses: actions/upload-artifact@v4.4.3
       with:
-        name: test-logs
+        name: logs
         path: |
-          kernel.log
-          aios_root/Cerebrum/ollama_tests.log
-          aios_root/Cerebrum/agent_tests.log
-          aios_root/Cerebrum/test_results/
-    # Debug information
-    - name: Debug information
+          logs
+          agent.log
+    
+    - name: Collect debug information
       if: failure()
       run: |
-        echo "=== Kernel log ==="
-        cat kernel.log
-        echo "=== Ollama tests log ==="
-        cat aios_root/Cerebrum/ollama_tests.log || true
-        echo "=== Agent tests log ==="
-        cat aios_root/Cerebrum/agent_tests.log || true
-        echo "=== Environment variables ==="
+        echo "=== Kernel Logs ==="
+        cat logs
+        echo "=== Environment Variables ==="
         env | grep -i api_key || true
-        echo "=== Process status ==="
+        echo "=== Process Status ==="
         ps aux | grep kernel
-        ps aux | grep ollama
-        echo "=== Directory structure ==="
-        find aios_root/Cerebrum/tests -name "*ollama*.py" -type f

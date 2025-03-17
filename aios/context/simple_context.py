@@ -398,8 +398,11 @@ class SimpleContextManager(BaseContextManager):
             time_limit=time_limit
         )
         
-        # Store the response
-        self.context_dict[str(pid)] = completed_response
+        if not finished:
+            # Store the response
+            self.context_dict[str(pid)] = completed_response
+        else:
+            self.clear_context(str(pid))
         return completed_response, finished
 
     def load_context(self, pid):
