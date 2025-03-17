@@ -1,10 +1,11 @@
 import json
 import re
 import uuid
+from copy import deepcopy
 
-def tool_calling_input_format(messages: list, tools: list) -> list:
+def merge_messages_with_tools(messages: list, tools: list) -> list:
     """
-    Integrate tool information into the messages for open-sourced LLMs.
+    Integrate tool information into the messages for open-sourced LLMs which don't support tool calling.
 
     Args:
         messages (list): A list of message dictionaries, each containing at least a "role" 
@@ -30,34 +31,56 @@ def tool_calling_input_format(messages: list, tools: list) -> list:
         print(updated_messages)
         ```
     """
-    prefix_prompt = (
-        "In and only in current step, you need to call tools. Available tools are: "
-    )
-    tool_prompt = json.dumps(tools)
-    suffix_prompt = "".join(
-        [
-            "Must call functions that are available. To call a function, respond "
-            "immediately and only with a list of JSON object of the following format:"
-            '[{"name":"function_name_value","parameters":{"parameter_name1":"parameter_value1",'
-            '"parameter_name2":"parameter_value2"}}]'
-        ]
-    )
+    tool_prompt = f"""
+You have access to the following tools:
 
-    # translate tool call message for models don't support tool call
-    for message in messages:
-        if "tool_calls" in message:
-            message["content"] = json.dumps(message.pop("tool_calls"))
-            
-        elif message["role"] == "tool":
-            message["role"] = "user"
-            tool_call_id = message.pop("tool_call_id")
-            content = message.pop("content")
-            message["content"] = (
-                f"The result of the execution of function(id :{tool_call_id}) is: {content}. "
-            )
+{json.dumps(tools)}"""
+    
+    format_prompt = f"""
+To use a tool, respond with a JSON object in the following format:
+```json
+[{{"name": "tool_name","parameters": {{"arg1": "value1","arg2": "value2"}}}}]
+```
 
-    messages[-1]["content"] += prefix_prompt + tool_prompt + suffix_prompt
-    return messages
+Make sure your response is properly formatted as a valid JSON object.
+"""
+    
+    new_messages = deepcopy(messages)
+
+    new_messages[-1]["content"] += (tool_prompt + format_prompt)
+    return new_messages
+
+def merge_messages_with_response_format(messages: list, response_format: dict) -> list:
+    """
+    Format the response format instructions into a string for the prompt.
+    
+    Args:
+        response_format: ResponseFormat object with schema information
+        
+    Returns:
+        Formatted response format instructions as a string
+    """
+    if response_format:
+        schema_str = json.dumps(response_format["json_schema"], indent=2)
+        format_prompt = f"""
+You MUST respond with a JSON object that conforms to the following schema:
+
+{schema_str}
+
+Your entire response must be valid JSON without any other text, preamble, or postscript.
+Do not use code blocks like ```json or ```. Just return the raw JSON.
+"""
+    else:
+        format_prompt = """
+You MUST respond with a valid JSON object. 
+Your entire response must be valid JSON without any other text, preamble, or postscript.
+Do not use code blocks like ```json or ```. Just return the raw JSON.
+"""
+
+    new_messages = deepcopy(messages)
+
+    new_messages[-1]["content"] += (format_prompt)
+    return new_messages
 
 def parse_json_format(message: str) -> str:
     """
@@ -102,6 +125,33 @@ def parse_json_format(message: str) -> str:
             pass
     return "[]"
 
+def decode_hf_tool_calls(message):
+    """
+    Decode tool call responses from Hugging Face API format.
+
+    Args:
+        message: The response object from Hugging Face API. 
+    
+    Returns:
+        list: A list of dictionaries, each containing:
+              - "name": The name of the function being called.
+              - "parameters": The arguments passed to the function.
+              - "id": The unique identifier of the tool call.
+              
+    Example:
+        ```python
+        response = <Hugging Face API response>
+        decoded_calls = decode_hf_tool_calls(response)
+        print(decoded_calls)  
+        # Output: [{'name': 'translate', 'parameters': {'text': 'hello', 'lang': 'fr'}, 'id': 'uuid1234'}]  
+        ```
+    """
+    message = message.replace("assistant\n\n", "")
+    tool_calls = json.loads(message)
+    for tool_call in tool_calls:
+        tool_call["id"] = generator_tool_call_id()
+    return tool_calls
+    
 def generator_tool_call_id():
     """
     Generate a unique identifier for a tool call.

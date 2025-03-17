@@ -147,7 +147,8 @@ conda activate venv
 
 > [!TIP]
 > We strongly recommend using [uv](https://github.com/astral-sh/uv) for faster and more reliable package installation.
-> To install uv: `pip install uv`
+> To install uv: 
+> ```bash pip install uv```
 
 **For GPU environments:**
 ```bash
@@ -206,8 +207,8 @@ api_keys:
   groq: "your-groq-key"      
   anthropic: "your-anthropic-key" 
   huggingface:
-    auth_token: "your-huggingface-token"  
-    home: "optional-path"        # Optional: HuggingFace models path
+    auth_token: "your-huggingface-token-for-authorized-models"  
+    cache_dir: "your-cache-dir-for-saving-models"
 ```
 
 To obtain these API keys:

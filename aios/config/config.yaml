@@ -7,8 +7,8 @@ api_keys:
   groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
   huggingface:
-    auth_token: ""  # HuggingFace auth token
-    home: ""        # Optional: HuggingFace models path
+    auth_token: ""  # Your HuggingFace auth token for authorized models
+    cache_dir: ""   # Your cache directory for saving huggingface models
 
 # LLM Configuration
 llms:
@@ -17,19 +17,16 @@ llms:
     # OpenAI Models
     # - name: "gpt-4o-mini"
     #   backend: "openai"
-    #   temperature: 1.0
 
 
     # Google Models
     # - name: "gemini-1.5-flash"
     #   backend: "google"
-    #   temperature: 1.0
 
 
     # Anthropic Models
     # - name: "claude-3-opus"
     #   backend: "anthropic"
-    #   temperature: 1.0
 
     # Ollama Models
     - name: "qwen2.5:7b"
@@ -46,13 +43,11 @@ llms:
     # To use vllm as backend, you need to install vllm and run the vllm server https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html
     # An example command to run the vllm server is:
     # vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
+    # - name: "meta-llama/Llama-3.1-8B-Instruct"
+    #  backend: "vllm"
+    #  hostname: "http://localhost:8091"
 
-    # # SGLang Models
-    # - name: "meta-llama/Llama-3.2-3B-Instruct"
-    #   backend: "sglang"
-    #   max_new_tokens: 1024
-    #   temperature: 1.0
-    #   hostname: "http://localhost:8091/v1" # Make sure to run the sglang server
+
 
 
   log_mode: "console"
