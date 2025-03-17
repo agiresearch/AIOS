@@ -5,7 +5,7 @@ from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.apis import LLMQuery, LLMResponse
 from litellm import completion
 import json
-from .utils import tool_calling_input_format, parse_json_format, parse_tool_calls, slash_to_double_underscore, double_underscore_to_slash, decode_litellm_tool_calls
+from .utils import merge_messages_with_tools, merge_messages_with_response_format, slash_to_double_underscore, double_underscore_to_slash, decode_litellm_tool_calls, decode_hf_tool_calls
 from typing import Dict, Optional, Any, List, Union
 import time
 import re
@@ -136,7 +136,7 @@ class LLMAdapter:
                 logger.info(f"- Found in config.yaml, setting to environment")
                 if provider == "huggingface":
                     os.environ["HF_TOKEN"] = api_key.get("auth_token")
-                    os.environ["HF_HOME"] = api_key.get("home")
+                    os.environ["HF_HOME"] = api_key.get("cache_dir")
                     # os.environ["HUGGING_FACE_API_KEY"] = api_key
                     # logger.info("- Also set HUGGING_FACE_API_KEY")
                 else:
@@ -151,7 +151,7 @@ class LLMAdapter:
             max_gpu_memory = config.get("max_gpu_memory")
             eval_device = config.get("eval_device")
             hostname = config.get("hostname")
-
+            
             if not llm_backend:
                 continue
 
@@ -326,6 +326,7 @@ class LLMAdapter:
             
             model_idxs = self.strategy.get_model_idxs(selected_llms)
             model_idx = model_idxs[0]
+            
             model = self.llms[model_idx]
             
             model_name = self.llm_configs[model_idx].get("name")
@@ -338,14 +339,13 @@ class LLMAdapter:
                 tools = slash_to_double_underscore(tools)
             
             # deprecated as the tools are already supported in Litellm completion
-            messages = self._prepare_messages(
-                llm_syscall=llm_syscall,
-                model=model,
-                messages=messages,
-                tools=tools
-            )
-            
-            # breakpoint()
+            # messages = self._prepare_messages(
+            #     model=model,
+            #     messages=messages,
+            #     tools=tools,
+            #     return_type=message_return_type,
+            #     response_format=response_format
+            # )
             
             try:
                 completed_response, finished = self._get_model_response(
@@ -366,6 +366,7 @@ class LLMAdapter:
 
             return self._process_response(
                 completed_response=completed_response, 
+                model=model,
                 finished=finished,
                 tools=tools, 
                 message_return_type=message_return_type
@@ -378,62 +379,6 @@ class LLMAdapter:
                 finished=True,
                 status_code=500
             )
-
-    def _prepare_messages(self, llm_syscall, model, messages: List[Dict], tools: Optional[List] = None) -> List[Dict]:
-        """
-        Prepare messages for the LLM, including context restoration and tool formatting.
-
-        Args:
-            llm_syscall: The syscall object
-            messages: List of message dictionaries
-            tools: Optional list of tools
-
-        Returns:
-            Prepared list of messages
-            
-        Example:
-            ```python
-            # Input
-            messages = [
-                {"role": "user", "content": "What's 2+2?"}
-            ]
-            tools = [{
-                "name": "calculator",
-                "description": "Performs basic math operations"
-            }]
-            
-            # Output
-            [
-                {"role": "system", "content": "You have access to these tools: calculator..."},
-                {"role": "user", "content": "What's 2+2?"}
-            ]
-            ```
-        """
-        if self.context_manager:
-            pid = llm_syscall.get_pid()
-            restored_context = self.context_manager.load_context(
-                pid=pid,
-                model=model,
-                # tokenizer=tokenizer # TODO: Add tokenizer
-            )
-            
-            if restored_context:
-                if messages[-1]["role"] != "assistant":
-                    messages += [{
-                        "role": "assistant",
-                        "content": ""
-                    }]
-                    
-                # generation_hints = "continue to generate after the current context and do not repeat the previous context, stop generating when you think the generation is complete"
-                # restored_context = restored_context.replace(generation_hints, "")
-                messages[-1]["content"] = restored_context
-            
-        # if not isinstance(model, str):
-        # if tools:
-        #     tools = pre_process_tools(tools)
-        #     messages = tool_calling_input_format(messages, tools)
-
-        return messages
 
     def _get_model_response(
         self, 
@@ -469,7 +414,7 @@ class LLMAdapter:
         if self.use_context_manager:
             pid = llm_syscall.get_pid()
             time_limit = llm_syscall.get_time_limit()
-            completed_response, finished = self.context_manager.save_context(
+            completed_response, finished = self.context_manager.generate_response_with_interruption(
                 model_name=model_name,
                 model=model, 
                 messages=messages, 
@@ -482,8 +427,7 @@ class LLMAdapter:
                 max_tokens=max_tokens
             )                
             
-            if finished:
-                self.context_manager.clear_context(pid)
+            # breakpoint()
             
             return completed_response, finished
         
@@ -542,6 +486,14 @@ class LLMAdapter:
             # Use Hugging Face local backend for model instances
             # (Used for local model instances)
             # breakpoint()
+            if tools:
+                new_messages = merge_messages_with_tools(messages, tools)
+                # breakpoint()
+                completion_kwargs["messages"] = new_messages
+            elif message_return_type == "json":
+                new_messages = merge_messages_with_response_format(messages, response_format)
+                completion_kwargs["messages"] = new_messages
+            # breakpoint()
             completed_response = model.generate(**completion_kwargs)
             return completed_response, True
         
@@ -554,6 +506,7 @@ class LLMAdapter:
         completed_response: str | List, # either a response message of a string or a list of tool calls
         finished: bool,
         tools: Optional[List] = None, 
+        model: Union[str, OpenAI, HfLocalBackend] = None,
         message_return_type: Optional[str] = None
     ) -> LLMResponse:
         """
@@ -604,16 +557,23 @@ class LLMAdapter:
         # breakpoint()
         
         if tools:
-        # if tool_calls := parse_tool_calls(completed_response):
-            # breakpoint()
-            tool_calls = double_underscore_to_slash(completed_response)
-            return LLMResponse(
-                response_message=None,
-                tool_calls=tool_calls,
-                finished=finished
-            )
-
-        # if message_return_type == "json":
-        #     completed_response = parse_json_format(completed_response)
-
-        return LLMResponse(response_message=completed_response, finished=finished)
+            if isinstance(model, HfLocalBackend):
+                if finished:
+                    tool_calls = decode_hf_tool_calls(completed_response)
+                    tool_calls = double_underscore_to_slash(tool_calls)
+                    return LLMResponse(
+                        response_message=None,
+                        tool_calls=tool_calls,
+                        finished=finished
+                    )
+                else:
+                    return LLMResponse(response_message=completed_response, finished=finished)
+            else:
+                tool_calls = double_underscore_to_slash(completed_response)
+                return LLMResponse(
+                    response_message=None,
+                    tool_calls=tool_calls,
+                    finished=finished
+                )
+        else:
+            return LLMResponse(response_message=completed_response, finished=finished)

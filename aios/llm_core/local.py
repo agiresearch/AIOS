@@ -11,7 +11,7 @@ class HfLocalBackend:
     Supports both local execution and hosted inference if a hostname is provided.
     """
 
-    def __init__(self, model_name, device="auto", max_gpu_memory=None, hostname=None):
+    def __init__(self, model_name, max_gpu_memory=None, eval_device=None, hostname=None):
         """
         Initializes the Hugging Face local backend.
 
@@ -24,13 +24,10 @@ class HfLocalBackend:
         """
         print("\n=== HfLocalBackend Initialization ===")
         print(f"Model name: {model_name}")
-        print(f"Checking HF API key:")
-        print(f"HUGGING_FACE_API_KEY in env: {'Yes' if 'HUGGING_FACE_API_KEY' in os.environ else 'No'}")
-        print(f"HF_AUTH_TOKEN in env: {'Yes' if 'HF_AUTH_TOKEN' in os.environ else 'No'}")
-        
+
         self.model_name = model_name
-        self.device = device
         self.max_gpu_memory = max_gpu_memory
+        self.eval_device = eval_device if eval_device is not None else "cuda"
         self.hostname = hostname
 
         # If a hostname is given, then this HF instance is hosted as a web server.
@@ -40,14 +37,12 @@ class HfLocalBackend:
         
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            device_map=device,
+            device_map="auto",
             max_memory=self.max_gpu_memory,
-            use_auth_token=os.environ["HUGGING_FACE_API_KEY"],
         )
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name,
-            device_map=device,
-            use_auth_token=os.environ["HUGGING_FACE_API_KEY"]
+            # use_auth_token=config.get_api_key("huggingface")["auth_token"],
         )
         self.tokenizer.chat_template = "{% for message in messages %}{% if message['role'] == 'user' %}{{ ' ' }}{% endif %}{{ message['content'] }}{% if not loop.last %}{{ ' ' }}{% endif %}{% endfor %}{{ eos_token }}"
 
@@ -70,12 +65,16 @@ class HfLocalBackend:
             api_base=self.hostname,
         ).choices[0].message.content
     
-    def __call__(
-        self,
-        messages,
-        temperature,
-        stream=False,
+    def generate(
+        self, 
+        messages, 
+        temperature, 
+        max_tokens,
+        tools,
+        stream=False, 
+        time_limit=None
     ):
+        
         """
         Generates a response from the locally loaded Hugging Face model or a remote hosted model.
 
@@ -93,25 +92,31 @@ class HfLocalBackend:
         if stream:
             raise NotImplemented
 
-        inputs = self.tokenizer.apply_chat_template(messages,
-                                                       tokenize=True,
-                                                       add_generation_prompt=True,
-                                                       return_dict=True,
-                                                       return_tensors="pt")
+        inputs = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_dict=True,
+            return_tensors="pt"
+        )
+        
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
         temperature = temperature if temperature > 0.5 else 0.5
-        response  = self.model.generate(**inputs,
-                                        temperature=temperature,
-                                        max_length=4096,
-                                        top_k=10,
-                                        num_beams=4,
-                                        early_stopping=True,
-                                        do_sample=True,
-                                        num_return_sequences=1,
-                                        eos_token_id=self.tokenizer.eos_token_id)
-        length    = inputs["input_ids"].shape[1]
-        result    = self.tokenizer.decode(response[0][length:])
-
+        response  = self.model.generate(
+            **inputs,
+            temperature=temperature,
+            max_length=max_tokens,
+            top_k=10,
+            num_beams=4,
+            early_stopping=True,
+            do_sample=True,
+            num_return_sequences=1,
+            eos_token_id=self.tokenizer.eos_token_id
+        )
+        
+        # breakpoint()
+        length = inputs["input_ids"].shape[1]
+        result = self.tokenizer.decode(response[0][length:], skip_special_tokens=True)
         return result
 
 class VLLMLocalBackend:
@@ -129,11 +134,7 @@ class VLLMLocalBackend:
 
     Example:
         ```python
-        backend = VLLMLocalBackend(model_name="mistral-7b", device="cuda", max_gpu_memory="16GB")
-        
-        messages = [{"role": "user", "content": "Tell me a joke."}]
-        response = backend(messages, temperature=0.7)
-        print(response)
+        TODO: to be added
         ```
     """
 

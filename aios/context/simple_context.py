@@ -8,9 +8,10 @@ from litellm import completion
 from openai import OpenAI
 
 import time
+import torch
 from typing import Dict, List, Any, Optional, Tuple, Union
 
-from ..llm_core.utils import decode_litellm_tool_calls
+from ..llm_core.utils import decode_litellm_tool_calls, merge_messages_with_tools, merge_messages_with_response_format
 
 class SimpleContextManager(BaseContextManager):
     """
@@ -48,15 +49,17 @@ class SimpleContextManager(BaseContextManager):
         BaseContextManager.__init__(self)
         self.context_dict = {}
 
-    def _get_completion_response(self, 
-                               model_or_client: Union[str, OpenAI], 
-                               model_name: str,
-                               messages: List[Dict[str, str]], 
-                               tools: Optional[List[Dict[str, Any]]], 
-                               temperature: float,
-                               max_tokens: int,
-                               response_format: Optional[Dict[str, Any]] = None,
-                               stream: bool = True) -> Any:
+    def get_streaming_completion_response(
+            self, 
+            model_or_client: Union[str, OpenAI], 
+            model_name: str,
+            messages: List[Dict[str, str]], 
+            tools: Optional[List[Dict[str, Any]]], 
+            temperature: float,
+            max_tokens: int,
+            response_format: Optional[Dict[str, Any]] = None,
+            stream: bool = True
+        ) -> Any:
         """
         Get a completion response from either litellm or OpenAI client.
         
@@ -109,10 +112,12 @@ class SimpleContextManager(BaseContextManager):
                 
             return model_or_client.chat.completions.create(**kwargs)
 
-    def _process_streaming_response(self, 
-                                  response: Any, 
-                                  initial_content: str,
-                                  time_limit: float) -> Tuple[str, bool]:
+    def process_completion_streaming_response(
+            self, 
+            response: Any, 
+            initial_content: str,
+            time_limit: float
+        ) -> Tuple[str, bool]:
         """
         Process a streaming response with time limit enforcement.
         
@@ -139,32 +144,173 @@ class SimpleContextManager(BaseContextManager):
                 
         return completed_response, finished
 
-    def save_context(self, 
-                model_name: str, 
-                model: Union[str, OpenAI], 
-                messages: List[Dict[str, str]], 
-                tools: Optional[List[Dict[str, Any]]], 
-                message_return_type: str, 
-                temperature: float, 
-                max_tokens: int,
-                pid: Union[int, str], 
-                time_limit: float,
-                response_format: Optional[Dict[str, Any]] = None
-            ) -> Tuple[Any, bool]:
+    def _is_huggingface_model(self, model) -> bool:
+        """
+        Check if the model is a HuggingFace model instance.
+        
+        Args:
+            model: The model to check
+            
+        Returns:
+            bool: True if the model is a HuggingFace model, False otherwise
+        """
+        # Check if model has the HfLocalBackend attributes
+        if hasattr(model, 'model') and hasattr(model, 'tokenizer'):
+            return True
+        return False
+
+    def generate_with_time_limit_hf(
+            self, 
+            model, 
+            messages: List[Dict[str, str]], 
+            max_tokens: int,
+            temperature: float, 
+            pid: int,
+            time_limit: float
+        ) -> Tuple[str, bool, Dict]:
+        """
+        Generate text with a HuggingFace model with time limit enforcement.
+        
+        Args:
+            model: The HuggingFace model instance
+            messages: List of message dictionaries
+            max_tokens: Maximum number of tokens to generate
+            temperature: Temperature setting for generation
+            time_limit: Maximum time in seconds for generation
+            
+        Returns:
+            Tuple of (result, finished, generation_state)
+        """
+        
+        context_data = self.load_context(pid)
+        
+        # breakpoint()
+        if context_data:
+            start_idx = context_data["start_idx"]
+            generated_tokens = context_data["generated_tokens"]
+            past_key_values = context_data["past_key_values"]
+            input_length = context_data["input_length"]
+        else:
+            start_idx = 0
+            
+            inputs = model.tokenizer.apply_chat_template(
+                messages,
+                tokenize=True,
+                add_generation_prompt=True,
+                return_dict=True,
+                return_tensors="pt"
+            )
+            
+            input_length = inputs["input_ids"].shape[1]
+            
+            inputs = {k: v.to(model.model.device) for k, v in inputs.items()}
+            
+            # We'll use a minimum value for sampling, but handle zero separately
+            temperature = max(temperature, 1e-7)
+            
+            # Initialize generation
+            generated_tokens = inputs["input_ids"].clone()
+            past_key_values = None
+        
+        # Initialize timing and completion flags
+        # breakpoint()
+        
+        start_time = time.time()
+        finished = True
+        
+        # Generate tokens incrementally with time checking
+        for i in range(start_idx, max_tokens):
+            # Check time limit
+            if time.time() - start_time > time_limit:
+                finished = False
+                break
+            
+            # breakpoint()
+            
+            # Forward pass
+            with torch.no_grad():
+                outputs = model.model(
+                    generated_tokens,
+                    return_dict=True,
+                    output_attentions=False,
+                    output_hidden_states=False
+                )
+            
+            # Get next token logits
+            next_token_logits = outputs.logits[:, -1, :]
+            
+            # Handle token selection based on temperature
+            if temperature < 1e-6:  # Effectively zero
+                # Greedy decoding - take the token with highest probability
+                next_token = torch.argmax(next_token_logits, dim=-1, keepdim=True)
+            else:
+                # Apply temperature for sampling
+                next_token_logits = next_token_logits / temperature
+                
+                # Sample next token
+                probs = torch.nn.functional.softmax(next_token_logits, dim=-1)
+                next_token = torch.multinomial(probs, num_samples=1)
+            
+            # Append to generated tokens
+            generated_tokens = torch.cat([generated_tokens, next_token], dim=-1)
+            
+            # Update past key values
+            past_key_values = outputs.past_key_values
+            
+            # Check if EOS token was generated
+            if next_token.item() == model.tokenizer.eos_token_id:
+                finished = True
+                start_idx = i
+                break
+            
+        # breakpoint()
+        
+        # Decode the generated tokens
+        result = model.tokenizer.decode(generated_tokens[0][input_length:], skip_special_tokens=True)
+        
+        # breakpoint()
+        # Prepare generation state for potential resumption
+        # Only store the necessary vectors, not the decoded text
+        if not finished:
+            self.context_dict[str(pid)] = {
+                "generated_tokens": generated_tokens,
+                "past_key_values": past_key_values,
+                "start_idx": start_idx,
+                "input_length": input_length
+            }
+        else:
+            self.clear_context(str(pid))
+        
+        return result, finished
+
+    
+    def generate_response_with_interruption(self, 
+            model_name: str, 
+            model: Union[str, OpenAI, Any], 
+            messages: List[Dict[str, str]], 
+            tools: Optional[List[Dict[str, Any]]], 
+            message_return_type: str, 
+            temperature: float, 
+            max_tokens: int,
+            pid: Union[int, str], 
+            time_limit: float,
+            response_format: Optional[Dict[str, Any]] = None
+        ) -> Tuple[Any, bool]:
         """
         Save the context of an LLM generation.
         
-        This method handles different types of LLM models (string-based or OpenAI client)
+        This method handles different types of LLM models (string-based, OpenAI client, or HuggingFace)
         and different response types (text, JSON, or tool calls). It manages streaming
         responses and enforces time limits.
         
         Args:
             model_name (str): Name of the model being used
-            model (str or OpenAI): The model instance or identifier
+            model (str, OpenAI, or HuggingFace model): The model instance or identifier
             messages (list): List of message dictionaries for the conversation
             tools (list, optional): List of tools available to the model
             message_return_type (str): Expected return type ("text", "json")
             temperature (float): Temperature setting for generation
+            max_tokens (int): Maximum number of tokens to generate
             pid (int): Process ID to associate with this context
             time_limit (float): Maximum time in seconds to allow for generation
             response_format (dict, optional): Format specification for the response
@@ -173,37 +319,42 @@ class SimpleContextManager(BaseContextManager):
             tuple: (completed_response, finished)
                 - completed_response: The generated text or structured response
                 - finished: Boolean indicating if generation completed within time limit
-                
-        Example:
-            ```python
-            # Using a string-based model
-            response, finished = context_manager.save_context(
-                model_name="gpt-4",
-                model="gpt-4",
-                messages=[{"role": "user", "content": "Hello"}],
-                tools=None,
-                message_return_type="text",
-                temperature=0.7,
-                pid=123,
-                time_limit=10,
-                response_format=None
-            )
-            
-            # Using OpenAI client with tools
-            client = OpenAI()
-            response, finished = context_manager.save_context(
-                model_name="gpt-4",
-                model=client,
-                messages=[{"role": "user", "content": "What's the weather?"}],
-                tools=[{"type": "function", "function": {"name": "get_weather"}}],
-                message_return_type="text",
-                temperature=0.7,
-                pid=456,
-                time_limit=30,
-                response_format=None
-            )
-            ```
         """
+        # Handle HuggingFace models
+        if self._is_huggingface_model(model):
+            # Use our custom HuggingFace generation with time limit
+            if tools:
+                messages_with_tools = merge_messages_with_tools(messages, tools)
+                completed_response, finished = self.generate_with_time_limit_hf(
+                    model=model,
+                    messages=messages_with_tools,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    time_limit=time_limit,
+                    pid=pid
+                )
+            elif message_return_type == "json":
+                messages_with_response_format = merge_messages_with_response_format(messages, response_format)
+                completed_response, finished = self.generate_with_time_limit_hf(
+                    model=model,
+                    messages=messages_with_response_format,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    time_limit=time_limit,
+                    pid=pid 
+                )
+            else:
+                completed_response, finished = self.generate_with_time_limit_hf(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    time_limit=time_limit,
+                    pid=pid
+                )
+            
+            return completed_response, finished
+            
         # Handle tool calls (non-streaming)
         if tools:
             response = self._get_completion_response(
@@ -223,12 +374,10 @@ class SimpleContextManager(BaseContextManager):
                 # For OpenAI client, we need to convert the response to the expected format
                 completed_response = response
                 
-            # Store the response
-            self.context_dict[str(pid)] = completed_response
             return completed_response, True
         
         # Handle streaming text or JSON responses
-        stream_response = self._get_completion_response(
+        stream_response = self.get_streaming_completion_response(
             model_or_client=model,
             model_name=model_name,
             messages=messages,
@@ -243,26 +392,30 @@ class SimpleContextManager(BaseContextManager):
         initial_content = messages[-1]["content"] if messages and "content" in messages[-1] else ""
         
         # Process the streaming response
-        completed_response, finished = self._process_streaming_response(
+        completed_response, finished = self.process_streaming_completion_response(
             response=stream_response,
             initial_content=initial_content,
             time_limit=time_limit
         )
         
-        # Store the response
-        self.context_dict[str(pid)] = completed_response
+        if not finished:
+            # Store the response
+            self.context_dict[str(pid)] = completed_response
+        else:
+            self.clear_context(str(pid))
         return completed_response, finished
 
-    def load_context(self, pid, model, tokenizer=None):
+    def load_context(self, pid):
         """
         Load a previously saved context for a process.
         
         This method retrieves the saved context for a given process ID and
-        handles different model types appropriately.
+        handles different model types appropriately, including resuming
+        interrupted HuggingFace model generations.
         
         Args:
             pid (int): Process ID to load context for
-            model (str or OpenAI): The model instance or identifier
+            model (str, OpenAI, or HuggingFace model): The model instance or identifier
             tokenizer (optional): Tokenizer for decoding context with local models
             
         Returns:
@@ -270,66 +423,9 @@ class SimpleContextManager(BaseContextManager):
             
         Raises:
             TypeError: If the context and model types are incompatible
-            
-        Example:
-            ```python
-            # Load context for a string-based model
-            context = context_manager.load_context(pid=123, model="gpt-4")
-            
-            # Load context for an OpenAI client
-            client = OpenAI()
-            context = context_manager.load_context(pid=456, model=client)
-            
-            # Load context for a local model with tokenizer
-            context = context_manager.load_context(
-                pid=789, 
-                model=local_model,
-                tokenizer=local_tokenizer
-            )
-            ```
         """
-        context = self.check_context(pid)
-        
-        if context is None:
-            return None
-        
-        # Add type checking
-        if isinstance(context, str) and not isinstance(model, str):
-            raise TypeError("When context is string type, model must also be string type")
-        if not isinstance(context, str) and isinstance(model, str):
-            raise TypeError("When model is string type, context must also be string type")
-        
-        if isinstance(model, str):
-            return context
-        elif isinstance(model, OpenAI):
-            return context
-        else:
-            # For local models that return tensors, decode using tokenizer
-            if tokenizer:
-                return tokenizer.decode(context)
-            return context
-
-    def check_context(self, pid):
-        """
-        Check if context exists for a given process ID.
-        
-        Args:
-            pid (int): Process ID to check
-            
-        Returns:
-            str or None: The saved context if found, None otherwise
-            
-        Example:
-            ```python
-            # Check if context exists
-            context = context_manager.check_context(pid=123)
-            if context:
-                print("Context found:", context)
-            else:
-                print("No context found for this process")
-            ```
-        """
-        return self.context_dict.get(str(pid), None)
+        context_data = self.context_dict.get(str(pid), None)
+        return context_data
 
     def clear_context(self, pid):
         """
@@ -340,16 +436,7 @@ class SimpleContextManager(BaseContextManager):
             
         Returns:
             None
-            
-        Example:
-            ```python
-            # Clear context for a process
-            context_manager.clear_context(pid=123)
-            
-            # Verify context was cleared
-            assert context_manager.check_context(pid=123) is None
-            ```
         """
-        if self.check_context(pid):
+        if str(pid) in self.context_dict:
             self.context_dict.pop(str(pid))
         return
