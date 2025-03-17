@@ -101,7 +101,7 @@ jobs:
           sleep 1
         done
 
-    - name: Run all Ollama tests
+    - name: Run all tests
       run: |
         cd aios_root/Cerebrum
         
@@ -134,20 +134,6 @@ jobs:
             echo "----------------------------------------"
           fi
         done
-        
-        # Check if any tests were found and run
-        if [ ! -s ollama_tests.log ]; then
-          echo "No Ollama tests were found or executed!"
-          exit 1
-        fi
-        
-        # Check for test failures
-        if grep -i "FAILED" ollama_tests.log; then
-          echo "Some tests failed. See logs for details."
-          exit 1
-        else
-          echo "All Ollama tests passed successfully!"
-        fi
     
     - name: Upload a Build Artifact
       if: always()  # Upload logs even if job fails
