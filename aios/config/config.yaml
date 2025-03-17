@@ -7,8 +7,8 @@ api_keys:
   groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
   huggingface:
-    auth_token: ""  # HuggingFace auth token
-    home: ""        # Optional: HuggingFace models path
+    auth_token: ""  # Your HuggingFace auth token for authorized models
+    cache_dir: ""   # Your cache directory for saving huggingface models
 
 # LLM Configuration
 llms:
@@ -56,7 +56,7 @@ llms:
 
 
   log_mode: "console"
-  use_context_manager: false
+  use_context_manager: true
 
 memory:
   log_mode: "console"
