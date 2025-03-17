@@ -108,12 +108,31 @@ jobs:
         # Create test results directory
         mkdir -p test_results
         
-        # Find and run all test files containing "ollama" in their name
-        echo "=== Running all Ollama tests ==="
-        find tests -name "*ollama*.py" -type f | while read -r test_file; do
-          echo "Running test: $test_file"
-          python -m $test_file | tee -a ollama_tests.log
-          echo "----------------------------------------"
+        # Function to check if a path contains agent or llm
+        contains_agent_or_llm() {
+          local dir_path=$(dirname "$1")
+          if [[ "$dir_path" == *"agent"* || "$dir_path" == *"llm"* ]]; then
+            return 0  # True in bash
+          else
+            return 1  # False in bash
+          fi
+        }
+
+        # Process test files
+        find tests -type f -name "*.py" | while read -r test_file; do
+          if contains_agent_or_llm "$test_file"; then
+            # For agent or llm directories, only run ollama tests
+            if [[ "$test_file" == *"ollama"* ]]; then
+              echo "Running Ollama test in agent/llm directory: $test_file"
+              python $test_file | tee -a ollama_tests.log
+              echo "----------------------------------------"
+            fi
+          else
+            # For other directories, run all tests
+            echo "Running test: $test_file"
+            python $test_file | tee -a all_tests.log
+            echo "----------------------------------------"
+          fi
         done
         
         # Check if any tests were found and run
