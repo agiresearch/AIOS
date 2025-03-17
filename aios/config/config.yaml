@@ -56,7 +56,7 @@ llms:
 
 
   log_mode: "console"
-  use_context_manager: true
+  use_context_manager: false
 
 memory:
   log_mode: "console"
