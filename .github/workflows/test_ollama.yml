@@ -15,60 +15,51 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    
+    # Clone AIOS
+    - name: Git Clone AIOS
+      uses: actions/checkout@v4
+      with:
+        repository: agiresearch/AIOS
+        path: aios_root
+        ref: main
+
+    # Verify AIOS clone
+    - name: Verify AIOS clone
+      run: |
+        echo "=== AIOS root directory contents ==="
+        ls -la aios_root/
+        echo "=== Looking for setup files ==="
+        find aios_root/ -name "setup.py" -o -name "pyproject.toml"
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
-    
-    - name: Install dependencies
+
+    # Install AIOS dependencies
+    - name: Install AIOS dependencies
+      working-directory: aios_root
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    
-    - name: Git Clone Action
-      # You may pin to the exact commit or the version.
-      # uses: sudosubin/git-clone-action@8a93ce24d47782e30077508cccacf8a05a891bae
-      uses: sudosubin/git-clone-action@v1.0.1
+    # Clone Cerebrum into AIOS directory
+    - name: Checkout Cerebrum
+      uses: actions/checkout@v4
       with:
-        # Repository owner and name. Ex: sudosubin/git-clone-action
-        repository: agiresearch/Cerebrum
-        path: Cerebrum
-    
-    - name: Install cerebrum special edition
-      run: |
-        python -m pip install -e Cerebrum/
-    
-    - name: Download and install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
+        path: aios_root/Cerebrum
+        ref: ${{ github.ref }}
 
-    - name: Pull Ollama models
+    # Install Cerebrum
+    - name: Install Cerebrum
       run: |
-        ollama pull qwen2.5:7b
-
-    - name: Run Ollama serve
-      run: |
-        ollama serve 2>&1 | tee ollama-llm.log &
-        # Wait for ollama to start
-        for i in {1..30}; do
-          if curl -s http://localhost:11434/api/version > /dev/null; then
-            echo "Ollama is running"
-            break
-          fi
-          echo "Waiting for ollama to start... ($i/30)"
-          sleep 1
-        done
-        # Verify ollama is running
-        curl -s http://localhost:11434/api/version || (echo "Failed to start ollama" && exit 1)
-
+        python -m pip install -e aios_root/Cerebrum/
+    # Run AIOS kernel
     - name: Run AIOS kernel in background
       run: |
-        bash runtime/launch_kernel.sh &>logs &
+        cd aios_root
+        bash runtime/launch_kernel.sh &>../kernel.log &
         KERNEL_PID=$!
+        cd ..
         
         # Set maximum wait time (60 seconds)
         max_wait=60
@@ -78,12 +69,12 @@ jobs:
         while true; do
           if ! ps -p $KERNEL_PID > /dev/null; then
             echo "Kernel process died. Checking logs:"
-            cat logs
+            cat kernel.log
             exit 1
           fi
           
           if nc -z localhost 8000; then
-            if curl -s http://localhost:8000/health > /dev/null; then
+            if curl -s http://localhost:8000/health; then
               echo "Kernel successfully started and healthy"
               break
             fi
@@ -93,14 +84,45 @@ jobs:
           elapsed=$((SECONDS - start_time))
           if [ $elapsed -ge $max_wait ]; then
             echo "Timeout after ${max_wait} seconds. Kernel failed to start properly."
-            cat logs
+            cat kernel.log
             exit 1
           fi
           
           echo "Waiting for kernel to start... (${elapsed}s elapsed)"
           sleep 1
         done
+    # Run integration test
+    - name: Download and install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh
 
+    - name: Pull Ollama models
+      run: |
+        ollama pull qwen2.5:7b
+
+    - name: Start Ollama serve
+      run: |
+        ollama serve &
+        # Wait for Ollama server to start
+        max_wait=30
+        start_time=$SECONDS
+        while true; do
+          if curl -s http://localhost:11434/api/tags > /dev/null; then
+            echo "Ollama server started successfully"
+            break
+          fi
+          
+          # Check if timed out
+          elapsed=$((SECONDS - start_time))
+          if [ $elapsed -ge $max_wait ]; then
+            echo "Timeout after ${max_wait} seconds. Ollama server failed to start properly."
+            exit 1
+          fi
+          
+          echo "Waiting for Ollama server to start... (${elapsed}s elapsed)"
+          sleep 1
+        done
+          
     - name: Run all tests
       run: |
         cd aios_root/Cerebrum
@@ -134,22 +156,32 @@ jobs:
             echo "----------------------------------------"
           fi
         done
-    
-    - name: Upload a Build Artifact
-      if: always()  # Upload logs even if job fails
+
+    # Upload logs
+    - name: Upload logs
+      if: always()
       uses: actions/upload-artifact@v4.4.3
       with:
-        name: logs
+        name: test-logs
         path: |
-          logs
-          agent.log
-    
-    - name: Collect debug information
+          kernel.log
+          aios_root/Cerebrum/ollama_tests.log
+          aios_root/Cerebrum/agent_tests.log
+          aios_root/Cerebrum/test_results/
+    # Debug information
+    - name: Debug information
       if: failure()
       run: |
-        echo "=== Kernel Logs ==="
-        cat logs
-        echo "=== Environment Variables ==="
+        echo "=== Kernel log ==="
+        cat kernel.log
+        echo "=== Ollama tests log ==="
+        cat aios_root/Cerebrum/ollama_tests.log || true
+        echo "=== Agent tests log ==="
+        cat aios_root/Cerebrum/agent_tests.log || true
+        echo "=== Environment variables ==="
         env | grep -i api_key || true
-        echo "=== Process Status ==="
+        echo "=== Process status ==="
         ps aux | grep kernel
+        ps aux | grep ollama
+        echo "=== Directory structure ==="
+        find aios_root/Cerebrum/tests -name "*ollama*.py" -type f
