@@ -321,15 +321,16 @@ def restart_kernel():
     """Restart kernel service and reload configuration"""
     try:
         # Clean up existing components
-        for component in ["llms", "memory", "storage", "tool"]:
-            if active_components[component]:
-                if hasattr(active_components[component], "cleanup"):
-                    active_components[component].cleanup()
-                active_components[component] = None
+        # for component in ["llms", "memory", "storage", "tool"]:
+        #     if active_components[component]:
+        #         if hasattr(active_components[component], "cleanup"):
+        #             active_components[component].cleanup()
+        #         active_components[component] = None
         
         # Initialize new components
-        if not initialize_components():
-            raise Exception("Failed to initialize components")
+        active_components = initialize_components()
+        # if not initialize_components():
+        #     raise Exception("Failed to initialize components")
             
         print("✅ All components reinitialized successfully")
         
@@ -424,20 +425,23 @@ async def list_agent_processes():
     """List all agent processes and their status"""
     try:
         processes = []
-        for proc_file in PROC_DIR.glob("*.json"):
+        for process_id in ProcessStore.AGENT_PROCESSES:
             try:
-                with open(proc_file) as f:
-                    process_info = json.load(f)
-                processes.append(process_info)
+                status = ProcessStore.getProcessStatus(process_id)
+                processes.append(status)
             except Exception as e:
-                print(f"Failed to read process file {proc_file}: {str(e)}")
-                continue
+                print(f"Failed to get status for process {process_id}: {str(e)}")
+                processes.append({
+                    "id": process_id,
+                    "error": str(e)
+                })
                 
-        # Sort by execution ID
-        processes.sort(key=lambda x: x["execution_id"])
+        # Sort by process ID
+        processes.sort(key=lambda x: x["id"])
         
         return {
             "status": "success",
+            "count": len(processes),
             "processes": processes
         }
     except Exception as e:
@@ -449,6 +453,7 @@ async def list_agent_processes():
 @app.post("/agents/submit")
 async def submit_agent(config: AgentSubmit):
     """Submit an agent for execution using the agent factory."""
+    # breakpoint()
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
 
@@ -462,11 +467,12 @@ async def submit_agent(config: AgentSubmit):
             agent_name=config.agent_id, task_input=config.agent_config["task"]
         )
         
-        save_agent_process_info(
-            agent_id=config.agent_id,
-            execution_id=execution_id,
-            config=config.agent_config
-        )
+        # save_agent_process_info(
+        #     agent_id=config.agent_id,
+        #     execution_id=execution_id,
+        #     config=config.agent_config
+        # )
+        
         
         return {
             "status": "success",
@@ -499,10 +505,28 @@ async def get_agent_status(execution_id: int):
 
         await_execution = active_components["factory"]["await"]
         try:
+            # Try to get the result, but it might return None if still running
             result = await_execution(int(execution_id))
-        except FileNotFoundError as e:
+        except ValueError as e:
+            # Process not found
             raise HTTPException(status_code=404, detail=str(e))
+        except Exception as e:
+            # Other errors from the future execution
+            error_msg = str(e)
+            stack_trace = traceback.format_exc()
+            print(f"[ERROR] Agent execution failed: {error_msg}")
+            print(f"[ERROR] Stack Trace:\n{stack_trace}")
+            
+            return {
+                "status": "error",
+                "error": {
+                    "message": error_msg,
+                    "traceback": stack_trace
+                },
+                "execution_id": execution_id
+            }
 
+        # If result is None, the agent is still running
         if result is None:
             return {
                 "status": "running",
@@ -510,7 +534,7 @@ async def get_agent_status(execution_id: int):
                 "execution_id": execution_id
             }
             
-        update_agent_process_status(execution_id, "completed", result)
+        # update_agent_process_status(execution_id, "completed", result)
         
         return {
             "status": "completed",
@@ -549,11 +573,11 @@ async def cleanup_components():
                     active_components[component].cleanup()
                 active_components[component] = None
 
-        for proc_file in PROC_DIR.glob("*.json"):
-            try:
-                proc_file.unlink()
-            except Exception as e:
-                print(f"Failed to remove process file {proc_file}: {str(e)}")
+        # for proc_file in PROC_DIR.glob("*.json"):
+        #     try:
+        #         proc_file.unlink()
+        #     except Exception as e:
+        #         print(f"Failed to remove process file {proc_file}: {str(e)}")
 
         return {"status": "success", "message": "All components cleaned up"}
     except Exception as e:
