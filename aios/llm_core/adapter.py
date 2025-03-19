@@ -1,5 +1,5 @@
 from aios.context.simple_context import SimpleContextManager
-from aios.llm_core.strategy import RouterStrategy, SimpleStrategy
+from aios.llm_core.strategy import RouterStrategy, SequentialRouting, SmartRouting
 from aios.llm_core.local import HfLocalBackend
 from aios.utils.id_generator import generator_tool_call_id
 from cerebrum.llm.apis import LLMQuery, LLMResponse
@@ -85,7 +85,7 @@ class LLMAdapter:
         api_key: Optional[Union[str, List[str]]] = None,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
+        strategy: Optional[RouterStrategy] = RouterStrategy.Sequential,
     ):
         """
         Initialize the LLMAdapter.
@@ -106,8 +106,8 @@ class LLMAdapter:
         self._setup_api_keys()
         self._initialize_llms()
         
-        if strategy == RouterStrategy.SIMPLE:
-            self.strategy = SimpleStrategy(self.llm_configs)
+        if strategy == RouterStrategy.Sequential:
+            self.strategy = SequentialRouting(self.llm_configs)
 
     def _setup_api_keys(self) -> None:
         """
