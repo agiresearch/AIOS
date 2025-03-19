@@ -425,23 +425,20 @@ async def list_agent_processes():
     """List all agent processes and their status"""
     try:
         processes = []
-        for process_id in ProcessStore.AGENT_PROCESSES:
+        for proc_file in PROC_DIR.glob("*.json"):
             try:
-                status = ProcessStore.getProcessStatus(process_id)
-                processes.append(status)
+                with open(proc_file) as f:
+                    process_info = json.load(f)
+                processes.append(process_info)
             except Exception as e:
-                print(f"Failed to get status for process {process_id}: {str(e)}")
-                processes.append({
-                    "id": process_id,
-                    "error": str(e)
-                })
+                print(f"Failed to read process file {proc_file}: {str(e)}")
+                continue
                 
-        # Sort by process ID
-        processes.sort(key=lambda x: x["id"])
+        # Sort by execution ID
+        processes.sort(key=lambda x: x["execution_id"])
         
         return {
             "status": "success",
-            "count": len(processes),
             "processes": processes
         }
     except Exception as e:
@@ -467,11 +464,11 @@ async def submit_agent(config: AgentSubmit):
             agent_name=config.agent_id, task_input=config.agent_config["task"]
         )
         
-        # save_agent_process_info(
-        #     agent_id=config.agent_id,
-        #     execution_id=execution_id,
-        #     config=config.agent_config
-        # )
+        save_agent_process_info(
+            agent_id=config.agent_id,
+            execution_id=execution_id,
+            config=config.agent_config
+        )
         
         
         return {
@@ -505,28 +502,10 @@ async def get_agent_status(execution_id: int):
 
         await_execution = active_components["factory"]["await"]
         try:
-            # Try to get the result, but it might return None if still running
             result = await_execution(int(execution_id))
-        except ValueError as e:
-            # Process not found
+        except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e))
-        except Exception as e:
-            # Other errors from the future execution
-            error_msg = str(e)
-            stack_trace = traceback.format_exc()
-            print(f"[ERROR] Agent execution failed: {error_msg}")
-            print(f"[ERROR] Stack Trace:\n{stack_trace}")
-            
-            return {
-                "status": "error",
-                "error": {
-                    "message": error_msg,
-                    "traceback": stack_trace
-                },
-                "execution_id": execution_id
-            }
 
-        # If result is None, the agent is still running
         if result is None:
             return {
                 "status": "running",
@@ -534,7 +513,7 @@ async def get_agent_status(execution_id: int):
                 "execution_id": execution_id
             }
             
-        # update_agent_process_status(execution_id, "completed", result)
+        update_agent_process_status(execution_id, "completed", result)
         
         return {
             "status": "completed",
