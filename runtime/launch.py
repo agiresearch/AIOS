@@ -321,15 +321,16 @@ def restart_kernel():
     """Restart kernel service and reload configuration"""
     try:
         # Clean up existing components
-        for component in ["llms", "memory", "storage", "tool"]:
-            if active_components[component]:
-                if hasattr(active_components[component], "cleanup"):
-                    active_components[component].cleanup()
-                active_components[component] = None
+        # for component in ["llms", "memory", "storage", "tool"]:
+        #     if active_components[component]:
+        #         if hasattr(active_components[component], "cleanup"):
+        #             active_components[component].cleanup()
+        #         active_components[component] = None
         
         # Initialize new components
-        if not initialize_components():
-            raise Exception("Failed to initialize components")
+        active_components = initialize_components()
+        # if not initialize_components():
+        #     raise Exception("Failed to initialize components")
             
         print("✅ All components reinitialized successfully")
         
@@ -449,6 +450,7 @@ async def list_agent_processes():
 @app.post("/agents/submit")
 async def submit_agent(config: AgentSubmit):
     """Submit an agent for execution using the agent factory."""
+    # breakpoint()
     if "factory" not in active_components or not active_components["factory"]:
         raise HTTPException(status_code=400, detail="Agent factory not initialized")
 
@@ -467,6 +469,7 @@ async def submit_agent(config: AgentSubmit):
             execution_id=execution_id,
             config=config.agent_config
         )
+        
         
         return {
             "status": "success",
@@ -549,11 +552,11 @@ async def cleanup_components():
                     active_components[component].cleanup()
                 active_components[component] = None
 
-        for proc_file in PROC_DIR.glob("*.json"):
-            try:
-                proc_file.unlink()
-            except Exception as e:
-                print(f"Failed to remove process file {proc_file}: {str(e)}")
+        # for proc_file in PROC_DIR.glob("*.json"):
+        #     try:
+        #         proc_file.unlink()
+        #     except Exception as e:
+        #         print(f"Failed to remove process file {proc_file}: {str(e)}")
 
         return {"status": "success", "message": "All components cleaned up"}
     except Exception as e:

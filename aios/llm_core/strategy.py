@@ -38,11 +38,11 @@ the specific LLM endpoint.
 """
 
 class RouterStrategy(Enum):
-    SIMPLE = 0,
+    Sequential = 0,
 
-class SimpleStrategy:
+class SequentialRouting:
     """
-    The SimpleStrategy class implements a round-robin selection strategy for load-balancing LLM requests. 
+    The SequentialRouting class implements a round-robin selection strategy for load-balancing LLM requests. 
     It iterates through a list of selected language models and returns their corresponding index based on 
     the request count.
 
@@ -206,9 +206,9 @@ class SimpleStrategy:
         
         return results
 
-class EccosRStrategy:
+class SmartRouting:
     """
-    The EccosRStrategy class implements a cost-performance optimized selection strategy for LLM requests.
+    The SmartRouting class implements a cost-performance optimized selection strategy for LLM requests.
     It uses historical performance data to predict which models will perform best for a given query
     while minimizing cost.
 
