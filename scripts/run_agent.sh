@@ -43,7 +43,7 @@ curl -X POST http://localhost:8000/agents/submit \
         }
     }'
 
-curl -X GET http://localhost:8000/agents/225269/status
+# curl -X GET http://localhost:8000/agents/225269/status
 
 curl -X POST http://localhost:8000/core/refresh
 
