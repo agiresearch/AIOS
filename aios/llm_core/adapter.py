@@ -85,7 +85,7 @@ class LLMAdapter:
         api_key: Optional[Union[str, List[str]]] = None,
         log_mode: str = "console",
         use_context_manager: bool = False,
-        strategy: Optional[RouterStrategy] = RouterStrategy.SIMPLE,
+        strategy: Optional[RouterStrategy] = RouterStrategy.Sequential,
     ):
         """
         Initialize the LLMAdapter.
