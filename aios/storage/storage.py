@@ -1,5 +1,5 @@
 import os
-
+import json
 import pickle
 
 import zlib
@@ -16,10 +16,14 @@ class StorageManager:
         os.makedirs(self.root_dir, exist_ok=True)
         if filesystem_type == "lsfs":
             self.filesystem = LSFS(root_dir, use_vector_db)
-
+        
     def address_request(self, agent_request):
         result = self.filesystem.address_request(agent_request)
+        if isinstance(result, dict):
+            result_str = json.dumps(result)
+        else:
+            result_str = result
         return StorageResponse(
-            response_message=result,
+            response_message=result_str,
             finished=True
         )
