@@ -216,7 +216,9 @@ class LSFS:
 
             elif operation_type == "create_dir":
                 dir_path = agent_request.query.params.get("dir_path", None)
+                dir_name = agent_request.query.params.get("dir_name", None)
                 result = self.sto_create_directory(
+                    dir_name=dir_name,
                     dir_path=dir_path,
                     collection_name=collection_name
                 )
