@@ -30,7 +30,7 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 </p>
 
 ## 📰 News
-- **[2025-03-13]** 📋 Paper "Cerebrum (AIOS SDK): A Platform for Agent Development, Deployment, Distribution, and Discovery" has been accepted by NAACL 2025! Features has been integrated into [Cerebrum](https://github.com/agiresearch/Cerebrum).
+- **[2025-03-13]** 📋 Paper [Cerebrum (AIOS SDK): A Platform for Agent Development, Deployment, Distribution, and Discovery](https://arxiv.org/abs/2503.11444) has been accepted by NAACL 2025! Features has been integrated into [Cerebrum](https://github.com/agiresearch/Cerebrum).
 - **[2025-03-12]** 🔥 A major refactor of the codebase packed with powerful new features have been integrated into the main repo. Please check out the AIOS v0.2.2 release.
 - **[2025-03-10]** 📋 Check out our paper on agentic memory [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) and the corresponding [codebase](https://github.com/agiresearch/A-mem). 
 - **[2025-02-07]** 📋 Our paper [From Commands to Prompts: LLM-based Semantic File System for AIOS](https://arxiv.org/abs/2410.11843) has been accepted by ICLR2025! The features of this paper has been integrated into AIOS as the **Terminal UI**. 
@@ -147,7 +147,8 @@ conda activate venv
 
 > [!TIP]
 > We strongly recommend using [uv](https://github.com/astral-sh/uv) for faster and more reliable package installation.
-> To install uv: `pip install uv`
+> To install uv: 
+> ```bash pip install uv```
 
 **For GPU environments:**
 ```bash
@@ -206,8 +207,8 @@ api_keys:
   groq: "your-groq-key"      
   anthropic: "your-anthropic-key" 
   huggingface:
-    auth_token: "your-huggingface-token"  
-    home: "optional-path"        # Optional: HuggingFace models path
+    auth_token: "your-huggingface-token-for-authorized-models"  
+    cache_dir: "your-cache-dir-for-saving-models"
 ```
 
 To obtain these API keys:
@@ -342,22 +343,22 @@ Detailed instructions of how to use the AIOS terminal can be found at [here](htt
 ### Supported LLM Cores
 | Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
 |:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
-| Deepseek | Deepseek-reasoner | ❌ | deepseek-reasoner |deepseek | DEEPSEEK_API_KEY |
-| Deepseek | Deepseek-chat | ❌ | deepseek-chat |deepseek | DEEPSEEK_API_KEY |
 | Anthropic | Claude 3.5 Sonnet | ❌ | claude-3-5-sonnet-20241022 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3.5 Haiku | ❌ | claude-3-5-haiku-20241022 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3 Opus | ❌ | claude-3-opus-20240229 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3 Sonnet | ❌ | claude-3-sonnet-20240229 |anthropic | ANTHROPIC_API_KEY |
 | Anthropic | Claude 3 Haiku | ❌ | claude-3-haiku-20240307 |anthropic | ANTHROPIC_API_KEY |
+| Deepseek | Deepseek-reasoner | ❌ | deepseek-reasoner |deepseek | DEEPSEEK_API_KEY |
+| Deepseek | Deepseek-chat | ❌ | deepseek-chat |deepseek | DEEPSEEK_API_KEY |
+| Google | Gemini 1.5 Flash | ❌ | gemini-1.5-flash |google| GEMINI_API_KEY |
+| Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google| GEMINI_API_KEY |
+| Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google| GEMINI_API_KEY |
+| Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google| GEMINI_API_KEY |
 | OpenAI | GPT-4 | ❌ | gpt-4 |openai| OPENAI_API_KEY |
 | OpenAI | GPT-4 Turbo | ❌ | gpt-4-turbo |openai| OPENAI_API_KEY |
 | OpenAI | GPT-4o | ❌ | gpt-4o |openai| OPENAI_API_KEY |
 | OpenAI | GPT-4o mini | ❌ | gpt-4o-mini |openai| OPENAI_API_KEY |
 | OpenAI | GPT-3.5 Turbo | ❌ | gpt-3.5-turbo |openai| OPENAI_API_KEY |
-| Google | Gemini 1.5 Flash | ❌ | gemini-1.5-flash |google| GEMINI_API_KEY |
-| Google | Gemini 1.5 Flash-8B | ❌ | gemini-1.5-flash-8b |google| GEMINI_API_KEY |
-| Google | Gemini 1.5 Pro | ❌ | gemini-1.5-pro |google| GEMINI_API_KEY |
-| Google | Gemini 1.0 Pro | ❌ | gemini-1.0-pro |google| GEMINI_API_KEY |
 | Groq | Llama 3.2 90B Vision | ✅ | llama-3.2-90b-vision-preview |groq| GROQ_API_KEY |
 | Groq | Llama 3.2 11B Vision | ✅ | llama-3.2-11b-vision-preview |groq| GROQ_API_KEY |
 | Groq | Llama 3.1 70B | ✅ | llama-3.1-70b-versatile |groq| GROQ_API_KEY |
@@ -369,18 +370,23 @@ Detailed instructions of how to use the AIOS terminal can be found at [here](htt
 | Groq | Gemma 2B | ✅ | gemma2-9b-it |groq| GROQ_API_KEY |
 | Groq | Llama3 Groq 70B | ✅ | llama3-groq-70b-8192-tool-use-preview |groq| GROQ_API_KEY |
 | Groq | Llama3 Groq 8B | ✅ | llama3-groq-8b-8192-tool-use-preview |groq| GROQ_API_KEY |
+| HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
 | ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama| - |
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
-| HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
-
 
 
 ## Reference
 ```
 @article{xu2025mem,
-  title={A-mem: Agentic memory for llm agents},
+  title={A-Mem: Agentic Memory for LLM Agents},
   author={Xu, Wujiang and Liang, Zujie and Mei, Kai and Gao, Hang and Tan, Juntao and Zhang, Yongfeng},
-  journal={arXiv preprint arXiv:2502.12110},
+  journal={arXiv:2502.12110},
+  year={2025}
+}
+@inproceedings{rama2025cerebrum,
+  title={Cerebrum (AIOS SDK): A Platform for Agent Development, Deployment, Distribution, and Discovery}, 
+  author={Balaji Rama and Kai Mei and Yongfeng Zhang},
+  booktitle={2025 Annual Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics},
   year={2025}
 }
 @inproceedings{shi2025from,

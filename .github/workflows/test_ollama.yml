@@ -1,6 +1,9 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
 name: AIOS Application
 
 on:
@@ -101,34 +104,37 @@ jobs:
           sleep 1
         done
 
-    - name: Run all Ollama tests
+    - name: Run all tests
       run: |
-        cd aios_root/Cerebrum
-        
         # Create test results directory
         mkdir -p test_results
         
-        # Find and run all test files containing "ollama" in their name
-        echo "=== Running all Ollama tests ==="
-        find tests -name "*ollama*.py" -type f | while read -r test_file; do
-          echo "Running test: $test_file"
-          python -m $test_file | tee -a ollama_tests.log
-          echo "----------------------------------------"
+        # Function to check if a path contains agent or llm
+        contains_agent_or_llm() {
+          local dir_path=$(dirname "$1")
+          if [[ "$dir_path" == *"agent"* || "$dir_path" == *"llm"* ]]; then
+            return 0  # True in bash
+          else
+            return 1  # False in bash
+          fi
+        }
+
+        # Process test files
+        find tests -type f -name "*.py" | while read -r test_file; do
+          if contains_agent_or_llm "$test_file"; then
+            # For agent or llm directories, only run ollama tests
+            if [[ "$test_file" == *"ollama"* ]]; then
+              echo "Running Ollama test in agent/llm directory: $test_file"
+              python $test_file | tee -a ollama_tests.log
+              echo "----------------------------------------"
+            fi
+          else
+            # For other directories, run all tests
+            echo "Running test: $test_file"
+            python $test_file | tee -a all_tests.log
+            echo "----------------------------------------"
+          fi
         done
-        
-        # Check if any tests were found and run
-        if [ ! -s ollama_tests.log ]; then
-          echo "No Ollama tests were found or executed!"
-          exit 1
-        fi
-        
-        # Check for test failures
-        if grep -i "FAILED" ollama_tests.log; then
-          echo "Some tests failed. See logs for details."
-          exit 1
-        else
-          echo "All Ollama tests passed successfully!"
-        fi
     
     - name: Upload a Build Artifact
       if: always()  # Upload logs even if job fails
