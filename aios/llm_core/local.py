@@ -105,7 +105,8 @@ class HfLocalBackend:
         response  = self.model.generate(
             **inputs,
             temperature=temperature,
-            max_length=max_tokens,
+            # max_length=max_tokens,
+            max_new_tokens=max_tokens,
             top_k=10,
             num_beams=4,
             early_stopping=True,

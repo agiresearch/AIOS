@@ -39,6 +39,7 @@ the specific LLM endpoint.
 
 class RouterStrategy(Enum):
     Sequential = 0,
+    Smart = 1
 
 class SequentialRouting:
     """
