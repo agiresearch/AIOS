@@ -227,6 +227,20 @@ class ConfigManager:
         """
         return self.config.get("agent_factory", {})
     
+    def get_server_config(self) -> dict:
+        """
+        Retrieves the server configuration settings.
+        
+        Returns:
+            dict: Dictionary containing server configurations
+            
+        Example:
+            server_config = config_manager.get_server_config()
+            host = server_config.get("host")
+            port = server_config.get("port")
+        """
+        return self.config.get("server", {})
+    
     # def get_kernel_config(self) -> dict:
     #     """Get kernel configuration"""
     #     return self.config.get("kernel", {})
