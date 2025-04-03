@@ -32,6 +32,8 @@ from cerebrum.storage.apis import StorageQuery, StorageResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import uvicorn
+
 # from cerebrum.llm.layer import LLMLayer as LLMConfig
 # from cerebrum.memory.layer import MemoryLayer as MemoryConfig
 # from cerebrum.storage.layer import StorageLayer as StorageConfig
@@ -632,3 +634,13 @@ async def update_config(request: Request):
             status_code=500,
             detail=f"Failed to update configuration: {str(e)}"
         )
+
+# Add a main function to run the app directly
+if __name__ == "__main__":
+    # Get server config from config.yaml
+    server_config = config.get_server_config()
+    host = server_config.get("host", "localhost")
+    port = server_config.get("port", 8000)
+    
+    # print(f"Starting AIOS server on {host}:{port}")
+    uvicorn.run("runtime.launch:app", host=host, port=port, reload=False)
