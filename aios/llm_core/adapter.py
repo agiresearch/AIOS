@@ -443,6 +443,7 @@ class LLMAdapter:
         # Add tools if provided
         if tools:
             completion_kwargs["tools"] = tools
+            completion_kwargs["tool_choice"] = "required"
         
         # Add JSON formatting if requested
         if message_return_type == "json":

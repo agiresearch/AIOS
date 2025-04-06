@@ -197,10 +197,13 @@ def decode_litellm_tool_calls(response):
         tool_calls = response.choices[0].message.tool_calls
 
         for tool_call in tool_calls:
+            parameters = tool_call.function.arguments
+            if isinstance(parameters, str):
+                parameters = json.loads(parameters)
             decoded_tool_calls.append(
                 {
                     "name": tool_call.function.name,
-                    "parameters": tool_call.function.arguments,
+                    "parameters": parameters,
                     "id": tool_call.id
                 }
             )
