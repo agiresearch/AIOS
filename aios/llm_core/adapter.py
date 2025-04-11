@@ -443,6 +443,7 @@ class LLMAdapter:
         # Add tools if provided
         if tools:
             completion_kwargs["tools"] = tools
+            completion_kwargs["tool_choice"] = "required"
         
         # Add JSON formatting if requested
         if message_return_type == "json":
@@ -452,7 +453,8 @@ class LLMAdapter:
         
         # Add API base if provided
         if api_base:
-            completion_kwargs["api_base"] = api_base
+            if isinstance(model, str):
+                completion_kwargs["api_base"] = api_base
         
         # Handle different model types
         # breakpoint()
@@ -473,12 +475,14 @@ class LLMAdapter:
         elif isinstance(model, OpenAI):
             # Use OpenAI client for OpenAI model instances
             # (Used for vllm and sglang endpoints due to litellm compatibility issues)
+            # breakpoint()
             completed_response = model.chat.completions.create(
                 model=model_name,
                 **completion_kwargs
             )
             
             if tools:
+                breakpoint()
                 completed_response = decode_litellm_tool_calls(completed_response)
                 return completed_response, True
             else:

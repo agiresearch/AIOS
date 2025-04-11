@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=4,5,6,7 NCCL_P2P_DISABLE=1 python3 -m sglang.launch_server --model-path Qwen/Qwen2.5-72B-Instruct --grammar-backend outlines --tool-call-parser qwen25 --host 127.0.0.1 --port 30001 --tp 4 --disable-custom-all-reduce
