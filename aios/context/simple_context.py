@@ -86,6 +86,7 @@ class SimpleContextManager(BaseContextManager):
             
             if tools:
                 kwargs["tools"] = tools
+                kwargs["tool_choice"] = "required"
                 kwargs["stream"] = False  # Don't stream tool calls
             else:
                 kwargs["stream"] = stream
