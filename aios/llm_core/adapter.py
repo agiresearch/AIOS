@@ -125,7 +125,8 @@ class LLMAdapter:
             "gemini": "GEMINI_API_KEY",
             "groq": "GROQ_API_KEY",
             "anthropic": "ANTHROPIC_API_KEY",
-            "huggingface": "HF_AUTH_TOKEN"
+            "huggingface": "HF_AUTH_TOKEN",
+            "novita": "NOVITA_API_KEY",
         }
         
         logger.info("=== LLMAdapter Initialization ===")
