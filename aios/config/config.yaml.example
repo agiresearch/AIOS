@@ -6,6 +6,7 @@ api_keys:
   gemini: ""    # Google Gemini API key
   groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
+  novita: ""    # Novita AI API key
   huggingface:
     auth_token: ""  # Your HuggingFace auth token for authorized models
     cache_dir: ""   # Your cache directory for saving huggingface models
@@ -56,6 +57,10 @@ llms:
     - name: "Qwen/Qwen2.5-72B-Instruct"
       backend: "sglang"
       hostname: "http://localhost:30001/v1"
+
+    # Novita Models
+    - name: "meta-llama/llama-4-scout-17b-16e-instruct"
+      backend: "novita"
 
   log_mode: "console"
   use_context_manager: false

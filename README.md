@@ -209,6 +209,7 @@ api_keys:
   huggingface:
     auth_token: "your-huggingface-token-for-authorized-models"  
     cache_dir: "your-cache-dir-for-saving-models"
+  novita: "your-novita-api-key"
 ```
 
 To obtain these API keys:
@@ -218,6 +219,7 @@ To obtain these API keys:
 4. Groq API: Visit https://console.groq.com/keys
 5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 6. Anthropic API: Visit https://console.anthropic.com/keys
+7. Novita AI API: Visit https://novita.ai/api-keys
 
 #### Configure LLM Models
 You can configure which LLM models to use in the same `aios/config/config.yaml` file. Here's an example configuration:
@@ -288,6 +290,7 @@ When no environment variables are set, the following API keys will be shown:
 - `GROQ_API_KEY`: Groq API key for accessing Groq services
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
 - `HF_HOME`: Optional path to store HuggingFace models
+- `NOVITA_API_KEY`: Novita AI API key for accessing Novita AI services
 
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
@@ -373,7 +376,7 @@ Detailed instructions of how to use the AIOS terminal can be found at [here](htt
 | HuggingFace | [All Models](https://huggingface.co/models/) | ✅ | model-name |huggingface| HF_HOME |
 | ollama | [All Models](https://ollama.com/search) | ✅ | model-name |ollama| - |
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name |vllm| - |
-
+| Novita | [All Models](https://novita.ai/models/llm) | ✅ | model-name |novita| NOVITA_API_KEY |
 
 ## Reference
 ```
