@@ -377,6 +377,28 @@ async def check_llms():
         active_components["llms"]
     }
 
+@app.get("/core/llms/list")
+async def list_llms():
+    """List the names of configured LLMs."""
+    if not active_components["llms"]:
+        return {
+            "status": "warning",
+            "message": "LLM core not initialized",
+            "llms": []
+        }
+    try:
+        llm_configs = config.get_llms_config().get("models", [])
+        
+        return {
+            "status": "success",
+            "llms": llm_configs
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list LLMs: {str(e)}"
+        )
+
 # Add new constant for proc directory
 PROC_DIR = Path("proc")
 
@@ -639,7 +661,7 @@ async def update_config(request: Request):
 if __name__ == "__main__":
     # Get server config from config.yaml
     server_config = config.get_server_config()
-    host = server_config.get("host", "localhost")
+    host = server_config.get("host", "0.0.0.0")
     port = server_config.get("port", 8000)
     
     # print(f"Starting AIOS server on {host}:{port}")
