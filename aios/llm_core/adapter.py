@@ -447,7 +447,10 @@ class LLMAdapter:
         
         # Add JSON formatting if requested
         if message_return_type == "json":
-            completion_kwargs["format"] = "json"
+            # completion_kwargs["format"] = "json"
+            if isinstance(model, str):
+                completion_kwargs["format"] = "json" # do not use format for sglang and vllm
+                
             if response_format:
                 completion_kwargs["response_format"] = response_format
         
