@@ -351,19 +351,12 @@ class LLMAdapter:
                             
                         logger.info(f"results: {results}")
                         
-                        breakpoint()
+                        # breakpoint()
                         # logger.info(f"Batch processing completed task submitted for model '{model_name_completed}' (Index {model_idx_completed}).")
                     except Exception as exc:
                         model_name = self.llms[model_idx_completed]["name"]
                         logger.error(f"Worker thread for model '{model_name}' (Index {model_idx_completed}) failed: {exc}", exc_info=True)
-                        # Mark any remaining None results for this batch as errors
-                        # tasks_for_failed_model = active_groups.get(model_idx_completed, [])
-                        # for original_index, syscall in tasks_for_failed_model:
-                        #     if results[original_index] is None:
-                        #         error_resp = LLMResponse(response_message=f"System Error: Processing batch failed for model {model_name_completed}.", error=f"Worker Exception: {exc}", finished=True, status_code=500)
-                        #         results[original_index] = error_resp
-                        #         try: syscall.set_status("error"); syscall.set_response(error_resp)
-                        #         except Exception: pass
+                        
         return
     
     def _process_batch_for_model(self, model_idx, llm_syscalls):

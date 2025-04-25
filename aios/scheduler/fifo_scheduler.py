@@ -97,62 +97,6 @@ class FIFOScheduler(BaseScheduler):
         )
         self.batch_interval = batch_interval
 
-    def _execute_syscall(
-        self, 
-        syscall: Any,
-        executor: Any,
-        syscall_type: str
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Execute a system call with proper status tracking and error handling.
-        
-        Args:
-            syscall: The system call to execute
-            executor: Function to execute the syscall
-            syscall_type: Type of the syscall for logging
-            
-        Returns:
-            Optional[Dict[str, Any]]: Response from the syscall execution
-            
-        Example:
-            ```python
-            response = scheduler._execute_syscall(
-                llm_syscall,
-                self.llm.execute_llm_syscall,
-                "LLM"
-            )
-            ```
-        """
-        try:
-            syscall.set_status("executing")
-            self.logger.log(
-                f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
-                "executing"
-            )
-            syscall.set_start_time(time.time())
-
-            response = executor(syscall)
-            syscall.set_response(response)
-
-            syscall.event.set()
-            syscall.set_status("done")
-            syscall.set_end_time(time.time())
-
-            # self.logger.log(
-            #     f"Completed {syscall_type} syscall for {syscall.agent_name}. "
-            #     f"Thread ID: {syscall.get_pid()}\n",
-            #     "done"
-            # )
-            logger.info(f"Completed {syscall_type} syscall for {syscall.agent_name}. "
-                f"Thread ID: {syscall.get_pid()}\n")
-            
-            return response
-
-        except Exception as e:
-            logger.error(f"Error executing {syscall_type} syscall: {str(e)}")
-            traceback.print_exc()
-            return None
-
     def _execute_batch_syscalls(
         self,
         batch: List[Any],
@@ -174,14 +118,11 @@ class FIFOScheduler(BaseScheduler):
         for syscall in batch:
             try:
                 syscall.set_status("executing")
-                # self.logger.log(
-                #     f"{syscall.agent_name} preparing batched {syscall_type} syscall.\n",
-                #     "executing"
-                # )
+                
                 logger.info(f"{syscall.agent_name} preparing batched {syscall_type} syscall.")
                 syscall.set_start_time(start_time)
             except Exception as e:
-                # logger.error(f"Error preparing syscall {getattr(syscall, 'agent_name', 'unknown')} for batch execution: {str(e)}")
+                logger.error(f"Error preparing syscall {getattr(syscall, 'agent_name', 'unknown')} for batch execution: {str(e)}")
                 continue
 
         if not batch:
@@ -197,39 +138,15 @@ class FIFOScheduler(BaseScheduler):
         try:
             responses = executor(batch)
 
-            # if len(responses) != len(batch):
-            #     logger.error(f"Mismatch between batch size ({len(batch)}) and response count ({len(responses)}) for {syscall_type}.")
-            #     responses = responses[:len(batch)]
-
-            # end_time = time.time()
             for i, syscall in enumerate(batch):
-                if i < len(responses):
-                    # response = responses[i]
-                    # syscall.set_response(response)
-                    # syscall.set_status("done")
-                    # syscall.set_end_time(end_time)
-                    # syscall.event.set()
-                    # self.logger.log(
-                    #     f"Completed batched {syscall_type} syscall for {syscall.agent_name}. "
-                    #     f"Thread ID: {syscall.get_pid()}\n",
-                    #     "done"
-                    # )
-                    logger.info(f"Completed batched {syscall_type} syscall for {syscall.agent_name}. "
-                        f"Thread ID: {syscall.get_pid()}\n")
+                logger.info(f"Completed batched {syscall_type} syscall for {syscall.agent_name}. "
+                    f"Thread ID: {syscall.get_pid()}\n")
 
 
         except Exception as e:
             logger.error(f"Error executing {syscall_type} syscall batch: {str(e)}")
             traceback.print_exc()
-            end_time = time.time()
-            # for syscall in batch:
-            #     try:
-            #         syscall.set_status("error")
-            #         syscall.set_end_time(end_time)
-            #         syscall.set_response({"error": str(e)})
-            #         syscall.event.set()
-            #     except Exception as inner_e:
-            #          logger.error(f"Error setting error state for syscall {getattr(syscall, 'agent_name', 'unknown')}: {inner_e}")
+
 
     def process_llm_requests(self) -> None:
         """
