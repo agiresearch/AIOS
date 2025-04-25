@@ -32,6 +32,8 @@ from cerebrum.storage.apis import StorageQuery, StorageResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import asyncio
+
 import uvicorn
 
 # from cerebrum.llm.layer import LLMLayer as LLMConfig
@@ -580,7 +582,14 @@ async def handle_query(request: QueryRequest):
                 action_type=request.query_data.action_type,
                 message_return_type=request.query_data.message_return_type,
             )
-            return execute_request(request.agent_name, query)
+            result_dict = await asyncio.to_thread(
+                execute_request, # The method to call
+                request.agent_name,               # First arg to execute_request
+                query                # Second arg to execute_request
+            )
+            
+            return result_dict
+        
         elif request.query_type == "storage":
             query = StorageQuery(
                 params=request.query_data.params,
