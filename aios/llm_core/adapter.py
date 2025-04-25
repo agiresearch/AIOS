@@ -14,6 +14,9 @@ from aios.config.config_manager import config
 from dataclasses import dataclass
 import logging
 from typing import Any
+import concurrent.futures
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -276,9 +279,114 @@ class LLMAdapter:
             finished=True,
             status_code=500
         )
+        
+    def execute_llm_syscalls(
+        self,
+        llm_syscalls: List[LLMQuery],
+        temperature: float = 0.0
+    ) -> List[LLMResponse]:
+        """
+        Execute a batch of LLM syscalls.
 
+        Args:
+            llm_syscall: List of LLMQuery objects
+            temperature: Temperature parameter
+
+        Returns:
+            List of LLMResponse objects
+        """
+        num_syscalls = len(llm_syscalls)
+        if num_syscalls == 0:
+            return []
+
+        start_exec_time = time.time()
+        logger.info(f"Starting batch execution for {num_syscalls} LLM syscalls...")
+        results = [None] * num_syscalls # Pre-allocate results list
+        grouped_tasks = defaultdict(list)
+        routing_errors_indices = [] # Indices where routing failed
+
+        # --- 1. Prepare Input for Batch Routing & Pre-validate ---
+        batch_routing_requirements = []
+        valid_syscalls_for_routing = [] # List of (original_index, syscall)
+
+        active_groups = defaultdict(list)
+        
+        for i, llm_syscall in enumerate(llm_syscalls):
+            if not active_groups[0]:
+                active_groups[0] = [llm_syscall]
+            else:
+                active_groups[0].append(llm_syscall)
+        
+        if not active_groups and not routing_errors_indices:
+            # This case means valid syscalls existed but grouping failed (shouldn't happen with checks above)
+            logger.warning("No tasks were grouped for execution, though some were valid for routing.")
+        elif not active_groups:
+            logger.warning("No tasks were successfully routed for execution.")
+             # Proceed to final check which will return the routing errors
+        else:
+            # max_workers = min(len(active_groups), (os.cpu_count() or 1) * 2, 16)
+            max_workers = len(active_groups)
+            logger.info(f"Submitting {len(active_groups)} batch tasks to ThreadPoolExecutor with max_workers={max_workers}...")
+            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="LLMGroupWorker") as llm_group_worker:
+                future_to_model_idx = {
+                    llm_group_worker.submit(self._process_batch_for_model, model_idx, tasks): model_idx
+                    for model_idx, tasks in active_groups.items()
+                }
+
+                # Wait for completion and check for worker exceptions
+                for future in concurrent.futures.as_completed(future_to_model_idx):
+                    model_idx_completed = future_to_model_idx[future]
+                    # model_name_completed = self.llm_configs[model_idx_completed].name
+                    try:
+                        results = future.result() # Raises exceptions from the worker function
+                        for llm_syscall, response in results:
+                            if response.finished:
+                                llm_syscall.set_status("done")
+                            else:
+                                llm_syscall.set_status("suspend")
+                            llm_syscall.set_response(response)
+                            llm_syscall.set_end_time(time.time())
+                            llm_syscall.event.set()
+                            
+                        logger.info(f"results: {results}")
+                        
+                        breakpoint()
+                        # logger.info(f"Batch processing completed task submitted for model '{model_name_completed}' (Index {model_idx_completed}).")
+                    except Exception as exc:
+                        model_name = self.llms[model_idx_completed]["name"]
+                        logger.error(f"Worker thread for model '{model_name}' (Index {model_idx_completed}) failed: {exc}", exc_info=True)
+                        # Mark any remaining None results for this batch as errors
+                        # tasks_for_failed_model = active_groups.get(model_idx_completed, [])
+                        # for original_index, syscall in tasks_for_failed_model:
+                        #     if results[original_index] is None:
+                        #         error_resp = LLMResponse(response_message=f"System Error: Processing batch failed for model {model_name_completed}.", error=f"Worker Exception: {exc}", finished=True, status_code=500)
+                        #         results[original_index] = error_resp
+                        #         try: syscall.set_status("error"); syscall.set_response(error_resp)
+                        #         except Exception: pass
+        return
+    
+    def _process_batch_for_model(self, model_idx, llm_syscalls):
+        """
+        Process a batch of tasks for a specific model.
+
+        Args:
+            model_idx: Index of the model to process
+            tasks: List of tasks to process
+        """
+        results = []
+        
+        with ThreadPoolExecutor(max_workers=len(llm_syscalls)) as executor:
+            futures = [executor.submit(self.execute_llm_syscall, model_idx, llm_syscall) for llm_syscall in llm_syscalls]
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                results.append(result)
+                
+        return results
+    
     def execute_llm_syscall(
         self,
+        model_idx,
         llm_syscall,
         temperature: float = 0.0
     ) -> LLMResponse:
@@ -317,7 +425,7 @@ class LLMAdapter:
             messages = llm_syscall.query.messages
             tools = llm_syscall.query.tools
             message_return_type = llm_syscall.query.message_return_type
-            selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
+            # selected_llms = llm_syscall.query.llms if llm_syscall.query.llms else self.llm_configs
             response_format = llm_syscall.query.response_format
             temperature = llm_syscall.query.temperature
             max_tokens = llm_syscall.query.max_new_tokens
@@ -325,30 +433,14 @@ class LLMAdapter:
             llm_syscall.set_status("executing")
             llm_syscall.set_start_time(time.time())
             
-            # breakpoint()
-            
-            model_idxs = self.strategy.get_model_idxs(selected_llms)
-            model_idx = model_idxs[0]
-            
             model = self.llms[model_idx]
             
             model_name = self.llm_configs[model_idx].get("name")
             
             api_base = self.llm_configs[model_idx].get("hostname", None)
             
-            # breakpoint()
-            
             if tools:
                 tools = slash_to_double_underscore(tools)
-            
-            # deprecated as the tools are already supported in Litellm completion
-            # messages = self._prepare_messages(
-            #     model=model,
-            #     messages=messages,
-            #     tools=tools,
-            #     return_type=message_return_type,
-            #     response_format=response_format
-            # )
             
             try:
                 completed_response, finished = self._get_model_response(
@@ -365,23 +457,23 @@ class LLMAdapter:
                 )
                 
             except Exception as e:
-                return self._handle_completion_error(e)
+                return (llm_syscall, self._handle_completion_error(e))
 
-            return self._process_response(
+            return (llm_syscall, self._process_response(
                 completed_response=completed_response, 
                 model=model,
                 finished=finished,
                 tools=tools, 
                 message_return_type=message_return_type
-            )
+            ))
 
         except Exception as e:
-            return LLMResponse(
+            return (llm_syscall, LLMResponse(
                 response_message=f"System Error: {str(e)}",
                 error=str(e),
                 finished=True,
                 status_code=500
-            )
+            ))
 
     def _get_model_response(
         self, 
