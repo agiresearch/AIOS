@@ -1,90 +1,161 @@
 # test_client.py
+import unittest
 import requests
 import threading
 import json
 import time
+from typing import List, Dict, Any, Tuple
 
-# Assume the server is running on localhost:8000 based on launch.py default
-BASE_URL = "http://localhost:8000"
-QUERY_ENDPOINT = f"{BASE_URL}/query"
+from cerebrum.llm.apis import llm_chat
 
-# --- Define Payloads for the two concurrent requests ---
+from cerebrum.utils.communication import aios_kernel_url
 
-# Payload 1: Example LLM Query
-# Note: Adjust 'agent_name', 'llms', and 'messages' based on your actual setup
-payload1 = {
-    "agent_name": "test_agent_1",
-    "query_type": "llm",
-    "query_data": {
-        "llms": [
-            {"name": "gpt-4o", "backend": "openai"},
-        ],
-        "messages": [{"role": "user", "content": "What is the capital of France?"}],
-        "action_type": "chat",
-        "message_return_type": "text",
-    }
-}
-
-# Payload 2: Example Storage Query
-# Note: Adjust 'agent_name', 'operation_type', and 'params' based on your actual setup
-payload2 = {
-    "agent_name": "test_agent_2",
-    "query_type": "llm",
-    "query_data": {
-        "llms": [
-            {"name": "gpt-4.1", "backend": "openai"},
-        ],
-        "messages": [{"role": "user", "content": "What is the capital of United States?"}],
-        "action_type": "chat",
-        "message_return_type": "text",
-    }
-}
-
-# List of payloads for the requests
-payloads = [payload1, payload2]
-responses = [None] * len(payloads) # To store responses
-
-# --- Function to send a single request ---
-def send_request(index, payload):
-    """Sends a POST request to the query endpoint and stores the response."""
-    global responses
+# --- Helper function to send a single request ---
+def send_request(payload: Dict[str, Any]) -> Tuple[Dict[str, Any] | None, float]:
+    """Sends a POST request to the query endpoint and returns status code, response JSON, and duration."""
+    start_time = time.time()
     try:
-        print(f"Thread {index}: Sending request with payload: {json.dumps(payload)}")
-        start_time = time.time()
-        response = requests.post(QUERY_ENDPOINT, json=payload)
+        response = llm_chat(
+            agent_name=payload["agent_name"],
+            messages=payload["query_data"]["messages"],
+            llms=payload["query_data"]["llms"] if "llms" in payload["query_data"] else None,
+        )
         end_time = time.time()
-        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
-        responses[index] = response.json()
-        print(f"Thread {index}: Received response (Status: {response.status_code}) in {end_time - start_time:.2f}s.")
-        # print(f"Thread {index}: Response data: {responses[index]}")
-    except requests.exceptions.RequestException as e:
-        print(f"Thread {index}: Request failed: {e}")
-        if e.response is not None:
-            print(f"Thread {index}: Server response: {e.response.text}")
-        responses[index] = {"error": str(e)}
+        duration = end_time - start_time
+        return response["response"], duration
+    
     except Exception as e:
-        print(f"Thread {index}: An unexpected error occurred: {e}")
-        responses[index] = {"error": f"Unexpected error: {str(e)}"}
+        end_time = time.time()
+        duration = end_time - start_time
+        # General unexpected errors
+        return {"error": f"An unexpected error occurred: {e}"}, duration
 
-# --- Create and start threads ---
-threads = []
-print(f"Sending {len(payloads)} concurrent requests to {QUERY_ENDPOINT}...")
 
-for i, payload in enumerate(payloads):
-    thread = threading.Thread(target=send_request, args=(i, payload))
-    threads.append(thread)
-    thread.start()
+class TestConcurrentLLMQueries(unittest.TestCase):
 
-# --- Wait for all threads to complete ---
-for i, thread in enumerate(threads):
-    thread.join()
-    print(f"Thread {i} finished.")
+    def _run_concurrent_requests(self, payloads: List[Dict[str, Any]]):
+        results = [None] * len(payloads)
+        threads = []
 
-# --- Print all responses ---
-print("\n--- All Responses ---")
-for i, response_data in enumerate(responses):
-    print(f"Response from request {i}:")
-    print(json.dumps(response_data, indent=2))
-    print("-" * 20)
+        def worker(index, payload):
+            response_data, duration = send_request(payload)
+            results[index] = {"data": response_data, "duration": duration}
+            print(f"Thread {index}: Completed in {duration:.2f}s with response: {json.dumps(response_data)}")
 
-print("All requests completed.")
+        print(f"\n--- Running test: {self._testMethodName} ---")
+        print(f"Sending {len(payloads)} concurrent requests to {aios_kernel_url}...")
+        for i, payload in enumerate(payloads):
+            thread = threading.Thread(target=worker, args=(i, payload))
+            threads.append(thread)
+            thread.start()
+
+        for i, thread in enumerate(threads):
+            thread.join()
+            print(f"Thread {i} finished.")
+
+        print("--- All threads completed ---")
+        return results
+
+    def test_both_llms(self):
+        payload1 = {
+            "agent_name": "test_agent_1",
+            "query_type": "llm",
+            "query_data": {
+                "llms": [{"name": "gpt-4o", "backend": "openai"}],
+                "messages": [{"role": "user", "content": "What is the capital of France?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        payload2 = {
+            "agent_name": "test_agent_2",
+            "query_type": "llm",
+            "query_data": {
+                "llms": [{"name": "gpt-4o-mini", "backend": "openai"}], # Using a different model for variety
+                "messages": [{"role": "user", "content": "What is the capital of the United States?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        results = self._run_concurrent_requests([payload1, payload2])
+        
+        for i, result in enumerate(results):
+            print(f"Result {i} (No LLM): {result}")
+            # Both should succeed using defaults
+            status, response_message, error_message, finished = result["data"]["status_code"], result["data"]["response_message"], result["data"]["error"], result["data"]["finished"]
+            
+            self.assertEqual(status, 200, f"Request {i} (No LLM) should succeed, but failed with status {status}")
+            self.assertIsNone(error_message, f"Request {i} (No LLM) returned an unexpected error: {error_message}")
+            self.assertIsInstance(response_message, str, f"Request {i} (No LLM) result is not a string")
+            self.assertTrue(finished, f"Request {i} (No LLM) result is empty") # Check not empty
+
+    def test_one_llm_one_empty(self):
+        payload_llm = {
+            "agent_name": "test_agent_1",
+            "query_type": "llm",
+            "query_data": {
+                "llms": [{"name": "gpt-4o", "backend": "openai"}],
+                "messages": [{"role": "user", "content": "What is the capital of France?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        payload_no_llm = {
+            "agent_name": "test_agent_2",
+            "query_type": "llm",
+            "query_data": {
+                # 'llms' key is omitted entirely
+                "messages": [{"role": "user", "content": "What is the capital of the United States?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        results = self._run_concurrent_requests([payload_llm, payload_no_llm])
+        
+        for i, result in enumerate(results):
+            print(f"Result {i} (No LLM): {result}")
+            # Both should succeed using defaults
+            status, response_message, error_message, finished = result["data"]["status_code"], result["data"]["response_message"], result["data"]["error"], result["data"]["finished"]
+            
+            self.assertEqual(status, 200, f"Request {i} (No LLM) should succeed, but failed with status {status}")
+            self.assertIsNone(error_message, f"Request {i} (No LLM) returned an unexpected error: {error_message}")
+            self.assertIsInstance(response_message, str, f"Request {i} (No LLM) result is not a string")
+            self.assertTrue(finished, f"Request {i} (No LLM) result is empty") # Check not empty
+
+    def test_no_llms(self):
+        """Case 2: Both payloads have no LLMs defined. Should succeed using defaults."""
+        payload1 = {
+            "agent_name": "test_agent_1",
+            "query_type": "llm",
+            "query_data": {
+                # 'llms' key is omitted
+                "messages": [{"role": "user", "content": "What is the capital of France?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        payload2 = {
+            "agent_name": "test_agent_2",
+            "query_type": "llm",
+            "query_data": {
+                # 'llms' key is omitted
+                "messages": [{"role": "user", "content": "What is the capital of the United States?"}],
+                "action_type": "chat",
+                "message_return_type": "text",
+            }
+        }
+        results = self._run_concurrent_requests([payload1, payload2])
+        
+        for i, result in enumerate(results):
+            print(f"Result {i} (No LLM): {result}")
+            # Both should succeed using defaults
+            status, response_message, error_message, finished = result["data"]["status_code"], result["data"]["response_message"], result["data"]["error"], result["data"]["finished"]
+            
+            self.assertEqual(status, 200, f"Request {i} (No LLM) should succeed, but failed with status {status}")
+            self.assertIsNone(error_message, f"Request {i} (No LLM) returned an unexpected error: {error_message}")
+            self.assertIsInstance(response_message, str, f"Request {i} (No LLM) result is not a string")
+            self.assertTrue(finished, f"Request {i} (No LLM) result is empty") # Check not empty
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -368,6 +368,10 @@ class LLMAdapter:
         
         selected_llm_lists = [syscall.query.llms for syscall in llm_syscalls]
         
+        for i, selected_llm_list in enumerate(selected_llm_lists):
+            if not selected_llm_list:
+                selected_llm_lists[i] = [{"name": llm_config.name, "backend": llm_config.backend} for llm_config in self.llm_configs]
+        
         selected_llm_lists_availability = check_availability_for_selected_llm_lists(self.available_llm_names, selected_llm_lists)
         
         executable_llm_syscalls = []

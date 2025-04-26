@@ -346,6 +346,7 @@ def check_availability_for_selected_llm_lists(available_llm_names: List[str], se
     selected_llm_lists_availability = []
     for selected_llm_list in selected_llm_lists:
         all_available = True
+        
         for llm in selected_llm_list:
             if llm["name"] not in available_llm_names:
                 all_available = False

@@ -33,20 +33,20 @@ class TestAgent:
         self.messages.append({"role": "user", "content": task_input})
 
         response_format = {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "keywords",
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "keywords": {
-                                "type": "array",
-                                "items": {"type": "string"}
-                            }
+            "type": "json_schema",
+            "json_schema": {
+                "name": "keywords",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "keywords": {
+                            "type": "array",
+                            "items": {"type": "string"}
                         }
                     }
                 }
             }
+        }
 
         tool_response = llm_chat_with_json_output(
             agent_name=self.agent_name,
