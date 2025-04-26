@@ -19,6 +19,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 import traceback
 import litellm
+from .utils import check_availability_for_selected_llm_lists
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -113,10 +114,22 @@ class LLMAdapter:
         self._setup_api_keys()
         self._initialize_llms()
         
+        routing_strategy = config.get_router_config().get("strategy", RouterStrategy.Sequential)
+        
+        # breakpoint()
+        
         if routing_strategy == RouterStrategy.Sequential:
-            self.strategy = SequentialRouting(self.llm_configs)
+            self.router = SequentialRouting(
+                llm_configs=self.llm_configs
+            )
         elif routing_strategy == RouterStrategy.Smart:
-            self.strategy = SmartRouting(self.llm_configs)
+            self.router = SmartRouting(
+                llm_configs=self.llm_configs,
+                bootstrap_url=config.get_router_config().get("bootstrap_url", None)
+            )
+            
+        else:
+            raise ValueError(f"Invalid routing strategy: {routing_strategy}")
 
     def _setup_api_keys(self) -> None:
         """
@@ -185,6 +198,9 @@ class LLMAdapter:
 
         # Update self.llm_configs to only contain successfully initialized ones
         self.llm_configs = initialized_configs
+        
+        self.available_llm_names = [llm_config.name for llm_config in self.llm_configs]
+        
         if not self.llms:
             logger.error("No LLMs were successfully initialized. LLMAdapter may not function.")
         else:
@@ -315,14 +331,12 @@ class LLMAdapter:
     def execute_llm_syscalls(
         self,
         llm_syscalls: List[LLMQuery],
-        temperature: float = 0.0
-    ) -> List[LLMResponse]:
+    ) -> None:
         """
         Execute a batch of LLM syscalls using the configured routing strategy and parallel execution.
 
         Args:
             llm_syscalls: List of LLMQuery objects
-            temperature: Default temperature parameter (can be overridden per syscall)
 
         Returns:
             List of LLMResponse objects corresponding to each input syscall.
@@ -335,73 +349,72 @@ class LLMAdapter:
         start_exec_time = time.time()
         logger.info(f"Starting batch execution for {num_syscalls} LLM syscalls...")
         
-        # Initialize results with None or a default error state
-        final_results = [None] * num_syscalls
-        tasks_to_process = [] # List of (original_index, llm_syscall)
-
-        # --- 1. Pre-validation and Grouping Preparation ---
-        for i, llm_syscall in enumerate(llm_syscalls):
-            if not isinstance(llm_syscall, LLMQuery):
-                logger.error(f"Invalid item at index {i} in llm_syscalls list: Expected LLMQuery, got {type(llm_syscall)}. Skipping.")
-                final_results[i] = LLMResponse(
-                    response_message=None,
-                    error=f"Expected LLMQuery, got {type(llm_syscall)}",
-                    finished=True,
-                    status_code=400 # Bad Request
-                )
-                continue
-            # Add more basic validations if needed (e.g., messages format)
-            tasks_to_process.append((i, llm_syscall))
-
-
-        if not tasks_to_process:
-            logger.warning("No valid LLM syscalls found to execute.")
-            return final_results # Return list potentially containing error responses for invalid inputs
-
-        # --- 2. Routing (if applicable, otherwise simple grouping) ---
-        # For simplicity, we'll group all tasks for now, assuming Sequential or simple distribution.
-        # A more complex router would group based on model affinity, cost, etc.
-        # Let's assume a simple round-robin or sequential assignment for this example if multiple models exist.
-        # For now, we'll group all tasks together and let the worker handle model selection if needed,
-        # or just use the first available model for simplicity here.
-        
-        # This part needs refinement based on the actual routing strategy implementation.
-        # For now, let's put all valid tasks into a single group targeting the first model (index 0)
-        # or distribute sequentially if the strategy demands it.
-        
-        grouped_tasks = defaultdict(list)
         if not self.llms:
             logger.error("Cannot execute syscalls: No LLMs were successfully initialized.")
             error_response = LLMResponse(
                 response_message=None,
-                error="System Error: No LLM backends available. LLMAdapter initialization failed or found no usable models.",
+                error="System Error: No LLM backends available.",
                 finished=True,
                 status_code=503 # Service Unavailable
             )
-            for i, _ in tasks_to_process:
-                final_results[i] = error_response
-            return final_results
-             
-        # Simple sequential distribution for demonstration
-        model_count = len(self.llms)
-        for original_index, syscall in tasks_to_process:
-            model_idx = original_index % model_count # Simple round-robin assignment
-            grouped_tasks[model_idx].append((original_index, syscall))
-            syscall.set_status("routing") # Mark as routed
+            for llm_syscall in llm_syscalls:
+                llm_syscall.set_status("done")
+                llm_syscall.set_response(error_response)
+                llm_syscall.set_end_time(time.time())
+                llm_syscall.event.set()
+            
+            return             
+        
+        
+        selected_llm_lists = [syscall.query.llms for syscall in llm_syscalls]
+        
+        selected_llm_lists_availability = check_availability_for_selected_llm_lists(self.available_llm_names, selected_llm_lists)
+        
+        executable_llm_syscalls = []
+        available_selected_llm_lists = []
+        
+        # breakpoint()
+        
+        for i, selected_llm_list_availability in enumerate(selected_llm_lists_availability):
+            if not selected_llm_list_availability:
+                logger.error(f"Selected LLMs are not available for syscall at index {i}")
+                llm_syscall = llm_syscalls[i]
+                llm_syscall.set_status("done")
+                llm_syscall.set_response(LLMResponse(response_message=None, error="Selected LLMs are not all available. Please check the available LLMs.", finished=True, status_code=500))
+                llm_syscall.set_end_time(time.time())
+                llm_syscall.event.set()
+            else:
+                executable_llm_syscalls.append(llm_syscalls[i])
+                available_selected_llm_lists.append(selected_llm_lists[i])
+        
+        queries = [syscall.query.messages for syscall in executable_llm_syscalls]
+        
+        model_idxs = self.router.get_model_idxs(available_selected_llm_lists, queries)
+        
+        grouped_tasks = defaultdict(list)
 
-
+        for i, llm_syscall in enumerate(executable_llm_syscalls):
+            model_idx = model_idxs[i]
+            
+            if model_idx not in grouped_tasks:
+                grouped_tasks[model_idx] = []
+            grouped_tasks[model_idx].append(llm_syscall)
+            
         # --- 3. Parallel Execution using ThreadPoolExecutor ---
         if not grouped_tasks:
             logger.warning("No tasks were grouped for execution.")
             # Fill remaining Nones with a generic routing error if needed
-            for i in range(num_syscalls):
-                if final_results[i] is None:
-                    final_results[i] = LLMResponse(response_message=None, error="System Error: Task could not be routed or processed.", finished=True, status_code=500)
-            return final_results
+            error_response = LLMResponse(response_message=None, error="System Error: LLM routing failed.", finished=True, status_code=500)
+            for llm_syscall in executable_llm_syscalls:
+                llm_syscall.set_status("done")
+                llm_syscall.set_response(error_response)
+                llm_syscall.set_end_time(time.time())
+                llm_syscall.event.set()
+            return
 
         # Determine max workers for the outer executor (managing groups)
-        max_group_workers = min(len(grouped_tasks), (os.cpu_count() or 1) * 2, 16)
-        logger.info(f"Processing {len(grouped_tasks)} model groups with max_workers={max_group_workers}...")
+        max_group_workers = len(grouped_tasks)
+        logger.info(f"Processing {len(grouped_tasks)} model groups...")
 
         # Dictionary to store results keyed by original index
         results_dict = {}
@@ -467,41 +480,16 @@ class LLMAdapter:
                 status_code=500
             )
             # Assign error to all tasks that haven't received a result yet
-            for i, _ in tasks_to_process:
-                if i not in results_dict:
-                    results_dict[i] = error_response
-                     # Optionally update syscall status if accessible here
-
-        # --- 4. Collate Results ---
-        for i in range(num_syscalls):
-            if final_results[i] is None: # If not already set by pre-validation error
-                if i in results_dict:
-                    final_results[i] = results_dict[i]
-                else:
-                    # Should not happen if logic is correct, but as a fallback
-                    logger.error(f"Internal Error: No result found for syscall at original index {i}.")
-                    final_results[i] = LLMResponse(
-                        response_message=None,
-                        error="Missing result entry",
-                        finished=True,
-                        status_code=500
-                    )
+            for llm_syscall in executable_llm_syscalls:
+                llm_syscall.set_status("error")
+                llm_syscall.set_response(error_response)
+                llm_syscall.set_end_time(time.time())
+                llm_syscall.event.set()
 
         end_exec_time = time.time()
         logger.info(f"Batch execution finished for {num_syscalls} syscalls in {end_exec_time - start_exec_time:.2f} seconds.")
         
-        # Sanity check: Ensure all elements in final_results are LLMResponse objects
-        for i, res in enumerate(final_results):
-            if not isinstance(res, LLMResponse):
-                logger.error(f"Internal Error: Final result at index {i} is not an LLMResponse ({type(res)}). Fixing.")
-                final_results[i] = LLMResponse(
-                    response_message=None,
-                    error=f"Expected LLMResponse, got {type(res)}",
-                    finished=True,
-                    status_code=500
-                )
-
-        return final_results
+        return
 
     
     def _process_batch_for_model(self, model_idx, tasks_with_indices):
@@ -520,19 +508,19 @@ class LLMAdapter:
         logger.info(f"Starting processing for {len(tasks_with_indices)} tasks on model '{model_config.name}' (Index {model_idx}).")
         
         batch_results = []
-        max_workers = min(len(tasks_with_indices), self.max_workers_per_group) # Use configured max workers
+        max_workers = len(tasks_with_indices)
 
         try:
             with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix=f"LLMWorker_M{model_idx}") as executor:
                 # Map future to original index for result correlation
                 future_to_original_index = {
                     executor.submit(self.execute_llm_syscall, model_idx, llm_syscall): original_idx
-                    for original_idx, llm_syscall in tasks_with_indices
+                    for original_idx, llm_syscall in enumerate(tasks_with_indices)
                 }
 
                 for future in concurrent.futures.as_completed(future_to_original_index):
                     original_idx = future_to_original_index[future]
-                    syscall_obj = next(s for o_idx, s in tasks_with_indices if o_idx == original_idx) # Find the original syscall object
+                    syscall_obj = tasks_with_indices[original_idx]
 
                     try:
                         # execute_llm_syscall now returns (syscall_obj, LLMResponse)

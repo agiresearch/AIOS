@@ -16,6 +16,9 @@ payload1 = {
     "agent_name": "test_agent_1",
     "query_type": "llm",
     "query_data": {
+        "llms": [
+            {"name": "gpt-4o", "backend": "openai"},
+        ],
         "messages": [{"role": "user", "content": "What is the capital of France?"}],
         "action_type": "chat",
         "message_return_type": "text",
@@ -28,6 +31,9 @@ payload2 = {
     "agent_name": "test_agent_2",
     "query_type": "llm",
     "query_data": {
+        "llms": [
+            {"name": "gpt-4.1", "backend": "openai"},
+        ],
         "messages": [{"role": "user", "content": "What is the capital of United States?"}],
         "action_type": "chat",
         "message_return_type": "text",
