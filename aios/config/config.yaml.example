@@ -6,7 +6,6 @@ api_keys:
   gemini: ""    # Google Gemini API key
   groq: ""      # Groq API key
   anthropic: "" # Anthropic API key
-  novita: ""    # Novita AI API key
   huggingface:
     auth_token: ""  # Your HuggingFace auth token for authorized models
     cache_dir: ""   # Your cache directory for saving huggingface models
@@ -16,15 +15,15 @@ llms:
   models:
 
     # OpenAI Models
-    - name: "gpt-4o"
-      backend: "openai"
+    # - name: "gpt-4o"
+    #   backend: "openai"
 
-    - name: "gpt-4o-mini"
-      backend: "openai"
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
 
     # Google Models
-    - name: "gemini-2.0-flash"
-      backend: "google"
+    # - name: "gemini-2.0-flash"
+    #   backend: "google"
 
 
     # Anthropic Models
@@ -32,9 +31,9 @@ llms:
     #   backend: "anthropic"
 
     # Ollama Models
-    - name: "qwen2.5:72b"
+    - name: "qwen2.5:7b"
       backend: "ollama"
-      hostname: "http://localhost:8091" # Make sure to run ollama server
+      hostname: "http://localhost:11434" # Make sure to run ollama server
 
     # HuggingFace Models
     # - name: "meta-llama/Llama-3.1-8B-Instruct"
@@ -43,7 +42,7 @@ llms:
     #   eval_device: "cuda:0"  # Device for model evaluation
     
     # vLLM Models
-    # To use vllm as backend, you need to install vllm and run the vllm server: https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html
+    # To use vllm as backend, you need to install vllm and run the vllm server https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html
     # An example command to run the vllm server is:
     # vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8091
     # - name: "meta-llama/Llama-3.1-8B-Instruct"
@@ -51,34 +50,33 @@ llms:
     #  hostname: "http://localhost:8091"
 
     # SGLang Models
-    # To use sglang as backend, you need to install sglang and run the sglang server: https://docs.sglang.ai/backend/openai_api_completions.html
-    # python3 -m sglang.launch_server --model-path Qwen/Qwen2.5-72B-Instruct --grammar-backend outlines --tool-call-parser qwen25 --host 127.0.0.1 --port 30001 --tp 4 --disable-custom-all-reduce
+    # python3 -m sglang.launch_server --model-path Qwen/Qwen2.5-7B-Instruct --tool-call-parser qwen25 --host 127.0.0.1 --port 30001
 
-    - name: "Qwen/Qwen2.5-72B-Instruct"
-      backend: "sglang"
-      hostname: "http://localhost:30001/v1"
+    # - name: "Qwen/Qwen2.5-VL-72B-Instruct"
+    #   backend: "sglang"
+    #   hostname: "http://localhost:30001/v1"
 
-    # Novita Models
-    - name: "meta-llama/llama-4-scout-17b-16e-instruct"
-      backend: "novita"
+  router:
+    strategy: "smart" # choose from [sequential, smart]
+    bootstrap_url: "https://drive.google.com/file/d/1SF7MAvtnsED7KMeMdW3JDIWYNGPwIwL7/view"
 
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   use_context_manager: false
 
 memory:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   
 storage:
   root_dir: "root"
   use_vector_db: true
 
 scheduler:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
 
 agent_factory:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   max_workers: 64  
   
 server:
-  host: "localhost"
+  host: "0.0.0.0"
   port: 8000

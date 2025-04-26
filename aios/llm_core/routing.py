@@ -12,6 +12,8 @@ import json
 
 from threading import Lock
 
+import openai
+
 import os
 
 from pulp import (
@@ -135,6 +137,48 @@ def get_token_lengths(queries: List[List[Dict[str, Any]]]):
     """
     return [token_counter(model="gpt-4o-mini", messages=query) for query in queries]
 
+def messages_to_query(messages: List[Dict[str, str]],
+                      strategy: str = "last_user") -> str:
+    """
+    Convert OpenAI ChatCompletion-style messages into a single query string.
+    strategy:
+      - "last_user": last user message only
+      - "concat_users": concat all user messages
+      - "concat_all": concat role-labelled full history
+      - "summarize": use GPT to summarize into a short query
+    """
+    if strategy == "last_user":
+        for msg in reversed(messages):
+            if msg["role"] == "user":
+                return msg["content"].strip()
+        return ""  # fallback
+
+    if strategy == "concat_users":
+        return "\n\n".join(m["content"].strip()
+                           for m in messages if m["role"] == "user")
+
+    if strategy == "concat_all":
+        return "\n\n".join(f'{m["role"].upper()}: {m["content"].strip()}'
+                           for m in messages)
+
+    if strategy == "summarize":
+        full_text = "\n\n".join(f'{m["role"]}: {m["content"]}'
+                                for m in messages)
+        rsp = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": ("You are a helpful assistant that rewrites a "
+                             "dialogue into a concise search query.")},
+                {"role": "user", "content": full_text}
+            ],
+            max_tokens=32,
+            temperature=0.2
+        )
+        return rsp.choices[0].message.content.strip()
+
+    raise ValueError("unknown strategy")
+
 class SmartRouting:
     """Cost‑/performance‑aware LLM router.
 
@@ -216,9 +260,12 @@ class SmartRouting:
 
             for idx, item in enumerate(tqdm(data, desc=f"Ingesting historical queries")):
                 query = item["query"]
+                model_metadatas = item["outputs"]
+                for model_metadata in model_metadatas:
+                    model_metadata.pop("prediction")
                 meta = {
                     "input_token_length": item["input_token_length"],
-                    "models": json.dumps(item["outputs"]),  # store raw list
+                    "models": json.dumps(model_metadatas),  # store raw list
                 }
                 for output in item["outputs"]:
                     total_count += 1
@@ -232,13 +279,13 @@ class SmartRouting:
             print(f"[SmartRouting]: {total_count} historical queries ingested.")
 
         # ..................................................................
-        def query_similar(self, query: str | List[str], split: str = "train", n_results: int = 16):
-            collection = getattr(self, f"{split}_collection")
+        def query_similar(self, query: str | List[str], n_results: int = 16):
+            collection = self.collection
             return collection.query(query_texts=query if isinstance(query, list) else [query], n_results=n_results)
 
         # ..................................................................
         def predict(self, query: str | List[str], model_configs: List[Dict[str, Any]], n_similar: int = 16):
-            similar = self.query_similar(query, "train", n_results=n_similar)
+            similar = self.query_similar(query, n_results=n_similar)
             perf_mat, len_mat = [], []
             for meta_group in similar["metadatas"]:
                 model_stats: dict[str, dict[str, float]] = defaultdict(lambda: {"total_len": 0, "cnt": 0, "correct": 0})
@@ -272,6 +319,7 @@ class SmartRouting:
                 n_similar: int = 16,
                 ):
         self.llm_configs = llm_configs
+        self.available_models = [llm.name for llm in llm_configs]
         self.bootstrap_url = bootstrap_url
         self.performance_requirement = performance_requirement
         self.n_similar = n_similar
@@ -295,7 +343,7 @@ class SmartRouting:
             # Pick cheapest among qualified
             return min(qualified, key=lambda i: cost[i])
         # Else, fallback – best performance overall
-        return int(np.argmax(perf)) if len(perf) else None
+        return int(np.argmax(perf)) if len(perf) else 0
 
     # .....................................................................
     # Public API – batch selection
@@ -307,8 +355,10 @@ class SmartRouting:
 
         input_lens = get_token_lengths(queries)
         chosen_indices: list[int] = []
+        
+        converted_queries = [messages_to_query(query) for query in queries]
 
-        for q, q_len, candidate_cfgs in zip(queries, input_lens, selected_llm_lists):
+        for q, q_len, candidate_cfgs in zip(converted_queries, input_lens, selected_llm_lists):
             perf, out_len = self.store.predict(q, candidate_cfgs, n_similar=self.n_similar)
             perf, out_len = perf[0], out_len[0]  # unpack single query
 
@@ -326,12 +376,9 @@ class SmartRouting:
 
             # Map back to global llm_configs index
             sel_name = candidate_cfgs[sel_local_idx]["name"]
-            for global_idx, global_cfg in enumerate(self.llm_configs):
-                if global_cfg["name"] == sel_name:
-                    chosen_indices.append(global_idx)
-                    break
-            else:
-                chosen_indices.append(0)
+            
+            sel_idx = self.available_models.index(sel_name)
+            chosen_indices.append(sel_idx)
 
         return chosen_indices
 
