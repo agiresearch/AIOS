@@ -20,8 +20,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-      - uses: actions/checkout@v4
-
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -66,7 +64,7 @@ jobs:
       - name: Run tests (only those in */llm/* with “ollama” in filename)
         run: |
           mkdir -p test_results
-          mapfile -t TESTS < <(find tests -type f -path "*/llm/*" -name "*ollama*.py")
+          mapfile -t TESTS < <(find tests -type f -path "*/llm/ollama/*" -name "*.py")
           for t in "${TESTS[@]}"; do
             echo "▶️  Running $t"
             python "$t" | tee -a test_results/ollama_tests.log
