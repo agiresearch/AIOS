@@ -57,7 +57,7 @@ llms:
     #   hostname: "http://localhost:30001/v1"
 
   router:
-    strategy: "smart" # choose from [sequential, smart]
+    strategy: "sequential" # choose from [sequential, smart]
     bootstrap_url: "https://drive.google.com/file/d/1SF7MAvtnsED7KMeMdW3JDIWYNGPwIwL7/view"
 
   log_mode: "console" # choose from [console, file]

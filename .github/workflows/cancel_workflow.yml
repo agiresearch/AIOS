@@ -1,0 +1,21 @@
+name: Cancel PR Workflows on Merge
+
+on:
+  pull_request_target:
+    types: [ closed ]       # fires when a PR is closed (merged or not)
+
+permissions:
+  actions: write            # required to cancel other workflows
+
+jobs:
+  cancel:
+    if: github.event.pull_request.merged == true   # only on successful merge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous PR runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          workflow_id: all
+          access_token: ${{ github.token }}       # built-in token is enough
+          pr_number: ${{ github.event.pull_request.number }}
+          ignore_sha: true

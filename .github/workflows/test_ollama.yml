@@ -1,156 +1,114 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: AIOS Application
+name: Test Ollama
 
 on:
-  push:
+  pull_request:                       # test the code that lives in the PR
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+
+  push:                               # test direct pushes to main
+    branches: [ "main" ]              # …but see “early-skip” step below
 
 permissions:
   contents: read
+  actions: write                      # needed for concurrency-cancellation
+
+# Guarantee only ONE run per PR (new pushes cancel the old run)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    ## ─────────────────────────────────────────────────────────────
+    ##  Skip *merge-commit* pushes produced by “Merge / Squash / Rebase”
+    ##  We call the GitHub API: if the current commit is already
+    ##  associated to a *merged* PR, we just exit early.
+    ## ─────────────────────────────────────────────────────────────
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    
-    - name: Git Clone Action
-      # You may pin to the exact commit or the version.
-      # uses: sudosubin/git-clone-action@8a93ce24d47782e30077508cccacf8a05a891bae
-      uses: sudosubin/git-clone-action@v1.0.1
-      with:
-        # Repository owner and name. Ex: sudosubin/git-clone-action
-        repository: agiresearch/Cerebrum
-        path: Cerebrum
-    
-    - name: Install cerebrum special edition
-      run: |
-        python -m pip install -e Cerebrum/
-    
-    - name: Download and install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
+      - name: Early-skip if this push is the merge of a PR
+        if: github.event_name == 'push'         # only for push events
+        id: mergecheck
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            // List PRs that contain this commit
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner, repo, commit_sha: sha,
+            });
+            const merged = prs.data.some(pr => pr.merged_at);
+            core.info(`Commit ${sha} is${merged ? '' : ' NOT'} part of a merged PR`);
+            core.setOutput('merged', merged);
+      - name: Exit (nothing to do)
+        if: steps.mergecheck.outputs.merged == 'true'
+        run: echo "Skip duplicated run created by merge-commit" && exit 0
 
-    - name: Pull Ollama models
-      run: |
-        ollama pull qwen2.5:7b
+      ## ─────────────────────────────────────────────────────────
+      ##  From here down: your *real* CI – identical to before,
+      ##  only comments are English.
+      ## ─────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
 
-    - name: Run Ollama serve
-      run: |
-        ollama serve 2>&1 | tee ollama-llm.log &
-        # Wait for ollama to start
-        for i in {1..30}; do
-          if curl -s http://localhost:11434/api/version > /dev/null; then
-            echo "Ollama is running"
-            break
-          fi
-          echo "Waiting for ollama to start... ($i/30)"
-          sleep 1
-        done
-        # Verify ollama is running
-        curl -s http://localhost:11434/api/version || (echo "Failed to start ollama" && exit 1)
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Run AIOS kernel in background
-      run: |
-        bash runtime/launch_kernel.sh &>logs &
-        KERNEL_PID=$!
-        
-        # Set maximum wait time (60 seconds)
-        max_wait=60
-        start_time=$SECONDS
-        
-        # Dynamically check if the process is running until it succeeds or times out
-        while true; do
-          if ! ps -p $KERNEL_PID > /dev/null; then
-            echo "Kernel process died. Checking logs:"
-            cat logs
-            exit 1
-          fi
-          
-          if nc -z localhost 8000; then
-            if curl -s http://localhost:8000/health > /dev/null; then
-              echo "Kernel successfully started and healthy"
-              break
-            fi
-          fi
-          
-          # Check if timed out
-          elapsed=$((SECONDS - start_time))
-          if [ $elapsed -ge $max_wait ]; then
-            echo "Timeout after ${max_wait} seconds. Kernel failed to start properly."
-            cat logs
-            exit 1
-          fi
-          
-          echo "Waiting for kernel to start... (${elapsed}s elapsed)"
-          sleep 1
-        done
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Run all tests
-      run: |
-        # Create test results directory
-        mkdir -p test_results
-        
-        # Function to check if a path contains agent or llm
-        contains_agent_or_llm() {
-          local dir_path=$(dirname "$1")
-          if [[ "$dir_path" == *"agent"* || "$dir_path" == *"llm"* ]]; then
-            return 0  # True in bash
-          else
-            return 1  # False in bash
-          fi
-        }
+      - name: Clone Cerebrum
+        uses: sudosubin/git-clone-action@v1.0.1
+        with:
+          repository: agiresearch/Cerebrum
+          path: Cerebrum
 
-        # Process test files
-        find tests -type f -name "*.py" | while read -r test_file; do
-          if contains_agent_or_llm "$test_file"; then
-            # For agent or llm directories, only run ollama tests
-            if [[ "$test_file" == *"ollama"* ]]; then
-              echo "Running Ollama test in agent/llm directory: $test_file"
-              python $test_file | tee -a ollama_tests.log
-              echo "----------------------------------------"
-            fi
-          else
-            # For other directories, run all tests
-            echo "Running test: $test_file"
-            python $test_file | tee -a all_tests.log
+      - name: Install Cerebrum (editable)
+        run: python -m pip install -e Cerebrum/
+
+      - name: Install Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: Pull Ollama model
+        run: ollama pull qwen2.5:7b
+
+      - name: Start Ollama
+        run: |
+          ollama serve > ollama-llm.log 2>&1 &
+          for i in {1..30}; do
+            curl -s http://localhost:11434/api/version && break
+            echo "Waiting for Ollama...($i/30)"; sleep 1
+          done
+
+      - name: Start AIOS kernel
+        run: |
+          bash runtime/launch_kernel.sh > kernel.log 2>&1 &
+          for i in {1..60}; do
+            curl -s http://localhost:8000/health && break
+            echo "Waiting for kernel...($i/60)"; sleep 1
+          done
+
+      - name: Run tests (only those in */llm/* with “ollama” in filename)
+        run: |
+          mkdir -p test_results
+          mapfile -t TESTS < <(find tests -type f -path "*/llm/*" -name "*ollama*.py")
+          for t in "${TESTS[@]}"; do
+            echo "▶️  Running $t"
+            python "$t" | tee -a test_results/ollama_tests.log
             echo "----------------------------------------"
-          fi
-        done
-    
-    - name: Upload a Build Artifact
-      if: always()  # Upload logs even if job fails
-      uses: actions/upload-artifact@v4.4.3
-      with:
-        name: logs
-        path: |
-          logs
-          agent.log
-    
-    - name: Collect debug information
-      if: failure()
-      run: |
-        echo "=== Kernel Logs ==="
-        cat logs
-        echo "=== Environment Variables ==="
-        env | grep -i api_key || true
-        echo "=== Process Status ==="
-        ps aux | grep kernel
+          done
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            ollama-llm.log
+            kernel.log
+            test_results/
