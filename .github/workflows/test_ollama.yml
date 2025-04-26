@@ -20,36 +20,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    ## ─────────────────────────────────────────────────────────────
-    ##  Skip *merge-commit* pushes produced by “Merge / Squash / Rebase”
-    ##  We call the GitHub API: if the current commit is already
-    ##  associated to a *merged* PR, we just exit early.
-    ## ─────────────────────────────────────────────────────────────
-    steps:
-      - name: Early-skip if this push is the merge of a PR
-        if: github.event_name == 'push'         # only for push events
-        id: mergecheck
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ github.token }}
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            // List PRs that contain this commit
-            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-              owner, repo, commit_sha: sha,
-            });
-            const merged = prs.data.some(pr => pr.merged_at);
-            core.info(`Commit ${sha} is${merged ? '' : ' NOT'} part of a merged PR`);
-            core.setOutput('merged', merged);
-      - name: Exit (nothing to do)
-        if: steps.mergecheck.outputs.merged == 'true'
-        run: echo "Skip duplicated run created by merge-commit" && exit 0
-
-      ## ─────────────────────────────────────────────────────────
-      ##  From here down: your *real* CI – identical to before,
-      ##  only comments are English.
-      ## ─────────────────────────────────────────────────────────
       - uses: actions/checkout@v4
 
       - name: Set up Python 3.10
