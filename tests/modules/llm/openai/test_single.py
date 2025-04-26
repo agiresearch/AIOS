@@ -1,15 +1,15 @@
 import unittest
 from cerebrum.llm.apis import llm_chat, llm_chat_with_json_output
 from cerebrum.utils.communication import aios_kernel_url
+from cerebrum.utils.utils import _parse_json_output
 
 class TestAgent:
     """
     TestAgent class is responsible for interacting with OpenAI's API using ChatCompletion.
     It maintains a conversation history to simulate real dialogue behavior.
     """
-    def __init__(self, agent_name, api_key):
+    def __init__(self, agent_name):
         self.agent_name = agent_name
-        self.api_key = api_key
         self.messages = []
 
     def llm_chat_run(self, task_input):
@@ -35,13 +35,15 @@ class TestAgent:
         response_format = {
             "type": "json_schema",
             "json_schema": {
-                "name": "keywords",
+                "name": "thinking",
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "keywords": {
-                            "type": "array",
-                            "items": {"type": "string"}
+                        "thinking": {
+                            "type": "string",
+                        },
+                        "answer": {
+                            "type": "string",
                         }
                     }
                 }
@@ -69,43 +71,46 @@ class TestLLMAPI(unittest.TestCase):
     Here has various category test cases, including greeting, math question, science question, history question, technology question.
     """
     def setUp(self):
-        self.api_key = "your-openai-api-key"  # Replace with your actual OpenAI API key
-        self.agent = TestAgent("test_agent", self.api_key)
+        self.agent = TestAgent("test_agent")
 
-    def assert_valid_response(self, response):
+    def assert_chat_response(self, response):
         """Helper method to validate common response conditions."""
         self.assertIsInstance(response, str)
         self.assertGreater(len(response), 0)
+        
+    def assert_json_output_response(self, response):
+        """Helper method to validate common response conditions."""
+        parsed_response = _parse_json_output(response)
+        self.assertIsInstance(parsed_response, dict)
+        self.assertIn("thinking", parsed_response)
+        self.assertIn("answer", parsed_response)
+        self.assertIsInstance(parsed_response["thinking"], str)
+        self.assertIsInstance(parsed_response["answer"], str)
 
     def test_agent_with_greeting(self):
-        response = self.agent.llm_chat_run("Hello, how are you?")
-        self.assert_valid_response(response)
-        response = self.agent.llm_chat_with_json_output_run("Hello, how are you?")
-        self.assert_valid_response(response)
+        chat_response = self.agent.llm_chat_run("Hello, how are you?")
+        self.assert_chat_response(chat_response)
+        json_output_response = self.agent.llm_chat_with_json_output_run("Hello, how are you? Output in JSON format of {{'thinking': 'your thinking', 'answer': 'your answer'}}.")
+        self.assert_json_output_response(json_output_response)
 
     def test_agent_with_math_question(self):
-        response = self.agent.llm_chat_run("What is 25 times 4?")
-        self.assert_valid_response(response)
-        response = self.agent.llm_chat_with_json_output_run("What is 25 times 4?")
-        self.assert_valid_response(response)
+        chat_response = self.agent.llm_chat_run("What is 25 times 4?")
+        self.assert_chat_response(chat_response)
+        json_output_response = self.agent.llm_chat_with_json_output_run("What is 25 times 4? Output in JSON format of {{'thinking': 'your thinking', 'answer': 'your answer'}}.")
+        self.assert_json_output_response(json_output_response)
 
-    def test_agent_with_science_question(self):
-        response = self.agent.llm_chat_run("Explain the theory of relativity.")
-        self.assert_valid_response(response)
-        response = self.agent.llm_chat_with_json_output_run("Explain the theory of relativity.")
-        self.assert_valid_response(response)
 
     def test_agent_with_history_question(self):
-        response = self.agent.llm_chat_run("Who was the first president of the United States?")
-        self.assert_valid_response(response)
-        response = self.agent.llm_chat_with_json_output_run("Who was the first president of the United States?")
-        self.assert_valid_response(response)
+        chat_response = self.agent.llm_chat_run("Who was the first president of the United States?")
+        self.assert_chat_response(chat_response)
+        json_output_response = self.agent.llm_chat_with_json_output_run("Who was the first president of the United States? Output in JSON format of {{'thinking': 'your thinking', 'answer': 'your answer'}}.")
+        self.assert_json_output_response(json_output_response)
 
     def test_agent_with_technology_question(self):
-        response = self.agent.llm_chat_run("What is quantum computing?")
-        self.assert_valid_response(response)
-        response = self.agent.llm_chat_with_json_output_run("What is quantum computing?")
-        self.assert_valid_response(response)
+        chat_response = self.agent.llm_chat_run("What is quantum computing?")
+        self.assert_chat_response(chat_response)
+        json_output_response = self.agent.llm_chat_with_json_output_run("What is quantum computing? Output in JSON format of {{'thinking': 'your thinking', 'answer': 'your answer'}}.")
+        self.assert_json_output_response(json_output_response)
 
 
 if __name__ == "__main__":

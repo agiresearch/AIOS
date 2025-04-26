@@ -824,12 +824,8 @@ class LLMAdapter:
                     # HfLocalBackend returns a single string. Tool/JSON decoding happens in _process_response.
                     return generated_text, True
 
-                else:
-                    # Should not happen if initialization is correct
-                    logger.error(f"Unsupported model type encountered during execution: {type(model)}")
-                    raise TypeError(f"Unsupported model type: {type(model)}")
 
-        except (APIError, APITimeoutError, APIConnectionError, RateLimitError, AuthenticationError, BadRequestError, litellm.exceptions.LiteLLMException) as api_err:
+        except (APIError, APITimeoutError, APIConnectionError, RateLimitError, AuthenticationError, BadRequestError) as api_err:
             # Catch specific API/LiteLLM errors and re-raise them for _handle_completion_error
             logger.warning(f"[{model_name}] API call failed: {type(api_err).__name__} - {api_err}")
             raise api_err # Propagate the specific error
@@ -923,45 +919,6 @@ class LLMAdapter:
                         )
                 # else: Handle cases where tools were expected but response isn't recognized tool format?
                 #      For now, fall through to text/JSON processing.
-
-            # --- JSON Response Handling ---
-            if message_return_type == "json":
-                if isinstance(completed_response, dict):
-                    # Already a dictionary (e.g., from OpenAI JSON mode)
-                    logger.debug("Received pre-parsed JSON dictionary.")
-                    return LLMResponse(
-                        response_message=completed_response, # The dict is the message
-                        finished=finished,
-                        status_code=200
-                    )
-                elif isinstance(completed_response, str):
-                    # Attempt to parse JSON string
-                    logger.debug("Attempting to parse JSON from string response.")
-                    try:
-                        # Clean potential markdown code fences ```json ... ```
-                        cleaned_response = re.sub(r'^```json\s*([\s\S]*?)\s*```$', r'\1', completed_response.strip(), flags=re.MULTILINE)
-                        json_response = json.loads(cleaned_response)
-                        return LLMResponse(
-                            response_message=json_response,
-                            finished=finished,
-                            status_code=200
-                        )
-                    except json.JSONDecodeError as e:
-                        logger.error(f"Failed to parse JSON response: {e}. Response was: '{completed_response[:500]}...'", exc_info=False)
-                        return LLMResponse(
-                            response_message=None,
-                            error=f"JSONDecodeError: {e}",
-                            finished=True, # Treat as finished with error
-                            status_code=422 # Unprocessable Entity (semantically incorrect format)
-                        )
-                else:
-                    logger.error(f"Expected JSON response, but received type {type(completed_response)}. Content: {str(completed_response)[:200]}...")
-                    return LLMResponse(
-                        response_message=None,
-                        error=f"Type mismatch: Expected str or dict for JSON, got {type(completed_response)}",
-                        finished=True,
-                        status_code=500
-                    )
 
             # --- Plain Text Response Handling ---
             if isinstance(completed_response, str):
