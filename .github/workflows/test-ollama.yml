@@ -47,7 +47,7 @@ jobs:
 
       - name: Run AIOS kernel in background
         run: |
-          bash runtime/launch_kernel.sh &>../kernel.log &
+          bash runtime/launch_kernel.sh &>./kernel.log &
           KERNEL_PID=$!
           
           # Set maximum wait time (60 seconds)
