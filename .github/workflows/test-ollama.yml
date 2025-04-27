@@ -64,11 +64,11 @@ jobs:
       - name: Start AIOS kernel
         run: |
           bash runtime/launch_kernel.sh > kernel.log 2>&1 &
-          for ((i=1;i<=${KERNEL_MAX_WAIT:-180};i++)); do
-            curl -s http://localhost:8000/health && echo "Kernel ready" && break
+          for ((i=1;i<=${KERNEL_MAX_WAIT};i++)); do
+            curl -s http://localhost:8000/status && echo "Kernel ready" && break
             echo "Waiting for kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
           done
-          curl -s http://localhost:8000/health > /dev/null \
+          curl -s http://localhost:8000/status/ > /dev/null \
             || { echo "❌  Kernel failed to start"; exit 1; }
 
       - name: Run tests

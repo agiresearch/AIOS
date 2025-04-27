@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   cancel:
-    if: github.event.pull_request.merged == true   # skip if PR was just closed without merge
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous PR runs

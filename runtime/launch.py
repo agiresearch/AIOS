@@ -342,6 +342,22 @@ def restart_kernel():
         print(f"Stack trace: {traceback.format_exc()}")
         raise
 
+@app.get("/status")
+async def get_server_status():
+    """Check if the server is running and core components are initialized."""
+    inactive_components = [
+        component for component, instance in active_components.items() if not instance
+    ]
+    
+    if not inactive_components:
+        return {"status": "ok", "message": "All core components are active."}
+    else:
+        return {
+            "status": "warning",
+            "message": f"Server is running, but some components are inactive: {', '.join(inactive_components)}",
+            "inactive_components": inactive_components
+        }
+
 @app.post("/core/refresh")
 async def refresh_configuration():
     """Refresh all component configurations"""
