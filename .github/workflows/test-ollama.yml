@@ -1,17 +1,16 @@
+# .github/workflows/test-ollama.yml
 name: Test Ollama
 
 on:
-  pull_request:                       # test the code that lives in the PR
+  pull_request:
     branches: [ "main" ]
-
-  push:                               # test direct pushes to main
-    branches: [ "main" ]              # …but see “early-skip” step below
+  push:
+    branches: [ "main" ]
 
 permissions:
   contents: read
-  actions: write                      # needed for concurrency-cancellation
+  actions: write
 
-# Guarantee only ONE run per PR (new pushes cancel the old run)
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -19,7 +18,14 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      OLLAMA_MAX_WAIT: 60
+      KERNEL_MAX_WAIT: 60
+
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -52,23 +58,27 @@ jobs:
             curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
             echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
           done
-          curl -s http://localhost:11434/api/version > /dev/null || { echo "Ollama failed to start"; exit 1; }
+          curl -s http://localhost:11434/api/version > /dev/null \
+            || { echo "❌  Ollama failed to start"; exit 1; }
 
-      # ─── Kernel ───────────────────────────────────
       - name: Start AIOS kernel
         run: |
           bash runtime/launch_kernel.sh > kernel.log 2>&1 &
-          for ((i=1;i<=${KERNEL_MAX_WAIT};i++)); do
+          for ((i=1;i<=${KERNEL_MAX_WAIT:-180};i++)); do
             curl -s http://localhost:8000/health && echo "Kernel ready" && break
             echo "Waiting for kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
           done
-          curl -s http://localhost:8000/health > /dev/null || { echo "Kernel failed to start"; exit 1; }
-
+          curl -s http://localhost:8000/health > /dev/null \
+            || { echo "❌  Kernel failed to start"; exit 1; }
 
       - name: Run tests
         run: |
           mkdir -p test_results
-          mapfile -t TESTS < <(find tests -type f -path "*/llm/ollama/*" -name "*.py")
+          mapfile -t TESTS < <(find . -type f -path "*/llm/ollama/*" -name "*.py")
+          if [ "${#TESTS[@]}" -eq 0 ]; then
+            echo "⚠️  No llm/ollama tests found – skipping."
+            exit 0
+          fi
           for t in "${TESTS[@]}"; do
             echo "▶️  Running $t"
             python "$t" | tee -a test_results/ollama_tests.log
