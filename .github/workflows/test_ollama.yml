@@ -48,20 +48,24 @@ jobs:
       - name: Start Ollama
         run: |
           ollama serve > ollama-llm.log 2>&1 &
-          for i in {1..30}; do
-            curl -s http://localhost:11434/api/version && break
-            echo "Waiting for Ollama...($i/30)"; sleep 1
+          for ((i=1;i<=${OLLAMA_MAX_WAIT};i++)); do
+            curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
+            echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
           done
+          curl -s http://localhost:11434/api/version > /dev/null || { echo "Ollama failed to start"; exit 1; }
 
+      # ─── Kernel ───────────────────────────────────
       - name: Start AIOS kernel
         run: |
           bash runtime/launch_kernel.sh > kernel.log 2>&1 &
-          for i in {1..60}; do
-            curl -s http://localhost:8000/health && break
-            echo "Waiting for kernel...($i/60)"; sleep 1
+          for ((i=1;i<=${KERNEL_MAX_WAIT};i++)); do
+            curl -s http://localhost:8000/health && echo "Kernel ready" && break
+            echo "Waiting for kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
           done
+          curl -s http://localhost:8000/health > /dev/null || { echo "Kernel failed to start"; exit 1; }
 
-      - name: Run tests (only those in */llm/* with “ollama” in filename)
+
+      - name: Run tests
         run: |
           mkdir -p test_results
           mapfile -t TESTS < <(find tests -type f -path "*/llm/ollama/*" -name "*.py")
