@@ -12,6 +12,8 @@ import json
 
 from threading import Lock
 
+import openai
+
 import os
 
 from pulp import (
@@ -22,6 +24,13 @@ from pulp import (
     PULP_CBC_CMD,
     value
 )
+
+import litellm
+
+import tempfile
+import gdown
+
+from litellm import token_counter
 
 """
 Load balancing strategies. Each class represents a strategy which returns the
@@ -37,9 +46,9 @@ used whenever the strategy is called in __call__, and then return the name of
 the specific LLM endpoint.
 """
 
-class RouterStrategy(Enum):
-    Sequential = 0,
-    Smart = 1
+class RouterStrategy:
+    Sequential = "sequential"
+    Smart = "smart"
 
 class SequentialRouting:
     """
@@ -75,13 +84,13 @@ class SequentialRouting:
     # def __call__(self):
     #     return self.get_model()
 
-    def get_model_idxs(self, selected_llms: List[str], n_queries: int=1):
+    def get_model_idxs(self, selected_llm_lists: List[List[Dict[str, Any]]], queries: List[List[Dict[str, Any]]]):
         """
         Selects model indices from the available LLM configurations using a round-robin strategy.
 
         Args:
-            selected_llms (List[str]): A list of selected LLM names from which models will be chosen.
-            n_queries (int): The number of queries to distribute among the selected models. Defaults to 1.
+            selected_llm_lists (List[List[str]]): A list of selected LLM names from which models will be chosen.
+            queries (List[List[Dict[str, Any]]]): A list of queries to distribute among the selected models.
 
         Returns:
             List[int]: A list of indices corresponding to the selected models in `self.llm_configs`.
@@ -90,477 +99,304 @@ class SequentialRouting:
         # current  = self.selected_llms[self.idx]
         model_idxs = []
         
-        # breakpoint()
+        available_models = [llm.name for llm in self.llm_configs]
         
-        for _ in range(n_queries):
-            current = selected_llms[self.idx]
-            for i, llm_config in enumerate(self.llm_configs):
-                # breakpoint()
-                if llm_config["name"] == current["name"]:
-                    model_idxs.append(i)
+        n_queries = len(queries)
+        
+        for i in range(n_queries):
+            selected_llm_list = selected_llm_lists[i]
+            
+            if not selected_llm_list or len(selected_llm_list) == 0:
+                model_idxs.append(0)
+                continue
+            
+            model_idx = -1
+            for selected_llm in selected_llm_list:
+                if selected_llm["name"] in available_models:
+                    model_idx = available_models.index(selected_llm["name"])
                     break
-            self.idx = (self.idx + 1) % len(selected_llms)
             
-        # breakpoint()
-        
+            model_idxs.append(model_idx)
+
         return model_idxs
-        
-        bucket_size = max_output_length / num_buckets
-        
-        total_queries = len(test_data)
-        model_metrics = defaultdict(lambda: {
-            "correct_predictions": 0,
-            "total_predictions": 0,
-            "correct_length_predictions": 0,
-            "total_length_predictions": 0,
-            "correct_bucket_predictions": 0,
-        })
-        
-        # Initialize metrics for each model
-        model_metrics = defaultdict(lambda: {
-            "correct_predictions": 0,
-            "total_predictions": 0,
-            "correct_length_predictions": 0, 
-            "total_length_predictions": 0,
-            "correct_bucket_predictions": 0
-        })
-        
-        for test_item in tqdm(test_data, desc="Evaluating"):
-            similar_results = self.query_similar(
-                test_item["query"], 
-                "train", 
-                n_results=n_similar
-            )
-            
-            model_stats = defaultdict(lambda: {
-                "total_length": 0,
-                "count": 0,
-                "correct_count": 0
-            })
-            
-            
-            for metadata in similar_results["metadatas"][0]:
-                for model_info in json.loads(metadata["models"]):
-                    model_name = model_info["model_name"]
-                    stats = model_stats[model_name]
-                    stats["total_length"] += model_info["output_token_length"]
-                    stats["count"] += 1
-                    stats["correct_count"] += int(model_info["correctness"])
-            
-            for model_output in test_item["outputs"]:
-                model_name = model_output["model_name"]
-                if model_name in model_stats:
-                    stats = model_stats[model_name]
-                    
-                    if stats["count"] > 0:
-                        predicted_correctness = stats["correct_count"] / stats["count"] >= 0.5
-                        actual_correctness = model_output["correctness"]
-                        
-                        if predicted_correctness == actual_correctness:
-                            model_metrics[model_name]["correct_predictions"] += 1
-                        
-                        predicted_length = stats["total_length"] / stats["count"]
-                        
-                        predicted_bucket = min(int(predicted_length / bucket_size), num_buckets - 1)
-                        
-                        actual_length = model_output["output_token_length"]
-                        
-                        # length_error = abs(predicted_length - actual_length)
-                        actual_bucket = min(int(actual_length / bucket_size), num_buckets - 1)
-                        
-                        if predicted_bucket == actual_bucket:
-                            model_metrics[model_name]["correct_length_predictions"] += 1
-                            
-                        if abs(predicted_bucket - actual_bucket) <= 1:
-                            model_metrics[model_name]["correct_bucket_predictions"] += 1
-                        
-                        model_metrics[model_name]["total_predictions"] += 1
-                        model_metrics[model_name]["total_length_predictions"] += 1
-        
-        results = {}
-        
-        # Calculate overall accuracy across all models
-        total_correct_predictions = sum(metrics["correct_predictions"] for metrics in model_metrics.values())
-        total_correct_length_predictions = sum(metrics["correct_length_predictions"] for metrics in model_metrics.values())
-        total_correct_bucket_predictions = sum(metrics["correct_bucket_predictions"] for metrics in model_metrics.values())
-        total_predictions = sum(metrics["total_predictions"] for metrics in model_metrics.values())
-        
-        if total_predictions > 0:
-            results["overall"] = {
-                "performance_accuracy": total_correct_predictions / total_predictions,
-                "length_accuracy": total_correct_length_predictions / total_predictions,
-                "bucket_accuracy": total_correct_bucket_predictions / total_predictions
-            }
-        for model_name, metrics in model_metrics.items():
-            total = metrics["total_predictions"]
-            if total > 0:
-                results[model_name] = {
-                    "performance_accuracy": metrics["correct_predictions"] / total,
-                    "length_accuracy": metrics["correct_length_predictions"] / total,
-                    "bucket_accuracy": metrics["correct_bucket_predictions"] / total
-                }
-        results["overall"] = {
-            "performance_accuracy": total_correct_predictions / total_predictions,
-            "length_accuracy": total_correct_length_predictions / total_predictions,
-            "bucket_accuracy": total_correct_bucket_predictions / total_predictions
-        }
-        
-        return results
+
+def get_cost_per_token(model_name: str) -> tuple[float, float]:
+    """Fetch the latest *per‑token* input/output pricing from LiteLLM.
+
+    This pulls the live `model_cost` map which LiteLLM refreshes from
+    `api.litellm.ai`, so you always have current pricing information.
+    If the model is unknown, graceful fall‑back to zero cost.
+    """
+    cost_map = litellm.model_cost  # Live dict {model: {input_cost_per_token, output_cost_per_token, ...}}
+    info = cost_map.get(model_name, {})
+    return info.get("input_cost_per_token", 0.0), info.get("output_cost_per_token", 0.0)
+
+def get_token_lengths(queries: List[List[Dict[str, Any]]]):
+    """
+    Get the token lengths of a list of queries.
+    """
+    return [token_counter(model="gpt-4o-mini", messages=query) for query in queries]
+
+def messages_to_query(messages: List[Dict[str, str]],
+                      strategy: str = "last_user") -> str:
+    """
+    Convert OpenAI ChatCompletion-style messages into a single query string.
+    strategy:
+      - "last_user": last user message only
+      - "concat_users": concat all user messages
+      - "concat_all": concat role-labelled full history
+      - "summarize": use GPT to summarize into a short query
+    """
+    if strategy == "last_user":
+        for msg in reversed(messages):
+            if msg["role"] == "user":
+                return msg["content"].strip()
+        return ""  # fallback
+
+    if strategy == "concat_users":
+        return "\n\n".join(m["content"].strip()
+                           for m in messages if m["role"] == "user")
+
+    if strategy == "concat_all":
+        return "\n\n".join(f'{m["role"].upper()}: {m["content"].strip()}'
+                           for m in messages)
+
+    if strategy == "summarize":
+        full_text = "\n\n".join(f'{m["role"]}: {m["content"]}'
+                                for m in messages)
+        rsp = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system",
+                 "content": ("You are a helpful assistant that rewrites a "
+                             "dialogue into a concise search query.")},
+                {"role": "user", "content": full_text}
+            ],
+            max_tokens=32,
+            temperature=0.2
+        )
+        return rsp.choices[0].message.content.strip()
+
+    raise ValueError("unknown strategy")
 
 class SmartRouting:
-    """
-    The SmartRouting class implements a cost-performance optimized selection strategy for LLM requests.
-    It uses historical performance data to predict which models will perform best for a given query
-    while minimizing cost.
+    """Cost‑/performance‑aware LLM router.
 
-    This strategy ensures that models are selected based on their predicted performance and cost,
-    optimizing for both quality and efficiency.
-
-    Args:
-        llm_configs (List[Dict[str, Any]]): A list of LLM configurations, where each dictionary contains 
-                                           model information such as name, backend, cost parameters, etc.
-        performance_requirement (float): The minimum performance score required (default: 0.7)
-        n_similar (int): Number of similar queries to retrieve for prediction (default: 16)
+    Two **key upgrades** compared with the original version:
+    1. **Bootstrap local ChromaDB** automatically on first run by pulling a
+       prepared JSONL corpus from Google Drive (uses `gdown`).
+    2. **Live pricing**: no more hard‑coded token prices – we call LiteLLM to
+       fetch up‑to‑date `input_cost_per_token` / `output_cost_per_token` for
+       every model the moment we need them.
     """
-    def __init__(self, llm_configs: List[Dict[str, Any]], performance_requirement: float=0.7, n_similar: int=16):
-        self.num_buckets = 10
-        self.max_output_limit = 1024
-        self.n_similar = n_similar
-        self.bucket_size = self.max_output_limit / self.num_buckets
-        self.performance_requirement = performance_requirement
-        
-        print(f"Performance requirement: {self.performance_requirement}")
-        
-        self.llm_configs = llm_configs
-        self.store = self.QueryStore()
-        self.lock = Lock()
-        
+
+    # ---------------------------------------------------------------------
+    # Construction helpers
+    # ---------------------------------------------------------------------
+
     class QueryStore:
-        """
-        Internal class for storing and retrieving query embeddings and related model performance data.
-        Uses ChromaDB for vector similarity search.
-        """
-        def __init__(self, 
-                    model_name: str = "BAAI/bge-small-en-v1.5",
-                    persist_directory: str = "llm_router"):
+        """Simple wrapper around ChromaDB persistent collections."""
+
+        def __init__(self,
+                    model_name: str = "all-MiniLM-L6-v2",
+                    persist_directory: str = "llm_router",
+                    bootstrap_url: str | None = None):
+            self._persist_root = os.path.join(os.path.dirname(__file__), persist_directory)
+            os.makedirs(self._persist_root, exist_ok=True)
+
+            self.client = chromadb.PersistentClient(path=self._persist_root)
+            self.embedding_function = embedding_functions.DefaultEmbeddingFunction()
+
+            # Always create/get collections up‑front so we can inspect counts.
+            # self.train_collection = self._get_or_create_collection("train_queries")
+            # self.val_collection = self._get_or_create_collection("val_queries")
+            # self.test_collection = self._get_or_create_collection("test_queries")
+            self.collection = self._get_or_create_collection("historical_queries")
             
-            file_path = os.path.join(os.path.dirname(__file__), persist_directory)
-            self.client = chromadb.PersistentClient(path=file_path)
-            
-            self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
-                model_name=model_name
-            )
-            
+            # If DB is empty and we have a bootstrap URL – populate it.
+            if bootstrap_url and self.collection.count() == 0:
+                self._bootstrap_from_drive(bootstrap_url)
+
+        # .................................................................
+        # Chroma helpers
+        # .................................................................
+
+        def _get_or_create_collection(self, name: str):
             try:
-                self.train_collection = self.client.get_collection(
-                    name="train_queries",
-                    embedding_function=self.embedding_function
-                )
-            except:
-                self.train_collection = self.client.create_collection(
-                    name="train_queries",
-                    embedding_function=self.embedding_function
-                )
-            
-            try:
-                self.val_collection = self.client.get_collection(
-                    name="val_queries",
-                    embedding_function=self.embedding_function
-                )
-            except:
-                self.val_collection = self.client.create_collection(
-                    name="val_queries",
-                    embedding_function=self.embedding_function
-                )
-            
-            try:
-                self.test_collection = self.client.get_collection(
-                    name="test_queries",
-                    embedding_function=self.embedding_function
-                )
-            except:
-                self.test_collection = self.client.create_collection(
-                    name="test_queries",
-                    embedding_function=self.embedding_function
-                )
-        
-        def add_data(self, data: List[Dict], split: str = "train"):
-            """
-            Add query data to the appropriate collection.
-            
-            Args:
-                data (List[Dict]): List of query data items
-                split (str): Data split ("train", "val", or "test")
-            """
-            collection = getattr(self, f"{split}_collection")
-            queries = []
-            metadatas = []
-            ids = []
-            
-            correct_count = 0
-            total_count = 0
-            
-            for idx, item in enumerate(tqdm(data, desc=f"Adding {split} data")):
+                return self.client.get_collection(name=name, embedding_function=self.embedding_function)
+            except Exception:
+                return self.client.create_collection(name=name, embedding_function=self.embedding_function)
+
+        # .................................................................
+        # Bootstrap logic – download + ingest
+        # .................................................................
+
+        def _bootstrap_from_drive(self, url_or_id: str):
+            print("\n[SmartRouting] Bootstrapping ChromaDB from Google Drive…\n")
+
+            with tempfile.TemporaryDirectory() as tmp:
+                # NB: gdown accepts both share links and raw IDs.
+                local_path = os.path.join(tmp, "bootstrap.json")
+                
+                gdown.download(url_or_id, local_path, quiet=False, fuzzy=True)
+
+                # Expect JSONL with {"query": ..., "split": "train"|"val"|"test", ...}
+                # split_map: dict[str, list[dict[str, Any]]] = defaultdict(list)
+                with open(local_path, "r") as f:
+                    data = json.load(f)
+
+                self.add_data(data)
+
+                print("[SmartRouting] Bootstrap complete – collections populated.\n")
+
+        # .................................................................
+        # Public data API
+        # .................................................................
+
+        def add_data(self, data: List[Dict[str, Any]]):
+            collection = self.collection
+            queries, metadatas, ids = [], [], []
+            correct_count = total_count = 0
+
+            for idx, item in enumerate(tqdm(data, desc=f"Ingesting historical queries")):
                 query = item["query"]
-                
-                metadata = {
+                model_metadatas = item["outputs"]
+                for model_metadata in model_metadatas:
+                    model_metadata.pop("prediction")
+                meta = {
                     "input_token_length": item["input_token_length"],
-                    "models": []
+                    "models": json.dumps(model_metadatas),  # store raw list
                 }
-                
                 for output in item["outputs"]:
-                    model_info = {
-                        "model_name": output["model_name"],
-                        "correctness": output["correctness"],
-                        "output_token_length": output["output_token_length"]
-                    }
+                    total_count += 1
                     if output["correctness"]:
                         correct_count += 1
-                    total_count += 1
-                    metadata["models"].append(model_info)
-                    
-                metadata["models"] = json.dumps(metadata["models"])
-                
                 queries.append(query)
-                metadatas.append(metadata)
-                ids.append("id"+str(idx))
-            
-            print(f"Correctness: {correct_count} / {total_count}")
-            
-            collection.add(
-                documents=queries,
-                metadatas=metadatas,
-                ids = ids
-            )
-        
-        def query_similar(self, query: str | List[str], split: str = "train", n_results: int = 16):
-            """
-            Find similar queries in the database.
-            
-            Args:
-                query (str|List[str]): Query or list of queries to find similar items for
-                split (str): Data split to search in
-                n_results (int): Number of similar results to return
-                
-            Returns:
-                Dict: Results from ChromaDB query
-            """
-            collection = getattr(self, f"{split}_collection")
-            
-            results = collection.query(
-                query_texts=query if isinstance(query, List) else [query],
-                n_results=n_results
-            )
-            
-            return results
-        
-        def predict(self, query: str | List[str], model_configs: List[Dict], n_similar: int = 16):
-            """
-            Predict performance and output length for models on the given query.
-            
-            Args:
-                query (str|List[str]): Query or list of queries
-                model_configs (List[Dict]): List of model configurations
-                n_similar (int): Number of similar queries to use for prediction
-                
-            Returns:
-                Tuple[np.array, np.array]: Performance scores and length scores
-            """
-            # Get similar results from training data
-            similar_results = self.query_similar(query, "train", n_results=n_similar)
-            
-            total_performance_scores = []
-            total_length_scores = []
-            # Aggregate stats from similar results
-            for i in range(len(similar_results["metadatas"])):
-                model_stats = defaultdict(lambda: {
-                    "total_length": 0,
-                    "count": 0,
-                    "correct_count": 0
-                })
-                metadatas = similar_results["metadatas"][i]
-                for metadata in metadatas:
-                    for model_info in json.loads(metadata["models"]):
-                        model_name = model_info["model_name"]
-                        stats = model_stats[model_name]
-                        stats["total_length"] += model_info["output_token_length"]
-                        stats["count"] += 1
-                        stats["correct_count"] += int(model_info["correctness"])
-            
-                # Calculate performance and length scores for each model
-                performance_scores = []
-                length_scores = []
-                
-                for model in model_configs:
-                    model_name = model["name"]
-                    if model_name in model_stats and model_stats[model_name]["count"] > 0:
-                        stats = model_stats[model_name]
-                        # Calculate performance score as accuracy
-                        perf_score = stats["correct_count"] / stats["count"]
-                        # Calculate average length
-                        avg_length = stats["total_length"] / stats["count"]
-                        
-                        performance_scores.append(perf_score)
-                        length_scores.append(avg_length)
+                metadatas.append(meta)
+                ids.append(f"{idx}")
+
+            collection.add(documents=queries, metadatas=metadatas, ids=ids)
+            print(f"[SmartRouting]: {total_count} historical queries ingested.")
+
+        # ..................................................................
+        def query_similar(self, query: str | List[str], n_results: int = 16):
+            collection = self.collection
+            return collection.query(query_texts=query if isinstance(query, list) else [query], n_results=n_results)
+
+        # ..................................................................
+        def predict(self, query: str | List[str], model_configs: List[Dict[str, Any]], n_similar: int = 16):
+            similar = self.query_similar(query, n_results=n_similar)
+            perf_mat, len_mat = [], []
+            for meta_group in similar["metadatas"]:
+                model_stats: dict[str, dict[str, float]] = defaultdict(lambda: {"total_len": 0, "cnt": 0, "correct": 0})
+                for meta in meta_group:
+                    for m in json.loads(meta["models"]):
+                        s = model_stats[m["model_name"]]
+                        s["total_len"] += m["output_token_length"]
+                        s["cnt"] += 1
+                        s["correct"] += int(m["correctness"])
+                perf_row, len_row = [], []
+                for cfg in model_configs:
+                    stats = model_stats.get(cfg["name"], None)
+                    if stats and stats["cnt"]:
+                        perf_row.append(stats["correct"] / stats["cnt"])
+                        len_row.append(stats["total_len"] / stats["cnt"])
                     else:
-                        # If no data for model, use default scores
-                        performance_scores.append(0.0)
-                        length_scores.append(0.0)
-                
-                total_performance_scores.append(performance_scores)
-                total_length_scores.append(length_scores)
-                    
-            return np.array(total_performance_scores), np.array(total_length_scores)
-    
-    def optimize_model_selection_local(self, model_configs, perf_scores, cost_scores):
-        """
-        Optimize model selection for a single query based on performance and cost.
+                        perf_row.append(0.0)
+                        len_row.append(0.0)
+                perf_mat.append(perf_row)
+                len_mat.append(len_row)
+            return np.array(perf_mat), np.array(len_mat)
+
+    # ---------------------------------------------------------------------
+    # SmartRouting main methods
+    # ---------------------------------------------------------------------
+
+    def __init__(self,
+                llm_configs: List[Dict[str, Any]],
+                bootstrap_url: str ,
+                performance_requirement: float = 0.7,
+                n_similar: int = 16,
+                ):
+        self.llm_configs = llm_configs
+        self.available_models = [llm.name for llm in llm_configs]
+        self.bootstrap_url = bootstrap_url
+        self.performance_requirement = performance_requirement
+        self.n_similar = n_similar
+        self.lock = Lock()
+        self.max_output_limit = 1024
+        self.num_buckets = 10
+        self.bucket_size = self.max_output_limit / self.num_buckets
+
+        # Initialise query store – will self‑populate if empty
+        self.store = self.QueryStore(bootstrap_url=bootstrap_url)
+
+        print(f"[SmartRouting] Ready – performance threshold: {self.performance_requirement}\n")
+
+    # .....................................................................
+    # Local (per‑query) optimisation helper
+    # .....................................................................
+
+    def _select_model_single(self, model_cfgs: List[Dict[str, Any]], perf: np.ndarray, cost: np.ndarray) -> int | None:
+        qualified = [i for i, p in enumerate(perf) if p >= self.performance_requirement]
+        if qualified:
+            # Pick cheapest among qualified
+            return min(qualified, key=lambda i: cost[i])
+        # Else, fallback – best performance overall
+        return int(np.argmax(perf)) if len(perf) else 0
+
+    # .....................................................................
+    # Public API – batch selection
+    # .....................................................................
+
+    def get_model_idxs(self, selected_llm_lists: List[List[Dict[str, Any]]], queries: List[str]):
+        if len(selected_llm_lists) != len(queries):
+            raise ValueError("selected_llm_lists must have same length as queries")
+
+        input_lens = get_token_lengths(queries)
+        chosen_indices: list[int] = []
         
-        Args:
-            model_configs (List[Dict]): List of model configurations
-            perf_scores (np.array): Performance scores for each model
-            cost_scores (np.array): Cost scores for each model
-            
-        Returns:
-            int: Index of the selected model
-        """
-        n_models = len(model_configs)
-    
-        # Get all available models
-        available_models = list(range(n_models))
-        
-        if not available_models:
-            return None
-            
-        # Find models that meet performance requirement
-        qualified_models = []
-        for i in available_models:
-            if perf_scores[i] >= self.performance_requirement:
-                qualified_models.append(i)
-        
-        if qualified_models:
-            # If there are models meeting performance requirement,
-            # select the one with lowest cost
-            min_cost = float('inf')
-            selected_model = None
-            for i in qualified_models:
-                if cost_scores[i] < min_cost:
-                    min_cost = cost_scores[i]
-                    selected_model = i
-            return selected_model
-        else:
-            # If no model meets performance requirement,
-            # select available model with highest performance
-            max_perf = float('-inf')
-            selected_model = None
-            for i in available_models:
-                if perf_scores[i] > max_perf:
-                    max_perf = perf_scores[i]
-                    selected_model = i
-            return selected_model
-    
-    def get_model_idxs(self, selected_llms: List[Dict[str, Any]], queries: List[str]=None, input_token_lengths: List[int]=None):
-        """
-        Selects model indices from the available LLM configurations based on predicted performance and cost.
-        
-        Args:
-            selected_llms (List[Dict]): A list of selected LLM configurations from which models will be chosen.
-            n_queries (int): The number of queries to process. Defaults to 1.
-            queries (List[str], optional): List of query strings. If provided, will be used for model selection.
-            input_token_lengths (List[int], optional): List of input token lengths. Required if queries is provided.
-            
-        Returns:
-            List[int]: A list of indices corresponding to the selected models in `self.llm_configs`.
-        """
-        model_idxs = []
-            
-        # Ensure we have matching number of queries and token lengths
-        if len(queries) != len(input_token_lengths):
-            raise ValueError("Number of queries must match number of input token lengths")
-            
-        # Process each query
-        for i in range(len(queries)):
-            query = queries[i]
-            input_token_length = input_token_lengths[i]
-            
-            # Get performance and length predictions
-            perf_scores, length_scores = self.store.predict(query, selected_llms, n_similar=self.n_similar)
-            perf_scores = perf_scores[0]  # First query's scores
-            length_scores = length_scores[0]  # First query's length predictions
-            
-            # Calculate cost scores
+        converted_queries = [messages_to_query(query) for query in queries]
+
+        for q, q_len, candidate_cfgs in zip(converted_queries, input_lens, selected_llm_lists):
+            perf, out_len = self.store.predict(q, candidate_cfgs, n_similar=self.n_similar)
+            perf, out_len = perf[0], out_len[0]  # unpack single query
+
+            # Dynamic price lookup via LiteLLM
             cost_scores = []
-            for j in range(len(selected_llms)):
-                pred_output_length = length_scores[j]
-                input_cost = input_token_length * selected_llms[j].get("cost_per_input_token", 0)
-                output_cost = pred_output_length * selected_llms[j].get("cost_per_output_token", 0)
-                weighted_score = input_cost + output_cost
-                cost_scores.append(weighted_score)
-            
+            for cfg, pred_len in zip(candidate_cfgs, out_len):
+                in_cost_pt, out_cost_pt = get_cost_per_token(cfg["name"])
+                cost_scores.append(q_len * in_cost_pt + pred_len * out_cost_pt)
             cost_scores = np.array(cost_scores)
+
+            sel_local_idx = self._select_model_single(candidate_cfgs, perf, cost_scores)
+            if sel_local_idx is None:
+                chosen_indices.append(0)  # safe fallback
+                continue
+
+            # Map back to global llm_configs index
+            sel_name = candidate_cfgs[sel_local_idx]["name"]
             
-            # Select optimal model
-            selected_idx = self.optimize_model_selection_local(
-                selected_llms,
-                perf_scores,
-                cost_scores
-            )
-            
-            # Find the index in the original llm_configs
-            for idx, config in enumerate(self.llm_configs):
-                if config["name"] == selected_llms[selected_idx]["name"]:
-                    model_idxs.append(idx)
-                    break
-            else:
-                # If not found, use the first model as fallback
-                model_idxs.append(0)
-        
-        return model_idxs
-    
-    def optimize_model_selection_global(self, perf_scores, cost_scores):
-        """
-        Globally optimize model selection for multiple queries using linear programming.
-        
-        Args:
-            perf_scores (np.array): Performance scores matrix [queries × models]
-            cost_scores (np.array): Cost scores matrix [queries × models]
-            
-        Returns:
-            np.array: Array of selected model indices for each query
-        """
-        n_models = len(self.llm_configs)
-        n_queries = len(perf_scores)
-        
+            sel_idx = self.available_models.index(sel_name)
+            chosen_indices.append(sel_idx)
+
+        return chosen_indices
+
+    # .....................................................................
+    # Global optimisation (unchanged except for cost lookup)
+    # .....................................................................
+
+    def optimize_model_selection_global(self, perf_scores: np.ndarray, cost_scores: np.ndarray):
+        n_queries, n_models = perf_scores.shape
         prob = LpProblem("LLM_Scheduling", LpMinimize)
-        
-        # Decision variables
-        x = LpVariable.dicts("assign",
-                           ((i, j) for i in range(n_queries) 
-                            for j in range(n_models)),
-                           cat='Binary')
-        
-        # Objective function: minimize total cost
-        prob += lpSum(x[i,j] * cost_scores[i,j] 
-                     for i in range(n_queries) 
-                     for j in range(n_models))
-        
-        # Quality constraint: ensure overall performance meets requirement
-        prob += lpSum(x[i,j] * perf_scores[i,j] 
-                     for i in range(n_queries) 
-                     for j in range(n_models)) >= self.performance_requirement * n_queries
-        
-        # Assignment constraints: each query must be assigned to exactly one model
+        x = LpVariable.dicts("assign", ((i, j) for i in range(n_queries) for j in range(n_models)), cat="Binary")
+        prob += lpSum(x[i, j] * cost_scores[i, j] for i in range(n_queries) for j in range(n_models))
+        prob += lpSum(x[i, j] * perf_scores[i, j] for i in range(n_queries) for j in range(n_models)) >= self.performance_requirement * n_queries
         for i in range(n_queries):
-            prob += lpSum(x[i,j] for j in range(n_models)) == 1
-            
-        # Solve
+            prob += lpSum(x[i, j] for j in range(n_models)) == 1
         prob.solve(PULP_CBC_CMD(msg=False))
-        
-        # Extract solution
-        solution = np.zeros((n_queries, n_models))
+        sol = np.zeros((n_queries, n_models))
         for i in range(n_queries):
             for j in range(n_models):
-                solution[i,j] = value(x[i,j])
-        
-        solution = np.argmax(solution, axis=1)
-        return solution
+                sol[i, j] = value(x[i, j])
+        return np.argmax(sol, axis=1)

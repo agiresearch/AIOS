@@ -4,10 +4,8 @@
 
 from .base import BaseScheduler
 
-
 # allows for memory to be shared safely between threads
 from queue import Queue, Empty
-
 
 from ..context.simple_context import SimpleContextManager
 
@@ -27,7 +25,7 @@ from threading import Thread
 from .base import BaseScheduler
 
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
@@ -59,73 +57,54 @@ class RRScheduler(BaseScheduler):
         super().__init__(*args, **kwargs)
         self.time_slice = time_slice
         self.context_manager = SimpleContextManager()
-
-    def _execute_syscall(
-        self, 
-        syscall: Any,
+        
+    def _execute_batch_syscalls(
+        self,
+        batch: List[Any],
         executor: Any,
         syscall_type: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> None:
         """
-        Execute a system call with time slice enforcement.
-        
+        Execute a batch of system calls with proper status tracking and error handling.
+
         Args:
-            syscall: The system call to execute
-            executor: Function to execute the syscall
-            syscall_type: Type of the syscall for logging
-            
-        Returns:
-            Optional[Dict[str, Any]]: Response from the syscall execution
-            
-        Example:
-            ```python
-            response = scheduler._execute_syscall(
-                llm_syscall,
-                self.llm.execute_llm_syscall,
-                "LLM"
-            )
-            ```
+            batch: The list of system calls to execute
+            executor: Function to execute the batch of syscalls
+            syscall_type: Type of the syscalls for logging
         """
-        try:
-            syscall.set_time_limit(self.time_slice)
-            syscall.set_status("executing")
-            self.logger.log(
-                f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
-                "executing"
-            )
-            syscall.set_start_time(time.time())
+        if not batch:
+            return
 
-            response = executor(syscall)
-            
-            # breakpoint()
-            
-            syscall.set_response(response)
-            
-            if response.finished:
-                syscall.set_status("done")
-                log_status = "done"
-            else:
-                syscall.set_status("suspending")
-                log_status = "suspending"
+        start_time = time.time()
+        for syscall in batch:
+            try:
+                syscall.set_status("executing")
+                syscall.set_time_limit(self.time_slice)
                 
-            # breakpoint()
+                logger.info(f"{syscall.agent_name} preparing batched {syscall_type} syscall.")
+                syscall.set_start_time(start_time)
+            except Exception as e:
+                logger.error(f"Error preparing syscall {getattr(syscall, 'agent_name', 'unknown')} for batch execution: {str(e)}")
+                continue
 
-            syscall.set_end_time(time.time())
-            
-            syscall.event.set()
-            
-            self.logger.log(
-                f"{syscall_type} syscall for {syscall.agent_name} is {log_status}. "
-                f"Thread ID: {syscall.get_pid()}\n",
-                log_status
-            )
-            
-            return response
+        if not batch:
+            message = f"Empty batch after preparation for {syscall_type}, skipping execution."
+            logger.warning(message)
+            return
+
+        logger.info(f"Executing batch of {len(batch)} {syscall_type} syscalls.")
+
+        try:
+            responses = executor(batch)
+
+            for i, syscall in enumerate(batch):
+                logger.info(f"Completed batched {syscall_type} syscall for {syscall.agent_name}. "
+                    f"Thread ID: {syscall.get_pid()}\n")
+
 
         except Exception as e:
-            logger.error(f"Error executing {syscall_type} syscall: {str(e)}")
+            logger.error(f"Error executing {syscall_type} syscall batch: {str(e)}")
             traceback.print_exc()
-            return None
 
     def process_llm_requests(self) -> None:
         """
@@ -144,7 +123,7 @@ class RRScheduler(BaseScheduler):
         while self.active:
             try:
                 llm_syscall = self.get_llm_syscall()
-                self._execute_syscall(llm_syscall, self.llm.execute_llm_syscall, "LLM")
+                self._execute_batch_syscalls(llm_syscall, self.llm.execute_llm_syscalls, "LLM")
             except Empty:
                 pass
 

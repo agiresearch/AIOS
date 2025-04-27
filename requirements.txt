@@ -20,3 +20,4 @@ sentence-transformers
 nltk
 scikit-learn
 pulp
+gdown

@@ -32,6 +32,8 @@ from cerebrum.storage.apis import StorageQuery, StorageResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import asyncio
+
 import uvicorn
 
 load_dotenv()
@@ -340,6 +342,22 @@ def restart_kernel():
         print(f"Stack trace: {traceback.format_exc()}")
         raise
 
+@app.get("/status")
+async def get_server_status():
+    """Check if the server is running and core components are initialized."""
+    inactive_components = [
+        component for component, instance in active_components.items() if not instance
+    ]
+    
+    if not inactive_components:
+        return {"status": "ok", "message": "All core components are active."}
+    else:
+        return {
+            "status": "warning",
+            "message": f"Server is running, but some components are inactive: {', '.join(inactive_components)}",
+            "inactive_components": inactive_components
+        }
+
 @app.post("/core/refresh")
 async def refresh_configuration():
     """Refresh all component configurations"""
@@ -601,7 +619,14 @@ async def handle_query(request: QueryRequest):
                 action_type=request.query_data.action_type,
                 message_return_type=request.query_data.message_return_type,
             )
-            return execute_request(request.agent_name, query)
+            result_dict = await asyncio.to_thread(
+                execute_request, # The method to call
+                request.agent_name,               # First arg to execute_request
+                query                # Second arg to execute_request
+            )
+            
+            return result_dict
+        
         elif request.query_type == "storage":
             query = StorageQuery(
                 params=request.query_data.params,

@@ -162,6 +162,15 @@ class ConfigManager:
         """
         return self.config.get('llms', {})
     
+    def get_router_config(self) -> dict:
+        """
+        Retrieves the router configuration settings.
+        
+        Returns:
+            dict: Dictionary containing router configurations
+        """
+        return self.config.get("llms", {}).get("router", {})
+    
     def get_storage_config(self) -> dict:
         """
         Retrieves the storage configuration settings.

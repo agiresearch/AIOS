@@ -18,9 +18,12 @@ llms:
     # - name: "gpt-4o-mini"
     #   backend: "openai"
 
+    # - name: "gpt-4o"
+    #   backend: "openai"
+
 
     # Google Models
-    # - name: "gemini-1.5-flash"
+    # - name: "gemini-2.0-flash"
     #   backend: "google"
 
 
@@ -47,24 +50,25 @@ llms:
     #  backend: "vllm"
     #  hostname: "http://localhost:8091"
 
+  router:
+    strategy: "sequential"
+    bootstrap_url: "https://drive.google.com/file/d/1SF7MAvtnsED7KMeMdW3JDIWYNGPwIwL7/view"
 
-
-
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   use_context_manager: false
 
 memory:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   
 storage:
   root_dir: "root"
   use_vector_db: true
 
 scheduler:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
 
 agent_factory:
-  log_mode: "console"
+  log_mode: "console" # choose from [console, file]
   max_workers: 64  
   
 server:

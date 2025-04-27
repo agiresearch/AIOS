@@ -3,7 +3,6 @@
 # Installation directory
 INSTALL_DIR="$HOME/.aios-1"
 REPO_URL="https://github.com/agiresearch/AIOS"
-TAG="v0.2.0.beta"  # Replace with your specific tag
 BIN_DIR="$HOME/.local/bin"  # User-level bin directory
 
 echo "Installing AIOS..."
@@ -26,7 +25,6 @@ git clone "$REPO_URL" "$INSTALL_DIR/src"
 
 # Checkout the specific tag
 cd "$INSTALL_DIR/src"
-git checkout tags/"$TAG" -b "$TAG-branch"
 
 # Find Python executable path
 PYTHON_PATH=$(command -v python3)
