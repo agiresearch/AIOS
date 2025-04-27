@@ -15,11 +15,11 @@ llms:
   models:
 
     # OpenAI Models
-    - name: "gpt-4o-mini"
-      backend: "openai"
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
 
-    - name: "gpt-4o"
-      backend: "openai"
+    # - name: "gpt-4o"
+    #   backend: "openai"
 
 
     # Google Models
@@ -72,5 +72,5 @@ agent_factory:
   max_workers: 64  
   
 server:
-  host: "0.0.0.0"
+  host: "localhost"
   port: 8000
