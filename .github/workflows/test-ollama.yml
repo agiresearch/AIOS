@@ -45,6 +45,42 @@ jobs:
       - name: Install Cerebrum (editable)
         run: python -m pip install -e Cerebrum/
 
+      - name: Run AIOS kernel in background
+        run: |
+          bash runtime/launch_kernel.sh &>../kernel.log &
+          KERNEL_PID=$!
+          
+          # Set maximum wait time (60 seconds)
+          max_wait=60
+          start_time=$SECONDS
+          
+          # Dynamically check if the process is running until it succeeds or times out
+          while true; do
+            if ! ps -p $KERNEL_PID > /dev/null; then
+              echo "Kernel process died. Checking logs:"
+              cat kernel.log
+              exit 1
+            fi
+            
+            if nc -z localhost 8000; then
+              if curl -s http://localhost:8000/status; then
+                echo "Kernel successfully started"
+                break
+              fi
+            fi
+            
+            # Check if timed out
+            elapsed=$((SECONDS - start_time))
+            if [ $elapsed -ge $max_wait ]; then
+              echo "Timeout after ${max_wait} seconds. Kernel failed to start properly."
+              cat kernel.log
+              exit 1
+            fi
+            
+            echo "Waiting for kernel to start... (${elapsed}s elapsed)"
+            sleep 1
+          done
+
       - name: Install Ollama
         run: curl -fsSL https://ollama.com/install.sh | sh
 
