@@ -3,6 +3,8 @@ import re
 import uuid
 from copy import deepcopy
 
+from typing import List, Dict, Any
+
 def merge_messages_with_tools(messages: list, tools: list) -> list:
     """
     Integrate tool information into the messages for open-sourced LLMs which don't support tool calling.
@@ -339,3 +341,15 @@ def pre_process_tools(tools):
             tool_name = "__".join(tool_name.split("/"))
             tool["function"]["name"] = tool_name
     return tools
+
+def check_availability_for_selected_llm_lists(available_llm_names: List[str], selected_llm_lists: List[List[Dict[str, Any]]]):
+    selected_llm_lists_availability = []
+    for selected_llm_list in selected_llm_lists:
+        all_available = True
+        
+        for llm in selected_llm_list:
+            if llm["name"] not in available_llm_names:
+                all_available = False
+                break
+        selected_llm_lists_availability.append(all_available)
+    return selected_llm_lists_availability

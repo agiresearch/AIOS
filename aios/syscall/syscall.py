@@ -13,11 +13,7 @@ from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
     global_storage_req_queue_add_message,
-    global_tool_req_queue_add_message,
-    # global_llm_req_queue,
-    # global_memory_req_queue,
-    # global_storage_req_queue,
-    # global_tool_req_queue,
+    global_tool_req_queue_add_message
 )
 
 import threading
@@ -113,6 +109,8 @@ class SyscallExecutor:
             
             if isinstance(syscall, LLMSyscall):
                 global_llm_req_queue_add_message(syscall)
+                print(f"Syscall {syscall.agent_name} added to LLM queue")
+                
             elif isinstance(syscall, StorageSyscall):
                 global_storage_req_queue_add_message(syscall)
             elif isinstance(syscall, MemorySyscall):
