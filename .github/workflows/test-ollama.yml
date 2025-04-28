@@ -36,7 +36,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then uv pip install-r requirements.txt; fi
+          if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Clone Cerebrum
         uses: sudosubin/git-clone-action@v1.0.1
