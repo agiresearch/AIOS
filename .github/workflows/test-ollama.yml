@@ -36,6 +36,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Clone Cerebrum
@@ -45,7 +47,7 @@ jobs:
           path: Cerebrum
 
       - name: Install Cerebrum (editable)
-        run: python -m uv pip install -e Cerebrum/
+        run: uv pip install -e Cerebrum/
 
       - name: Run AIOS kernel in background
         run: |
