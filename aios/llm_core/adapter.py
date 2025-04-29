@@ -869,8 +869,6 @@ class LLMAdapter:
             if tools:
                 # if isinstance(completed_response, list) and all(hasattr(item, 'function') for item in completed_response):
                 # Likely OpenAI/LiteLLM style tool calls list
-                
-                breakpoint()
                 if isinstance(model, str) or isinstance(model, OpenAI):
                     logger.debug("Processing list of tool calls (OpenAI/LiteLLM style).")
                     try:
