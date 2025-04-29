@@ -58,6 +58,61 @@ class RRScheduler(BaseScheduler):
         self.time_slice = time_slice
         self.context_manager = SimpleContextManager()
         
+    def _execute_syscall(
+        self, 
+        syscall: Any,
+        executor: Any,
+        syscall_type: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Execute a system call with proper status tracking and error handling.
+        
+        Args:
+            syscall: The system call to execute
+            executor: Function to execute the syscall
+            syscall_type: Type of the syscall for logging
+            
+        Returns:
+            Optional[Dict[str, Any]]: Response from the syscall execution
+            
+        Example:
+            ```python
+            response = scheduler._execute_syscall(
+                llm_syscall,
+                self.llm.execute_llm_syscall,
+                "LLM"
+            )
+            ```
+        """
+        try:
+            syscall.set_status("executing")
+            self.logger.log(
+                f"{syscall.agent_name} is executing {syscall_type} syscall.\n",
+                "executing"
+            )
+            syscall.set_start_time(time.time())
+
+            response = executor(syscall)
+            syscall.set_response(response)
+
+            syscall.event.set()
+            syscall.set_status("done")
+            syscall.set_end_time(time.time())
+
+            self.logger.log(
+                f"Completed {syscall_type} syscall for {syscall.agent_name}. "
+                f"Thread ID: {syscall.get_pid()}\n",
+                "done"
+            )
+            
+            return response
+
+        except Exception as e:
+            logger.error(f"Error executing {syscall_type} syscall: {str(e)}")
+            traceback.print_exc()
+            return None
+
+        
     def _execute_batch_syscalls(
         self,
         batch: List[Any],
