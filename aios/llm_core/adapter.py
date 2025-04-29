@@ -770,15 +770,15 @@ class LLMAdapter:
                     # LiteLLM raises specific exceptions on failure
                     response = litellm.completion(model=model, **completion_kwargs)
                     logger.debug(f"[{model_name}] LiteLLM response received.")
-                    
                     # Extract content or tool calls from LiteLLM response
                     message = response.choices[0].message
-                    if message.tool_calls:
+                    if tools:
+                        # if message.tool_calls:
                         # Decode directly here or let _process_response handle?
                         # Let's return the raw tool calls for _process_response
                         # logger.debug(f"[{model_name}] LiteLLM returned tool calls: {message.tool_calls}")
                         # decoded_calls = decode_litellm_tool_calls(response) # Assuming this returns the desired list format
-                        return message.tool_calls, True # Return raw tool calls
+                        return response, True # Return raw tool calls
                     else:
                         # logger.debug(f"[{model_name}] LiteLLM returned content: {message.content[:100]}...")
                         return message.content, True
@@ -867,12 +867,15 @@ class LLMAdapter:
             # --- Tool Call Handling ---
             # Check if tools were expected *and* if the response looks like tool calls
             if tools:
-                if isinstance(completed_response, list) and all(hasattr(item, 'function') for item in completed_response):
-                    # Likely OpenAI/LiteLLM style tool calls list
+                # if isinstance(completed_response, list) and all(hasattr(item, 'function') for item in completed_response):
+                # Likely OpenAI/LiteLLM style tool calls list
+                
+                breakpoint()
+                if isinstance(model, str) or isinstance(model, OpenAI):
                     logger.debug("Processing list of tool calls (OpenAI/LiteLLM style).")
                     try:
                         # Need to convert OpenAI/LiteLLM ToolCall objects to our dict format
-                        decoded_calls = decode_litellm_tool_calls({"choices": [{"message": {"tool_calls": completed_response}}]}) # Wrap for decoder
+                        decoded_calls = decode_litellm_tool_calls(completed_response) # Wrap for decoder
                         final_tool_calls = double_underscore_to_slash(decoded_calls)
                         logger.debug(f"Decoded tool calls: {final_tool_calls}")
                         return LLMResponse(
