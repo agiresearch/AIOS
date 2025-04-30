@@ -243,8 +243,8 @@ class LLMAdapter:
                 case _:
                     # Handle LiteLLM supported backends
                     backend_name = config.backend
-                    if backend_name == "google":
-                        backend_name = "gemini" # LiteLLM uses 'gemini'
+                    # if backend_name == "google":
+                    #     backend_name = "gemini" # LiteLLM uses 'gemini'
 
                     # Check for necessary API keys via environment variables for common LiteLLM backends
                     key_var_map = {

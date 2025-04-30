@@ -366,17 +366,18 @@ async def select_llm(request: Request):
     """Select the LLM to use"""
     data = await request.json()
     logger.info(f"Received select LLM request: {data}")
-    for llm in data:
-        llm_name = llm.get("name")
-        provider = llm.get("provider")
-        # api_key = llm.get("api_key")
+    # for llm in data:
+    #     llm_name = llm.get("name")
+    #     provider = llm.get("provider")
+    #     # api_key = llm.get("api_key")
         
-        selected_llms.append({
-            "name": llm_name,
-            "provider": provider
-        })
+    #     selected_llms = [{
+    #         "name": llm_name,
+    #         "provider": provider
+    #     }]
     
-    return {"status": "success", "message": f"LLM {llm_name} selected"}
+    selected_llms = data
+    return {"status": "success", "message": f"LLMs {selected_llms} selected"}
 
 @app.get("/user/selected/llms")
 async def check_selected_llms():
