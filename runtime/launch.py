@@ -36,6 +36,8 @@ import asyncio
 
 import uvicorn
 
+import copy
+
 load_dotenv()
 
 app = FastAPI()
@@ -56,6 +58,9 @@ active_components = {
     "memory": None,
     "tool": None
 }
+
+global selected_llms
+selected_llms = []
 
 execute_request, SysCallWrapper = useSysCall()
 
@@ -358,8 +363,7 @@ async def get_server_status():
             "inactive_components": inactive_components
         }
 
-global selected_llms
-selected_llms = []
+
 
 @app.post("/user/select/llms")
 async def select_llm(request: Request):
@@ -368,7 +372,7 @@ async def select_llm(request: Request):
     logger.info(f"Received select LLM request: {data}")
 
     if data:
-        selected_llms = data
+        selected_llms = copy.deepcopy(data)
         return {"status": "success", "message": f"LLMs {selected_llms} selected"}
     else:
         return {"status": "warning", "message": "No LLM selected"}
@@ -638,7 +642,7 @@ async def handle_query(request: QueryRequest):
             query_required_llms = request.query_data.llms
             if query_required_llms is None:
                 if len(selected_llms) > 0:
-                    query_required_llms = selected_llms
+                    query_required_llms = copy.deepcopy(selected_llms)
                 
             else:
                 if len(selected_llms) > 0:
