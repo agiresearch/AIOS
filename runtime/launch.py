@@ -60,7 +60,9 @@ active_components = {
 }
 
 global selected_llms
-selected_llms = []
+selected_llms = {
+    "llms": []
+}
 
 execute_request, SysCallWrapper = useSysCall()
 
@@ -372,16 +374,16 @@ async def select_llm(request: Request):
     logger.info(f"Received select LLM request: {data}")
 
     if data:
-        selected_llms = copy.deepcopy(data)
-        return {"status": "success", "message": f"LLMs {selected_llms} selected"}
+        selected_llms["llms"] = copy.deepcopy(data)
+        return {"status": "success", "message": f"LLMs {selected_llms['llms']} selected"}
     else:
         return {"status": "warning", "message": "No LLM selected"}
 
 @app.get("/user/selected/llms")
 async def check_selected_llms():
     """Check if the LLM is selected"""
-    if len(selected_llms) > 0:
-        return {"status": "success", "message": f"LLM {selected_llms} selected"}
+    if len(selected_llms["llms"]) > 0:
+        return {"status": "success", "message": f"LLM {selected_llms['llms']} selected"}
     else:
         return {"status": "warning", "message": "No LLM selected"}
 
@@ -641,15 +643,15 @@ async def handle_query(request: QueryRequest):
         if request.query_type == "llm":
             query_required_llms = request.query_data.llms
             if query_required_llms is None:
-                if len(selected_llms) > 0:
-                    query_required_llms = copy.deepcopy(selected_llms)
+                if len(selected_llms["llms"]) > 0:
+                    query_required_llms = copy.deepcopy(selected_llms["llms"])
                 
             else:
-                if len(selected_llms) > 0:
+                if len(selected_llms["llms"]) > 0:
                     # Check if selected LLMs contain all required LLMs
                     for required_llm in query_required_llms:
                         if not any(required_llm["name"] == sel["name"] and required_llm["provider"] == sel["provider"] 
-                                for sel in selected_llms):
+                                for sel in selected_llms["llms"]):
                             raise ValueError(f"Required LLM {required_llm['name']} from {required_llm['provider']} is not selected")
                         
             query = LLMQuery(
