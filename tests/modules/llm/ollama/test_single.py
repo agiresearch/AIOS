@@ -21,7 +21,7 @@ class TestAgent:
             messages=self.messages,
             base_url=aios_kernel_url,
             llms=[{
-                "name": "qwen2.5:7b",
+                "name": "qwen3:1.7b",
                 "backend": "ollama"
             }]
         )
@@ -55,7 +55,7 @@ class TestAgent:
             messages=self.messages,
             base_url=aios_kernel_url,
             llms=[{
-                "name": "qwen2.5:7b",
+                "name": "qwen3:1.7b",
                 "backend": "ollama"
             }],
             response_format=response_format
