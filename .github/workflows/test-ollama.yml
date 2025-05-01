@@ -54,7 +54,12 @@ jobs:
       - name: Run AIOS kernel in background
         run: |
           source .venv/bin/activate
-          bash runtime/launch_kernel.sh &>./kernel.log &
+          bash runtime/launch_kernel.sh >./kernel.log 2>&1 &
+
+          for ((i=1;i<=${KERNEL_MAX_WAIT};i++)); do
+            curl -s http://localhost:8000/status && echo "Kernel ready" && break
+            echo "Waiting for Kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
+          done
       
       - name: Run tests
         run: |
