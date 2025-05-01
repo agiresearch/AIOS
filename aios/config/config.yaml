@@ -32,7 +32,7 @@ llms:
     #   backend: "anthropic"
 
     # Ollama Models
-    - name: "qwen2.5:7b"
+    - name: "qwen3:1.7b"
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server
 

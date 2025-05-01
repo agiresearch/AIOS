@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous PR runs
-        uses: styfle/cancel-workflow-action@v1
+        uses: styfle/cancel-workflow-action@0.12.1
         with:
           workflow_id: all                        # cancel every workflow in this repo
           access_token: ${{ github.token }}       # default token is fine
-          pr_number: ${{ github.event.pull_request.number }}
           ignore_sha: true                        # required for pull_request.closed events
+          pr_number: ${{ github.event.pull_request.number }}
+          

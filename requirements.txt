@@ -21,3 +21,4 @@ nltk
 scikit-learn
 pulp
 gdown
+typing-extensions
