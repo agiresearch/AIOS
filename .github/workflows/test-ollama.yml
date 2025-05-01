@@ -30,78 +30,34 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
-      - name: Install uv
-        run: python -m pip install uv
-
+      
       - name: Install dependencies
         run: |
+          python -m pip install uv
           uv venv
           source .venv/bin/activate
-          if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
-
-      - name: Clone Cerebrum
-        uses: sudosubin/git-clone-action@v1.0.1
-        with:
-          repository: agiresearch/Cerebrum
-          path: Cerebrum
-
-      - name: Install Cerebrum (editable)
-        run: uv pip install -e Cerebrum/
-
-      - name: Run AIOS kernel in background
-        run: |
-          bash runtime/launch_kernel.sh &>./kernel.log &
-          KERNEL_PID=$!
-          
-          # Set maximum wait time (60 seconds)
-          start_time=$SECONDS
-          
-          # Dynamically check if the process is running until it succeeds or times out
-          while true; do
-            if ! ps -p $KERNEL_PID > /dev/null; then
-              echo "Kernel process died. Checking logs:"
-              cat kernel.log
-              exit 1
-            fi
-            
-            if nc -z localhost 8000; then
-              if curl -s http://localhost:8000/status; then
-                echo "Kernel successfully started"
-                break
-              fi
-            fi
-            
-            # Check if timed out
-            elapsed=$((SECONDS - start_time))
-            if [ $elapsed -ge $KERNEL_MAX_WAIT ]; then
-              echo "Timeout after ${KERNEL_MAX_WAIT} seconds. Kernel failed to start properly."
-              cat kernel.log
-              exit 1
-            fi
-            
-            echo "Waiting for kernel to start... (${elapsed}s elapsed)"
-            sleep 1
-          done
-
+          uv pip install -r requirements.txt
+      
       - name: Install Ollama
-        run: curl -fsSL https://ollama.com/install.sh | sh
+        run: | 
+          curl -fsSL https://ollama.com/install.sh | sh
+    
+          ollama pull qwen3:1.7b
 
-      - name: Pull Ollama model
-        run: ollama pull qwen2.5:7b
-
-      - name: Start Ollama
-        run: |
           ollama serve > ollama-llm.log 2>&1 &
           for ((i=1;i<=${OLLAMA_MAX_WAIT};i++)); do
             curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
             echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
           done
-          curl -s http://localhost:11434/api/version > /dev/null \
-            || { echo "❌  Ollama failed to start"; exit 1; }
-          
+
+      - name: Run AIOS kernel in background
+        run: |
+          source .venv/bin/activate
+          bash runtime/launch_kernel.sh &>./kernel.log &
+      
       - name: Run tests
         run: |
+          source .venv/bin/activate  
           mkdir -p test_results
           mapfile -t TESTS < <(find . -type f -path "*/llm/ollama/*" -name "*.py")
           if [ "${#TESTS[@]}" -eq 0 ]; then
@@ -110,7 +66,7 @@ jobs:
           fi
           for t in "${TESTS[@]}"; do
             echo "▶️  Running $t"
-            python "$t" | tee -a test_results/ollama_tests.log
+            python -v "$t" 2>&1 | tee -a test_results/ollama_tests.log
             echo "----------------------------------------"
           done
 
