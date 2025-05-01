@@ -72,7 +72,7 @@ jobs:
           fi
           for t in "${TESTS[@]}"; do
             echo "▶️  Running $t"
-            python -v "$t" 2>&1 | tee -a test_results/ollama_tests.log
+            python -m unittest "$t" 2>&1 | tee -a test_results/ollama_tests.log
             echo "----------------------------------------"
           done
 
