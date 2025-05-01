@@ -41,14 +41,15 @@ jobs:
       - name: Install Ollama
         run: | 
           curl -fsSL https://ollama.com/install.sh | sh
-    
-          ollama pull qwen3:1.7b
 
           ollama serve > ollama-llm.log 2>&1 &
+
           for ((i=1;i<=${OLLAMA_MAX_WAIT};i++)); do
             curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
             echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
           done
+    
+          ollama pull qwen3:1.7b
 
       - name: Run AIOS kernel in background
         run: |
