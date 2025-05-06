@@ -30,43 +30,40 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
+      
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Clone Cerebrum
-        uses: sudosubin/git-clone-action@v1.0.1
-        with:
-          repository: agiresearch/Cerebrum
-          path: Cerebrum
-
-      - name: Install Cerebrum (editable)
-        run: python -m pip install -e Cerebrum/
-
+          python -m pip install uv
+          uv venv
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+      
       - name: Install Ollama
-        run: curl -fsSL https://ollama.com/install.sh | sh
+        run: | 
+          curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Pull Ollama model
-        run: ollama pull qwen2.5:7b
-
-      - name: Start Ollama
-        run: |
           ollama serve > ollama-llm.log 2>&1 &
+
           for ((i=1;i<=${OLLAMA_MAX_WAIT};i++)); do
             curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
             echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
           done
-          curl -s http://localhost:11434/api/version > /dev/null \
-            || { echo "❌  Ollama failed to start"; exit 1; }
+    
+          ollama pull qwen3:1.7b
 
-      - name: Start AIOS kernel
+      - name: Run AIOS kernel in background
         run: |
-          bash runtime/launch_kernel.sh > kernel.log 2>&1 &
-          
+          source .venv/bin/activate
+          bash runtime/launch_kernel.sh >./kernel.log 2>&1 &
+
+          for ((i=1;i<=${KERNEL_MAX_WAIT};i++)); do
+            curl -s http://localhost:8000/status && echo "Kernel ready" && break
+            echo "Waiting for Kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
+          done
+      
       - name: Run tests
         run: |
+          source .venv/bin/activate  
           mkdir -p test_results
           mapfile -t TESTS < <(find . -type f -path "*/llm/ollama/*" -name "*.py")
           if [ "${#TESTS[@]}" -eq 0 ]; then
@@ -75,7 +72,7 @@ jobs:
           fi
           for t in "${TESTS[@]}"; do
             echo "▶️  Running $t"
-            python "$t" | tee -a test_results/ollama_tests.log
+            python -m unittest "$t" 2>&1 | tee -a test_results/ollama_tests.log
             echo "----------------------------------------"
           done
 
