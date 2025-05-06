@@ -24,7 +24,7 @@ llms:
 
     # Google Models
     # - name: "gemini-2.0-flash"
-    #   backend: "google"
+    #   backend: "gemini"
 
 
     # Anthropic Models
