@@ -15,15 +15,16 @@ llms:
   models:
 
     # OpenAI Models
-    # - name: "gpt-4o"
-    #   backend: "openai"
-
     # - name: "gpt-4o-mini"
     #   backend: "openai"
 
+    # - name: "gpt-4o"
+    #   backend: "openai"
+
+
     # Google Models
     # - name: "gemini-2.0-flash"
-    #   backend: "google"
+    #   backend: "gemini"
 
 
     # Anthropic Models
@@ -31,7 +32,7 @@ llms:
     #   backend: "anthropic"
 
     # Ollama Models
-    - name: "qwen2.5:7b"
+    - name: "qwen3:1.7b"
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server
 
@@ -49,15 +50,8 @@ llms:
     #  backend: "vllm"
     #  hostname: "http://localhost:8091"
 
-    # SGLang Models
-    # python3 -m sglang.launch_server --model-path Qwen/Qwen2.5-7B-Instruct --tool-call-parser qwen25 --host 127.0.0.1 --port 30001
-
-    # - name: "Qwen/Qwen2.5-VL-72B-Instruct"
-    #   backend: "sglang"
-    #   hostname: "http://localhost:30001/v1"
-
   router:
-    strategy: "smart" # choose from [sequential, smart]
+    strategy: "sequential"
     bootstrap_url: "https://drive.google.com/file/d/1SF7MAvtnsED7KMeMdW3JDIWYNGPwIwL7/view"
 
   log_mode: "console" # choose from [console, file]
@@ -78,5 +72,5 @@ agent_factory:
   max_workers: 64  
   
 server:
-  host: "0.0.0.0"
+  host: "localhost"
   port: 8000
