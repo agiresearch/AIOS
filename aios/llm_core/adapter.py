@@ -770,6 +770,8 @@ class LLMAdapter:
                     # LiteLLM raises specific exceptions on failure
                     response = litellm.completion(model=model, **completion_kwargs)
                     logger.debug(f"[{model_name}] LiteLLM response received.")
+                    
+                    logger.info(f"Model usage: {response.usage}")
                     # Extract content or tool calls from LiteLLM response
                     message = response.choices[0].message
                     if tools:

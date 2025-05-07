@@ -15,7 +15,13 @@ llms:
   models:
 
     # OpenAI Models
-    # - name: "gpt-4o-mini"
+    # - name: "gpt-4.1-mini"
+    #   backend: "openai"
+
+    # - name: "gpt-4.1-nano"
+    #   backend: "openai"
+
+    # - name: "gpt-4.1"
     #   backend: "openai"
 
     # - name: "gpt-4o"
@@ -33,6 +39,10 @@ llms:
 
     # Ollama Models
     - name: "qwen3:1.7b"
+      backend: "ollama"
+      hostname: "http://localhost:11434" # Make sure to run ollama server
+
+    - name: "qwen3:4b"
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server
 
