@@ -243,8 +243,8 @@ class LLMAdapter:
                 case _:
                     # Handle LiteLLM supported backends
                     backend_name = config.backend
-                    if backend_name == "google":
-                        backend_name = "gemini" # LiteLLM uses 'gemini'
+                    # if backend_name == "google":
+                    #     backend_name = "gemini" # LiteLLM uses 'gemini'
 
                     # Check for necessary API keys via environment variables for common LiteLLM backends
                     key_var_map = {
@@ -770,6 +770,8 @@ class LLMAdapter:
                     # LiteLLM raises specific exceptions on failure
                     response = litellm.completion(model=model, **completion_kwargs)
                     logger.debug(f"[{model_name}] LiteLLM response received.")
+                    
+                    logger.info(f"Model usage: {response.usage}")
                     # Extract content or tool calls from LiteLLM response
                     message = response.choices[0].message
                     if tools:
