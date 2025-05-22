@@ -1,6 +1,8 @@
 # from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp import FastMCP
 import subprocess, json, os, shlex
+import time
+
 mcp = FastMCP("linux-mcp")
 
 from typing import List, Dict, Any
@@ -22,9 +24,14 @@ async def move_mouse(x: int, y: int) -> str:
     return virtual_env.controller.execute_action(action)
 
 @mcp.tool(description="Click the mouse at the current position")
-async def click(x: int = None, y: int = None) -> str:
+async def click(x: int = None, y: int = None, num_clicks: int = None) -> str:
     ACTION_TYPE = "click"
-    parameters = {"x": x, "y": y} if x is not None and y is not None else {}
+    parameters = {}
+    if x is not None and y is not None:
+        parameters["x"] = x
+        parameters["y"] = y
+    if num_clicks is not None:
+        parameters["num_clicks"] = num_clicks
     action = {"action_type": ACTION_TYPE, "parameters": parameters}
     return virtual_env.controller.execute_action(action)
 
@@ -37,7 +44,7 @@ async def right_click(x: int = None, y: int = None) -> str:
 
 
 @mcp.tool(description="Type text at the current cursor position")
-async def type_text(text: str) -> str:
+async def typing(text: str) -> str:
     ACTION_TYPE = "typing"
     parameters = {"text": text}
     action = {"action_type": ACTION_TYPE, "parameters": parameters}
@@ -63,7 +70,7 @@ async def screenshot() -> str:
 
 @mcp.tool(description="Reset the VM")
 async def reset_vm(task_config: Dict[str, Any]) -> str:
-    return virtual_env.reset(task_config)
+    return await virtual_env.reset(task_config)
 
 @mcp.tool(description="Get the accessibility tree of the current screen")
 async def get_accessibility_tree() -> str:
@@ -71,7 +78,7 @@ async def get_accessibility_tree() -> str:
 
 @mcp.tool(description="Evaluate the current task")
 async def evaluate(action_history: List[Dict[str, Any]]) -> str:
-    return virtual_env.evaluate(action_history)
+    return await virtual_env.evaluate(action_history)
 
 @mcp.tool(description="Scroll the mouse wheel up or down")
 async def scroll(dx: int, dy: int) -> str:
@@ -100,6 +107,14 @@ async def hotkey(keys: List[str]) -> str:
     parameters = {"keys": keys}
     action = {"action_type": ACTION_TYPE, "parameters": parameters}
     return virtual_env.controller.execute_action(action)
+
+@mcp.tool(description="Wait for a few seconds")
+async def wait(seconds: int = None) -> str:
+    # ACTION_TYPE = "wait"
+    # if seconds is None:
+    #     seconds = 1
+    time.sleep(seconds)
+    return
 
 @mcp.tool(description="Launch an application")
 async def launch(app_name: str) -> str:
