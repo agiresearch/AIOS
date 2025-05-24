@@ -208,7 +208,13 @@ class ConfigManager:
             tool_config = config_manager.get_tool_config()
             enabled_tools = tool_config.get("enabled")
         """
-        return self.config.get("tools", {})
+        return self.config.get("tool", {})
+    
+    def get_mcp_server_script_path(self) -> str:
+        """
+        Retrieves the path to the MCP server script.
+        """
+        return os.path.join(os.getcwd(), self.config.get("tool", {}).get("mcp_server_script_path"))
     
     def get_scheduler_config(self) -> dict:
         """

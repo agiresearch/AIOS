@@ -386,6 +386,19 @@ async def check_selected_llms():
         return {"status": "success", "message": f"LLM {selected_llms['llms']} selected"}
     else:
         return {"status": "warning", "message": "No LLM selected"}
+    
+@app.get("/get/mcp/server")
+async def get_mcp_server():
+    """Get the MCP server"""
+    mcp_server_script_path = config.get_mcp_server_script_path()
+    if os.path.exists(mcp_server_script_path):
+        return {
+            "status": "success",
+            "path": mcp_server_script_path
+        }
+    else:
+        return {"status": "warning", "message": "MCP server not found"}
+
 
 @app.post("/core/refresh")
 async def refresh_configuration():
@@ -613,11 +626,18 @@ async def cleanup_components():
     """Clean up all active components."""
     try:
         # Clean up in reverse order of dependency
-        active_components["scheduler"].stop()
+        if active_components.get("scheduler") and hasattr(active_components["scheduler"], "stop"):
+            active_components["scheduler"].stop()
         active_components["scheduler"] = None
 
-        for component in ["tool", "memory", "storage", "llm"]:
-            if active_components[component]:
+        # Updated to call cleanup on tool manager
+        if active_components.get("tool") and hasattr(active_components["tool"], "cleanup"):
+            active_components["tool"].cleanup()
+        active_components["tool"] = None
+        
+        # Keep other cleanups as they were
+        for component in ["memory", "storage", "llms"]:
+            if active_components.get(component):
                 if hasattr(active_components[component], "cleanup"):
                     active_components[component].cleanup()
                 active_components[component] = None
