@@ -128,7 +128,7 @@ class DesktopEnv(gym.Env):
         # Close (release) the virtual machine
         self.provider.stop_emulator(self.path_to_vm)
 
-    def reset(self, task_config: Optional[Dict[str, Any]] = None, seed=None, options=None) -> Dict[str, Any]:
+    async def reset(self, task_config: Optional[Dict[str, Any]] = None, seed=None, options=None) -> Dict[str, Any]:
         # Reset to certain task in OSWorld
         logger.info("Resetting environment...")
         logger.info("Switching task...")
@@ -147,10 +147,10 @@ class DesktopEnv(gym.Env):
         # print(task_config)
 
         if task_config is not None:
-            self._set_task_info(task_config)
+            await self._set_task_info(task_config)
             self.setup_controller.reset_cache_dir(self.cache_dir)
             logger.info("Setting up environment...")
-            self.setup_controller.setup(self.config)
+            await self.setup_controller.setup(self.config)
             logger.info("Environment setup complete.")
 
         # observation = self._get_obs()
@@ -174,7 +174,7 @@ class DesktopEnv(gym.Env):
     def vm_screen_size(self):
         return self.controller.get_vm_screen_size()
 
-    def _set_task_info(self, task_config: Dict[str, Any]):
+    async def _set_task_info(self, task_config: Dict[str, Any]):
         self.task_id: str = task_config["id"]
         self.cache_dir: str = os.path.join(self.cache_dir_base, self.task_id)
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -322,8 +322,11 @@ class DesktopEnv(gym.Env):
 
     #     return metric
     
-    def evaluate(self, action_history: List[Dict[str, Any]]):
-        self.setup_controller.setup(self.evaluator.get("postconfig", []))
+    async def evaluate(self, action_history: List[Dict[str, Any]]):
+        await self.setup_controller.setup(self.evaluator.get("postconfig", []))
+        
+        if len(action_history) == 0:
+            return 0
         
         last_action = action_history[-1]
         if last_action['action_type'] == "done" or last_action['action_type'] == "fail":
@@ -347,7 +350,10 @@ class DesktopEnv(gym.Env):
             for idx, metric in enumerate(self.metric):
                 try:
                     config = self.evaluator["result"][idx]
-                    result_state = self.result_getter[idx](self, config)
+                    if isinstance(self.result_getter[idx], dict):
+                        result_state = self.result_getter[idx](self, config)
+                    else:
+                        result_state = await self.result_getter[idx](self, config)
                 except FileNotFoundError:
                     logger.error("File not found!")
                     if self.metric_conj == 'and':
@@ -370,7 +376,11 @@ class DesktopEnv(gym.Env):
         else:
             # Single metric to evaluate whether the task is successfully completed
             try:
-                result_state = self.result_getter(self, self.evaluator["result"])
+                if isinstance(self.result_getter, dict):
+                    result_state = self.result_getter(self, self.evaluator["result"])
+                else:
+                    result_state = await self.result_getter(self, self.evaluator["result"])
+                    
             except FileNotFoundError:
                 logger.error("File not found!")
                 return 0

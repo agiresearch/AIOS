@@ -8,7 +8,7 @@ import requests
 logger = logging.getLogger("desktopenv.getters.vlc")
 
 
-def get_vlc_playing_info(env, config: Dict[str, str]):
+async def get_vlc_playing_info(env, config: Dict[str, str]):
     """
     Gets the current playing information from VLC's HTTP interface.
     """
@@ -32,7 +32,7 @@ def get_vlc_playing_info(env, config: Dict[str, str]):
     return _path
 
 
-def get_vlc_config(env, config: Dict[str, str]):
+async def get_vlc_config(env, config: Dict[str, str]):
     """
     Reads the VLC configuration file to check setting.
     """

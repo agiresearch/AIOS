@@ -74,13 +74,13 @@ relativeTime_to_IntDay = {
     "first monday four months later": "special"
 }
 
-def get_rule(env, config: Dict[str, R]) -> R:
+async def get_rule(env, config: Dict[str, R]) -> R:
     """
     Returns the rule as-is.
     """
     return config["rules"]
 
-def get_rule_relativeTime(env, config: Dict[str, R]) -> R:
+async def get_rule_relativeTime(env, config: Dict[str, R]) -> R:
     """
     According to the rule definded in funciton "apply_rules_to_timeFormat", convert the relative time to absolute time.
     config:
@@ -177,7 +177,7 @@ def get_rule_relativeTime(env, config: Dict[str, R]) -> R:
     return config["rules"]
 
 
-def apply_rules_to_timeFormat(timeFormat: str, absoluteDay: datetime):
+async def apply_rules_to_timeFormat(timeFormat: str, absoluteDay: datetime):
     timeFormat = timeFormat.replace("{DoW}", day_of_week_mapping[absoluteDay.weekday()], 1)
     timeFormat = timeFormat.replace("{Month}", month_mapping[absoluteDay.month], 1)
     timeFormat = timeFormat.replace("{DayD}", str(absoluteDay.day), 1)
@@ -191,12 +191,12 @@ def apply_rules_to_timeFormat(timeFormat: str, absoluteDay: datetime):
     return timeFormat
 
 
-def get_accessibility_tree(env, *args) -> str:
-    accessibility_tree: str = env.controller.get_accessibility_tree()
+async def get_accessibility_tree(env, *args) -> str:
+    accessibility_tree: str = await env.controller.get_accessibility_tree()
     logger.debug("AT@eval: %s", accessibility_tree)
     return accessibility_tree
 
-def get_time_diff_range(env, config) -> str:
+async def get_time_diff_range(env, config) -> str:
     try:
         return config["diff_range_in_minutes"]
     except:

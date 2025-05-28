@@ -5,7 +5,7 @@ from typing import Dict
 logger = logging.getLogger("desktopenv.getters.gimp")
 
 
-def get_gimp_config_file(env, config: Dict[str, str]):
+async def get_gimp_config_file(env, config: Dict[str, str]):
     """
     Gets the config setting of GIMP.
     """

@@ -7,7 +7,7 @@ from typing import Dict
 from virtual_env.evaluators.getters.file import get_vm_file
 
 
-def get_background_image_in_slide(env, config: Dict[str, str]):
+async def get_background_image_in_slide(env, config: Dict[str, str]):
     ppt_file_path, slide_index, dest = config["ppt_file_path"], int(config["slide_index"]), config["dest"]
     image_id, image_file_path = None, None
 
@@ -68,7 +68,7 @@ def get_background_image_in_slide(env, config: Dict[str, str]):
         return get_vm_file(env, {"path": image_file_path, "dest": dest})
 
 
-def get_audio_in_slide(env, config: Dict[str, str]):
+async def get_audio_in_slide(env, config: Dict[str, str]):
     ppt_file_path, slide_index, dest = config["ppt_file_path"], int(config["slide_index"]), config["dest"]
 
     # Open the .pptx file as a zip file, fixme: now we assume there is only one audio file in the slides

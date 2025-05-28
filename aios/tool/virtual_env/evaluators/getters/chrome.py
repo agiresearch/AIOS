@@ -13,6 +13,7 @@ import requests
 from lxml.cssselect import CSSSelector
 from lxml.etree import _Element
 from playwright.sync_api import sync_playwright, expect
+from playwright.async_api import async_playwright
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive, GoogleDriveFileList, GoogleDriveFile
 
@@ -36,7 +37,7 @@ WARNING:
 """
 
 
-def get_info_from_website(env, config: Dict[Any, Any]) -> Any:
+async def get_info_from_website(env, config: Dict[Any, Any]) -> Any:
     """ Get information from a website. Especially useful when the information may be updated through time.
     Args:
         env (Any): The environment object.
@@ -58,10 +59,10 @@ def get_info_from_website(env, config: Dict[Any, Any]) -> Any:
         server_port = env.server_port
         remote_debugging_url = f"http://{host}:{port}"
         backend_url = f"http://{host}:{server_port}"
-        with sync_playwright() as p:
+        async with async_playwright() as p:
             # connect to remote Chrome instance
             try:
-                browser = p.chromium.connect_over_cdp(remote_debugging_url)
+                browser = await p.chromium.connect_over_cdp(remote_debugging_url)
             except Exception as e:
                 # If the connection fails (e.g., the agent close the browser instance), start a new browser instance
                 app = 'chromium' if 'arm' in platform.machine() else 'google-chrome'
@@ -73,40 +74,52 @@ def get_info_from_website(env, config: Dict[Any, Any]) -> Any:
                 #requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
                 requests.post(backend_url + "/setup" + "/launch", headers=headers, data=payload)
                 time.sleep(5)
-                browser = p.chromium.connect_over_cdp(remote_debugging_url)
+                browser = await p.chromium.connect_over_cdp(remote_debugging_url)
 
-            page = browser.contexts[0].new_page()
-            page.goto(config["url"])
-            page.wait_for_load_state('load')
+            page = await browser.contexts[0].new_page()
+            try:
+                await page.goto(config["url"], timeout=60000)
+                
+            except Exception as e:
+                logger.error(f"Error: {e}")
+                return config.get('backups', None)
+            
+            await page.wait_for_load_state('load')
+            
             infos = []
             for info_dict in config.get('infos', []):
                 if page.url != config["url"]:
-                    page.goto(config["url"])
-                    page.wait_for_load_state('load')
+                    try:
+                        await page.goto(config["url"], timeout=60000)
+                    except Exception as e:
+                        logger.error("Failed to go to the target URL page")
+                        return None
+                    
+                    await page.wait_for_load_state('load')
                 action = info_dict.get('action', 'inner_text')
                 if action == "inner_text":
-                    ele = page.wait_for_selector(info_dict['selector'], state='attached', timeout=10000)
+                    ele = await page.wait_for_selector(info_dict['selector'], state='attached', timeout=10000)
                     infos.append(ele.inner_text())
                 elif action == "attribute":
-                    ele = page.wait_for_selector(info_dict['selector'], state='attached', timeout=10000)
+                    ele = await page.wait_for_selector(info_dict['selector'], state='attached', timeout=10000)
                     infos.append(ele.get_attribute(info_dict['attribute']))
                 elif action == 'click_and_inner_text':
                     for idx, sel in enumerate(info_dict['selector']):
                         if idx != len(info_dict['selector']) - 1:
-                            link = page.wait_for_selector(sel, state='attached', timeout=10000)
-                            link.click()
-                            page.wait_for_load_state('load')
+                            link = await page.wait_for_selector(sel, state='attached', timeout=10000)
+                            await link.click()
+                            await page.wait_for_load_state('load')
                         else:
-                            ele = page.wait_for_selector(sel, state='attached', timeout=10000)
+                            ele = await page.wait_for_selector(sel, state='attached', timeout=10000)
                             infos.append(ele.inner_text())
                 elif action == 'click_and_attribute':
                     for idx, sel in enumerate(info_dict['selector']):
                         if idx != len(info_dict['selector']) - 1:
-                            link = page.wait_for_selector(sel, state='attached', timeout=10000)
-                            link.click()
-                            page.wait_for_load_state('load')
+                            link = await page.wait_for_selector(sel, state='attached', timeout=10000)
+                            await link.click()
+                            await page.wait_for_load_state('load')
                         else:
-                            ele = page.wait_for_selector(sel, state='attached')
+                            ele = await page.wait_for_selector(sel, state='attached')
                             infos.append(ele.get_attribute(info_dict['attribute']))
                 else:
                     raise NotImplementedError(f'The action {action} is not supported yet.')
@@ -117,7 +130,7 @@ def get_info_from_website(env, config: Dict[Any, Any]) -> Any:
 
 
 # The following ones just need to load info from the files of software, no need to connect to the software
-def get_default_search_engine(env, config: Dict[str, str]):
+async def get_default_search_engine(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -151,7 +164,7 @@ def get_default_search_engine(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_cookie_data(env, config: Dict[str, str]):
+async def get_cookie_data(env, config: Dict[str, str]):
     """
     Get the cookies from the Chrome browser.
     Assume the cookies are stored in the default location, not encrypted and not large in size.
@@ -195,7 +208,7 @@ def get_cookie_data(env, config: Dict[str, str]):
         return None
 
 
-def get_history(env, config: Dict[str, str]):
+async def get_history(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         chrome_history_path = env.controller.execute_python_command(
@@ -236,7 +249,7 @@ def get_history(env, config: Dict[str, str]):
         return None
 
 
-def get_enabled_experiments(env, config: Dict[str, str]):
+async def get_enabled_experiments(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -270,7 +283,7 @@ def get_enabled_experiments(env, config: Dict[str, str]):
         return []
 
 
-def get_profile_name(env, config: Dict[str, str]):
+async def get_profile_name(env, config: Dict[str, str]):
     """
     Get the username from the Chrome browser.
     Assume the cookies are stored in the default location, not encrypted and not large in size.
@@ -307,7 +320,7 @@ def get_profile_name(env, config: Dict[str, str]):
         return None
 
 
-def get_chrome_language(env, config: Dict[str, str]):
+async def get_chrome_language(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -341,7 +354,7 @@ def get_chrome_language(env, config: Dict[str, str]):
         return "en-US"
 
 
-def get_chrome_font_size(env, config: Dict[str, str]):
+async def get_chrome_font_size(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -382,7 +395,7 @@ def get_chrome_font_size(env, config: Dict[str, str]):
         }
 
 
-def get_bookmarks(env, config: Dict[str, str]):
+async def get_bookmarks(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -412,7 +425,7 @@ def get_bookmarks(env, config: Dict[str, str]):
 
 
 # todo: move this to the main.py
-def get_extensions_installed_from_shop(env, config: Dict[str, str]):
+async def get_extensions_installed_from_shop(env, config: Dict[str, str]):
     """Find the Chrome extensions directory based on the operating system."""
     os_type = env.vm_platform
     if os_type == 'Windows':
@@ -455,17 +468,17 @@ def get_extensions_installed_from_shop(env, config: Dict[str, str]):
 # The following ones require Playwright to be installed on the target machine, and the chrome needs to be pre-config on
 # port info to allow remote debugging, see README.md for details
 
-def get_page_info(env, config: Dict[str, str]):
+async def get_page_info(env, config: Dict[str, str]):
     host = env.vm_ip
     port = env.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
     server_port = env.server_port
     url = config["url"]
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         # connect to remote Chrome instance
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -484,15 +497,19 @@ def get_page_info(env, config: Dict[str, str]):
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
 
-        page = browser.contexts[0].new_page()
-        page.goto(url)
+        page = await browser.contexts[0].new_page()
+        try:
+            await page.goto(url, timeout=60000)
+        except Exception as e:
+            logger.error("Failed to go to the target URL page")
+            return None
 
         try:
             # Wait for the page to finish loading, this prevents the "execution context was destroyed" issue
-            page.wait_for_load_state('load')  # Wait for the 'load' event to complete
-            title = page.title()
+            await page.wait_for_load_state('load')  # Wait for the 'load' event to complete
+            title = await page.title()
             url = page.url
             page_info = {'title': title, 'url': url, 'content': page.content()}
         except TimeoutError:
@@ -503,20 +520,20 @@ def get_page_info(env, config: Dict[str, str]):
             print(f'Error: {e}')
             page_info = {'title': 'Error encountered', 'url': page.url, 'content': page.content()}
 
-        browser.close()
+        await browser.close()
         return page_info
 
 
-def get_open_tabs_info(env, config: Dict[str, str]):
+async def get_open_tabs_info(env, config: Dict[str, str]):
     host = env.vm_ip
     port = env.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
     server_port = env.server_port
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         # connect to remote Chrome instance
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -536,7 +553,7 @@ def get_open_tabs_info(env, config: Dict[str, str]):
             requests.post(f"http://{host}:{server_port}/setup/launch", headers=headers, data=payload)
             time.sleep(5)
             try:
-                browser = p.chromium.connect_over_cdp(remote_debugging_url)
+                browser = await p.chromium.connect_over_cdp(remote_debugging_url)
             except Exception as e:
                 return []
 
@@ -545,8 +562,8 @@ def get_open_tabs_info(env, config: Dict[str, str]):
             for page in context.pages:
                 try:
                     # Wait for the page to finish loading, this prevents the "execution context was destroyed" issue
-                    page.wait_for_load_state('networkidle')  # Wait for the 'load' event to complete
-                    title = page.title()
+                    await page.wait_for_load_state('networkidle')  # Wait for the 'load' event to complete
+                    title = await page.title()
                     url = page.url
                     tabs_info.append({'title': title, 'url': url})
                 except TimeoutError:
@@ -557,11 +574,11 @@ def get_open_tabs_info(env, config: Dict[str, str]):
                     print(f'Error: {e}')
                     tabs_info.append({'title': 'Error encountered', 'url': page.url})
 
-        browser.close()
+        await browser.close()
         return tabs_info
 
 
-def get_active_url_from_accessTree(env, config):
+async def get_active_url_from_accessTree(env, config):
     """
         Playwright cannot get the url of active tab directly, 
         so we need to use accessibility tree to get the active tab info.
@@ -632,7 +649,7 @@ def get_active_url_from_accessTree(env, config):
     return active_tab_url
 
 
-def get_active_tab_info(env, config: Dict[str, str]):
+async def get_active_tab_info(env, config: Dict[str, str]):
     """
     This function is used to get all info about active tab.
     Warning! This function will reload the target-url page
@@ -643,7 +660,7 @@ def get_active_tab_info(env, config: Dict[str, str]):
         # Keys used in get_active_url_from_accessTree: "xpath", "selectors"
     }
     """
-    active_tab_url = get_active_url_from_accessTree(env, config)
+    active_tab_url = await get_active_url_from_accessTree(env, config)
     if active_tab_url is None:
         logger.error("Failed to get the url of active tab")
         return None
@@ -651,36 +668,37 @@ def get_active_tab_info(env, config: Dict[str, str]):
     port = env.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         # connect to remote Chrome instance, since it is supposed to be the active one, we won't start a new one if failed
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             return None
 
+        logger.info(f"Active tab url: {active_tab_url}")
         active_tab_info = {}
         # go to the target URL page
-        page = browser.new_page()
+        page = await browser.new_page()
         try:
-            page.goto(active_tab_url)
+            await page.goto(active_tab_url, timeout=60000)
         except:
             logger.error("Failed to go to the target URL page")
             return None
-        page.wait_for_load_state('load')  # Wait for the 'load' event to complete
+        await page.wait_for_load_state('load')  # Wait for the 'load' event to complete
         active_tab_info = {
             'title': page.title(),
             'url': page.url,
             'content': page.content()  # get the HTML content of the page
         }
 
-        browser.close()
+        await browser.close()
         # print("active_tab_title: {}".format(active_tab_info.get('title', 'None')))
         # print("active_tab_url: {}".format(active_tab_info.get('url', 'None')))
         # print("active_tab_content: {}".format(active_tab_info.get('content', 'None')))
         return active_tab_info
 
 
-def get_pdf_from_url(env, config: Dict[str, str]) -> str:
+async def get_pdf_from_url(env, config: Dict[str, str]) -> str:
     """
     Download a PDF from a URL.
     """
@@ -693,9 +711,9 @@ def get_pdf_from_url(env, config: Dict[str, str]) -> str:
 
     remote_debugging_url = f"http://{host}:{port}"
 
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -714,27 +732,31 @@ def get_pdf_from_url(env, config: Dict[str, str]) -> str:
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
 
-        page = browser.new_page()
-        page.goto(_url)
-        page.pdf(path=_path)
-        browser.close()
+        page = await browser.new_page()
+        try:
+            await page.goto(_url, timeout=60000)
+        except Exception as e:
+            logger.error("Failed to go to the target URL page")
+            return None
+        await page.pdf(path=_path)
+        await browser.close()
 
     return _path
 
 
 # fixme: needs to be changed (maybe through post-processing) since it's not working
-def get_chrome_saved_address(env, config: Dict[str, str]):
+async def get_chrome_saved_address(env, config: Dict[str, str]):
     host = env.vm_ip
     port = env.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
     server_port = env.server_port
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         # connect to remote Chrome instance
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -753,17 +775,21 @@ def get_chrome_saved_address(env, config: Dict[str, str]):
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
 
-        page = browser.new_page()
+        page = await browser.new_page()
 
         # Navigate to Chrome's settings page for autofill
-        page.goto("chrome://settings/addresses")
+        try:
+            await page.goto("chrome://settings/addresses")
+        except Exception as e:
+            logger.error("Failed to go to chrome://settings/addresses")
+            return None
 
         # Get the HTML content of the page
-        content = page.content()
+        content = await page.content()
 
-        browser.close()
+        await browser.close()
 
     return content
 
@@ -803,7 +829,7 @@ def get_shortcuts_on_desktop(env, config: Dict[str, str]):
     return short_cuts
 
 
-def get_number_of_search_results(env, config: Dict[str, str]):
+async def get_number_of_search_results(env, config: Dict[str, str]):
     # todo: move into the config file
     url, result_selector = "https://google.com/search?q=query", '.search-result'
     host = env.vm_ip
@@ -811,9 +837,9 @@ def get_number_of_search_results(env, config: Dict[str, str]):
     server_port = env.server_port
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -832,17 +858,21 @@ def get_number_of_search_results(env, config: Dict[str, str]):
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
-        page = browser.new_page()
-        page.goto(url)
-        search_results = page.query_selector_all(result_selector)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
+        page = await browser.new_page()
+        try:
+            await page.goto(url, timeout=60000)
+        except Exception as e:
+            logger.error("Failed to go to the URL page")
+            return None
+        search_results = await page.query_selector_all(result_selector)
         actual_count = len(search_results)
-        browser.close()
+        await browser.close()
 
     return actual_count
 
 
-def get_googledrive_file(env, config: Dict[str, Any]) -> str:
+async def get_googledrive_file(env, config: Dict[str, Any]) -> str:
     """ Get the desired file from Google Drive based on config, return the downloaded local filepath.
     @args: keys in config dict
         settings_file(str): target filepath to the settings file for Google Drive authentication, default is 'evaluation_examples/settings/googledrive/settings.yml'
@@ -905,7 +935,7 @@ def get_googledrive_file(env, config: Dict[str, Any]) -> str:
         return _path_list
 
 
-def get_enable_do_not_track(env, config: Dict[str, str]):
+async def get_enable_do_not_track(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -938,7 +968,7 @@ def get_enable_do_not_track(env, config: Dict[str, str]):
         return "false"
 
 
-def get_enable_enhanced_safety_browsing(env, config: Dict[str, str]):
+async def get_enable_enhanced_safety_browsing(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -971,7 +1001,7 @@ def get_enable_enhanced_safety_browsing(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_new_startup_page(env, config: Dict[str, str]):
+async def get_new_startup_page(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -1009,7 +1039,7 @@ def get_new_startup_page(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_find_unpacked_extension_path(env, config: Dict[str, str]):
+async def get_find_unpacked_extension_path(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -1046,7 +1076,7 @@ def get_find_unpacked_extension_path(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_find_installed_extension_name(env, config: Dict[str, str]):
+async def get_find_installed_extension_name(env, config: Dict[str, str]):
     os_type = env.vm_platform
     if os_type == 'Windows':
         preference_file_path = env.controller.execute_python_command("""import os; print(os.path.join(os.getenv('LOCALAPPDATA'),
@@ -1083,7 +1113,7 @@ def get_find_installed_extension_name(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_data_delete_automacally(env, config: Dict[str, str]):
+async def get_data_delete_automacally(env, config: Dict[str, str]):
     """
     This function is used to open th "auto-delete" mode of chromium
     """
@@ -1117,7 +1147,7 @@ def get_data_delete_automacally(env, config: Dict[str, str]):
         return "Google"
 
 
-def get_active_tab_html_parse(env, config: Dict[str, Any]):
+async def get_active_tab_html_parse(env, config: Dict[str, Any]):
     """
     This function is used to get the specific element's text content from the active tab's html.
     config:
@@ -1148,7 +1178,7 @@ def get_active_tab_html_parse(env, config: Dict[str, Any]):
                 a dict with keys as the input element's xpath, like { "full xpath" : "the key you want to store the text content of this element" }
     }
     """
-    active_tab_url = get_active_url_from_accessTree(env, config)
+    active_tab_url = await get_active_url_from_accessTree(env, config)
     if not isinstance(active_tab_url, str):
         logger.error("active_tab_url is not a string")
         return None
@@ -1157,10 +1187,10 @@ def get_active_tab_html_parse(env, config: Dict[str, Any]):
     server_port = env.server_port
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         # connect to remote Chrome instance
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -1179,11 +1209,11 @@ def get_active_tab_html_parse(env, config: Dict[str, Any]):
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         target_page = None
         for context in browser.contexts:
             for page in context.pages:
-                page.wait_for_load_state("networkidle")
+                await page.wait_for_load_state("networkidle")
                 # the accTree and playwright can get encoding(percent-encoding) characters, we need to convert them to normal characters
                 if unquote(page.url) == unquote(active_tab_url):
                     target_page = page
@@ -1216,12 +1246,11 @@ def get_active_tab_html_parse(env, config: Dict[str, Any]):
                     return_json[key] = element_text[0]
 
         elif config['category'] == "label":
-            # Assuming get_by_label is a custom function or part of the framework being used
             labelObject = config.get("labelObject", {})
             for labelSelector, key in labelObject.items():
-                text = target_page.locator(f"text={labelSelector}").first.text_content().strip()
-                if text:
-                    return_json[key] = text
+                elements = target_page.locator(f"text={labelSelector}")
+                if elements.count() > 0:
+                    return_json[key] = elements.first.text_content().strip()
 
         elif config["category"] == "xpath":
             xpathObject = config.get("xpathObject", {})
@@ -1237,11 +1266,11 @@ def get_active_tab_html_parse(env, config: Dict[str, Any]):
                 if inputs.count() > 0:
                     return_json[key] = inputs.first.input_value().strip()
 
-        browser.close()
+        await browser.close()
     return return_json
 
 
-def get_gotoRecreationPage_and_get_html_content(env, config: Dict[str, Any]):
+async def get_gotoRecreationPage_and_get_html_content(env, config: Dict[str, Any]):
     """
     especially used for www.recreation.gov examples
     """
@@ -1250,9 +1279,9 @@ def get_gotoRecreationPage_and_get_html_content(env, config: Dict[str, Any]):
     server_port = env.server_port
 
     remote_debugging_url = f"http://{host}:{port}"
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         try:
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
         except Exception as e:
             # If the connection fails, start a new browser instance
             platform.machine()
@@ -1271,19 +1300,23 @@ def get_gotoRecreationPage_and_get_html_content(env, config: Dict[str, Any]):
             headers = {"Content-Type": "application/json"}
             requests.post("http://" + host + ":" + server_port + "/setup" + "/launch", headers=headers, data=payload)
             time.sleep(5)
-            browser = p.chromium.connect_over_cdp(remote_debugging_url)
-        page = browser.new_page()
-        page.goto("https://www.recreation.gov/")
-        page.fill("input#hero-search-input", "Albion Basin")
-        page.click("button.nav-search-button")
+            browser = await p.chromium.connect_over_cdp(remote_debugging_url)
+        page = await browser.new_page()
+        try:
+            await page.goto("https://www.recreation.gov/", timeout=60000)
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
+        await page.fill("input#hero-search-input", "Albion Basin")
+        await page.click("button.nav-search-button")
         print("after first click")
         time.sleep(2)
         # Assuming .search-result-highlight--success leads to a new page or requires page load
         with page.expect_popup() as popup_info:
-            page.click(".search-result-highlight--success")
+            await page.click(".search-result-highlight--success")
         print("after second click")
         newpage = popup_info.value
-        newpage.wait_for_load_state()
+        await newpage.wait_for_load_state()
         print("go to newpage: ")
         print(newpage.title())
         time.sleep(2)

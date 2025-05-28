@@ -7,7 +7,7 @@ from .replay import get_replay
 logger = logging.getLogger("desktopenv.getters.vscode")
 
 
-def get_vscode_config(env, config: Dict[str, Any]) -> str:
+async def get_vscode_config(env, config: Dict[str, Any]) -> str:
     os_type = env.vm_platform
     vscode_extension_command = config["vscode_extension_command"]
 

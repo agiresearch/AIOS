@@ -5,7 +5,7 @@ import requests
 logger = logging.getLogger("desktopenv.getters.general")
 
 
-def get_vm_command_line(env, config: Dict[str, str]):
+async def get_vm_command_line(env, config: Dict[str, str]):
     vm_ip = env.vm_ip
     port = env.server_port
     command = config["command"]
@@ -21,7 +21,7 @@ def get_vm_command_line(env, config: Dict[str, str]):
         logger.error("Failed to get vm command line. Status code: %d", response.status_code)
         return None
 
-def get_vm_command_error(env, config: Dict[str, str]):
+async def get_vm_command_error(env, config: Dict[str, str]):
     vm_ip = env.vm_ip
     port = env.server_port
     command = config["command"]
@@ -38,5 +38,5 @@ def get_vm_command_error(env, config: Dict[str, str]):
         return None
 
 
-def get_vm_terminal_output(env, config: Dict[str, str]):
-    return env.controller.get_terminal_output()
+async def get_vm_terminal_output(env, config: Dict[str, str]):
+    return await env.controller.get_terminal_output()

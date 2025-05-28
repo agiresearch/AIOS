@@ -6,7 +6,7 @@ import requests
 import pandas as pd
 
 
-def get_content_from_vm_file(env, config: Dict[str, Any]) -> Any:
+async def get_content_from_vm_file(env, config: Dict[str, Any]) -> Any:
     """
     Config:
         path (str): absolute path on the VM to fetch
@@ -25,7 +25,7 @@ def get_content_from_vm_file(env, config: Dict[str, Any]) -> Any:
         raise NotImplementedError(f"File type {file_type} not supported")
 
 
-def get_cloud_file(env, config: Dict[str, Any]) -> Union[str, List[str]]:
+async def get_cloud_file(env, config: Dict[str, Any]) -> Union[str, List[str]]:
     """
     Config:
         path (str|List[str]): the url to download from
@@ -68,7 +68,7 @@ def get_cloud_file(env, config: Dict[str, Any]) -> Union[str, List[str]]:
     return cache_paths[0] if len(cache_paths)==1 else cache_paths
 
 
-def get_vm_file(env, config: Dict[str, Any]) -> Union[Optional[str], List[Optional[str]]]:
+async def get_vm_file(env, config: Dict[str, Any]) -> Union[Optional[str], List[Optional[str]]]:
     """
     Config:
         path (str): absolute path on the VM to fetch
@@ -118,7 +118,7 @@ def get_vm_file(env, config: Dict[str, Any]) -> Union[Optional[str], List[Option
     return cache_paths[0] if len(cache_paths)==1 else cache_paths
 
 
-def get_cache_file(env, config: Dict[str, str]) -> str:
+async def get_cache_file(env, config: Dict[str, str]) -> str:
     """
     Config:
         path (str): relative path in cache dir

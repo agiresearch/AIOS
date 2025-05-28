@@ -15,6 +15,7 @@ from typing import Dict, List
 
 import requests
 from playwright.sync_api import sync_playwright, TimeoutError
+from playwright.async_api import async_playwright
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive, GoogleDriveFile, GoogleDriveFileList
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -40,7 +41,7 @@ class SetupController:
     def reset_cache_dir(self, cache_dir: str):
         self.cache_dir = cache_dir
 
-    def setup(self, config: List[Dict[str, Any]]):
+    async def setup(self, config: List[Dict[str, Any]]):
         """
         Args:
             config (List[Dict[str, Any]]): list of dict like {str: Any}. each
@@ -59,13 +60,15 @@ class SetupController:
 
             # Assumes all the setup the functions should follow this name
             # protocol
+            
+            logger.info("SETUP: %s(%s)", config_type, str(parameters))
             setup_function: str = "_{:}_setup".format(config_type)
             assert hasattr(self, setup_function), f'Setup controller cannot find init function {setup_function}'
-            getattr(self, setup_function)(**parameters)
+            await getattr(self, setup_function)(**parameters)
 
             logger.info("SETUP: %s(%s)", setup_function, str(parameters))
 
-    def _download_setup(self, files: List[Dict[str, str]]):
+    async def _download_setup(self, files: List[Dict[str, str]]):
         """
         Args:
             files (List[Dict[str, str]]): files to download. lisf of dict like
@@ -130,7 +133,7 @@ class SetupController:
             except requests.exceptions.RequestException as e:
                 logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _upload_file_setup(self, files: List[Dict[str, str]]):
+    async def _upload_file_setup(self, files: List[Dict[str, str]]):
         """
         Args:
             files (List[Dict[str, str]]): files to download. lisf of dict like
@@ -165,7 +168,7 @@ class SetupController:
             except requests.exceptions.RequestException as e:
                 logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _change_wallpaper_setup(self, path: str):
+    async def _change_wallpaper_setup(self, path: str):
         # if not config:
         # return
         # if not 'wallpaper' in config:
@@ -190,10 +193,10 @@ class SetupController:
         except requests.exceptions.RequestException as e:
             logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _tidy_desktop_setup(self, **config):
+    async def _tidy_desktop_setup(self, **config):
         raise NotImplementedError()
 
-    def _open_setup(self, path: str):
+    async def _open_setup(self, path: str):
         # if not config:
         # return
         # if not 'open' in config:
@@ -217,7 +220,7 @@ class SetupController:
         except requests.exceptions.RequestException as e:
             logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _launch_setup(self, command: Union[str, List[str]], shell: bool = False):
+    async def _launch_setup(self, command: Union[str, List[str]], shell: bool = False):
         if not command:
             raise Exception("Empty command to launch.")
 
@@ -237,7 +240,7 @@ class SetupController:
         except requests.exceptions.RequestException as e:
             logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _execute_setup(
+    async def _execute_setup(
             self,
             command: List[str],
             stdout: str = "",
@@ -291,17 +294,17 @@ class SetupController:
             if not terminates:
                 time.sleep(0.3)
 
-    def _command_setup(self, command: List[str], **kwargs):
-        self._execute_setup(command, **kwargs)
+    async def _command_setup(self, command: List[str], **kwargs):
+        await self._execute_setup(command, **kwargs)
 
-    def _sleep_setup(self, seconds: float):
+    async def _sleep_setup(self, seconds: float):
         time.sleep(seconds)
 
-    def _act_setup(self, action_seq: List[Union[Dict[str, Any], str]]):
+    async def _act_setup(self, action_seq: List[Union[Dict[str, Any], str]]):
         # TODO
         raise NotImplementedError()
 
-    def _replay_setup(self, trajectory: str):
+    async def _replay_setup(self, trajectory: str):
         """
         Args:
             trajectory (str): path to the replay trajectory file
@@ -310,7 +313,7 @@ class SetupController:
         # TODO
         raise NotImplementedError()
 
-    def _activate_window_setup(self, window_name: str, strict: bool = False, by_class: bool = False):
+    async def _activate_window_setup(self, window_name: str, strict: bool = False, by_class: bool = False):
         if not window_name:
             raise Exception(f"Setup Open - Invalid path ({window_name}).")
 
@@ -329,7 +332,7 @@ class SetupController:
         except requests.exceptions.RequestException as e:
             logger.error("An error occurred while trying to send the request: %s", e)
 
-    def _close_window_setup(self, window_name: str, strict: bool = False, by_class: bool = False):
+    async def _close_window_setup(self, window_name: str, strict: bool = False, by_class: bool = False):
         if not window_name:
             raise Exception(f"Setup Open - Invalid path ({window_name}).")
 
@@ -349,7 +352,7 @@ class SetupController:
             logger.error("An error occurred while trying to send the request: %s", e)
 
     # Chrome setup
-    def _chrome_open_tabs_setup(self, urls_to_open: List[str]):
+    async def _chrome_open_tabs_setup(self, urls_to_open: List[str]):
         host = self.vm_ip
         port = self.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
 
@@ -361,20 +364,23 @@ class SetupController:
                 time.sleep(5)
 
             browser = None
-            with sync_playwright() as p:
+            async with async_playwright() as p:
                 try:
-                    browser = p.chromium.connect_over_cdp(remote_debugging_url)
+                    browser = await p.chromium.connect_over_cdp(remote_debugging_url)
                     # break
                 except Exception as e:
                     if attempt < 14:
-                        logger.error(f"Attempt {attempt + 1}: Failed to connect, retrying. Error: {e}")
+                        logger.info(f"Attempt {attempt + 1}: Failed to connect, retrying. Error: {e}")
                         # time.sleep(10)
                         continue
                     else:
-                        logger.error(f"Failed to connect after multiple attempts: {e}")
+                        logger.info(f"Failed to connect after multiple attempts: {e}")
                         raise e
+            
+                logger.info("Browser: %s", browser)
 
                 if not browser:
+                    logger.info("Failed to connect to Chrome")
                     return
 
                 logger.info("Opening %s...", urls_to_open)
@@ -383,9 +389,9 @@ class SetupController:
                     if i == 0:
                         context = browser.contexts[0]
 
-                    page = context.new_page()  # Create a new page (tab) within the existing context
+                    page = await context.new_page()  # Create a new page (tab) within the existing context
                     try:
-                        page.goto(url, timeout=60000)
+                        await page.goto(url, timeout=60000)
                     except:
                         logger.warning("Opening %s exceeds time limit", url)  # only for human test
                     logger.info(f"Opened tab {i + 1}: {url}")
@@ -393,24 +399,24 @@ class SetupController:
                     if i == 0:
                         # clear the default tab
                         default_page = context.pages[0]
-                        default_page.close()
+                        await default_page.close()
 
                 # Do not close the context or browser; they will remain open after script ends
                 return browser, context
 
-    def _chrome_close_tabs_setup(self, urls_to_close: List[str]):
+    async def _chrome_close_tabs_setup(self, urls_to_close: List[str]):
         time.sleep(5)  # Wait for Chrome to finish launching
 
         host = self.vm_ip
         port = self.chromium_port  # fixme: this port is hard-coded, need to be changed from config file
 
         remote_debugging_url = f"http://{host}:{port}"
-        with sync_playwright() as p:
+        async with async_playwright() as p:
             browser = None
             for attempt in range(15):
                 try:
-                    browser = p.chromium.connect_over_cdp(remote_debugging_url)
-                    break
+                    browser = await p.chromium.connect_over_cdp(remote_debugging_url)
+                    # break
                 except Exception as e:
                     if attempt < 14:
                         logger.error(f"Attempt {attempt + 1}: Failed to connect, retrying. Error: {e}")
@@ -432,7 +438,7 @@ class SetupController:
                     # if two urls are the same, close the tab
                     if compare_urls(page.url, url):
                         context.pages.pop(context.pages.index(page))
-                        page.close()
+                        await page.close()
                         logger.info(f"Closed tab {i + 1}: {url}")
                         break
 
@@ -440,7 +446,7 @@ class SetupController:
             return browser, context
 
     # google drive setup
-    def _googledrive_setup(self, **config):
+    async def _googledrive_setup(self, **config):
         """ Clean google drive space (eliminate the impact of previous experiments to reset the environment)
         @args:
             config(Dict[str, Any]): contain keys
@@ -523,7 +529,7 @@ class SetupController:
             else:
                 raise ValueError('[ERROR]: not implemented clean type!')
 
-    def _login_setup(self, **config):
+    async def _login_setup(self, **config):
         """ Login to a website with account and password information.
         @args:
             config(Dict[str, Any]): contain keys
@@ -536,12 +542,12 @@ class SetupController:
         port = self.chromium_port
 
         remote_debugging_url = f"http://{host}:{port}"
-        with sync_playwright() as p:
+        async with async_playwright() as p:
             browser = None
             for attempt in range(15):
                 try:
-                    browser = p.chromium.connect_over_cdp(remote_debugging_url)
-                    break
+                    browser = await p.chromium.connect_over_cdp(remote_debugging_url)
+                    # break
                 except Exception as e:
                     if attempt < 14:
                         logger.error(f"Attempt {attempt + 1}: Failed to connect, retrying. Error: {e}")
@@ -557,9 +563,9 @@ class SetupController:
 
             if platform == 'googledrive':
                 url = 'https://drive.google.com/drive/my-drive'
-                page = context.new_page()  # Create a new page (tab) within the existing context
+                page = await context.new_page()  # Create a new page (tab) within the existing context
                 try:
-                    page.goto(url, timeout=60000)
+                    await page.goto(url, timeout=60000)
                 except:
                     logger.warning("Opening %s exceeds time limit", url)  # only for human test
                 logger.info(f"Opened new page: {url}")
@@ -567,13 +573,13 @@ class SetupController:
                 email, password = settings['email'], settings['password']
 
                 try:
-                    page.wait_for_selector('input[type="email"]', state="visible", timeout=3000)
-                    page.fill('input[type="email"]', email)
-                    page.click('#identifierNext > div > button')
-                    page.wait_for_selector('input[type="password"]', state="visible", timeout=5000)
-                    page.fill('input[type="password"]', password)
-                    page.click('#passwordNext > div > button')
-                    page.wait_for_load_state('load', timeout=5000)
+                    await page.wait_for_selector('input[type="email"]', state="visible", timeout=3000)
+                    await page.fill('input[type="email"]', email)
+                    await page.click('#identifierNext > div > button')
+                    await page.wait_for_selector('input[type="password"]', state="visible", timeout=5000)
+                    await page.fill('input[type="password"]', password)
+                    await page.click('#passwordNext > div > button')
+                    await page.wait_for_load_state('load', timeout=5000)
                 except TimeoutError:
                     logger.info('[ERROR]: timeout when waiting for google drive login page to load!')
                     return
@@ -583,7 +589,7 @@ class SetupController:
 
             return browser, context
 
-    def _update_browse_history_setup(self, **config):
+    async def _update_browse_history_setup(self, **config):
         cache_path = os.path.join(self.cache_dir, "history_new.sqlite")
         db_url = "https://drive.usercontent.google.com/u/0/uc?id=1Lv74QkJYDWVX0RIgg0Co-DUcoYpVL0oX&export=download" # google drive
         if not os.path.exists(cache_path):
