@@ -28,7 +28,17 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 <img src="docs/assets/aios-figs/details.png">
 </p>
 
+### Computer-use Specialized Architecture
+For computer-use agent, the architecture extends the AIOS Kernel with significant enhancements focused on computer contextualization. While preserving essential components like LLM Core(s), Context Manager, and Memory Manager, the Tool Manager module has been fundamentally redesigned to incorporate a VM (Virtual Machine) Controller and MCP Server.
+This redesign creates a sandboxed environment that allows agents to safely interact with computer systems while
+maintaining a consistent semantic mapping between agent intentions and computer operations. 
+
+<p align="center">
+<img src="docs/assets/litecua-figs/architecture.png">
+</p>
+
 ## 📰 News
+- **[2025-05-24]** 📋 Check out our paper on computer-use agent: [LiteCUA: Computer as MCP Server for Computer-Use Agent on AIOS](https://arxiv.org/pdf/2505.18829) and the corresponding [codebase](https://github.com/agiresearch/LiteCUA). 
 - **[2025-03-13]** 📋 Paper [Cerebrum (AIOS SDK): A Platform for Agent Development, Deployment, Distribution, and Discovery](https://arxiv.org/abs/2503.11444) has been accepted by NAACL 2025! Features has been integrated into [Cerebrum](https://github.com/agiresearch/Cerebrum).
 - **[2025-03-12]** 🔥 A major refactor of the codebase packed with powerful new features have been integrated into the main repo. Please check out the AIOS v0.2.2 release.
 - **[2025-03-10]** 📋 Check out our paper on agentic memory [A-MEM: Agentic Memory for LLM Agents](https://arxiv.org/abs/2502.12110) and the corresponding [codebase](https://github.com/agiresearch/A-mem). 
@@ -395,6 +405,8 @@ For how to contribute, see [CONTRIBUTE](https://github.com/agiresearch/AIOS/blob
 ## 🌍 AIOS Contributors
 [![AIOS contributors](https://contrib.rocks/image?repo=agiresearch/AIOS&max=300)](https://github.com/agiresearch/AIOS/graphs/contributors)
 
+## Acknowledgement
+We learned the design and reused code from the following projects: [LiteLLM](https://docs.litellm.ai/docs/), [OSWorld](https://os-world.github.io/).
 
 ## 🤝 Discord Channel
 If you would like to join the community, ask questions, chat with fellows, learn about or propose new features, and participate in future developments, join our [Discord Community](https://discord.gg/B2HFxEgTJX)!
