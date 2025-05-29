@@ -197,6 +197,9 @@ pip install -r requirements.txt
    cd Cerebrum && pip install -e .
    ```
 
+##### Step 3: Install Virtualized Environment (Optional)
+To use the mcp for computer-use agent, we strongly recommend you install a virtualized environment equipped with GUI. Instructions can be found in [here](https://github.com/xlang-ai/OSWorld). 
+
 **Note**: The machine where the AIOS kernel (AIOS) is installed must also have the AIOS SDK (Cerebrum) installed. Installing AIOS kernel will install the AIOS SDK automatically by default. If you are using the Local Kernel mode, i.e., you are running AIOS and agents on the same machine, then simply install both AIOS and Cerebrum on that machine. If you are using Remote Kernel mode, i.e., running AIOS on Machine 1 and running agents on Machine 2 and the agents remotely interact with the kernel, then you need to install both AIOS kernel and AIOS SDK on Machine 1, and install the AIOS SDK alone on Machine 2. Please follow the guidelines at [Cerebrum](https://github.com/agiresearch/Cerebrum) regarding how to install the SDK.
 
 ### Quickstart
@@ -345,6 +348,9 @@ Detailed instructions of how to use the AIOS terminal can be found at [here](htt
 
 > [!WARNING]
 > The rollback feature of the AIOS terminal requires the connection to the redis server. Make sure you have the redis server running if you would like to use the rollback feature.
+
+#### Run computer-use Agent
+Make sure you have installed a virtualized environment with GUI, then you can refer to [Cerebrum](https://github.com/agiresearch/Cerebrum) for how to run the computer-use agent. 
 
 ### Supported Agent Frameworks
 - [OpenAGI](https://github.com/agiresearch/openagi)

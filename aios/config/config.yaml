@@ -27,6 +27,9 @@ llms:
     # - name: "gpt-4o"
     #   backend: "openai"
 
+    # - name: "gpt-4o-mini"
+    #   backend: "openai"
+
 
     # Google Models
     # - name: "gemini-2.0-flash"
@@ -73,6 +76,9 @@ memory:
 storage:
   root_dir: "root"
   use_vector_db: true
+
+tool:
+  mcp_server_script_path: "aios/tool/mcp_server.py"
 
 scheduler:
   log_mode: "console" # choose from [console, file]
