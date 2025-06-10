@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 import time
 import requests
 
-from virtual_env.actions import KEYBOARD_KEYS
+# from virtual_env.actions import KEYBOARD_KEYS
 
 logger = logging.getLogger("desktopenv.pycontroller")
 
