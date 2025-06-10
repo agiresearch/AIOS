@@ -362,6 +362,7 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 | Provider 🏢 | Model Name 🤖 | Open Source 🔓 | Model String ⌨️ | Backend ⚙️ | Required API Key |
 |:------------|:-------------|:---------------|:---------------|:---------------|:----------------|
 | Anthropic | [All Models](https://makersuite.google.com/app/apikey) | ❌ | model-name | anthropic | ANTHROPIC_API_KEY |
+| OpenAI | [All Models](https://platform.openai.com/docs/models) | ✅ | model-name | openai | OPENAI_API_KEY |
 | Deepseek | [All Models](https://api-docs.deepseek.com/) | ✅ | model-name | deepseek | DEEPSEEK_API_KEY |
 | Google | [All Models](https://makersuite.google.com/app/apikey) | ❌ | model-name | gemini| GEMINI_API_KEY |
 | Groq | [All Models](https://console.groq.com/keys) | ✅ | model-name | groq | GROQ_API_KEY |
@@ -372,6 +373,12 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 
 ## Reference
 ```
+@article{mei2025litecua,
+  title={LiteCUA: Computer as MCP Server for Computer-Use Agent on AIOS},
+  author={Mei, Kai and Zhu, Xi and Gao, Hang and Lin, Shuhang and Zhang, Yongfeng},
+  journal={arXiv preprint arXiv:2505.18829},
+  year={2025}
+}
 @article{xu2025mem,
   title={A-Mem: Agentic Memory for LLM Agents},
   author={Xu, Wujiang and Liang, Zujie and Mei, Kai and Gao, Hang and Tan, Juntao and Zhang, Yongfeng},
