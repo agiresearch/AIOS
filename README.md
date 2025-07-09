@@ -38,6 +38,7 @@ maintaining a consistent semantic mapping between agent intentions and computer 
 </p>
 
 ## 📰 News
+- **[2025-07-08]** 🎉 The foundational paper [AIOS: LLM Agent Operating System](https://arxiv.org/abs/2403.16971) has been accepted by the Conference on Language Modeling (COLM 2025). Congratulations to the team!
 - **[2025-05-24]** 📋 Check out our paper on computer-use agent: [LiteCUA: Computer as MCP Server for Computer-Use Agent on AIOS](https://arxiv.org/pdf/2505.18829) and the corresponding [codebase](https://github.com/agiresearch/LiteCUA). 
 - **[2025-03-13]** 📋 Paper [Cerebrum (AIOS SDK): A Platform for Agent Development, Deployment, Distribution, and Discovery](https://arxiv.org/abs/2503.11444) has been accepted by NAACL 2025! Features has been integrated into [Cerebrum](https://github.com/agiresearch/Cerebrum).
 - **[2025-03-12]** 🔥 A major refactor of the codebase packed with powerful new features have been integrated into the main repo. Please check out the AIOS v0.2.2 release.
