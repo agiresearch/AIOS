@@ -88,5 +88,5 @@ agent_factory:
   max_workers: 64  
   
 server:
-  host: "localhost"
+  host: "127.0.0.1"
   port: 8000
