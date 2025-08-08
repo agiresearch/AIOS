@@ -374,6 +374,41 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 | Novita | [All Models](https://novita.ai/models/llm) | ✅ | model-name | novita | NOVITA_API_KEY |
 
 ## Reference
+\n+## 🔧 Experimental Rust Rewrite (aios-rs)
+An early experimental Rust scaffold lives in `aios-rs/` providing trait definitions and minimal placeholder implementations (context, memory, storage, tool, scheduler, llm). This is NOT feature-parity yet; it's a foundation for incremental porting and performance-focused components.
+
+### Try It
+```bash
+cd aios-rs
+cargo build
+cargo test
+```
+
+### Example (Echo LLM + Noop Scheduler)
+```rust
+use aios_rs::prelude::*;
+
+fn main() -> anyhow::Result<()> {
+  let llm = std::sync::Arc::new(EchoLLM);
+  let memory = std::sync::Arc::new(std::sync::Mutex::new(InMemoryMemoryManager::new()));
+  let storage = std::sync::Arc::new(FsStorageManager::new("/tmp/aios_store"));
+  let tool = std::sync::Arc::new(NoopToolManager);
+  let mut scheduler = NoopScheduler::new(llm, memory, storage, tool);
+  scheduler.start()?;
+  scheduler.stop()?;
+  Ok(())
+}
+```
+
+### Roadmap Snapshot
+- [x] Core trait scaffolding
+- [ ] Async runtime + channels
+- [ ] Vector store abstraction
+- [ ] Python bridge (pyo3 / IPC)
+- [ ] Port FIFO / RR schedulers
+- [ ] Benchmarks & feature flags
+
+Contributions welcome via focused PRs extending this scaffold. See `aios-rs/README.md` for details.
 ```
 @article{mei2025litecua,
   title={LiteCUA: Computer as MCP Server for Computer-Use Agent on AIOS},
