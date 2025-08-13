@@ -373,8 +373,7 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name | vllm | - |
 | Novita | [All Models](https://novita.ai/models/llm) | ✅ | model-name | novita | NOVITA_API_KEY |
 
-## Reference
-\n+## 🔧 Experimental Rust Rewrite (aios-rs)
+## 🔧 Experimental Rust Rewrite (aios-rs)
 An early experimental Rust scaffold lives in `aios-rs/` providing trait definitions and minimal placeholder implementations (context, memory, storage, tool, scheduler, llm). This is NOT feature-parity yet; it's a foundation for incremental porting and performance-focused components.
 
 ### Try It
@@ -401,6 +400,7 @@ fn main() -> anyhow::Result<()> {
 ```
 
 ### Roadmap Snapshot
+```
 - [x] Core trait scaffolding
 - [ ] Async runtime + channels
 - [ ] Vector store abstraction
@@ -410,6 +410,15 @@ fn main() -> anyhow::Result<()> {
 
 Contributions welcome via focused PRs extending this scaffold. See `aios-rs/README.md` for details.
 ```
+
+## Reference
+```
+@article{mei2025aios,
+  title={AIOS: LLM Agent Operating System},
+  author={Mei, Kai and Zhu, Xi and Xu, Wujiang and Hua, Wenyue and Jin, Mingyu and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
+  journal={In Proceedings of the 2nd Conference on Language Modeling (COLM 2025)},
+  year={2025}
+}
 @article{mei2025litecua,
   title={LiteCUA: Computer as MCP Server for Computer-Use Agent on AIOS},
   author={Mei, Kai and Zhu, Xi and Gao, Hang and Lin, Shuhang and Zhang, Yongfeng},
@@ -434,12 +443,6 @@ Contributions welcome via focused PRs extending this scaffold. See `aios-rs/READ
   booktitle={The Thirteenth International Conference on Learning Representations},
   year={2025},
   url={https://openreview.net/forum?id=2G021ZqUEZ}
-}
-@article{mei2024aios,
-  title={AIOS: LLM Agent Operating System},
-  author={Mei, Kai and Zhu, Xi and Xu, Wujiang and Hua, Wenyue and Jin, Mingyu and Li, Zelong and Xu, Shuyuan and Ye, Ruosong and Ge, Yingqiang and Zhang, Yongfeng}
-  journal={arXiv:2403.16971},
-  year={2024}
 }
 @article{ge2023llm,
   title={LLM as OS, Agents as Apps: Envisioning AIOS, Agents and the AIOS-Agent Ecosystem},
