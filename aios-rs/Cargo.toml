@@ -1,0 +1,11 @@
+[package]
+name = "aios-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Experimental Rust rewrite scaffold of the AIOS framework"
+license = "Apache-2.0"
+repository = "https://github.com/agiresearch/AIOS"
+readme = "README.md"
+
+[dependencies]
+anyhow = "1"
