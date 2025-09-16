@@ -318,17 +318,23 @@ bash runtime/launch_kernel.sh
 Or if you need to explicity set the Python version by running `python3.10`, `python3.11`, `python3`, etc. run the command below:
 
 ```
-python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 --port 8000 # replace the port with your own port
+python3.x -m uvicorn runtime.launch:app --host 0.0.0.0 --port 8000 # replace the port with your own port
 ```
 
 You also need to set up the host and port in the configuration of Cerebrum (AIOS SDK) to make sure it is consistent with the configurations of AIOS. 
 
 You can also force the kernel to run in the background with:
 ```
-python3.x -m uvicorn runtime.kernel:app --host 0.0.0.0 & 2>&1 > MYLOGFILE.txt
+python3.x -m uvicorn runtime.launch:app --host 0.0.0.0 > uvicorn.log 2>&1 &
 ```
 
 And you can run it even after the shell closes by typing `nohup` before the entire command.
+
+Command to launch the kernel in the background so it continues running even after the active shell is closed, while also logging information to the specified log file (recommended):
+
+```
+nohup python3 -m uvicorn runtime.launch:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+```
 
 #### Interact with AIOS terminal
 
