@@ -1,0 +1,55 @@
+name: Test Qdrant Integration
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-qdrant:
+    runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+
+    env:
+      VECTOR_DB_BACKEND: qdrant
+      QDRANT_HOST: localhost
+      QDRANT_PORT: 6333
+      QDRANT_EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install uv
+          uv venv
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+      
+      - name: Run Qdrant integration tests
+        run: |
+          source .venv/bin/activate
+          mkdir -p test_results
+          
+          echo "Running Qdrant integration tests"
+          python -m unittest tests.modules.test_qdrant_integration
+    
