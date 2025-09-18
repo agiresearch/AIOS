@@ -61,20 +61,23 @@ jobs:
             echo "Waiting for Kernel… ($i/${KERNEL_MAX_WAIT})"; sleep 1
           done
       
-      - name: Run tests
+      - name: Run Ollama tests
         run: |
           source .venv/bin/activate  
           mkdir -p test_results
-          mapfile -t TESTS < <(find . -type f -path "*/llm/ollama/*" -name "*.py")
-          if [ "${#TESTS[@]}" -eq 0 ]; then
+          
+          # Run Ollama tests
+          mapfile -t OLLAMA_TESTS < <(find . -type f -path "*/llm/ollama/*" -name "*.py")
+          if [ "${#OLLAMA_TESTS[@]}" -eq 0 ]; then
             echo "⚠️  No llm/ollama tests found – skipping."
-            exit 0
+          else
+            for t in "${OLLAMA_TESTS[@]}"; do
+              echo "▶️  Running Ollama test: $t"
+              python -m unittest "$t" 2>&1 | tee -a test_results/ollama_tests.log
+              echo "----------------------------------------"
+            done
           fi
-          for t in "${TESTS[@]}"; do
-            echo "▶️  Running $t"
-            python -m unittest "$t" 2>&1 | tee -a test_results/ollama_tests.log
-            echo "----------------------------------------"
-          done
+      
 
       - name: Upload logs
         if: always()

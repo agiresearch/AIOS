@@ -54,7 +54,7 @@ llms:
     #   backend: "huggingface"
     #   max_gpu_memory: {0: "48GB"}  # GPU memory allocation
     #   eval_device: "cuda:0"  # Device for model evaluation
-    
+
     # vLLM Models
     # To use vllm as backend, you need to install vllm and run the vllm server https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html
     # An example command to run the vllm server is:
@@ -72,10 +72,18 @@ llms:
 
 memory:
   log_mode: "console" # choose from [console, file]
-  
+
 storage:
   root_dir: "root"
   use_vector_db: true
+  # vector DB backend: chroma | qdrant
+  vector_db_backend: "chroma"
+  # Qdrant connection (used when backend == qdrant). Can also use env vars QDRANT_HOST, QDRANT_PORT, QDRANT_API_KEY
+  qdrant_host: "localhost"
+  qdrant_port: 6333
+  qdrant_api_key: ""
+  # Embedding model for Qdrant fastembed integration
+  qdrant_model_name: "sentence-transformers/all-MiniLM-L6-v2"
 
 tool:
   mcp_server_script_path: "aios/tool/mcp_server.py"
@@ -85,8 +93,8 @@ scheduler:
 
 agent_factory:
   log_mode: "console" # choose from [console, file]
-  max_workers: 64  
-  
+  max_workers: 64
+
 server:
   host: "localhost"
   port: 8000
