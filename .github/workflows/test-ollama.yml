@@ -2,7 +2,10 @@
 name: Test Ollama
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "DheekshithDev-patch-1" ]
+  pull_request:
+    branches: [ "DheekshithDev-patch-1" ]
 
 permissions:
   contents: read
