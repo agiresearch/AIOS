@@ -1,14 +1,14 @@
-from enum import Enum
 from typing import List, Dict, Any
 import chromadb
 from chromadb.utils import embedding_functions
+from qdrant_client import QdrantClient, models
+from aios.config.config_manager import config as global_config
 import json
 import numpy as np
-from typing import List, Dict, Any
 from tqdm import tqdm
 from collections import defaultdict
 
-import json
+import uuid
 
 from threading import Lock
 
@@ -52,8 +52,8 @@ class RouterStrategy:
 
 class SequentialRouting:
     """
-    The SequentialRouting class implements a round-robin selection strategy for load-balancing LLM requests. 
-    It iterates through a list of selected language models and returns their corresponding index based on 
+    The SequentialRouting class implements a round-robin selection strategy for load-balancing LLM requests.
+    It iterates through a list of selected language models and returns their corresponding index based on
     the request count.
 
     This strategy ensures that multiple models are utilized in sequence, distributing queries evenly across the available configurations.
@@ -98,24 +98,24 @@ class SequentialRouting:
         """
         # current  = self.selected_llms[self.idx]
         model_idxs = []
-        
+
         available_models = [llm.name for llm in self.llm_configs]
-        
+
         n_queries = len(queries)
-        
+
         for i in range(n_queries):
             selected_llm_list = selected_llm_lists[i]
-            
+
             if not selected_llm_list or len(selected_llm_list) == 0:
                 model_idxs.append(0)
                 continue
-            
+
             model_idx = -1
             for selected_llm in selected_llm_list:
                 if selected_llm["name"] in available_models:
                     model_idx = available_models.index(selected_llm["name"])
                     break
-            
+
             model_idxs.append(model_idx)
 
         return model_idxs
@@ -138,7 +138,7 @@ def get_token_lengths(queries: List[List[Dict[str, Any]]]):
     return [token_counter(model="gpt-4o-mini", messages=query) for query in queries]
 
 def messages_to_query(messages: List[Dict[str, str]],
-                      strategy: str = "last_user") -> str:
+                     strategy: str = "last_user") -> str:
     """
     Convert OpenAI ChatCompletion-style messages into a single query string.
     strategy:
@@ -201,35 +201,66 @@ class SmartRouting:
                     model_name: str = "all-MiniLM-L6-v2",
                     persist_directory: str = "llm_router",
                     bootstrap_url: str | None = None):
+            storage_cfg = global_config.get_storage_config() or {}
+            backend = (os.environ.get("VECTOR_DB_BACKEND") or storage_cfg.get("vector_db_backend") or "chroma").lower()
+
             self._persist_root = os.path.join(os.path.dirname(__file__), persist_directory)
             os.makedirs(self._persist_root, exist_ok=True)
 
-            self.client = chromadb.PersistentClient(path=self._persist_root)
-            self.embedding_function = embedding_functions.DefaultEmbeddingFunction()
+            self.backend = backend
+            if backend == "qdrant":
+                host = storage_cfg.get("qdrant_host", os.environ.get("QDRANT_HOST", "localhost"))
+                port = int(storage_cfg.get("qdrant_port", os.environ.get("QDRANT_PORT", 6333)))
+                api_key = storage_cfg.get("qdrant_api_key", os.environ.get("QDRANT_API_KEY"))
+                self.qdrant = QdrantClient(host=host, port=port, api_key=api_key)
+                self.model_name = storage_cfg.get("qdrant_model_name") or os.environ.get("QDRANT_EMBEDDING_MODEL", model_name)
+                self.collection_name = "historical_queries"
+                self._ensure_qdrant_collection()
+                self.client = None
+                self.embedding_function = None
+                self.collection = None
+            else:
+                self.client = chromadb.PersistentClient(path=self._persist_root)
+                self.embedding_function = embedding_functions.DefaultEmbeddingFunction()
+                self.collection = self._get_or_create_collection("historical_queries")
+                self.qdrant = None
+                self.model_name = model_name
+                self.collection_name = "historical_queries"
 
-            # Always create/get collections up‑front so we can inspect counts.
-            # self.train_collection = self._get_or_create_collection("train_queries")
-            # self.val_collection = self._get_or_create_collection("val_queries")
-            # self.test_collection = self._get_or_create_collection("test_queries")
-            self.collection = self._get_or_create_collection("historical_queries")
-            
             # If DB is empty and we have a bootstrap URL – populate it.
-            if bootstrap_url and self.collection.count() == 0:
-                self._bootstrap_from_drive(bootstrap_url)
-
-        # .................................................................
-        # Chroma helpers
-        # .................................................................
+            if bootstrap_url:
+                if backend == "qdrant":
+                    count = self._qdrant_count()
+                    if count == 0:
+                        self._bootstrap_from_drive(bootstrap_url)
+                else:
+                    if self.collection and self.collection.count() == 0:
+                        self._bootstrap_from_drive(bootstrap_url)
 
         def _get_or_create_collection(self, name: str):
+            if self.backend == "qdrant":
+                return None
+            if self.client is None:
+                return None
             try:
                 return self.client.get_collection(name=name, embedding_function=self.embedding_function)
             except Exception:
                 return self.client.create_collection(name=name, embedding_function=self.embedding_function)
 
-        # .................................................................
-        # Bootstrap logic – download + ingest
-        # .................................................................
+        def _ensure_qdrant_collection(self):
+            if not self.qdrant.collection_exists(self.collection_name):
+                dim = self.qdrant.get_embedding_size(self.model_name)
+                self.qdrant.create_collection(
+                    self.collection_name,
+                    vectors_config=models.VectorParams(size=dim, distance=models.Distance.COSINE),
+                )
+
+        def _qdrant_count(self) -> int:
+            try:
+                count = self.qdrant.count(self.collection_name).count
+                return count
+            except Exception:
+                return 0
 
         def _bootstrap_from_drive(self, url_or_id: str):
             print("\n[SmartRouting] Bootstrapping ChromaDB from Google Drive…\n")
@@ -237,7 +268,7 @@ class SmartRouting:
             with tempfile.TemporaryDirectory() as tmp:
                 # NB: gdown accepts both share links and raw IDs.
                 local_path = os.path.join(tmp, "bootstrap.json")
-                
+
                 gdown.download(url_or_id, local_path, quiet=False, fuzzy=True)
 
                 # Expect JSONL with {"query": ..., "split": "train"|"val"|"test", ...}
@@ -249,20 +280,20 @@ class SmartRouting:
 
                 print("[SmartRouting] Bootstrap complete – collections populated.\n")
 
-        # .................................................................
-        # Public data API
-        # .................................................................
-
         def add_data(self, data: List[Dict[str, Any]]):
-            collection = self.collection
-            queries, metadatas, ids = [], [], []
+            if self.backend == "qdrant":
+                queries, metadatas, ids = [], [], []
+            else:
+                collection = self.collection
+                queries, metadatas, ids = [], [], []
+
             correct_count = total_count = 0
 
-            for idx, item in enumerate(tqdm(data, desc=f"Ingesting historical queries")):
+            for idx, item in enumerate(tqdm(data, desc="Ingesting historical queries")):
                 query = item["query"]
                 model_metadatas = item["outputs"]
                 for model_metadata in model_metadatas:
-                    model_metadata.pop("prediction")
+                    model_metadata.pop("prediction", None)
                 meta = {
                     "input_token_length": item["input_token_length"],
                     "models": json.dumps(model_metadatas),  # store raw list
@@ -275,15 +306,40 @@ class SmartRouting:
                 metadatas.append(meta)
                 ids.append(f"{idx}")
 
-            collection.add(documents=queries, metadatas=metadatas, ids=ids)
-            print(f"[SmartRouting]: {total_count} historical queries ingested.")
+            if self.backend == "qdrant":
+                docs = [models.Document(text=q, model=self.model_name) for q in queries]
+                if docs:
+                    # Deterministic UUIDv5 ids; store original in payload
+                    q_ids = [str(uuid.uuid5(uuid.NAMESPACE_URL, i)) for i in ids]
+                    for i, meta in enumerate(metadatas):
+                        meta["original_id"] = ids[i]
+                    self.qdrant.upload_collection(
+                        collection_name=self.collection_name,
+                        vectors=docs,
+                        ids=q_ids,
+                        payload=metadatas,
+                    )
+            else:
+                if queries and metadatas and ids:  # Only add if we have data
+                    collection.add(documents=queries, metadatas=metadatas, ids=ids)
+                    print(f"[SmartRouting]: {total_count} historical queries ingested.")
 
-        # ..................................................................
         def query_similar(self, query: str | List[str], n_results: int = 16):
+            if self.backend == "qdrant":
+                qtext = query if isinstance(query, str) else query[0]
+                results = self.qdrant.query_points(
+                    collection_name=self.collection_name,
+                    query=models.Document(text=qtext, model=self.model_name),
+                    limit=n_results,
+                ).points
+                return {
+                    "ids": [[(r.payload or {}).get("original_id", str(r.id)) for r in results]],
+                    "metadatas": [[(r.payload or {}) for r in results]],
+                    "documents": [[""] * len(results)],
+                }
             collection = self.collection
             return collection.query(query_texts=query if isinstance(query, list) else [query], n_results=n_results)
 
-        # ..................................................................
         def predict(self, query: str | List[str], model_configs: List[Dict[str, Any]], n_similar: int = 16):
             similar = self.query_similar(query, n_results=n_similar)
             perf_mat, len_mat = [], []
@@ -355,7 +411,7 @@ class SmartRouting:
 
         input_lens = get_token_lengths(queries)
         chosen_indices: list[int] = []
-        
+
         converted_queries = [messages_to_query(query) for query in queries]
 
         for q, q_len, candidate_cfgs in zip(converted_queries, input_lens, selected_llm_lists):
@@ -376,7 +432,7 @@ class SmartRouting:
 
             # Map back to global llm_configs index
             sel_name = candidate_cfgs[sel_local_idx]["name"]
-            
+
             sel_idx = self.available_models.index(sel_name)
             chosen_indices.append(sel_idx)
 

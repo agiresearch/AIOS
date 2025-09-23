@@ -22,3 +22,5 @@ scikit-learn
 pulp
 gdown
 typing-extensions
+qdrant-client
+fastembed
