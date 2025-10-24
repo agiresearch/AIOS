@@ -50,6 +50,7 @@ jobs:
           done
     
           ollama pull qwen3:1.7b
+          ollama pull qwen3:4b
 
       - name: Run AIOS kernel in background
         run: |
