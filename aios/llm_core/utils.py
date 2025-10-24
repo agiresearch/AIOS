@@ -2,8 +2,12 @@ import json
 import re
 import uuid
 from copy import deepcopy
-
+import logging
 from typing import List, Dict, Any
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def merge_messages_with_tools(messages: list, tools: list) -> list:
     """
@@ -193,8 +197,8 @@ def decode_litellm_tool_calls(response):
         ```
     """
     decoded_tool_calls = []
-    
-    if response.choices[0].message.content is None:
+
+    if response.choices[0].message.content is None:        
         assert response.choices[0].message.tool_calls is not None
         tool_calls = response.choices[0].message.tool_calls
 
@@ -211,24 +215,53 @@ def decode_litellm_tool_calls(response):
             )
     else:
         assert response.choices[0].message.content is not None
-        
-        # breakpoint()
+
+        # Some providers return a JSON string; attempt to parse. If parsing fails, treat as "no tools".
         tool_calls = response.choices[0].message.content
         if isinstance(tool_calls, str):
-            tool_calls = json.loads(tool_calls)
-        
+            try:
+                parsed = json.loads(tool_calls)
+                if isinstance(parsed, (list, dict)):
+                    tool_calls = parsed
+                # Unexpected JSON type → no-op; be forgiving.
+                else:
+                    logger.info("decode_litellm_tool_calls: unexpected JSON type for tool_calls: %s", type(parsed))
+                    tool_calls = []
+            except json.JSONDecodeError:
+                logger.info("decode_litellm_tool_calls: non-JSON tool_calls string, treating as no tools.")
+                tool_calls = []
+
         if not isinstance(tool_calls, list):
             tool_calls = [tool_calls]
-            
-        for tool_call in tool_calls:
-            decoded_tool_calls.append(
-                {
-                    "name": tool_call["name"],
-                    "parameters": tool_call["arguments"],
-                    "id": generator_tool_call_id()
-                }
-            )
         
+        try:
+            for tool_call in tool_calls:
+                name = None
+                if "name" in tool_call:
+                    name = tool_call["name"]
+                elif "function_name" in tool_call:
+                    name = tool_call["function_name"]
+                elif "tool_name" in tool_call:
+                    name = tool_call["tool_name"]
+
+                if name is not None:
+                    parameters = None
+                    if "arguments" in tool_call:
+                        parameters = tool_call["arguments"]
+                    elif "parameters" in tool_call:
+                        parameters = tool_call["parameters"]
+                    
+                    if parameters is not None:
+                        decoded_tool_calls.append(
+                            {
+                                "name": name,
+                                "parameters": parameters,
+                                "id": generator_tool_call_id()
+                            }
+                        )
+        except:
+            logger.info(f"decode_litellm_tool_calls: no valid attribute in tools, treating as no tools")
+
     return decoded_tool_calls
 
 def parse_tool_calls(message):

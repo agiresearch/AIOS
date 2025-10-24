@@ -44,7 +44,7 @@ llms:
     - name: "qwen3:1.7b"
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server
-
+    
     - name: "qwen3:4b"
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server

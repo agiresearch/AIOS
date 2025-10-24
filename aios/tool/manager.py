@@ -80,6 +80,11 @@ class ToolManager:
     def address_request(self, syscall) -> None:
         tool_calls = syscall.query.tool_calls
 
+        if tool_calls == None or len(tool_calls) == 0:
+            return ToolResponse(
+                response_message=f"There is no tool to call",
+                finished=False
+            )
         # breakpoint()
         try:
             for tool_call in tool_calls:
@@ -106,7 +111,7 @@ class ToolManager:
         except Exception as e:
             return ToolResponse(
                 response_message=f"Tool calling error: {e}",
-                finished=True
+                finished=False
             )
 
     def load_tool_instance(self, tool_org_and_name):

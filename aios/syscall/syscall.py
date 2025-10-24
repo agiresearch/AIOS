@@ -654,13 +654,16 @@ class SyscallExecutor:
             
             elif query.action_type == "call_tool":
                 llm_response = self.execute_llm_syscall(agent_name, query)["response"]
-                # breakpoint()
+                if llm_response.tool_calls == None or len(llm_response.tool_calls) == 0:
+                    return ToolResponse(
+                        response_message=f"No tool was called by LLM",
+                        finished=False
+                    )
                 tool_query = ToolQuery(
                     tool_calls=llm_response.tool_calls,
                     # action_type="tool_use"
                 )
                 tool_response = self.execute_tool_syscall(agent_name, tool_query)
-                # breakpoint()
                 return tool_response
             
             elif query.action_type == "operate_file":
