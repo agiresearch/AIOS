@@ -19,10 +19,21 @@ class StorageManager:
         
     def address_request(self, agent_request):
         result = self.filesystem.address_request(agent_request)
+        # Normalize result to string format for StorageResponse
+        #  Ensures type safety (prevents ValidationError) 
         if isinstance(result, dict):
             result_str = json.dumps(result)
+        elif result is None:
+        result_str = "Operation completed with no result"
+        elif result == "":
+            result_str = "Operation completed successfully"
         else:
-            result_str = result
+            result_str = str(result)
+        # Empty list from retrieve operations should show a meaningful message
+        if result_str == "[]":
+            result_str = "No documents found"
+
+
         return StorageResponse(
             response_message=result_str,
             finished=True
