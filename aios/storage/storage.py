@@ -19,10 +19,32 @@ class StorageManager:
         
     def address_request(self, agent_request):
         result = self.filesystem.address_request(agent_request)
-        if isinstance(result, dict):
-            result_str = json.dumps(result)
+
+        # Normalize result to string format for StorageResponse
+        # Ensures type safety (prevents ValidationError)
+        # Handle empty lists/tuples explicitly first
+        if isinstance(result, (list, tuple)) and len(result) == 0:
+            result_str = "No documents found"
+        elif isinstance(result, (dict, list, tuple)):
+            # Prefer JSON for structured types; fallback to str() if not serializable
+            try:
+                result_str = json.dumps(result)
+            except (TypeError, ValueError):
+                result_str = str(result)
+        elif result is None:
+            result_str = "Operation completed with no result"
+        elif result == "":
+            result_str = "Operation completed successfully"
         else:
-            result_str = result
+            # Ensure we always return a string
+            if isinstance(result, (bytes, bytearray)):
+                try:
+                    result_str = result.decode("utf-8")
+                except Exception:
+                    result_str = str(result)
+            else:
+                result_str = str(result)
+
         return StorageResponse(
             response_message=result_str,
             finished=True
