@@ -208,6 +208,10 @@ cache
 # Ignore configuration files
 aios/config/config.yaml
 
+# Runtime data directories (recreated on startup)
+proc/
+root/
+
 # ignore cerebrum
 Cerebrum/*
 
