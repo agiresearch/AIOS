@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, TypeAlias, Callable
+from typing import Any, TypeAlias, Callable, Optional
 from queue import Queue
 
 MemoryRequestQueue: TypeAlias = Queue
@@ -11,3 +11,4 @@ MemoryRequestQueueCheckEmpty: TypeAlias = Callable[[], bool]
 
 class MemoryManagerParams(BaseModel):
     log_mode: str
+    provider: Optional[str] = "in-house"  # Memory provider type: "in-house", "mem0", or "zep"

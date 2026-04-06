@@ -8,7 +8,7 @@ from aios.syscall import Syscall
 from aios.syscall.llm import LLMSyscall
 from aios.syscall.storage import StorageSyscall, storage_syscalls
 from aios.syscall.tool import ToolSyscall
-from aios.syscall.memory import MemorySyscall
+# MemorySyscall imported locally in methods that use it to avoid circular import
 from aios.hooks.stores._global import (
     global_llm_req_queue_add_message,
     global_memory_req_queue_add_message,
@@ -51,6 +51,7 @@ class SyscallExecutor:
         """
         Create a syscall object based on the query type.
         """
+        from aios.syscall.memory import MemorySyscall
         if isinstance(query, LLMQuery):
             return LLMSyscall(agent_name, query)
         elif isinstance(query, StorageQuery):
@@ -113,10 +114,13 @@ class SyscallExecutor:
                 
             elif isinstance(syscall, StorageSyscall):
                 global_storage_req_queue_add_message(syscall)
-            elif isinstance(syscall, MemorySyscall):
-                global_memory_req_queue_add_message(syscall)
             elif isinstance(syscall, ToolSyscall):
                 global_tool_req_queue_add_message(syscall)
+            else:
+                # MemorySyscall — imported locally to avoid circular import
+                from aios.syscall.memory import MemorySyscall
+                if isinstance(syscall, MemorySyscall):
+                    global_memory_req_queue_add_message(syscall)
             
             syscall.start()
             syscall.join()
