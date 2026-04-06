@@ -59,7 +59,32 @@ llms:
 
 memory:
   log_mode: "console" # choose from [console, file]
-  
+  provider: "in-house"  # Options: in-house, mem0, zep
+
+  # Mem0 provider configuration (used when provider: "mem0")
+  mem0:
+    api_key: ""  # Optional: for Mem0 cloud
+    user_id: "default"
+    llm:
+      provider: "ollama"
+      config:
+        model: "qwen2.5:7b"
+        ollama_base_url: "http://localhost:11434"
+    embedder:
+      provider: "ollama"
+      config:
+        model: "nomic-embed-text"
+        ollama_base_url: "http://localhost:11434"
+    vector_store:
+      provider: "chroma"
+      config:
+        collection_name: "mem0_memories"
+
+  # Zep provider configuration (used when provider: "zep")
+  zep:
+    api_key: ""  # Zep Cloud API key, or leave empty for self-hosted
+    base_url: "http://localhost:8000"  # For self-hosted Zep; remove for Zep Cloud
+    session_id: "default"
 storage:
   root_dir: "root"
   use_vector_db: true
