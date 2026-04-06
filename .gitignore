@@ -210,3 +210,6 @@ aios/config/config.yaml
 
 # ignore cerebrum
 Cerebrum/*
+
+# ignore Kiro
+/.kiro
