@@ -48,12 +48,16 @@ def useMemoryRequestQueue() -> (
 @validate(MemoryManagerParams)
 def useMemoryManager(params):
     """
-    Initialize and return a memory instance.
+    Initialize and return a memory manager instance.
 
     Args:
-        params (MemoryParams): Parameters required for Memory Manager Initialization.
+        params (MemoryManagerParams): Parameters required for Memory Manager initialization.
+            - log_mode (str): Logging mode for memory operations
+            - provider (Optional[str]): Memory provider type ("in-house", "mem0", "zep").
+                                       If not specified, uses configured default.
 
     Returns:
-        Memory Manager: An instance of the initialized Memory Manager.
+        MemoryManager: An instance of the initialized Memory Manager with the
+                      configured provider.
     """
     return MemoryManager(**params.model_dump())

@@ -24,3 +24,7 @@ gdown
 typing-extensions
 qdrant-client
 fastembed
+
+# Memory provider integrations (optional)
+mem0ai>=1.0.11
+zep-cloud
