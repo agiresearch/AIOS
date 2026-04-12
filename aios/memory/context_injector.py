@@ -111,11 +111,12 @@ class ContextInjector:
             filtered = []
             for mem in results:
                 score = mem.get("score")
-                if score is not None and (
-                    score >= self.relevance_threshold
-                ):
+                if score is None:
+                    # No score from provider — include by default
                     filtered.append(mem)
-                elif score is not None:
+                elif score >= self.relevance_threshold:
+                    filtered.append(mem)
+                else:
                     logger.debug(
                         "Excluded memory (score=%.3f < "
                         "threshold=%.3f): %s",

@@ -94,14 +94,16 @@ class ConversationExtractor:
             # picks up the correct user_id scope.
             memory_note.metadata = {"user_id": agent_name}
 
-            self.memory_manager.provider.add_memory(memory_note)
+            result = self.memory_manager.provider.add_memory(
+                memory_note
+            )
 
             logger.info(
                 "Stored conversation memory for user_id=%s: %s",
                 agent_name,
                 content[:80],
             )
-        except Exception:
+        except Exception as e:
             logger.warning(
                 "Conversation extraction failed for "
                 "user_id=%s",
