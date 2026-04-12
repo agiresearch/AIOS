@@ -21,6 +21,8 @@ from aios.hooks.modules.scheduler import rr_scheduler_nonblock as rr_scheduler
 
 from aios.syscall.syscall import useSysCall
 from aios.config.config_manager import config
+from aios.memory.context_injector import ContextInjector
+from aios.memory.conversation_extractor import ConversationExtractor
 
 from cerebrum.llm.apis import LLMQuery, LLMResponse
 
@@ -64,7 +66,7 @@ selected_llms = {
     "llms": []
 }
 
-execute_request, SysCallWrapper = useSysCall()
+execute_request, SysCallWrapper, syscall_executor = useSysCall()
 
 # Configure the root logger
 logging.basicConfig(
@@ -302,6 +304,34 @@ def initialize_components() -> dict:
         print(memory_config)
         components["memory"] = initialize_memory_manager(memory_config, components["storage"])
         print("memory manager: ", components["memory"])
+
+        # Wire up personalization components for mem0 provider
+        provider_type = memory_config.get("provider", "in-house")
+        if provider_type == "mem0" and components["memory"]:
+            try:
+                syscall_executor.context_injector = (
+                    ContextInjector(
+                        components["memory"], memory_config
+                    )
+                )
+                syscall_executor.conversation_extractor = (
+                    ConversationExtractor(
+                        components["memory"], memory_config
+                    )
+                )
+                print(
+                    "✅ Personalization components "
+                    "(ContextInjector, ConversationExtractor) "
+                    "initialized"
+                )
+            except Exception as e:
+                print(
+                    f"⚠️ Personalization setup failed "
+                    f"(non-fatal): {str(e)}"
+                )
+                syscall_executor.context_injector = None
+                syscall_executor.conversation_extractor = None
+
         components["tool"] = initialize_tool_manager()
 
         # Verify required components

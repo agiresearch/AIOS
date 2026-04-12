@@ -18,7 +18,7 @@ def useFactory(
     thread_pool = ThreadPoolExecutor(max_workers=params.max_workers)
     manager = AgentManager('https://app.aios.foundation')
 
-    send_request, _ = useSysCall()
+    send_request, _, _ = useSysCall()
 
     @validate(AgentSubmitDeclaration)
     def submitAgent(declaration_params: AgentSubmitDeclaration) -> int:

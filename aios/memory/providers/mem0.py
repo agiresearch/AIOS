@@ -5,6 +5,8 @@ This provider integrates with the Mem0 library to provide AI-native memory
 management capabilities including automatic memory extraction, semantic search,
 and intelligent memory organization.
 """
+import logging
+import os
 from typing import Dict, Any, List, TYPE_CHECKING
 
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
@@ -13,6 +15,8 @@ from .base import MemoryProvider
 
 if TYPE_CHECKING:
     from aios.memory.note import MemoryNote
+
+logger = logging.getLogger(__name__)
 
 
 class Mem0Provider(MemoryProvider):
@@ -42,7 +46,9 @@ class Mem0Provider(MemoryProvider):
         """Initialize the provider with Mem0 configuration.
         
         Creates and configures the Mem0 Memory client with the provided
-        settings for LLM, embedder, and vector store.
+        settings for LLM, embedder, and vector store. Resolves API keys
+        for cloud providers (OpenAI, Anthropic) from ConfigManager or
+        environment variables.
         
         Args:
             config: Configuration dictionary containing:
@@ -60,7 +66,8 @@ class Mem0Provider(MemoryProvider):
             from mem0 import Memory
         except ImportError as e:
             raise ImportError(
-                "Mem0 library not installed. Install with: pip install mem0ai"
+                "Mem0 library not installed. "
+                "Install with: pip install mem0ai"
             ) from e
         
         try:
@@ -80,6 +87,9 @@ class Mem0Provider(MemoryProvider):
             if config.get("vector_store"):
                 mem0_config["vector_store"] = config["vector_store"]
             
+            # Resolve API keys for cloud LLM/embedder providers
+            self._resolve_provider_api_keys(mem0_config)
+            
             # Initialize Mem0 client
             if mem0_config:
                 self.client = Memory.from_config(mem0_config)
@@ -93,6 +103,79 @@ class Mem0Provider(MemoryProvider):
                 "mem0",
                 f"Failed to initialize Mem0 client: {str(e)}"
             )
+    
+    def _resolve_provider_api_keys(
+        self, mem0_config: Dict[str, Any]
+    ) -> None:
+        """Resolve API keys for cloud providers and inject into config.
+        
+        For LLM providers "openai" and "anthropic", and embedder provider
+        "openai", resolves the API key from ConfigManager or the
+        corresponding environment variable and injects it into the
+        Mem0 config dict.
+        
+        Args:
+            mem0_config: The Mem0 configuration dict to modify in-place.
+        """
+        # Provider name -> (config key name, env var name)
+        _KEY_MAP = {
+            "openai": ("openai_api_key", "OPENAI_API_KEY"),
+            "anthropic": ("anthropic_api_key", "ANTHROPIC_API_KEY"),
+        }
+        
+        # Resolve LLM provider API key
+        llm_cfg = mem0_config.get("llm", {})
+        llm_provider = llm_cfg.get("provider", "")
+        if llm_provider in _KEY_MAP:
+            key = self._get_api_key(llm_provider)
+            if key:
+                cfg_key, env_var = _KEY_MAP[llm_provider]
+                llm_cfg.setdefault("config", {})[cfg_key] = key
+                logger.info(
+                    "Resolved API key for LLM provider '%s'",
+                    llm_provider,
+                )
+        
+        # Resolve embedder provider API key
+        embedder_cfg = mem0_config.get("embedder", {})
+        embedder_provider = embedder_cfg.get("provider", "")
+        if embedder_provider in _KEY_MAP:
+            key = self._get_api_key(embedder_provider)
+            if key:
+                cfg_key, _ = _KEY_MAP[embedder_provider]
+                embedder_cfg.setdefault("config", {})[cfg_key] = key
+                logger.info(
+                    "Resolved API key for embedder provider '%s'",
+                    embedder_provider,
+                )
+    
+    @staticmethod
+    def _get_api_key(provider: str) -> str | None:
+        """Retrieve API key from ConfigManager or environment variable.
+        
+        Args:
+            provider: Provider name (e.g. "openai", "anthropic").
+            
+        Returns:
+            The API key string, or None if not found.
+        """
+        try:
+            from aios.config.config_manager import config as global_config
+            key = global_config.get_api_key(provider)
+            if key:
+                return key
+        except Exception:
+            pass
+        
+        # Fallback: check environment variable directly
+        env_map = {
+            "openai": "OPENAI_API_KEY",
+            "anthropic": "ANTHROPIC_API_KEY",
+        }
+        env_var = env_map.get(provider)
+        if env_var:
+            return os.environ.get(env_var)
+        return None
     
     def add_memory(self, memory_note: 'MemoryNote') -> MemoryResponse:
         """Add a memory note to Mem0 storage.
