@@ -205,8 +205,11 @@ class LSFS:
 
             elif operation_type == "create_file":
                 file_path = agent_request.query.params.get("file_path", None)
+                file_name = agent_request.query.params.get("file_name", None)
                 result = self.sto_create_file(
-                    file_path, collection_name
+                    file_name=file_name,
+                    file_path=file_path,
+                    collection_name=collection_name
                 )
 
             elif operation_type == "create_dir":
@@ -269,6 +272,8 @@ class LSFS:
         try:
             if file_path is None:
                 file_path = os.path.join(self.root_dir, file_name)
+            elif not os.path.isabs(file_path):
+                file_path = os.path.join(self.root_dir, file_path)
 
             if not os.path.exists(file_path):
                 with open(file_path, 'w'):
@@ -286,6 +291,8 @@ class LSFS:
         try:
             if dir_path is None:
                 dir_path = os.path.join(self.root_dir, dir_name)
+            elif not os.path.isabs(dir_path):
+                dir_path = os.path.join(self.root_dir, dir_path)
 
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
@@ -313,6 +320,8 @@ class LSFS:
         """Write to file with proper lock management."""
         if file_path is None:
             file_path = os.path.join(self.root_dir, file_name)
+        elif not os.path.isabs(file_path):
+            file_path = os.path.join(self.root_dir, file_path)
 
         lock = self.get_file_lock(file_path)
         try:
