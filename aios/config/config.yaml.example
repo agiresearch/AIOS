@@ -61,6 +61,15 @@ memory:
   log_mode: "console" # choose from [console, file]
   provider: "in-house"  # Options: in-house, mem0, zep
 
+  # Personalization settings (all opt-in, disabled by default)
+  # auto_extract: saves conversation turns as memories after each chat LLM call
+  # auto_inject: retrieves relevant memories and prepends them before each chat LLM call
+  auto_extract: false
+  auto_inject: false
+  relevance_threshold: 0.5     # Minimum similarity score for memory injection
+  max_injected_memories: 5     # Max memories to inject per LLM call
+  max_memory_tokens: 1500      # Token budget for injected memory block
+
   # Mem0 provider configuration (used when provider: "mem0")
   mem0:
     api_key: ""  # Optional: for Mem0 cloud
