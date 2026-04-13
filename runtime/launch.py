@@ -355,7 +355,16 @@ def initialize_components() -> dict:
         raise
 
 # Initialize components when starting up
-active_components = initialize_components()
+active_components = None
+
+def _ensure_initialized():
+    global active_components
+    if active_components is None:
+        active_components = initialize_components()
+    return active_components
+
+# Initialize on first import (uvicorn worker)
+_ensure_initialized()
 
 def restart_kernel():
     """Restart kernel service and reload configuration"""
@@ -794,4 +803,4 @@ if __name__ == "__main__":
     port = server_config.get("port", 8000)
     
     # print(f"Starting AIOS server on {host}:{port}")
-    uvicorn.run("runtime.launch:app", host=host, port=port, reload=False)
+    uvicorn.run(app, host=host, port=port)
