@@ -92,6 +92,7 @@ memory:
       provider: "chroma"
       config:
         collection_name: "mem0_memories"
+        # path: ".mem0/chroma"  # ChromaDB persistence directory (default: .mem0/chroma)
 
   # Zep provider configuration (used when provider: "zep")
   zep:
