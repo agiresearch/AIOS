@@ -1,5 +1,5 @@
 litellm
-pydantic==2.7.0
+pydantic>=2.7.0
 click==8.1.7
 fastapi
 uvicorn
@@ -25,6 +25,14 @@ typing-extensions
 qdrant-client
 fastembed
 
+# Pin opentelemetry packages — chromadb pulls in old versions
+# whose generated protobuf code is incompatible with protobuf v5+
+opentelemetry-api>=1.25.0
+opentelemetry-sdk>=1.25.0
+opentelemetry-exporter-otlp-proto-grpc>=1.25.0
+opentelemetry-proto>=1.25.0
+
 # Memory provider integrations (optional)
 mem0ai>=1.0.11
-zep-cloud
+# Pinned to 2.0.0 — later versions have API incompatibilities with Zep free tier
+zep-cloud==2.0.0
