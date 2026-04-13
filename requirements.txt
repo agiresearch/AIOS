@@ -1,5 +1,5 @@
 litellm
-pydantic==2.7.0
+pydantic>=2.7.0
 click==8.1.7
 fastapi
 uvicorn
@@ -27,4 +27,5 @@ fastembed
 
 # Memory provider integrations (optional)
 mem0ai>=1.0.11
-zep-cloud
+# Pinned to 2.0.0 — later versions have API incompatibilities with Zep free tier
+zep-cloud==2.0.0
