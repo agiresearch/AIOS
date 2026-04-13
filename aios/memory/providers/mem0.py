@@ -86,7 +86,49 @@ class Mem0Provider(MemoryProvider):
             
             if config.get("vector_store"):
                 mem0_config["vector_store"] = config["vector_store"]
-            
+
+                # Inject default ChromaDB persistence path if missing
+                # and ensure any relative path is resolved to absolute
+                vs = mem0_config["vector_store"]
+                if vs.get("provider") == "chroma":
+                    vs_cfg = vs.setdefault("config", {})
+                    if not vs_cfg.get("path"):
+                        path = os.path.join(
+                            os.getcwd(), ".mem0", "chroma"
+                        )
+                        vs_cfg["path"] = path
+                    else:
+                        path = vs_cfg["path"]
+                    # Always resolve to absolute path
+                    vs_cfg["path"] = os.path.abspath(path)
+                    os.makedirs(vs_cfg["path"], exist_ok=True)
+                    logger.info(
+                        "ChromaDB persistence path: %s",
+                        vs_cfg["path"],
+                    )
+
+                    # Inject a PersistentClient to bypass Mem0's
+                    # deprecated chromadb.Client(Settings(...)) which
+                    # is always in-memory in ChromaDB >= 0.4
+                    if not vs_cfg.get("client"):
+                        import chromadb
+                        from chromadb.config import (
+                            Settings as ChromaSettings,
+                        )
+                        vs_cfg["client"] = (
+                            chromadb.PersistentClient(
+                                path=vs_cfg["path"],
+                                settings=ChromaSettings(
+                                    anonymized_telemetry=False,
+                                ),
+                            )
+                        )
+                        logger.info(
+                            "Injected PersistentClient for "
+                            "ChromaDB at %s",
+                            vs_cfg["path"],
+                        )
+
             # Resolve API keys for cloud LLM/embedder providers
             self._resolve_provider_api_keys(mem0_config)
             
