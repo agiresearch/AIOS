@@ -45,6 +45,9 @@ jobs:
           source .venv/bin/activate
           uv pip install -r requirements.txt
       
+      - name: Create config from example
+        run: cp aios/config/config.yaml.example aios/config/config.yaml
+
       - name: Run Qdrant integration tests
         run: |
           source .venv/bin/activate

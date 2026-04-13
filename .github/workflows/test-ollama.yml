@@ -38,6 +38,9 @@ jobs:
           source .venv/bin/activate
           uv pip install -r requirements.txt
       
+      - name: Create config from example
+        run: cp aios/config/config.yaml.example aios/config/config.yaml
+
       - name: Install Ollama
         run: | 
           curl -fsSL https://ollama.com/install.sh | sh
