@@ -18,6 +18,7 @@ watchdog>=2.1.9
 redis>=4.5.1
 sentence-transformers
 nltk
+hypothesis
 scikit-learn
 pulp
 gdown

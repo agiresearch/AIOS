@@ -36,6 +36,10 @@ llms:
       backend: "ollama"
       hostname: "http://localhost:11434" # Make sure to run ollama server
 
+    - name: "qwen3:4b"
+      backend: "ollama"
+      hostname: "http://localhost:11434"
+
     # HuggingFace Models
     # - name: "meta-llama/Llama-3.1-8B-Instruct"
     #   backend: "huggingface"
