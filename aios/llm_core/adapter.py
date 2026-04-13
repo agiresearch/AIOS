@@ -17,8 +17,10 @@ from typing import Any
 import concurrent.futures
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+import threading
 import traceback
 import litellm
+import requests
 from .utils import check_availability_for_selected_llm_lists
 
 # Configure logging
@@ -113,6 +115,15 @@ class LLMAdapter:
         
         self._setup_api_keys()
         self._initialize_llms()
+        
+        # Extract Ollama hostname from the first Ollama config entry
+        self._ollama_hostname = "http://localhost:11434"
+        for llm_cfg in self.llm_configs:
+            if llm_cfg.backend == "ollama" and llm_cfg.hostname:
+                self._ollama_hostname = llm_cfg.hostname
+                break
+        
+        self._dynamic_registration_lock = threading.Lock()
         
         routing_strategy = config.get_router_config().get("strategy", RouterStrategy.Sequential)
         
@@ -273,6 +284,97 @@ class LLMAdapter:
             logger.error(f"Error initializing LLM {config.name} ({config.backend}): {e}", exc_info=True)
             return None
 
+    def _query_ollama_available_models(self) -> set:
+        """
+        Query the Ollama server for available models.
+
+        Returns:
+            A set of model name strings available on the
+            Ollama server, or an empty set on any failure.
+        """
+        try:
+            resp = requests.get(
+                f"{self._ollama_hostname}/api/tags",
+                timeout=5
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            models = {m["name"] for m in data.get("models", [])}
+            logger.debug(
+                f"Queried Ollama at {self._ollama_hostname}: "
+                f"found {len(models)} models"
+            )
+            return models
+        except Exception as e:
+            logger.warning(
+                f"Failed to query Ollama models at "
+                f"{self._ollama_hostname}/api/tags: {e}"
+            )
+            return set()
+
+    def _dynamic_register_ollama_model(self, model_name: str) -> bool:
+        """
+        Dynamically register an Ollama model that is available on the
+        server but not listed in config.yaml.
+
+        Thread-safe and idempotent — calling twice for the same model
+        will not create duplicates.
+
+        Args:
+            model_name: The Ollama model name to register.
+
+        Returns:
+            True if the model is now registered (or was already),
+            False on any failure.
+        """
+        try:
+            with self._dynamic_registration_lock:
+                # Re-check: another thread may have registered it
+                if model_name in self.available_llm_names:
+                    return True
+
+                available_models = self._query_ollama_available_models()
+                if model_name not in available_models:
+                    logger.warning(
+                        f"Ollama model '{model_name}' not found on "
+                        f"server at {self._ollama_hostname}"
+                    )
+                    return False
+
+                llm_config = LLMConfig(
+                    name=model_name,
+                    backend="ollama",
+                    hostname=self._ollama_hostname,
+                )
+                initialized_model = self._initialize_single_llm(
+                    llm_config
+                )
+                if initialized_model is None:
+                    logger.error(
+                        f"Failed to initialize Ollama model "
+                        f"'{model_name}' during dynamic registration"
+                    )
+                    return False
+
+                self.llm_configs.append(llm_config)
+                self.llms.append(initialized_model)
+                self.available_llm_names.append(model_name)
+                self.router.llm_configs = self.llm_configs
+
+                logger.info(
+                    f"Dynamically registered Ollama model "
+                    f"'{model_name}' from server at "
+                    f"{self._ollama_hostname}"
+                )
+                return True
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during dynamic registration "
+                f"of Ollama model '{model_name}': {e}",
+                exc_info=True,
+            )
+            return False
+
     def _handle_completion_error(self, error: Exception, model_name: Optional[str] = "Unknown") -> LLMResponse:
         """
         Handle errors that occur during LLM completion, mapping them to LLMResponse.
@@ -381,6 +483,30 @@ class LLMAdapter:
         
         for i, selected_llm_list_availability in enumerate(selected_llm_lists_availability):
             if not selected_llm_list_availability:
+                # Attempt dynamic registration for unavailable Ollama models
+                has_ollama_unavailable = False
+                for llm in selected_llm_lists[i]:
+                    if (llm["name"] not in self.available_llm_names
+                            and llm.get("backend") == "ollama"):
+                        has_ollama_unavailable = True
+                        self._dynamic_register_ollama_model(
+                            llm["name"]
+                        )
+
+                if has_ollama_unavailable:
+                    # Re-check availability after registration attempts
+                    recheck = check_availability_for_selected_llm_lists(
+                        self.available_llm_names,
+                        [selected_llm_lists[i]],
+                    )
+                    if recheck[0]:
+                        executable_llm_syscalls.append(llm_syscalls[i])
+                        available_selected_llm_lists.append(
+                            selected_llm_lists[i]
+                        )
+                        continue
+
+                # Reject: no Ollama models to try, or re-check failed
                 logger.error(f"Selected LLMs are not available for syscall at index {i}")
                 llm_syscall = llm_syscalls[i]
                 llm_syscall.set_status("done")
