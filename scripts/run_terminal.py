@@ -6,6 +6,13 @@ from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.text import Text
 import os
+import sys
+
+# Ensure the project root is on the path so aios
+# can be imported when running from scripts/
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from enum import Enum
@@ -15,6 +22,12 @@ from list_agents import get_offline_agents, get_online_agents
 from cerebrum.llm.apis import llm_chat, llm_operate_file
 
 from cerebrum.storage.apis import mount
+
+from aios.terminal.intent_router import (
+    IntentRouter,
+    Intent,
+    build_llm_classify_fn,
+)
 
 class AIOSTerminal:
     def __init__(self):
@@ -30,13 +43,20 @@ class AIOSTerminal:
         
         self.current_dir = os.getcwd()
         
+        self.mode = "auto"
+        self.conversation_history = []
+        llm_fn = build_llm_classify_fn("terminal")
+        self.router = IntentRouter(llm_classify_fn=llm_fn)
+        
         # self.storage_client = StorageClient()
 
-    def get_prompt(self, extra_str = None):
+    def get_prompt(self, extra_str=None):
         username = os.getenv('USER', 'user')
         path = os.path.basename(self.current_dir)
+        mode_indicator = f'[{self.mode}] '
         if extra_str:
             return [
+                ('class:prompt', mode_indicator),
                 ('class:prompt', f'🚀 {username}'),
                 ('class:arrow', ' ⟹  '),
                 ('class:path', f'{path}'),
@@ -45,6 +65,7 @@ class AIOSTerminal:
             ]
         else:
             return [
+                ('class:prompt', mode_indicator),
                 ('class:prompt', f'🚀 {username}'),
                 ('class:arrow', ' ⟹  '),
                 ('class:path', f'{path}'),
@@ -59,11 +80,79 @@ class AIOSTerminal:
         # Add command descriptions
         help_table.add_row("help", "Show this help message")
         help_table.add_row("exit", "Exit the terminal")
+        help_table.add_row("/chat", "Switch to chat mode (all input → chat)")
+        help_table.add_row("/file", "Switch to file mode (all input → file ops)")
+        help_table.add_row("/auto", "Switch to auto mode (intent routing)")
         # help_table.add_row("list agents --offline", "List all available offline agents")
         help_table.add_row("list agents --online", "List all available agents on the agenthub")
-        help_table.add_row("<natural language>", "Execute semantic file operations using natural language")
+        help_table.add_row("<natural language>", "Routed automatically based on current mode")
         
         self.console.print(Panel(help_table, title="Available Commands", border_style="blue"))
+        self.console.print(f"\nCurrent mode: [bold]{self.mode}[/bold]")
+
+    def handle_slash_command(self, command):
+        """Returns True if command was a slash command."""
+        cmd = command.strip().lower()
+        if cmd == "/chat":
+            self.mode = "chat"
+            self.console.print("[cyan]Switched to chat mode[/cyan]")
+            return True
+        if cmd == "/file":
+            self.mode = "file"
+            self.console.print("[cyan]Switched to file mode[/cyan]")
+            return True
+        if cmd == "/auto":
+            self.mode = "auto"
+            self.console.print("[cyan]Switched to auto mode[/cyan]")
+            return True
+        return False
+
+    def route_input(self, user_input):
+        """Dispatch user input based on current mode."""
+        if self.mode == "chat":
+            return self._send_chat(user_input)
+        if self.mode == "file":
+            return self._send_file(user_input)
+        # auto mode
+        result = self.router.classify(user_input)
+        self.console.print(
+            f"[dim][{result.intent.value}][/dim]"
+        )
+        if result.intent == Intent.CHAT:
+            return self._send_chat(user_input)
+        return self._send_file(user_input)
+
+    def _send_chat(self, user_input):
+        """Send input through the chat/personalization pipeline."""
+        self.conversation_history.append(
+            {"role": "user", "content": user_input}
+        )
+        response = llm_chat(
+            agent_name="terminal",
+            messages=list(self.conversation_history),
+        )
+        resp = response.get("response", "")
+        if isinstance(resp, dict):
+            assistant_msg = resp.get(
+                "response_message", str(resp)
+            )
+        elif hasattr(resp, "response_message"):
+            assistant_msg = resp.response_message
+        else:
+            assistant_msg = str(resp)
+        self.conversation_history.append(
+            {"role": "assistant", "content": assistant_msg}
+        )
+        return assistant_msg
+
+    def _send_file(self, user_input):
+        """Send input through the file operation pipeline."""
+        return llm_operate_file(
+            agent_name="terminal",
+            messages=[
+                {"role": "user", "content": user_input}
+            ],
+        )
 
     def handle_list_agents(self, args: str):
         """Handle the 'list agents' command with different parameters.
@@ -126,7 +215,10 @@ class AIOSTerminal:
                     self.handle_list_agents(args)
                     continue
                 
-                command_response = llm_operate_file(agent_name="terminal", messages=[{"role": "user", "content": command}])
+                if self.handle_slash_command(command):
+                    continue
+                
+                command_response = self.route_input(command)
                 command_output = Text(command_response, style="bold green")
                 self.console.print(command_output)
                 
