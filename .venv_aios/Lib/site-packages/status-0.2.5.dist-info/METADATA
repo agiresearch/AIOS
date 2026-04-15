@@ -1,0 +1,103 @@
+Metadata-Version: 2.0
+Name: status
+Version: 0.2.5
+Summary: HTTP status code reporting for GET and POST requests
+Home-page: https://github.com/chrissimpkins/status
+Author: Christopher Simpkins
+Author-email: git.simpkins@gmail.com
+License: MIT license
+Keywords: HTTP,request,POST,GET,status code,status,website,URL,internet,network,networking
+Platform: any
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.0
+Classifier: Programming Language :: Python :: 3.1
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Internet
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: HTTP Servers
+Classifier: Topic :: Internet :: WWW/HTTP :: Site Management
+Classifier: Topic :: Internet :: WWW/HTTP :: Site Management :: Link Checking
+Classifier: Topic :: System
+Classifier: Topic :: System :: Networking
+Classifier: Topic :: System :: Networking :: Monitoring
+Classifier: License :: OSI Approved :: MIT License
+Requires-Dist: Naked
+
+================
+ status
+================
+----------------------------------------------
+ HTTP status codes for GET and POST requests
+----------------------------------------------
+
+About
+=============
+status is a cross-platform command line application that returns the HTTP response status code for a GET or POST request to a user submitted URL.
+
+It has been tested in cPython 2.7.x, 3.4.x and pypy 2.4.0 (Python v2.7.8)
+
+Install
+=============
+You can install status with the Python package manager pip::
+
+    pip install status
+
+or download the source repository and run the following command in the top level source directory::
+
+    python setup.py install
+
+Upgrade
+==============
+You can upgrade status with pip. Use the following command::
+
+    pip install --upgrade status
+
+or download the source repository and use the above instructions for a new install from source.
+
+Usage
+=============
+status will report the returned status code with a GET or POST request.  The general syntax is::
+
+    status [option] <url>
+
+It is not necessary to include the protocol (http://) in your URL. If you enter a URL without the protocol, status will prefix it with http://.  If you intend to test with the secure HTTP protocol (https://), then make this explicit in your URL.
+
+
+GET Request Status Codes
+------------------------------
+GET is the default request type. Enter the URL as an argument to status without an option::
+
+    status <url>
+
+
+
+POST Request Status Codes
+------------------------------
+To use a POST request, add the ``-p`` or ``--post`` option::
+
+    status -p <url>
+
+
+Versions
+=============
+
+v0.2.5 - bug fix: connection error handling and new tests in cPython 2.7.9, 3.4.2 + pypy 2.4.0
+
+v0.2.4 - updated application dependencies
+
+v0.2.3 - updated application dependencies
+
+v0.2.2 - minor bug fixes, documentation updates
+
+v0.2.1 - exception handling for HTTP connection errors, help documentation updates
+
+v0.2.0 - initial release
+
+
+
