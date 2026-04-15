@@ -46,6 +46,8 @@ class SyscallExecutor:
         """Initialize the SyscallExecutor."""
         self.id = 0
         self.id_lock = threading.Lock()
+        self.context_injector = None
+        self.conversation_extractor = None
     
     def create_syscall(self, agent_name: str, query) -> Dict[str, Any]:
         """
@@ -633,6 +635,15 @@ class SyscallExecutor:
             
         return (query, similar_memories)
 
+    @staticmethod
+    def _get_latest_user_message(messages) -> Optional[str]:
+        """Return the content of the last user-role message,
+        or ``None`` if none exists."""
+        for msg in reversed(messages):
+            if msg.get("role") == "user":
+                return msg.get("content")
+        return None
+
     def execute_request(self, agent_name: str, query: Any) -> Dict[str, Any]:
         """
         Execute a request based on its type.
@@ -652,7 +663,28 @@ class SyscallExecutor:
         """
         if isinstance(query, LLMQuery):
             # breakpoint()
-            if query.action_type == "chat" or query.action_type == "chat_with_json_output" or query.action_type == "chat_with_tool_call_output":
+            if query.action_type in ("chat", "chat_with_tool_call_output"):
+                # Context injection (before LLM call)
+                if self.context_injector:
+                    query = self.context_injector.inject(agent_name, query)
+
+                llm_response = self.execute_llm_syscall(agent_name, query)
+
+                # Conversation extraction (after LLM call, async)
+                if (self.conversation_extractor
+                        and query.action_type == "chat"):
+                    user_msg = self._get_latest_user_message(query.messages)
+                    assistant_msg = llm_response.get("response")
+                    if hasattr(assistant_msg, "response_message"):
+                        assistant_msg = assistant_msg.response_message
+                    if user_msg and assistant_msg:
+                        self.conversation_extractor.extract_async(
+                            agent_name, user_msg, str(assistant_msg)
+                        )
+
+                return llm_response
+
+            elif query.action_type == "chat_with_json_output":
                 llm_response = self.execute_llm_syscall(agent_name, query)
                 return llm_response
             
@@ -710,12 +742,13 @@ def create_syscall_executor():
     Create and return a SyscallExecutor instance and its wrapper.
     
     Returns:
-        Tuple of (execute_request function, SyscallWrapper class)
+        Tuple of (execute_request function, SyscallWrapper class,
+        executor instance)
         
     Example:
         ```python
-        executor, wrapper = create_syscall_executor()
-        response = executor("agent_1", LLMQuery(...))
+        execute_request, wrapper, executor = create_syscall_executor()
+        response = execute_request("agent_1", LLMQuery(...))
         ```
     """
     executor = SyscallExecutor()
@@ -727,7 +760,7 @@ def create_syscall_executor():
         memory = executor.execute_memory_syscall
         tool = executor.execute_tool_syscall
 
-    return executor.execute_request, SyscallWrapper
+    return executor.execute_request, SyscallWrapper, executor
 
 # Maintain backwards compatibility
 useSysCall = create_syscall_executor
