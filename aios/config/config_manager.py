@@ -1,6 +1,7 @@
 import os
 import yaml
 from typing import Any, Optional
+import shutil
 
 class ConfigManager:
     """
@@ -45,6 +46,10 @@ class ConfigManager:
                 os.path.dirname(__file__),  # aios/config directory
                 'config.yaml'
             )
+            self.example_config_path = os.path.join(
+                os.path.dirname(__file__),
+                'config.yaml.example',
+            )
             self.load_config()
     
     def load_config(self):
@@ -55,7 +60,15 @@ class ConfigManager:
             FileNotFoundError: If the config file doesn't exist
         """
         if not os.path.exists(self.config_path):
-            raise FileNotFoundError(f"Config file not found at {self.config_path}")
+            # Bootstrapping: if a user cloned the repo and didn't create config.yaml yet,
+            # initialize it from config.yaml.example.
+            if os.path.exists(self.example_config_path):
+                os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+                shutil.copyfile(self.example_config_path, self.config_path)
+            else:
+                raise FileNotFoundError(
+                    f"Config file not found at {self.config_path} and no example config at {self.example_config_path}"
+                )
             
         with open(self.config_path, 'r') as f:
             self.config = yaml.safe_load(f)
@@ -214,7 +227,18 @@ class ConfigManager:
         """
         Retrieves the path to the MCP server script.
         """
-        return os.path.join(os.getcwd(), self.config.get("tool", {}).get("mcp_server_script_path"))
+        tool_cfg = self.config.get("tool", {}) or {}
+        # Default to the in-repo MCP server.
+        rel = tool_cfg.get("mcp_server_script_path") or os.path.join("aios", "tool", "mcp_server.py")
+        return os.path.join(os.getcwd(), rel)
+
+    def get_mcp_clients_config(self) -> list[dict]:
+        """Returns configured external MCP clients."""
+        tool_cfg = self.config.get("tool", {}) or {}
+        clients = tool_cfg.get("mcp_clients") or []
+        if not isinstance(clients, list):
+            return []
+        return clients
     
     def get_scheduler_config(self) -> dict:
         """

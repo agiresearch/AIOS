@@ -30,6 +30,33 @@ Below shows how agents utilize AIOS SDK to interact with AIOS kernel and how AIO
 
 ### Computer-use Specialized Architecture
 For computer-use agent, the architecture extends the AIOS Kernel with significant enhancements focused on computer contextualization. While preserving essential components like LLM Core(s), Context Manager, and Memory Manager, the Tool Manager module has been fundamentally redesigned to incorporate a VM (Virtual Machine) Controller and MCP Server.
+
+### MCP server integration (external tools)
+
+AIOS can also **connect to external MCP servers** and expose their tools through the existing Tool Manager. Configure MCP clients in `aios/config/config.yaml` under `tool.mcp_clients`.
+
+- **Tool name format**: `mcp/<server_id>/<tool_name>`
+- **Supported transports**:
+  - **stdio**: spawn a subprocess and communicate via stdio
+  - **streamable_http**: connect to an MCP server via Streamable HTTP
+
+Example config snippet:
+
+```yaml
+tool:
+  enable_mcp_server: true
+  mcp_server_script_path: "aios/tool/mcp_server.py"
+
+  mcp_clients:
+    - id: "playwright"
+      transport: "stdio"
+      command: "npx"
+      args: ["-y", "@microsoft/playwright-mcp"]
+
+    - id: "docs"
+      transport: "streamable_http"
+      url: "http://localhost:8000/mcp"
+```
 This redesign creates a sandboxed environment that allows agents to safely interact with computer systems while
 maintaining a consistent semantic mapping between agent intentions and computer operations. 
 
