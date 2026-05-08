@@ -113,3 +113,25 @@ agent_factory:
 server:
   host: "localhost"
   port: 8000
+
+# Tool / MCP Configuration
+tool:
+  # Internal MCP server (Computer-as-MCP-Server style). Can be disabled if not needed.
+  enable_mcp_server: true
+  # Path is relative to the repository root.
+  mcp_server_script_path: "aios/tool/mcp_server.py"
+
+  # External MCP clients (connect to other MCP servers and expose their tools as:
+  #   mcp/<id>/<tool_name>
+  #
+  # Example: Playwright MCP (Node)
+  # - id: "playwright"
+  #   transport: "stdio"
+  #   command: "npx"
+  #   args: ["-y", "@microsoft/playwright-mcp"]
+  #
+  # Example: Streamable HTTP server
+  # - id: "docs"
+  #   transport: "streamable_http"
+  #   url: "http://localhost:8000/mcp"
+  mcp_clients: []

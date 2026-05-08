@@ -25,6 +25,7 @@ gdown
 typing-extensions
 qdrant-client
 fastembed
+mcp
 
 # Pin opentelemetry packages — chromadb pulls in old versions
 # whose generated protobuf code is incompatible with protobuf v5+

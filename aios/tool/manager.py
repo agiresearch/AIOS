@@ -13,6 +13,8 @@ from cerebrum.interface import AutoTool
 
 from threading import Lock
 
+from aios.tool.mcp_clients import MCPClientManager, MCPTool
+
 class ToolManager:
     def __init__(
         self,
@@ -22,10 +24,14 @@ class ToolManager:
         self.tool_conflict_map = {}
         self.tool_conflict_map_lock = Lock()
         self.mcp_server_process = None # To store the mcp_server subprocess
-        self._start_mcp_server() # Start mcp_server on initialization
+        self.mcp_clients = MCPClientManager(config=config)
+        self._start_mcp_server() # Start mcp_server on initialization if enabled
         
     def _start_mcp_server(self):
         """Starts the mcp_server.py script as a background subprocess."""
+        tool_cfg = config.get_tool_config() or {}
+        if tool_cfg.get("enable_mcp_server", True) is False:
+            return
         if self.mcp_server_process is None or self.mcp_server_process.poll() is not None:
             try:
                 # Assuming mcp_server.py is in the same directory as manager.py
@@ -115,5 +121,12 @@ class ToolManager:
             )
 
     def load_tool_instance(self, tool_org_and_name):
+        if tool_org_and_name.startswith("mcp/"):
+            # Format: mcp/<server_id>/<tool_name>
+            parts = tool_org_and_name.split("/", 2)
+            if len(parts) < 3:
+                raise ValueError("MCP tool name must be in form mcp/<server_id>/<tool_name>")
+            _, server_id, tool_name = parts
+            return MCPTool(mcp_manager=self.mcp_clients, server_id=server_id, tool_name=tool_name)
         tool_instance = AutoTool.from_preloaded(tool_org_and_name)
         return tool_instance
