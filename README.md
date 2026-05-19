@@ -405,6 +405,185 @@ fn main() -> anyhow::Result<()> {
 }
 ```
 
+
+## FAQ
+
+### What is AIOS?
+
+AIOS (AI Agent Operating System) embeds large language models (LLM) into the operating system, facilitating the development and deployment of LLM-based AI Agents. It addresses problems like scheduling, context switch, memory management, storage management, tool management, and Agent SDK management.
+
+### How does AIOS compare to LangChain or AutoGen?
+
+| Framework | Philosophy | Key Strength |
+|-----------|------------|--------------|
+| **AIOS** | OS-level integration | Kernel + SDK architecture, syscall-based |
+| **LangChain** | Chain orchestration | Pre-built components and chains |
+| **AutoGen** | Multi-agent conversation | Agent collaboration patterns |
+
+AIOS provides **OS-level resource management** - treating LLM and agents as OS resources with proper scheduling, memory management, and syscall interfaces.
+
+### What is the architecture of AIOS?
+
+**Two Core Components:**
+
+1. **AIOS Kernel** (this repository): Abstraction layer over OS kernel, managing:
+   - LLM Core(s)
+   - Context Manager
+   - Memory Manager
+   - Storage Manager
+   - Tool Manager
+   - Scheduler
+
+2. **AIOS SDK** ([Cerebrum](https://github.com/agiresearch/Cerebrum)): For building and running agent applications that interact with the kernel.
+
+**Computer-use Architecture:** Extends AIOS Kernel with VM Controller and MCP Server for safe computer interaction with semantic mapping between agent intentions and computer operations.
+
+### What deployment modes are available?
+
+| Mode | Description | Status |
+|------|-------------|--------|
+| **Mode 1: Local Kernel** | Run agents on same machine as kernel | ✅ Supported |
+| **Mode 2: Remote Kernel** | Run agents on different machine | ✅ Supported |
+| **Mode 2.5: Remote Dev** | Develop remotely, run locally | Planned |
+| **Mode 3: Personal Remote** | User accounts with persistent data | Planned |
+| **Mode 4: Virtual Kernel** | Multiple kernels on same machine | Planned |
+
+### What LLM providers are supported?
+
+| Provider | Backend | Open Source | Required API Key |
+|----------|---------|-------------|-----------------|
+| Anthropic | anthropic | ❌ | ANTHROPIC_API_KEY |
+| OpenAI | openai | ✅ | OPENAI_API_KEY |
+| Deepseek | deepseek | ✅ | DEEPSEEK_API_KEY |
+| Google Gemini | gemini | ❌ | GEMINI_API_KEY |
+| Groq | groq | ✅ | GROQ_API_KEY |
+| HuggingFace | huggingface | ✅ | HF_AUTH_TOKEN |
+| Ollama | ollama | ✅ | - |
+| vLLM | vllm | ✅ | - |
+| Novita | novita | ✅ | NOVITA_API_KEY |
+
+### How do I get started?
+
+**Step 1: Install AIOS Kernel**
+```bash
+git clone https://github.com/agiresearch/AIOS.git
+python3.10 -m venv venv
+source venv/bin/activate
+pip install uv
+uv pip install -r requirements-cuda.txt  # GPU
+# or: uv pip install -r requirements.txt  # CPU
+```
+
+**Step 2: Install AIOS SDK (Cerebrum)**
+```bash
+git clone https://github.com/agiresearch/Cerebrum.git
+cd Cerebrum && uv pip install -e .
+```
+
+**Step 3: Configure API Keys**
+
+Edit `aios/config/config.yaml`:
+```yaml
+api_keys:
+  openai: "your-openai-key"
+  deepseek: "your-deepseek-key"
+  groq: "your-groq-key"
+```
+
+**Step 4: Launch AIOS**
+```bash
+bash runtime/launch_kernel.sh
+```
+
+### How do I configure local models?
+
+**Ollama:**
+```bash
+ollama serve  # Start server
+ollama pull qwen2.5:7b  # Pull model
+```
+
+Configure in `config.yaml`:
+```yaml
+llms:
+  models:
+    - name: "qwen2.5:7b"
+      backend: "ollama"
+      hostname: "http://localhost:11434"
+```
+
+**vLLM:**
+```bash
+vllm serve meta-llama/Llama-3.1-8B-Instruct --port 8091
+```
+
+Configure in `config.yaml`:
+```yaml
+llms:
+  models:
+    - name: "meta-llama/Llama-3.1-8B-Instruct"
+      backend: "vllm"
+      hostname: "http://localhost:8091/v1"
+```
+
+### What agent frameworks are supported?
+
+AIOS supports agents created with:
+- **OpenAGI** (agiresearch/OpenAGI)
+- **AutoGen** (Microsoft)
+- **Open-Interpreter**
+- **MetaGPT**
+
+Agents from these frameworks can onboard AIOS. See [docs](https://docs.aios.foundation/aios-docs/aios-agent/how-to-develop-agents) for onboarding guidelines.
+
+### How do I use the AIOS Terminal?
+
+Run the LLM-based semantic file system:
+```bash
+python scripts/run_terminal.py
+```
+
+Interact using natural language commands. The terminal supports rollback (requires Redis server running).
+
+### What is LiteCUA?
+
+LiteCUA (Computer as MCP Server) is a specialized architecture for computer-use agents. It extends AIOS Kernel with:
+- **VM Controller**: Sandboxed environment for safe computer interaction
+- **MCP Server**: Semantic mapping between agent intentions and operations
+
+See the [paper](https://arxiv.org/pdf/2505.18829) and [codebase](https://github.com/agiresearch/LiteCUA).
+
+### What are the key research papers?
+
+| Paper | Conference | Topic |
+|-------|------------|-------|
+| AIOS: LLM Agent Operating System | COLM 2025 | Core architecture |
+| Cerebrum (AIOS SDK) | NAACL 2025 | Agent development platform |
+| From Commands to Prompts | ICLR 2025 | Semantic file system |
+| A-MEM: Agentic Memory | 2025 | Memory for LLM agents |
+| LiteCUA | 2025 | Computer-use agent |
+
+### Is there a Rust implementation?
+
+Yes, an experimental Rust rewrite (`aios-rs/`) provides trait definitions for context, memory, storage, tool, scheduler, and LLM. It's a foundation for incremental porting and performance-focused components.
+
+```bash
+cd aios-rs
+cargo build
+cargo test
+```
+
+### What is the license?
+
+MIT License - contributions welcome via [issues](https://github.com/agiresearch/AIOS/issues) and [pull requests](https://github.com/agiresearch/AIOS/pulls).
+
+### Where can I get help?
+
+- **Documentation**: [docs.aios.foundation](https://docs.aios.foundation/)
+- **Discord**: [discord.gg/B2HFxEgTJX](https://discord.gg/B2HFxEgTJX)
+- **GitHub Issues**: Bug reports and feature requests
+- **Contributing Guide**: [CONTRIBUTE.md](https://github.com/agiresearch/AIOS/blob/main/docs/CONTRIBUTE.md)
+
 ## Reference
 ```
 @article{mei2025aios,
