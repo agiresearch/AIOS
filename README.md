@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/agiresearch-aios-badge.png)](https://mseep.ai/app/agiresearch-aios)
+
 # AIOS: AI Agent Operating System
 
 <a href='https://arxiv.org/abs/2403.16971'><img src='https://img.shields.io/badge/Paper-PDF-red'></a>
