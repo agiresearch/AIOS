@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: Naked
+Version: 0.1.32
+Summary: A command line application framework
+Home-page: https://github.com/chrissimpkins/naked
+Author: Christopher Simpkins
+Author-email: chris@sourcefoundry.org
+License: MIT
+Keywords: python,command line,system,application,framework,CLI
+Platform: any
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: requests
+Requires-Dist: pyyaml
+
+A command line application framework
