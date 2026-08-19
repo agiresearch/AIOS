@@ -224,6 +224,7 @@ api_keys:
     auth_token: "your-huggingface-token-for-authorized-models"  
     cache_dir: "your-cache-dir-for-saving-models"
   novita: "your-novita-api-key"
+  orcarouter: "your-orcarouter-api-key"
 ```
 
 To obtain these API keys:
@@ -234,6 +235,7 @@ To obtain these API keys:
 5. HuggingFace Token: Visit https://huggingface.co/settings/tokens
 6. Anthropic API: Visit https://console.anthropic.com/keys
 7. Novita AI API: Visit https://novita.ai/api-keys
+8. OrcaRouter API: Visit https://www.orcarouter.ai
 
 #### Configure LLM Models
 You can configure which LLM models to use in the same `aios/config/config.yaml` file. Here's an example configuration:
@@ -250,6 +252,10 @@ llms:
     - name: "meta-llama/Llama-3.1-8B-Instruct"
       backend: "vllm"
       hostname: "http://localhost:8091/v1"  # Make sure to run vllm server
+
+    # OrcaRouter Models
+    - name: "orcarouter/auto"
+      backend: "orcarouter"  # Routes via https://api.orcarouter.ai/v1
 ```
 
 **Using Ollama Models:** 
@@ -286,6 +292,16 @@ You can configure HuggingFace models with specific GPU memory allocation:
   eval_device: "cuda:0"  # Device for model evaluation
 ```
 
+**Using OrcaRouter Models:**
+[OrcaRouter](https://www.orcarouter.ai) is an OpenAI-compatible gateway that exposes 160+ models (OpenAI, Anthropic, DeepSeek, Qwen, and more) behind a single API key. Add the `orcarouter` backend to use it:
+
+```yaml
+- name: "orcarouter/auto"
+  backend: "orcarouter"
+```
+
+The gateway endpoint defaults to `https://api.orcarouter.ai/v1` (override with `hostname`). Set your key via `ORCAROUTER_API_KEY` or the `orcarouter` entry under `api_keys` in `aios/config/config.yaml`.
+
 #### Set up interactively
 
 Alternatively, you can set up aios configurations interactively by using the following command. 
@@ -305,6 +321,7 @@ When no environment variables are set, the following API keys will be shown:
 - `HF_AUTH_TOKEN`: HuggingFace authentication token for accessing models
 - `HF_HOME`: Optional path to store HuggingFace models
 - `NOVITA_API_KEY`: Novita AI API key for accessing Novita AI services
+- `ORCAROUTER_API_KEY`: OrcaRouter API key for accessing OrcaRouter gateway models
 
 #### Launch AIOS
 After you setup your keys or environment parameters, then you can follow the instructions below to start.
@@ -378,6 +395,7 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 | ollama | [All Models](https://ollama.com/search) | ✅ | model-name | ollama | - |
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name | vllm | - |
 | Novita | [All Models](https://novita.ai/models/llm) | ✅ | model-name | novita | NOVITA_API_KEY |
+| [OrcaRouter](https://www.orcarouter.ai) | [All Models](https://www.orcarouter.ai) | ✅ | model-name | orcarouter | ORCAROUTER_API_KEY |
 
 ## 🔧 Experimental Rust Rewrite (aios-rs)
 An early experimental Rust scaffold lives in `aios-rs/` providing trait definitions and minimal placeholder implementations (context, memory, storage, tool, scheduler, llm). This is NOT feature-parity yet; it's a foundation for incremental porting and performance-focused components.

@@ -158,6 +158,7 @@ class LLMAdapter:
             "anthropic": "ANTHROPIC_API_KEY",
             "huggingface": "HF_AUTH_TOKEN",
             "novita": "NOVITA_API_KEY",
+            "orcarouter": "ORCAROUTER_API_KEY",
         }
         
         logger.info("=== LLMAdapter Initialization ===")
@@ -250,7 +251,21 @@ class LLMAdapter:
                         base_url=config.hostname,
                         api_key=config.api_key or "sk-placeholder" # Use provided key or a placeholder
                     )
-                    
+
+                case "orcarouter":
+                    # OrcaRouter is an OpenAI-compatible gateway (https://api.orcarouter.ai/v1)
+                    # that routes to 160+ models from a single API key.
+                    base_url = config.hostname or "https://api.orcarouter.ai/v1"
+                    api_key = (
+                        config.api_key
+                        or os.getenv("ORCAROUTER_API_KEY")
+                        or "sk-placeholder"
+                    )
+                    return OpenAI(
+                        base_url=base_url,
+                        api_key=api_key,
+                    )
+
                 case _:
                     # Handle LiteLLM supported backends
                     backend_name = config.backend

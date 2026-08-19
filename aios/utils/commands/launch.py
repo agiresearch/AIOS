@@ -11,6 +11,7 @@ def show_available_api_keys():
     print("- GROQ_API_KEY (Groq API key)")
     print("- HF_AUTH_TOKEN (HuggingFace authentication token)")
     print("- HF_HOME (Optional: Path to store HuggingFace models)")
+    print("- ORCAROUTER_API_KEY (OrcaRouter API key)")
 
 def handle_env_command(args):
     env_file = os.path.expanduser("~/.aios-1/.env")
