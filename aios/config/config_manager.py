@@ -140,7 +140,8 @@ class ConfigManager:
                 "gemini": "GEMINI_API_KEY",
                 "groq": "GROQ_API_KEY",
                 "anthropic": "ANTHROPIC_API_KEY",
-                "huggingface": "HF_AUTH_TOKEN"
+                "huggingface": "HF_AUTH_TOKEN",
+                "orcarouter": "ORCAROUTER_API_KEY"
             }
             if provider in env_var_map:
                 env_var = env_var_map[provider]

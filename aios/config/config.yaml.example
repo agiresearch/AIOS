@@ -9,6 +9,7 @@ api_keys:
   huggingface:
     auth_token: ""  # Your HuggingFace auth token for authorized models
     cache_dir: ""   # Your cache directory for saving huggingface models
+  orcarouter: "" # OrcaRouter API key
 
 # LLM Configuration
 llms:
@@ -53,6 +54,12 @@ llms:
     # - name: "meta-llama/Llama-3.1-8B-Instruct"
     #  backend: "vllm"
     #  hostname: "http://localhost:8091"
+
+    # OrcaRouter Models
+    # OrcaRouter (https://www.orcarouter.ai) is an OpenAI-compatible gateway that
+    # routes to 160+ models (OpenAI, Anthropic, DeepSeek, Qwen, ...) from one API key.
+    # - name: "orcarouter/auto"
+    #   backend: "orcarouter"
 
   router:
     strategy: "sequential"
