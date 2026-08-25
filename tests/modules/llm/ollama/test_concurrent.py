@@ -5,6 +5,10 @@ import json
 import time
 from typing import List, Dict, Any, Tuple
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 from cerebrum.llm.apis import llm_chat
 
 from cerebrum.utils.communication import aios_kernel_url

@@ -19,6 +19,7 @@ redis>=4.5.1
 sentence-transformers
 nltk
 hypothesis
+pytest
 scikit-learn
 pulp
 gdown

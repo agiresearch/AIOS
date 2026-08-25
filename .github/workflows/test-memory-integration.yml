@@ -1,0 +1,70 @@
+name: Test Memory Integration
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-mem0:
+    runs-on: ubuntu-latest
+
+    env:
+      OLLAMA_MAX_WAIT: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install uv
+          uv venv
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+
+      - name: Create and patch config for Mem0 tests
+        run: |
+          source .venv/bin/activate
+          cp aios/config/config.yaml.example aios/config/config.yaml
+          python scripts/patch_config_for_memory_tests.py
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+
+          ollama serve > ollama.log 2>&1 &
+
+          for ((i=1;i<=${OLLAMA_MAX_WAIT};i++)); do
+            curl -s http://localhost:11434/api/version && echo "Ollama ready" && break
+            echo "Waiting for Ollama… ($i/${OLLAMA_MAX_WAIT})"; sleep 1
+          done
+
+          ollama pull nomic-embed-text
+          ollama pull qwen3:1.7b
+
+      - name: Run Mem0 provider integration tests
+        run: |
+          source .venv/bin/activate
+          pytest tests/modules/memory/test_mem0_provider.py -v -m integration
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-integration-logs
+          path: |
+            ollama.log

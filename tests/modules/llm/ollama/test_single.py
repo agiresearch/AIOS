@@ -1,4 +1,9 @@
 import unittest
+
+import pytest
+
+pytestmark = pytest.mark.integration
+
 from cerebrum.llm.apis import llm_chat, llm_chat_with_json_output
 from cerebrum.utils.communication import aios_kernel_url
 from cerebrum.utils.utils import _parse_json_output

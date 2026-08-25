@@ -4,6 +4,10 @@ import tempfile
 import uuid
 import hashlib
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 os.environ["VECTOR_DB_BACKEND"] = "qdrant"
 os.environ["QDRANT_HOST"] = "localhost"
 os.environ["QDRANT_PORT"] = "6333"

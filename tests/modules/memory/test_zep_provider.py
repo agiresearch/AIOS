@@ -19,6 +19,10 @@ import os
 import time
 import uuid
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 # Project root (3 levels up from tests/modules/memory/)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 

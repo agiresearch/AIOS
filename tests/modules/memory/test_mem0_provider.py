@@ -16,6 +16,10 @@ import sys
 import os
 import time
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 # Ensure project root (3 levels up from tests/modules/memory/) is on the path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 

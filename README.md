@@ -379,6 +379,69 @@ Make sure you have installed a virtualized environment with GUI, then you can re
 | vLLM | [All Models](https://docs.vllm.ai/en/latest/) | ✅ | model-name | vllm | - |
 | Novita | [All Models](https://novita.ai/models/llm) | ✅ | model-name | novita | NOVITA_API_KEY |
 
+## 🧪 Running Tests
+
+Tests use [pytest](https://docs.pytest.org/) with a custom `integration` marker defined in `pytest.ini`. Tests are organized under `tests/` by module.
+
+### Unit tests (fast, no external services)
+
+The CI command (see [`.github/workflows/test-unit.yml`](.github/workflows/test-unit.yml) for the source of truth):
+
+```bash
+pytest tests/ -v -m "not integration" \
+  --ignore=tests/modules/llm/openai/test_concurrent.py \
+  --ignore=tests/modules/llm/openai/test_single.py \
+  --ignore=tests/modules/memory/test_memory.py \
+  --ignore=tests/modules/memory/test_memory_user_identity_isolation.py
+```
+
+### Integration tests (requires external services)
+
+Integration tests require different services depending on the file:
+
+- **`test_shared_memory_e2e.py`** — requires Ollama + ChromaDB. Skips gracefully if Ollama is unreachable.
+- **`test_mem0_provider.py`** — requires Ollama (embedder + LLM) + ChromaDB. Does **not** skip gracefully; will fail/error if services aren't running.
+- **`test_zep_provider.py`** — requires a configured Zep Cloud API key. Does **not** skip gracefully; will fail/error without valid credentials.
+- **`test_qdrant_integration.py`** — requires a running Qdrant server. Skips via `unittest.SkipTest` if Qdrant is unreachable.
+
+Running `-m integration` without every service up will show failures for the files whose services are missing. This is expected in a partial local setup, not a broken test suite.
+
+```bash
+# For Mem0/ChromaDB tests only (most common local setup):
+#   ollama serve
+#   ollama pull nomic-embed-text
+python scripts/patch_config_for_memory_tests.py
+pytest tests/modules/memory/test_mem0_provider.py tests/modules/memory/test_shared_memory_e2e.py -v -m integration
+
+# Full integration suite (requires ALL services):
+pytest tests/ -v -m integration --continue-on-collection-errors
+```
+
+To force-test the graceful-skip path in `test_shared_memory_e2e.py`: `OLLAMA_SKIP=1 pytest tests/modules/memory/test_shared_memory_e2e.py -v -m integration`.
+
+### Running a specific module
+
+```bash
+pytest tests/modules/terminal/ -v
+pytest tests/modules/scheduler/ -v
+pytest tests/modules/syscall/ -v
+```
+
+### Marker system
+
+- `integration` — requires external services (Ollama, ChromaDB, Qdrant, Zep). Registered in `pytest.ini` and `tests/conftest.py`.
+- Unmarked tests are pure/mocked and run without any services.
+
+### Known pre-existing issues
+
+| File | Problem | Status |
+|------|---------|--------|
+| `tests/modules/llm/openai/test_concurrent.py` | Broken import (missing module) | Excluded via `--ignore` |
+| `tests/modules/llm/openai/test_single.py` | Broken import (missing module) | Excluded via `--ignore` |
+| `tests/modules/memory/test_memory.py` | Broken import (missing module) | Excluded via `--ignore` |
+| `tests/modules/memory/test_memory_user_identity_isolation.py` | Order-dependent failure — passes in isolation, fails in full suite due to `ConfigManager` singleton state pollution from earlier tests | Excluded via `--ignore` |
+| `tests/modules/memory/test_mem0_provider.py`, `test_zep_provider.py` | No graceful skip when backing services are unavailable — will produce failures/errors in a partial local setup | Expected; run only when services are configured |
+
 ## 🔧 Experimental Rust Rewrite (aios-rs)
 An early experimental Rust scaffold lives in `aios-rs/` providing trait definitions and minimal placeholder implementations (context, memory, storage, tool, scheduler, llm). This is NOT feature-parity yet; it's a foundation for incremental porting and performance-focused components.
 
