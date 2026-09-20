@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 import json
 from typing import Dict, List, Any, Optional, TYPE_CHECKING
@@ -115,6 +116,15 @@ class SyscallExecutor:
             # syscall = copy.deepcopy(syscall)
             syscall = self.create_syscall(agent_name, query)
             syscall.set_status("active")
+
+            # Carry a caller-supplied scheduling priority onto the syscall.
+            # The kernel request handler attaches it to the query (see
+            # runtime/launch.py) so the Cerebrum SDK query types stay
+            # untouched. Policies that ignore priority are unaffected, so
+            # this is inert unless the priority policy is selected.
+            request_priority = getattr(query, "_request_priority", None)
+            if request_priority is not None:
+                syscall.set_priority(request_priority)
             
             current_time = time.time()
             syscall.set_created_time(current_time)
@@ -170,7 +180,23 @@ class SyscallExecutor:
 
             if isinstance(syscall, LLMSyscall):
                 global_llm_req_queue_add_message(syscall)
-                print(f"Syscall {syscall.agent_name} added to LLM queue")
+                # Arrival notification: emitted the moment the request reaches
+                # the queue, before the scheduler picks anything up, and the
+                # priority is shown because that is what the priority policy
+                # will order this request against the others by.
+                #
+                # Written as a single ``write`` rather than with ``print``:
+                # stdout is shared with the scheduler thread's log lines, and
+                # ``print`` issues the text and the newline as two separate
+                # writes, which lets a concurrent log line land in the middle
+                # of this one.
+                arrival_priority = syscall.get_priority()
+                sys.stdout.write(
+                    f"Syscall {syscall.agent_name} added to LLM queue "
+                    f"(priority="
+                    f"{arrival_priority if arrival_priority is not None else 'default'})\n"
+                )
+                sys.stdout.flush()
                 
             elif isinstance(syscall, StorageSyscall):
                 global_storage_req_queue_add_message(syscall)

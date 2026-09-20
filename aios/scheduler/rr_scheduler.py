@@ -163,12 +163,16 @@ class RRScheduler(BaseScheduler):
 
     def process_llm_requests(self) -> None:
         """
-        Process LLM requests with time slicing.
-        
+        Process LLM requests one syscall at a time, giving each a time slice.
+
+        One syscall per round is what distinguishes this scheduler from
+        ``FIFOScheduler``, which drains the queue and dispatches a whole batch.
+
         Example:
             ```python
             scheduler.process_llm_requests()
-            # Processes LLM requests with 50ms time slices:
+            # Each round takes a single LLM syscall and gives it time_slice
+            # seconds, then moves on to the next one:
             # {
             #     "messages": [{"role": "user", "content": "Hello"}],
             #     "temperature": 0.7
@@ -178,7 +182,15 @@ class RRScheduler(BaseScheduler):
         while self.active:
             try:
                 llm_syscall = self.get_llm_syscall()
-                self._execute_batch_syscalls(llm_syscall, self.llm.execute_llm_syscalls, "LLM")
+                # The adapter's entry point takes a *sequence* of syscalls and
+                # iterates it. Passing the bare syscall raised
+                # "TypeError: object is not iterable" inside the round, which
+                # killed this thread and left the calling agent blocked forever
+                # on syscall.join(), so every LLM request through this scheduler
+                # hung. Wrap it in a single-element round instead.
+                self._execute_batch_syscalls(
+                    [llm_syscall], self.llm.execute_llm_syscalls, "LLM"
+                )
             except Empty:
                 pass
 

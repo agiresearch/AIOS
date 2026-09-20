@@ -14,6 +14,10 @@ api_keys:
 llms:
   models:
 
+    # One model per backend is enough to run the four-tab demo described in
+    # scripts/README.md: the terminal picks its priority from the backend it
+    # submits to -- ollama -> high, gemini -> normal, groq -> low.
+
     # OpenAI Models
     # - name: "gpt-4o-mini"
     #   backend: "openai"
@@ -30,6 +34,10 @@ llms:
     # Anthropic Models
     # - name: "claude-3-opus"
     #   backend: "anthropic"
+
+    # Groq Models  ->  the `groq` tab, which submits at LOW priority
+    # - name: "openai/gpt-oss-20b"
+    #   backend: "groq"
 
     # Ollama Models
     - name: "qwen3:1.7b"
@@ -120,6 +128,34 @@ tool:
 
 scheduler:
   log_mode: "console" # choose from [console, file]
+
+  # Scheduling policy: which agent gets the LLM next.
+  #   fifo        - first come, first served, batched (default; historical behaviour)
+  #   round_robin - each syscall gets a fixed time slice
+  #   priority    - highest priority first, with aging so low-priority agents
+  #                 cannot be starved (see docs/scheduling/priority_scheduling.md)
+  # When omitted, the previous implicit choice is kept: round_robin if
+  # llms.use_context_manager is true, otherwise fifo. Aliases fcfs, rr and
+  # prio are also accepted.
+  policy: "fifo"
+
+  # Options for `policy: fifo`
+  fifo:
+    batch_interval: 1.0   # seconds to collect LLM requests before dispatching
+
+  # Options for `policy: round_robin`
+  round_robin:
+    time_slice: 1.0       # seconds each syscall may run
+
+  # Options for `policy: priority`
+  priority:
+    # Dispatch rounds a waiting syscall needs to gain one priority level.
+    # A low-priority request therefore reaches the top level after
+    # 2 * aging_interval rounds, which is the worst-case wait caused by
+    # priority (settings must be >= 1).
+    aging_interval: 5
+    # Level assumed when a syscall carries no priority: high | normal | low.
+    default_priority: "normal"
 
 agent_factory:
   log_mode: "console" # choose from [console, file]

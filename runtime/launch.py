@@ -3,21 +3,39 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, model_validator
 from typing import Optional, Dict, Any, Union
 from dotenv import load_dotenv
+import importlib.util
 import traceback
 import json
 import logging
+import sys
 import yaml
 import os
 from datetime import datetime
 from pathlib import Path
+
+# Preflight for the interpreter, before anything heavy is imported.
+#
+# The kernel's import chain reaches ``litellm``, and ``python`` on PATH is often
+# a global interpreter that has none of this project's dependencies. Left alone
+# that surfaces as a ModuleNotFoundError raised from several modules deep, which
+# reads as a broken checkout rather than the wrong interpreter.
+if importlib.util.find_spec("litellm") is None:
+    raise SystemExit(
+        "This interpreter has no 'litellm' installed:\n"
+        f"  {sys.executable}\n"
+        "Use the project virtual environment instead:\n"
+        "  Windows : .\\.venv\\Scripts\\python.exe -m runtime.launch"
+        "   (or scripts\\run_kernel.ps1)\n"
+        "  bash    : scripts/run_kernel.sh\n"
+    )
 
 from aios.hooks.modules.llm import useCore
 from aios.hooks.modules.memory import useMemoryManager
 from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
-from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
-from aios.hooks.modules.scheduler import rr_scheduler_nonblock as rr_scheduler
+from aios.scheduler.manager import SchedulerManager
+from aios.scheduler.registry import POLICY_ROUND_ROBIN
 
 from aios.syscall.syscall import useSysCall
 from aios.config.config_manager import config
@@ -66,11 +84,21 @@ selected_llms = {
     "llms": []
 }
 
+# Owns the live scheduler, so the policy can be changed while the kernel is
+# running via POST /core/scheduler/policy. Rebound by initialize_scheduler.
+global scheduler_manager
+scheduler_manager = None
+
 execute_request, SysCallWrapper, syscall_executor = useSysCall()
 
-# Configure the root logger
+# Configure the root logger.
+#
+# DEBUG is the historical default and is very noisy: the LiteLLM backend logs
+# several lines per model call, which buries the kernel's own scheduler output.
+# AIOS_LOG_LEVEL lets an operator (or a demo) raise the threshold, e.g.
+# `AIOS_LOG_LEVEL=WARNING`, without editing this file.
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=os.getenv("AIOS_LOG_LEVEL", "DEBUG").upper(),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler()  # Output to console
@@ -124,6 +152,11 @@ class QueryRequest(BaseModel):
     # global latest_user_id, preventing cross-user contamination
     # in multi-user scenarios.
     user_id: Optional[str] = None
+    # Optional per-request scheduling priority. Accepts "high" / "normal" /
+    # "low" (or a level: 0 = high, 2 = low). Only the priority scheduling
+    # policy acts on it -- it orders *queued* LLM requests. Other policies
+    # and non-LLM query types ignore it, so sending it is always safe.
+    priority: Optional[Union[int, str]] = None
 
     @model_validator(mode='before')
     def convert_query_data(cls, data: Any) -> Any:
@@ -236,44 +269,38 @@ def initialize_tool_manager() -> Any:
 
 def initialize_scheduler(components: dict, scheduler_config: dict) -> Any:
     """Initialize scheduler with components and configuration."""
+    global scheduler_manager
     try:
         # Get use_context setting from llms config
         llms_config = config.get_llms_config()
         use_context = llms_config.get("use_context_manager", False)
 
-        # Check if trying to use FIFO scheduler with context management
-        # if use_context and isinstance(scheduler_config.get("scheduler_type"), str) and scheduler_config.get("scheduler_type").lower() == "fifo":
-        #     raise ValueError("FIFO scheduler cannot be used with context management enabled. Please either disable context management or use Round Robin scheduler.")
+        # The policy is named by scheduler.policy in config.yaml. When no policy
+        # is named, the historical implicit choice is kept: round robin when
+        # context management is enabled (context switching is implemented by
+        # RRScheduler), FIFO otherwise.
+        #
+        # The manager owns the live scheduler rather than the launcher holding
+        # it directly, so the policy can also be changed at runtime through
+        # POST /core/scheduler/policy without restarting the kernel.
+        scheduler_manager = SchedulerManager(
+            components, scheduler_config, use_context_manager=use_context
+        )
+        scheduler = scheduler_manager.start()
 
-        # Round Robin scheduler
-        if use_context:
-            scheduler = rr_scheduler(
-                llm=components["llms"],   
-                memory_manager=components["memory"],
-                storage_manager=components["storage"],
-                tool_manager=components["tool"],
-                log_mode=scheduler_config.get("log_mode", "console"),
-                get_llm_syscall=None,
-                get_memory_syscall=None,
-                get_storage_syscall=None,
-                get_tool_syscall=None,
+        if use_context and scheduler_manager.policy != POLICY_ROUND_ROBIN:
+            print(
+                f"⚠️ use_context_manager is enabled but scheduler.policy is "
+                f"'{scheduler_manager.policy}'. Context switching is implemented "
+                f"by round_robin; set scheduler.policy: round_robin to keep it."
             )
-        else:
-            scheduler = fifo_scheduler(
-                llm=components["llms"],   
-                memory_manager=components["memory"],
-                storage_manager=components["storage"],
-                tool_manager=components["tool"],
-                log_mode=scheduler_config.get("log_mode", "console"),
-                get_llm_syscall=None,
-                get_memory_syscall=None,
-                get_storage_syscall=None,
-                get_tool_syscall=None,
-            )
-        scheduler.start()
-        print("✅ Scheduler initialized and started")
+
+        print(
+            f"✅ Scheduler initialized and started "
+            f"(policy: {scheduler_manager.policy})"
+        )
         return scheduler
-    
+
     except Exception as e:
         print(f"❌ Scheduler setup failed: {str(e)}")
         raise Exception(f"Failed to initialize scheduler: {str(e)}")
@@ -494,6 +521,66 @@ async def get_status():
         component: "active" if instance else "inactive"
         for component, instance in active_components.items()
     }
+
+
+class SchedulerPolicyUpdate(BaseModel):
+    policy: str
+    options: Optional[Dict[str, Any]] = None
+
+
+@app.get("/core/scheduler")
+async def get_scheduler():
+    """Report which scheduling policy the kernel is running.
+
+    Lets an operator confirm the active policy on a running kernel, instead of
+    reading the start-up output or inferring it from log-line prefixes.
+    """
+    if scheduler_manager is None:
+        raise HTTPException(
+            status_code=503, detail="Scheduler not initialized"
+        )
+    return {"status": "success", **scheduler_manager.describe()}
+
+
+@app.post("/core/scheduler/policy")
+async def set_scheduler_policy(update: SchedulerPolicyUpdate):
+    """Change the scheduling policy while the kernel is running.
+
+    Requests that were accepted but not yet dispatched are re-queued onto the
+    new scheduler, so no waiting agent is left blocked. The call waits for the
+    LLM call in flight to finish first, because a running generation cannot be
+    interrupted -- so it can take as long as one model response.
+
+    An unknown policy name or invalid option is rejected with 400 and the
+    running scheduler is left untouched.
+    """
+    if scheduler_manager is None:
+        raise HTTPException(
+            status_code=503, detail="Scheduler not initialized"
+        )
+
+    try:
+        result = await asyncio.to_thread(
+            scheduler_manager.switch, update.policy, update.options
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        logger.error("Scheduler policy switch failed: %s", error)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to switch scheduling policy: {error}",
+        )
+
+    # Keep the component registry pointing at the scheduler that is live now,
+    # so /core/cleanup stops the right instance.
+    active_components["scheduler"] = scheduler_manager.scheduler
+    logger.info(
+        "Scheduling policy changed from '%s' to '%s'",
+        result["previous"],
+        result["policy"],
+    )
+    return {"status": "success", **result}
 
 
 @app.get("/core/llms/check")
@@ -757,6 +844,13 @@ async def handle_query(request: QueryRequest):
                     "LLM query request_user_id=%s",
                     request.user_id,
                 )
+            # Attach the requested scheduling priority to the query. The
+            # syscall executor reads it back and stamps it onto the syscall,
+            # which is how it reaches the scheduler. A private attribute is
+            # used for the same reason as user_id above: it keeps the
+            # Cerebrum SDK query types unmodified.
+            if request.priority is not None:
+                query._request_priority = request.priority
             result_dict = await asyncio.to_thread(
                 execute_request, # The method to call
                 request.agent_name,               # First arg to execute_request
