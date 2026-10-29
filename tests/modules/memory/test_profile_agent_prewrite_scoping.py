@@ -64,11 +64,13 @@ class MockMem0Provider(MemoryProvider):
 
     def __init__(self) -> None:
         self.retrieve_calls: List[MemoryQuery] = []
+        self.last_metadata: Dict[str, Any] = {}
 
     def initialize(self, config: Dict[str, Any]) -> None:
         pass
 
     def add_memory(self, memory_note: Any) -> MemoryResponse:
+        self.last_metadata = dict(memory_note.metadata or {})
         return MemoryResponse(success=True, memory_id="mock-id")
 
     def remove_memory(self, memory_id: str) -> MemoryResponse:
@@ -78,7 +80,14 @@ class MockMem0Provider(MemoryProvider):
         return MemoryResponse(success=True, memory_id="mock-id")
 
     def get_memory(self, memory_id: str) -> MemoryResponse:
-        return MemoryResponse(success=False, error="not found")
+        # Any id resolves to the last added memory, so the
+        # MemoryManager's access check sees its owner.
+        if not self.last_metadata:
+            return MemoryResponse(success=False, error="not found")
+        return MemoryResponse(
+            success=True, memory_id=memory_id,
+            metadata=dict(self.last_metadata),
+        )
 
     def retrieve_memory(
         self, query: MemoryQuery
@@ -604,11 +613,7 @@ class ProfileAgentPreWriteScopingPreservationTests(
             params={"memory_id": "test-id-123"},
         )
         get_syscall = MemorySyscall(agent_name, get_query)
-        # get_memory returns not-found from mock, but should
-        # not crash
         get_resp = manager.address_request(get_syscall)
-        # Mock returns success=False with error="not found" —
-        # that's the expected mock behavior, not a test failure
         self.assertIsNotNone(get_resp)
 
         # --- update_memory: verify it processes normally ---

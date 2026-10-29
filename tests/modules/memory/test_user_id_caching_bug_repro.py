@@ -34,6 +34,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.providers.base import MemoryProvider
 from aios.memory.write_barrier import MemoryWriteBarrier
@@ -173,6 +174,12 @@ class FakeMemoryManager:
     def __init__(self, provider: TracingProvider) -> None:
         self.provider = provider
         self.barrier = MemoryWriteBarrier(config={})
+        # Profile and task agents admit the assistant agent to
+        # their privilege groups.
+        self.access_manager = AccessManager({
+            "profile_agent": ["assistant_agent"],
+            "task_agent": ["assistant_agent"],
+        })
         self._known_user_ids: OrderedDict[str, float] = (
             OrderedDict()
         )

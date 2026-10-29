@@ -6,10 +6,15 @@ Documents and verifies the intended authorization predicate:
 
     same_user_partition AND (
         owner_agent == requesting_agent
-        OR sharing_policy == "shared"
+        OR (
+            sharing_policy == "shared"
+            AND requesting_agent in privilege_group(owner_agent)
+        )
     )
 
 User partitioning is ALWAYS evaluated before agent-level sharing.
+In these tests profile_agent's privilege group admits task_agent,
+the requesting agent.
 
 Access Matrix:
     | Same User | Owner Relation | Sharing Policy | Result  |
@@ -18,6 +23,7 @@ Access Matrix:
     | Yes       | Same agent     | Shared         | ALLOW   |
     | Yes       | Different agent| Private        | DENY    |
     | Yes       | Different agent| Shared         | ALLOW   |
+    | Yes       | Different agent, not in group | Shared | DENY |
     | No        | Same agent     | Private        | DENY    |
     | No        | Same agent     | Shared         | DENY    |
     | No        | Different agent| Private        | DENY    |
@@ -53,6 +59,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.manager import MemoryManager
 from aios.memory.providers.base import MemoryProvider
@@ -144,6 +151,10 @@ def _build_injector(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    # profile_agent admits task_agent to its privilege group.
+    manager.access_manager = AccessManager({
+        "profile_agent": ["task_agent"],
+    })
     config = {
         "auto_inject": True,
         "max_injected_memories": max_memories,
@@ -314,6 +325,18 @@ class TestAccessMatrix(unittest.TestCase):
 
     def test_different_user_different_agent_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[7][1:])
+
+    def test_same_user_agent_outside_privilege_group_shared(self):
+        """Issue #549: a shared memory from an agent whose
+        privilege group does not admit the requester is DENIED."""
+        self._run_case(
+            {
+                "user_id": "alice",
+                "owner_agent": "web_crawler",
+                "sharing_policy": "shared",
+            },
+            False,
+        )
 
 
 # ==================================================================

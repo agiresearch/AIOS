@@ -35,6 +35,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.manager import MemoryManager
 from aios.memory.note import MemoryNote
@@ -181,6 +182,12 @@ def _build_executor(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    # Profile and task agents admit the assistant agent to their
+    # privilege groups, as in memory.access_control of config.yaml.
+    manager.access_manager = AccessManager({
+        "profile_agent": ["assistant_agent"],
+        "task_agent": ["assistant_agent"],
+    })
 
     # Build ContextInjector with auto_inject enabled
     config = {

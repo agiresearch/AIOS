@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Optional
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery
 
+from aios.memory.access import AccessManager
 from aios.memory.memory_formatter import format_memory
 from aios.memory.write_barrier import WaitOutcome
 
@@ -389,27 +390,26 @@ class ContextInjector:
                 )
                 return (query, diagnostics)
 
-            # Enforce sharing_policy: exclude cross-agent
-            # private memories. Per-user collections contain
-            # ALL memories for a user_id; this filter ensures
-            # only the agent's own memories and explicitly
-            # shared memories are visible.
+            # Enforce agent-level access: per-user collections
+            # contain ALL memories for a user_id; this filter
+            # keeps the agent's own memories and the shared
+            # memories of owners whose privilege group admits
+            # this agent. Without an access manager (test
+            # doubles), only the agent's own memories pass.
+            access_manager = getattr(
+                self.memory_manager, "access_manager", None
+            ) or AccessManager()
             filtered = [
                 mem for mem in filtered
-                if (
-                    (mem.get("metadata") or {}).get(
-                        "owner_agent", ""
-                    ) == agent_name
-                    or (mem.get("metadata") or {}).get(
-                        "sharing_policy", "private"
-                    ) == "shared"
+                if access_manager.can_access(
+                    agent_name, mem.get("metadata")
                 )
             ]
 
             if not filtered:
                 logger.info(
-                    "All memories excluded by sharing "
-                    "policy for agent=%s "
+                    "All memories excluded by access "
+                    "control for agent=%s "
                     "(resolved_user_id=%s)",
                     agent_name,
                     derived_user_id,
