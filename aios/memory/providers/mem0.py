@@ -1046,7 +1046,10 @@ class Mem0Provider(MemoryProvider):
             
             # Extract content and metadata from Mem0 result
             content = result.get("memory", "") if isinstance(result, dict) else str(result)
-            metadata = result.get("metadata", {}) if isinstance(result, dict) else {}
+            metadata = (
+                self._extract_filter_metadata(result)
+                if isinstance(result, dict) else {}
+            )
             
             return MemoryResponse(
                 success=True,
@@ -1055,7 +1058,13 @@ class Mem0Provider(MemoryProvider):
                     "keywords": metadata.get("keywords", []),
                     "tags": metadata.get("tags", []),
                     "category": metadata.get("category", "Uncategorized"),
-                    "timestamp": metadata.get("timestamp", "")
+                    "timestamp": metadata.get("timestamp", ""),
+                    # Cross-agent fields let the MemoryManager
+                    # check access before id-based operations.
+                    "owner_agent": metadata.get("owner_agent", ""),
+                    "user_id": metadata.get("user_id", ""),
+                    "sharing_policy": metadata.get("sharing_policy", ""),
+                    "memory_type": metadata.get("memory_type", ""),
                 }
             )
         except Exception as e:

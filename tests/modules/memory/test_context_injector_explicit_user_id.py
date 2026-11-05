@@ -42,6 +42,10 @@ from aios.memory.note import MemoryNote
 from aios.memory.providers.base import MemoryProvider
 from aios.memory.write_barrier import MemoryWriteBarrier
 
+from tests.modules.memory._doubles.open_access import (
+    personalization_access_manager,
+)
+
 
 # ------------------------------------------------------------------
 # Test memory provider that tracks retrieval user_ids
@@ -189,6 +193,7 @@ def _build_injector_with_provider(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    manager.access_manager = personalization_access_manager()
 
     config = {
         "auto_inject": True,

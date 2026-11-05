@@ -6,10 +6,15 @@ Documents and verifies the intended authorization predicate:
 
     same_user_partition AND (
         owner_agent == requesting_agent
-        OR sharing_policy == "shared"
+        OR (
+            sharing_policy == "shared"
+            AND requesting_agent in privilege_group(owner_agent)
+        )
     )
 
 User partitioning is ALWAYS evaluated before agent-level sharing.
+In these tests profile_agent's privilege group admits task_agent,
+the requesting agent.
 
 Access Matrix:
     | Same User | Owner Relation | Sharing Policy | Result  |
@@ -17,7 +22,8 @@ Access Matrix:
     | Yes       | Same agent     | Private        | ALLOW   |
     | Yes       | Same agent     | Shared         | ALLOW   |
     | Yes       | Different agent| Private        | DENY    |
-    | Yes       | Different agent| Shared         | ALLOW   |
+    | Yes       | Different agent, in group | Shared | ALLOW |
+    | Yes       | Different agent, not in group | Shared | DENY |
     | No        | Same agent     | Private        | DENY    |
     | No        | Same agent     | Shared         | DENY    |
     | No        | Different agent| Private        | DENY    |
@@ -53,6 +59,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.manager import MemoryManager
 from aios.memory.providers.base import MemoryProvider
@@ -144,6 +151,10 @@ def _build_injector(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    # profile_agent admits task_agent to its privilege group.
+    manager.access_manager = AccessManager({
+        "profile_agent": ["task_agent"],
+    })
     config = {
         "auto_inject": True,
         "max_injected_memories": max_memories,
@@ -213,13 +224,24 @@ ACCESS_MATRIX_CASES = [
         False,
     ),
     (
-        "same_user + different_agent + shared → ALLOW",
+        "same_user + different_agent in owner's privilege group"
+        " + shared → ALLOW",
         {
             "user_id": "alice",
             "owner_agent": "profile_agent",
             "sharing_policy": "shared",
         },
         True,
+    ),
+    (
+        "same_user + different_agent outside owner's privilege group"
+        " + shared → DENY",
+        {
+            "user_id": "alice",
+            "owner_agent": "web_crawler",
+            "sharing_policy": "shared",
+        },
+        False,
     ),
     (
         "different_user + same_agent + private → DENY",
@@ -303,17 +325,20 @@ class TestAccessMatrix(unittest.TestCase):
     def test_same_user_different_agent_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[3][1:])
 
-    def test_different_user_same_agent_private(self):
+    def test_same_user_agent_outside_privilege_group_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[4][1:])
 
-    def test_different_user_same_agent_shared(self):
+    def test_different_user_same_agent_private(self):
         self._run_case(*ACCESS_MATRIX_CASES[5][1:])
 
-    def test_different_user_different_agent_private(self):
+    def test_different_user_same_agent_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[6][1:])
 
-    def test_different_user_different_agent_shared(self):
+    def test_different_user_different_agent_private(self):
         self._run_case(*ACCESS_MATRIX_CASES[7][1:])
+
+    def test_different_user_different_agent_shared(self):
+        self._run_case(*ACCESS_MATRIX_CASES[8][1:])
 
 
 # ==================================================================

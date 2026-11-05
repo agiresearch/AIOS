@@ -224,15 +224,25 @@ class InHouseProvider(MemoryProvider):
             return MemoryResponse(success=False, error="Memory not found")
         
         memory = self.memories[memory_id]
+        metadata = {
+            'keywords': memory.keywords,
+            'tags': memory.tags,
+            'category': memory.category,
+            'timestamp': memory.timestamp
+        }
+        # Cross-agent fields let the MemoryManager check access
+        # before id-based operations.
+        for key in (
+            "owner_agent",
+            "user_id",
+            "sharing_policy",
+            "memory_type",
+        ):
+            metadata[key] = (memory.metadata or {}).get(key, "")
         return MemoryResponse(
             success=True, 
             content=memory.content, 
-            metadata={
-                'keywords': memory.keywords, 
-                'tags': memory.tags, 
-                'category': memory.category, 
-                'timestamp': memory.timestamp
-            }
+            metadata=metadata
         )
     
     def retrieve_memory(self, query: MemoryQuery) -> MemoryResponse:

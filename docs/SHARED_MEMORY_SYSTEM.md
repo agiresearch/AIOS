@@ -66,7 +66,7 @@ Each memory stored in the system has a `memory_type` metadata field:
 
 Every memory has a `sharing_policy` metadata field:
 
-- **`"shared"`** — Visible to ALL agents working with the same user. ProfileAgent and TaskAgent write shared memories so AssistantAgent can read them.
+- **`"shared"`**: visible to the agents in the owner's privilege group (see 2.5) working with the same user. ProfileAgent and TaskAgent write shared memories, and their privilege groups admit AssistantAgent, so AssistantAgent can read them.
 - **`"private"`** — Visible ONLY to the agent that wrote it. Conversation memories are private by default.
 
 ### 2.3 User Identity
@@ -77,10 +77,14 @@ The `user_id` is the **primary isolation boundary**. No memory written for user 
 
 ### 2.4 Owner Agent
 
-Each memory records which agent wrote it via `owner_agent`. This enables the sharing rules:
+Each memory records which agent wrote it via `owner_agent`. The kernel sets this field to the calling agent's name on `add_memory`, whatever the caller sent. This enables the sharing rules:
 - Same owner + private = visible to that agent only
-- Different owner + shared = visible to all agents for that user
+- Different owner + shared = visible to the agents in the owner's privilege group, for that user
 - Different owner + private = never visible
+
+### 2.5 Privilege Groups
+
+Following the access manager of the AIOS paper (Section 3.8), every agent owns a privilege group: the agents allowed to read and modify its shared memories. `AccessManager` (`aios/memory/access.py`) keeps the groups and exposes `add_privilege(sid, tid)` (put agent `sid` into agent `tid`'s group) and `check_access(sid, tid)`. Groups come from `memory.access_control.privilege_groups` in `config.yaml`. An agent outside the owner's group cannot see the owner's shared memories in auto-injection or search, and cannot get, update or remove them by id.
 
 ---
 
@@ -109,7 +113,7 @@ create_memory(
 The `MemoryManager.address_request()` method:
 
 1. Converts the query into a `MemoryNote` object
-2. Ensures `user_id` is present (falls back to agent_name if missing)
+2. Ensures `user_id` is present (falls back to agent_name if missing) and sets `owner_agent` to the calling agent
 3. Registers the `user_id` in `_known_user_ids` for cross-agent discovery
 4. Stamps the write barrier with `barrier.acquire(user_id)` → returns a sequence number
 5. Calls `provider.add_memory(memory_note)`
@@ -205,7 +209,7 @@ The merged candidates go through a multi-stage filter:
 
 1. **Relevance Threshold** — Memories with `score < relevance_threshold` (default 0.3) are dropped
 2. **User-Partition Filter** — `metadata["user_id"]` must exactly match the resolved `own_query_user_id`. Memories with missing or mismatched user_id are excluded (fail-closed). This is defense-in-depth.
-3. **Sharing-Policy Filter** — Only memories where `owner_agent == agent_name` (own) OR `sharing_policy == "shared"` (cross-agent) survive
+3. **Access Filter**: only memories where `owner_agent == agent_name` (own) OR `sharing_policy == "shared"` with the requesting agent in the owner's privilege group (cross-agent) survive
 4. **Score Sorting** — Remaining memories sorted by relevance score descending
 5. **Natural Language Formatting** — JSON content converted to readable sentences via `MemoryFormatter`
 6. **Token Budget Truncation** — Least-relevant memories dropped until the block fits within `max_memory_tokens` (default 2000)
@@ -248,7 +252,8 @@ The system uses three independent isolation mechanisms. Any single one is suffic
 | Yes | Same agent (own memory) | Private | **ALLOW** |
 | Yes | Same agent | Shared | **ALLOW** |
 | Yes | Different agent | Private | **DENY** |
-| Yes | Different agent | Shared | **ALLOW** |
+| Yes | Different agent, in owner's privilege group | Shared | **ALLOW** |
+| Yes | Different agent, not in owner's privilege group | Shared | **DENY** |
 | No | Any agent | Private | **DENY** |
 | No | Any agent | Shared | **DENY** |
 | Missing user_id | Any | Any | **DENY** (fail-closed) |
@@ -347,6 +352,11 @@ memory:
     enabled: true               # Enforce write-before-read ordering
     timeout_ms: 5000            # Max wait before fail-open
 
+  access_control:
+    privilege_groups:           # owner agent -> agents admitted to its group
+      profile_agent: ["assistant_agent"]
+      task_agent: ["assistant_agent"]
+
   mem0:
     user_id: "default"          # Fallback user_id
     llm:
@@ -404,7 +414,8 @@ Here's the complete flow for a single personalized LLM call:
 |------|---------|
 | `aios/memory/context_injector.py` | Retrieves memories and injects them into LLM prompts |
 | `aios/memory/conversation_extractor.py` | Stores conversation turns as memories (async) |
-| `aios/memory/manager.py` | Orchestrates providers, barrier, user_id registry |
+| `aios/memory/manager.py` | Orchestrates providers, barrier, user_id registry, access checks |
+| `aios/memory/access.py` | Privilege groups for cross-agent memory access |
 | `aios/memory/write_barrier.py` | Enforces write-before-read ordering per user_id |
 | `aios/memory/memory_formatter.py` | Converts JSON memories to natural language |
 | `aios/memory/providers/mem0.py` | Mem0 + ChromaDB provider with per-user collections |

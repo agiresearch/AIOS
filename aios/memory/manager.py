@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any, Set
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
 from aios.config.config_manager import config as global_config
+from .access import AccessManager
 from .providers import ProviderFactory, MemoryProvider
 from .providers.in_house import InHouseProvider
 from .providers.zep import ZepProvider
@@ -47,6 +48,10 @@ class MemoryManager:
             ``SyscallExecutor`` (acceptance-time stamping) and
             ``ContextInjector`` (inline waits). Configured via
             ``memory.write_barrier.*``.
+        access_manager (AccessManager): Privilege groups that decide
+            whether an agent may read or modify another agent's
+            memories. Read by ``ContextInjector`` as well. Configured
+            via ``memory.access_control.privilege_groups``.
     """
     
     def __init__(
@@ -94,6 +99,19 @@ class MemoryManager:
         # omitting the section is safe.
         barrier_config = memory_config.get("write_barrier", {}) or {}
         self.barrier = MemoryWriteBarrier(config=barrier_config)
+
+        access_config = memory_config.get("access_control", {}) or {}
+        privilege_groups = access_config.get("privilege_groups")
+        if not privilege_groups:
+            # Configs written before privilege groups expect a shared
+            # memory to reach every agent of the user.
+            logger.warning(
+                "memory.access_control.privilege_groups is not set, so "
+                "agents can access only their own memories, not the "
+                "shared memories of other agents. See "
+                "aios/config/config.yaml.example."
+            )
+        self.access_manager = AccessManager(privilege_groups)
 
     @property
     def known_user_ids(self) -> Set[str]:
@@ -164,6 +182,37 @@ class MemoryManager:
         return not isinstance(
             self.provider, (InHouseProvider, ZepProvider)
         )
+
+    def _get_accessible(
+        self, agent_name: str, memory_id: str
+    ) -> MemoryResponse:
+        """Fetch *memory_id* for *agent_name*: the provider's
+        response when the agent may access the memory, an error
+        response otherwise."""
+        existing = self.provider.get_memory(memory_id)
+        if not existing.success:
+            return existing
+        if self.access_manager.can_access(agent_name, existing.metadata):
+            return existing
+        logger.warning(
+            "Denied agent=%s access to memory_id=%s owned by %s",
+            agent_name,
+            memory_id,
+            (existing.metadata or {}).get("owner_agent"),
+        )
+        return MemoryResponse(
+            success=False,
+            error=f"Access denied to memory {memory_id}",
+        )
+
+    def _accessible(
+        self, agent_name: str, items: list, get_metadata
+    ) -> list:
+        """Keep only the retrieved items *agent_name* may access."""
+        return [
+            item for item in items
+            if self.access_manager.can_access(agent_name, get_metadata(item))
+        ]
     
     def _analyze_query_to_memory(self, query: MemoryQuery) -> 'MemoryNote':
         """
@@ -261,6 +310,18 @@ class MemoryManager:
                 memory_note.metadata["user_id"] = (
                     memory_syscall.agent_name
                 )
+            # The kernel, not the caller, records who owns a
+            # memory: an agent cannot plant memories under another
+            # agent's name.
+            claimed_owner = memory_note.metadata.get("owner_agent")
+            if claimed_owner and claimed_owner != memory_syscall.agent_name:
+                logger.warning(
+                    "add_memory: agent=%s claimed owner_agent=%s; "
+                    "recording the calling agent as owner",
+                    memory_syscall.agent_name,
+                    claimed_owner,
+                )
+            memory_note.metadata["owner_agent"] = memory_syscall.agent_name
             # Track user_id for cross-agent discovery.
             uid = (memory_note.metadata or {}).get("user_id")
             logger.info(
@@ -321,14 +382,27 @@ class MemoryManager:
                 )
         
         elif operation_type == "remove_memory":
-            return self.provider.remove_memory(query.params["memory_id"])
+            memory_id = query.params["memory_id"]
+            found = self._get_accessible(
+                memory_syscall.agent_name, memory_id
+            )
+            if not found.success:
+                return found
+            return self.provider.remove_memory(memory_id)
         
         elif operation_type == "update_memory":
             memory_note = self._analyze_query_to_memory(query)
+            found = self._get_accessible(
+                memory_syscall.agent_name, memory_note.id
+            )
+            if not found.success:
+                return found
             return self.provider.update_memory(memory_note)
         
         elif operation_type == "get_memory":
-            return self.provider.get_memory(query.params["memory_id"])
+            return self._get_accessible(
+                memory_syscall.agent_name, query.params["memory_id"]
+            )
         
         elif operation_type == "retrieve_memory":
             query.params["agent_name"] = memory_syscall.agent_name
@@ -362,6 +436,12 @@ class MemoryManager:
                     barrier_user_id, barrier_snapshot
                 )
             resp = self.provider.retrieve_memory(query)
+            if resp.success and resp.search_results:
+                resp.search_results = self._accessible(
+                    memory_syscall.agent_name,
+                    resp.search_results,
+                    lambda item: item.get("metadata"),
+                )
             logger.info(
                 "[MEM0_DEBUG] retrieve_memory result: "
                 "user_id=%s, success=%s, result_count=%d",
@@ -395,7 +475,11 @@ class MemoryManager:
                 self.barrier.wait_until_drained(
                     barrier_user_id, barrier_snapshot
                 )
-            return self.provider.retrieve_memory_raw(query)
+            return self._accessible(
+                memory_syscall.agent_name,
+                self.provider.retrieve_memory_raw(query),
+                lambda note: note.metadata,
+            )
         
         else:
             raise ValueError(f"Invalid operation: {operation_type}")

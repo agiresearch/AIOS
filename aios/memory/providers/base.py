@@ -34,7 +34,10 @@ def _apply_sharing_filter(
 
     Privacy invariant: a memory whose ``owner_agent`` differs from
     *agent_name* is **never** returned unless its metadata
-    ``sharing_policy`` is exactly ``"shared"``.
+    ``sharing_policy`` is exactly ``"shared"``. Being shared is not
+    enough: MemoryManager and ContextInjector then keep another
+    agent's memory only when the owner's privilege group admits
+    *agent_name* (see ``aios/memory/access.py``).
 
     Args:
         candidates: Raw results from the provider's search.

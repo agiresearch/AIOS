@@ -81,6 +81,14 @@ memory:
     enabled: true        # set false to disable the barrier
     timeout_ms: 5000     # max wait per retrieval
 
+  # Per-agent memory access. An agent reads or modifies another agent's
+  # memory only when the memory is shared and the owner's privilege group
+  # lists the agent. Each key is an owner agent, each value its group.
+  access_control:
+    privilege_groups:
+      profile_agent: ["assistant_agent"]
+      task_agent: ["assistant_agent"]
+
   # Mem0 provider configuration (used when provider: "mem0")
   mem0:
     api_key: ""  # Optional: for Mem0 cloud

@@ -76,6 +76,9 @@ from aios.syscall.memory import MemorySyscall
 from hypothesis import given, settings, strategies as st
 from hypothesis import HealthCheck
 
+from tests.modules.memory._doubles.open_access import (
+    OpenAccessManager,
+)
 from tests.modules.memory._doubles.slow_mem0_provider import (
     SlowMem0Provider,
 )
@@ -116,6 +119,7 @@ def _make_manager(provider) -> MemoryManager:
     # default barrier so the release call is a safe no-op on the
     # sentinel path. Tests that need an enabled barrier override this.
     manager.barrier = MemoryWriteBarrier(config={})
+    manager.access_manager = OpenAccessManager()
     return manager
 
 

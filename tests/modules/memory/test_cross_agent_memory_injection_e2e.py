@@ -42,6 +42,10 @@ from aios.memory.providers.base import MemoryProvider
 from aios.memory.write_barrier import MemoryWriteBarrier
 from aios.syscall.syscall import SyscallExecutor
 
+from tests.modules.memory._doubles.open_access import (
+    personalization_access_manager,
+)
+
 
 # ------------------------------------------------------------------
 # Test memory provider with cross-agent awareness
@@ -181,6 +185,7 @@ def _build_executor(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    manager.access_manager = personalization_access_manager()
 
     # Build ContextInjector with auto_inject enabled
     config = {

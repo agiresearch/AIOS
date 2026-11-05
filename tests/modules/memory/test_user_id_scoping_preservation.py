@@ -35,6 +35,7 @@ from hypothesis import HealthCheck
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.conversation_extractor import ConversationExtractor
 from aios.memory.providers.base import (
@@ -106,6 +107,7 @@ class MockMemoryManager:
         self.provider = provider
         self.known_user_ids = known_user_ids or set()
         self.barrier = MemoryWriteBarrier(config={})
+        self.access_manager = AccessManager()
 
 
 # ------------------------------------------------------------------

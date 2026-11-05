@@ -113,6 +113,9 @@ from aios.memory.manager import MemoryManager
 from aios.memory.write_barrier import MemoryWriteBarrier
 from aios.syscall.syscall import SyscallExecutor
 
+from tests.modules.memory._doubles.open_access import (
+    OpenAccessManager,
+)
 from tests.modules.memory._doubles.slow_mem0_provider import (
     SlowMem0Provider,
 )
@@ -150,6 +153,7 @@ def _make_manager(
     manager._known_user_ids = OrderedDict()
     manager.provider = provider
     manager.barrier = MemoryWriteBarrier(config=barrier_config or {})
+    manager.access_manager = OpenAccessManager()
     return manager
 
 

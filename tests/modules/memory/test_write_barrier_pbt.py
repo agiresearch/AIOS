@@ -83,6 +83,9 @@ from aios.syscall.memory import MemorySyscall
 
 from hypothesis import HealthCheck, given, settings, strategies as st
 
+from tests.modules.memory._doubles.open_access import (
+    OpenAccessManager,
+)
 from tests.modules.memory._doubles.slow_mem0_provider import (
     SlowMem0Provider,
 )
@@ -181,6 +184,7 @@ def _make_manager(
     manager._known_user_ids = OrderedDict()
     manager.provider = provider
     manager.barrier = MemoryWriteBarrier(config=barrier_config or {})
+    manager.access_manager = OpenAccessManager()
     return manager
 
 

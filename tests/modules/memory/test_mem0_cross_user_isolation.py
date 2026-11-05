@@ -69,6 +69,10 @@ from aios.memory.providers.base import MemoryProvider
 from aios.memory.providers.mem0 import Mem0Provider
 from aios.memory.write_barrier import MemoryWriteBarrier
 
+from tests.modules.memory._doubles.open_access import (
+    personalization_access_manager,
+)
+
 
 # ------------------------------------------------------------------
 # Constants: two users with semantically similar memories
@@ -370,6 +374,7 @@ def _build_context_injector(
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    manager.access_manager = personalization_access_manager()
 
     config = {
         "auto_inject": True,

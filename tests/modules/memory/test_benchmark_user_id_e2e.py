@@ -44,6 +44,10 @@ from aios.memory.context_injector import ContextInjector
 from aios.memory.providers.base import MemoryProvider
 from aios.memory.write_barrier import MemoryWriteBarrier
 
+from tests.modules.memory._doubles.open_access import (
+    personalization_access_manager,
+)
+
 
 # ------------------------------------------------------------------
 # Synthetic users (benchmark-style distinct identities)
@@ -167,6 +171,7 @@ class BenchmarkMemoryManager:
     def __init__(self, provider: BenchmarkProvider) -> None:
         self.provider = provider
         self.barrier = MemoryWriteBarrier(config={})
+        self.access_manager = personalization_access_manager()
         self._known_user_ids: OrderedDict[str, float] = (
             OrderedDict()
         )
