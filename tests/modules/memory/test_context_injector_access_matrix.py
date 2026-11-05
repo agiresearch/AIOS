@@ -22,7 +22,7 @@ Access Matrix:
     | Yes       | Same agent     | Private        | ALLOW   |
     | Yes       | Same agent     | Shared         | ALLOW   |
     | Yes       | Different agent| Private        | DENY    |
-    | Yes       | Different agent| Shared         | ALLOW   |
+    | Yes       | Different agent, in group | Shared | ALLOW |
     | Yes       | Different agent, not in group | Shared | DENY |
     | No        | Same agent     | Private        | DENY    |
     | No        | Same agent     | Shared         | DENY    |
@@ -224,13 +224,24 @@ ACCESS_MATRIX_CASES = [
         False,
     ),
     (
-        "same_user + different_agent + shared → ALLOW",
+        "same_user + different_agent in owner's privilege group"
+        " + shared → ALLOW",
         {
             "user_id": "alice",
             "owner_agent": "profile_agent",
             "sharing_policy": "shared",
         },
         True,
+    ),
+    (
+        "same_user + different_agent outside owner's privilege group"
+        " + shared → DENY",
+        {
+            "user_id": "alice",
+            "owner_agent": "web_crawler",
+            "sharing_policy": "shared",
+        },
+        False,
     ),
     (
         "different_user + same_agent + private → DENY",
@@ -314,29 +325,20 @@ class TestAccessMatrix(unittest.TestCase):
     def test_same_user_different_agent_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[3][1:])
 
-    def test_different_user_same_agent_private(self):
+    def test_same_user_agent_outside_privilege_group_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[4][1:])
 
-    def test_different_user_same_agent_shared(self):
+    def test_different_user_same_agent_private(self):
         self._run_case(*ACCESS_MATRIX_CASES[5][1:])
 
-    def test_different_user_different_agent_private(self):
+    def test_different_user_same_agent_shared(self):
         self._run_case(*ACCESS_MATRIX_CASES[6][1:])
 
-    def test_different_user_different_agent_shared(self):
+    def test_different_user_different_agent_private(self):
         self._run_case(*ACCESS_MATRIX_CASES[7][1:])
 
-    def test_same_user_agent_outside_privilege_group_shared(self):
-        """Issue #549: a shared memory from an agent whose
-        privilege group does not admit the requester is DENIED."""
-        self._run_case(
-            {
-                "user_id": "alice",
-                "owner_agent": "web_crawler",
-                "sharing_policy": "shared",
-            },
-            False,
-        )
+    def test_different_user_different_agent_shared(self):
+        self._run_case(*ACCESS_MATRIX_CASES[8][1:])
 
 
 # ==================================================================
