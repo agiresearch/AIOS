@@ -119,8 +119,6 @@ def _make_manager(provider) -> MemoryManager:
     # default barrier so the release call is a safe no-op on the
     # sentinel path. Tests that need an enabled barrier override this.
     manager.barrier = MemoryWriteBarrier(config={})
-    # Writers and readers are different agents; access
-    # control is not under test here.
     manager.access_manager = OpenAccessManager()
     return manager
 

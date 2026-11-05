@@ -184,8 +184,6 @@ def _make_manager(
     manager._known_user_ids = OrderedDict()
     manager.provider = provider
     manager.barrier = MemoryWriteBarrier(config=barrier_config or {})
-    # Writers and readers are different agents; access
-    # control is not under test here.
     manager.access_manager = OpenAccessManager()
     return manager
 

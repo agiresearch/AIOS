@@ -128,8 +128,6 @@ def _make_manager(provider: SlowMem0Provider) -> MemoryManager:
     # sentinel path. The retrieval-side wait is not yet wired (task
     # 5.4), so these exploration tests continue to surface the bug.
     manager.barrier = MemoryWriteBarrier(config={})
-    # Writers and readers are different agents; access
-    # control is not under test here.
     manager.access_manager = OpenAccessManager()
     return manager
 
