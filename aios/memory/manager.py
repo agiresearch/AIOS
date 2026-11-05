@@ -101,9 +101,17 @@ class MemoryManager:
         self.barrier = MemoryWriteBarrier(config=barrier_config)
 
         access_config = memory_config.get("access_control", {}) or {}
-        self.access_manager = AccessManager(
-            access_config.get("privilege_groups")
-        )
+        privilege_groups = access_config.get("privilege_groups")
+        if not privilege_groups:
+            # Configs written before privilege groups expect a shared
+            # memory to reach every agent of the user.
+            logger.warning(
+                "memory.access_control.privilege_groups is not set, so "
+                "agents can access only their own memories, not the "
+                "shared memories of other agents. See "
+                "aios/config/config.yaml.example."
+            )
+        self.access_manager = AccessManager(privilege_groups)
 
     @property
     def known_user_ids(self) -> Set[str]:

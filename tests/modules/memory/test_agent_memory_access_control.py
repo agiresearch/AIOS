@@ -313,6 +313,16 @@ class TestPrivilegeGroups(unittest.TestCase):
             PROFILE, ASSISTANT
         ))
 
+    def test_warns_when_no_privilege_groups_are_configured(self):
+        with self.assertLogs("aios.memory.manager", "WARNING") as logs:
+            _create_manager()
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn("privilege_groups is not set", logs.output[0])
+
+    def test_no_warning_with_privilege_groups(self):
+        with self.assertNoLogs("aios.memory.manager", "WARNING"):
+            _create_manager({PROFILE: [ASSISTANT]})
+
 
 class TestMem0Provider(unittest.TestCase):
     """The same checks over Mem0Provider with a mocked client."""
