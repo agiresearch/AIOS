@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Optional
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery
 
-from aios.memory.access import AccessManager
 from aios.memory.memory_formatter import format_memory
 from aios.memory.write_barrier import WaitOutcome
 
@@ -394,11 +393,8 @@ class ContextInjector:
             # contain ALL memories for a user_id; this filter
             # keeps the agent's own memories and the shared
             # memories of owners whose privilege group admits
-            # this agent. Without an access manager (test
-            # doubles), only the agent's own memories pass.
-            access_manager = getattr(
-                self.memory_manager, "access_manager", None
-            ) or AccessManager()
+            # this agent.
+            access_manager = self.memory_manager.access_manager
             filtered = [
                 mem for mem in filtered
                 if access_manager.can_access(

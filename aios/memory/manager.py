@@ -175,12 +175,6 @@ class MemoryManager:
             self.provider, (InHouseProvider, ZepProvider)
         )
 
-    def _access(self) -> AccessManager:
-        """The configured AccessManager. Managers built without
-        ``__init__`` (test doubles) get one with no privilege
-        groups, so agents reach only their own memories."""
-        return getattr(self, "access_manager", None) or AccessManager()
-
     def _get_accessible(
         self, agent_name: str, memory_id: str
     ) -> MemoryResponse:
@@ -190,7 +184,7 @@ class MemoryManager:
         existing = self.provider.get_memory(memory_id)
         if not existing.success:
             return existing
-        if self._access().can_access(agent_name, existing.metadata):
+        if self.access_manager.can_access(agent_name, existing.metadata):
             return existing
         logger.warning(
             "Denied agent=%s access to memory_id=%s owned by %s",
@@ -207,10 +201,9 @@ class MemoryManager:
         self, agent_name: str, items: list, get_metadata
     ) -> list:
         """Keep only the retrieved items *agent_name* may access."""
-        access = self._access()
         return [
             item for item in items
-            if access.can_access(agent_name, get_metadata(item))
+            if self.access_manager.can_access(agent_name, get_metadata(item))
         ]
     
     def _analyze_query_to_memory(self, query: MemoryQuery) -> 'MemoryNote':

@@ -25,6 +25,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.conversation_extractor import ConversationExtractor
 from aios.memory.providers.base import (
@@ -169,6 +170,7 @@ class MockMemoryManager:
     def __init__(self, provider: MemoryProvider) -> None:
         self.provider = provider
         self.barrier = MemoryWriteBarrier(config={})
+        self.access_manager = AccessManager()
         self._known_user_ids: OrderedDict[str, float] = (
             OrderedDict()
         )

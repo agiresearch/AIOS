@@ -41,6 +41,7 @@ from hypothesis import HealthCheck
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.providers.base import (
     MemoryProvider,
@@ -232,6 +233,7 @@ class MockMemoryManager:
     ) -> None:
         self.provider = provider
         self.barrier = MemoryWriteBarrier(config={})
+        self.access_manager = AccessManager()
         # Build an OrderedDict from the ordered list (if given)
         # so that latest_user_id returns the last element.
         self._known_user_ids: OrderedDict = OrderedDict()

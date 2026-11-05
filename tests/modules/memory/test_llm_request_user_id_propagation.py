@@ -32,6 +32,7 @@ if _ROOT not in sys.path:
 from cerebrum.llm.apis import LLMQuery
 from cerebrum.memory.apis import MemoryQuery, MemoryResponse
 
+from aios.memory.access import AccessManager
 from aios.memory.context_injector import ContextInjector
 from aios.memory.manager import MemoryManager
 from aios.memory.providers.base import MemoryProvider
@@ -99,6 +100,7 @@ def _build_executor_with_injector_spy() -> (
     manager.barrier = MemoryWriteBarrier(
         config={"enabled": False}
     )
+    manager.access_manager = AccessManager()
 
     config = {
         "auto_inject": True,
