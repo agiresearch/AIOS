@@ -178,7 +178,9 @@ class RRScheduler(BaseScheduler):
         while self.active:
             try:
                 llm_syscall = self.get_llm_syscall()
-                self._execute_batch_syscalls(llm_syscall, self.llm.execute_llm_syscalls, "LLM")
+                self._execute_batch_syscalls(
+                    [llm_syscall], self.llm.execute_llm_syscalls, "LLM"
+                )
             except Empty:
                 pass
 
