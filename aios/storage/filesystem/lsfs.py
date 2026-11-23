@@ -1,4 +1,4 @@
-import os
+﻿import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import redis
@@ -31,9 +31,13 @@ class FileChangeHandler(FileSystemEventHandler):
         if not event.is_directory:
             self.lsfs.handle_file_change(event.src_path, "deleted")
 
+class PathOutsideRootError(ValueError):
+    """Raised when a requested path resolves outside the storage root."""
+
+
 class LSFS:
     def __init__(self, root_dir, use_vector_db=True, max_versions=20):
-        self.root_dir = root_dir
+        self.root_dir = os.path.realpath(root_dir)
         self.use_vector_db = use_vector_db
         self.max_versions = max_versions
         global_config.get_storage_config() or {}
@@ -72,6 +76,28 @@ class LSFS:
         if hasattr(self, 'observer'):
             self.observer.stop()
             self.observer.join()
+
+    def _resolve_in_root(self, path: str) -> str:
+        """Resolve ``path`` against ``root_dir`` and refuse anything outside it.
+
+        Relative paths stay relative to the root, absolute paths are accepted
+        only when they already point inside it, and ``..`` or a symlink that
+        escapes is refused after resolution.
+        """
+        if not path:
+            raise PathOutsideRootError("empty path")
+        candidato = path if os.path.isabs(path) else os.path.join(self.root_dir, path)
+        resolvido = os.path.realpath(candidato)
+        raiz = os.path.realpath(self.root_dir)
+        try:
+            dentro = os.path.commonpath([raiz, resolvido]) == raiz
+        except ValueError:
+            dentro = False
+        if not dentro:
+            raise PathOutsideRootError(
+                f"path {path!r} resolves outside the storage root: {resolvido!r}"
+            )
+        return resolvido
 
     def get_file_hash(self, file_path: str) -> str:
         return hashlib.sha256(file_path.encode()).hexdigest()
@@ -270,10 +296,7 @@ class LSFS:
 
     def sto_create_file(self, file_name: str, file_path: str, collection_name: str = None) -> bool:
         try:
-            if file_path is None:
-                file_path = os.path.join(self.root_dir, file_name)
-            elif not os.path.isabs(file_path):
-                file_path = os.path.join(self.root_dir, file_path)
+            file_path = self._resolve_in_root(file_path or file_name)
 
             if not os.path.exists(file_path):
                 with open(file_path, 'w'):
@@ -289,10 +312,7 @@ class LSFS:
 
     def sto_create_directory(self, dir_name: str, dir_path: str, collection_name: str = None) -> bool:
         try:
-            if dir_path is None:
-                dir_path = os.path.join(self.root_dir, dir_name)
-            elif not os.path.isabs(dir_path):
-                dir_path = os.path.join(self.root_dir, dir_path)
+            dir_path = self._resolve_in_root(dir_path or dir_name)
 
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
@@ -306,6 +326,7 @@ class LSFS:
 
     def sto_mount(self, collection_name: str, root_dir: str) -> str:
         try:
+            root_dir = self._resolve_in_root(root_dir)
             collection = self.vector_db.add_or_get_collection(collection_name)
             assert collection is not None, f"Collection {collection_name} not found"
             self.vector_db.build_database(root_dir)
@@ -318,10 +339,10 @@ class LSFS:
 
     def sto_write(self, file_name: str, file_path: str, content: str, collection_name: str = None) -> str:
         """Write to file with proper lock management."""
-        if file_path is None:
-            file_path = os.path.join(self.root_dir, file_name)
-        elif not os.path.isabs(file_path):
-            file_path = os.path.join(self.root_dir, file_path)
+        try:
+            file_path = self._resolve_in_root(file_path or file_name)
+        except PathOutsideRootError as e:
+            return f"Error writing to file: {e}"
 
         lock = self.get_file_lock(file_path)
         try:
@@ -448,6 +469,10 @@ class LSFS:
 
     def sto_share(self, file_path: str, collection_name: str = None) -> dict:
         """Share file with proper lock management."""
+        try:
+            file_path = self._resolve_in_root(file_path)
+        except PathOutsideRootError as e:
+            return {"error": f"Error sharing file: {e}"}
         lock = self.get_file_lock(file_path)
         try:
             if lock.acquire(timeout=10):  # Add timeout to prevent deadlocks
